@@ -4,14 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chapter 1 — Understanding Health & Wellness</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --gold:#FFD700;--sky:#38BFFF;--emerald:#00E5A0;--ch:#38BFFF;
-  --bg:#05070F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
-  --text:#F0F4FF;--dim:rgba(240,244,255,0.55);
-}
+:root{--gold:#FFD700;--sky:#38BFFF;--emerald:#00E5A0;--ch:#38BFFF;--bg:#05070F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 30% 0%,rgba(56,191,255,0.12) 0%,transparent 70%),#05070F}
@@ -20,114 +15,99 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .nav-logo span{color:var(--dim);font-weight:400}
 .nav-links{display:flex;gap:6px}
 .nav-link{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;color:var(--dim);text-decoration:none;border:1px solid transparent;transition:all .2s}
-.nav-link:hover,.nav-link.active{color:var(--text);border-color:var(--border);background:var(--card)}
+.nav-link:hover{color:var(--text);border-color:var(--border);background:var(--card)}
 .breadcrumb{position:relative;z-index:1;padding:90px 32px 0;max-width:1100px;margin:0 auto;font-size:13px;color:var(--dim)}
 .breadcrumb a{color:var(--dim);text-decoration:none;transition:color .15s}
 .breadcrumb a:hover{color:var(--text)}
 .breadcrumb span{color:var(--text);margin:0 8px}
-
-/* ── CHAPTER HERO ── */
 .ch-hero{position:relative;z-index:1;padding:24px 32px 48px;max-width:1100px;margin:0 auto}
 .ch-realm-tag{display:inline-block;font-family:'Cinzel',serif;font-size:11px;font-weight:600;letter-spacing:2px;color:var(--ch);border:1px solid rgba(56,191,255,0.3);padding:5px 14px;border-radius:20px;background:rgba(56,191,255,0.06);margin-bottom:16px}
 .ch-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,4vw,42px);font-weight:700;color:var(--text);line-height:1.2;margin-bottom:8px}
-.ch-sub{font-size:15px;color:var(--dim);line-height:1.7;max-width:600px;margin-bottom:28px}
-.ch-meta{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:32px}
+.ch-sub{font-size:15px;color:var(--dim);line-height:1.7;max-width:600px;margin-bottom:22px}
+.ch-meta{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:24px}
 .meta-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--dim)}
-.meta-icon{font-size:16px}
 .meta-val{color:var(--text);font-weight:600}
-.lesson-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
-.lesson-pill{background:rgba(56,191,255,0.08);border:1px solid rgba(56,191,255,0.2);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--sky)}
-
-/* ── MAIN GRID ── */
-.main-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;max-width:1100px;margin:0 auto;padding:0 32px 80px;position:relative;z-index:1}
+.lesson-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+.lesson-pill{background:rgba(56,191,255,0.08);border:1px solid rgba(56,191,255,0.2);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--sky)}
+.main-grid{display:grid;grid-template-columns:1fr 300px;gap:20px;max-width:1100px;margin:0 auto;padding:0 32px 80px;position:relative;z-index:1}
 @media(max-width:900px){.main-grid{grid-template-columns:1fr}.sidebar{order:-1}}
-
-/* ── CONTENT SECTIONS ── */
-.content-section{margin-bottom:24px}
-.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-.sec-icon{font-size:20px}
-.sec-title{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);letter-spacing:.5px}
-.pdf-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;gap:20px;text-decoration:none;transition:all .2s;cursor:pointer}
-.pdf-card:hover{border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.04);transform:translateY(-2px)}
-.pdf-icon{font-size:40px;flex-shrink:0}
+.content-section{margin-bottom:22px}
+.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-icon{font-size:18px}
+.sec-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.5px}
+.pdf-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;align-items:center;gap:18px;text-decoration:none;transition:all .2s}
+.pdf-card:hover{border-color:rgba(56,191,255,0.4);background:rgba(56,191,255,0.04);transform:translateY(-2px)}
+.pdf-icon{font-size:36px;flex-shrink:0}
 .pdf-info{flex:1}
-.pdf-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px}
-.pdf-meta{font-size:13px;color:var(--dim)}
-.pdf-btn{padding:10px 20px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,140,0,0.1));border:1px solid rgba(255,215,0,0.3);border-radius:10px;color:var(--gold);font-size:13px;font-weight:700;white-space:nowrap;transition:all .15s}
-.pdf-card:hover .pdf-btn{background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,140,0,0.2))}
-
-/* ── VOCAB GAMES ── */
+.pdf-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px}
+.pdf-meta{font-size:12px;color:var(--dim)}
+.pdf-btn{padding:9px 18px;background:rgba(56,191,255,0.12);border:1px solid rgba(56,191,255,0.3);border-radius:9px;color:var(--sky);font-size:12px;font-weight:700;white-space:nowrap}
 .vocab-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.vocab-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;text-decoration:none;display:block}
-.vocab-card:hover{border-color:rgba(255,255,255,0.18);transform:translateY(-2px)}
+.vocab-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;text-decoration:none;display:block;position:relative;overflow:hidden;transition:all .2s}
 .vocab-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--vc,var(--sky));transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.vocab-card:hover{border-color:rgba(56,191,255,0.3);transform:translateY(-2px)}
 .vocab-card:hover::before{transform:scaleX(1)}
-.vc-icon{font-size:24px;margin-bottom:6px}
+.vc-icon{font-size:22px;margin-bottom:5px}
 .vc-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:3px}
-.vc-desc{font-size:12px;color:var(--dim);line-height:1.4}
-.vc-count{font-size:11px;font-weight:700;color:var(--vc,var(--sky));margin-top:6px}
-
-/* ── ACTIVITIES ── */
-.activity-list{display:flex;flex-direction:column;gap:10px}
-.activity-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:14px}
-.activity-item:hover{border-color:rgba(255,255,255,0.18);transform:translateY(-1px)}
-.act-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.vc-desc{font-size:11px;color:var(--dim);line-height:1.4}
+.vc-count{font-size:11px;font-weight:700;color:var(--vc,var(--sky));margin-top:5px}
+.activity-list{display:flex;flex-direction:column;gap:9px}
+.activity-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:all .2s}
+.activity-item:hover{border-color:rgba(56,191,255,0.3);transform:translateY(-1px)}
+.act-icon{font-size:20px;flex-shrink:0;margin-top:1px}
 .act-body{flex:1}
-.act-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:3px}
+.act-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:3px}
 .act-desc{font-size:12px;color:var(--dim);line-height:1.4}
-.act-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.act-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:rgba(255,255,255,0.06);color:var(--dim)}
-.act-tag.solo{background:rgba(0,229,160,0.1);color:var(--emerald)}
-.act-tag.team{background:rgba(56,191,255,0.1);color:var(--sky)}
+.act-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.act-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.06);color:var(--dim)}
 .act-tag.boss{background:rgba(255,59,92,0.1);color:#FF3B5C}
-
-/* ── SIDEBAR ── */
-.sidebar{display:flex;flex-direction:column;gap:16px}
-.side-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
-.side-title{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-bottom:14px}
-.quest-steps{display:flex;flex-direction:column;gap:10px}
-.quest-step{display:flex;gap:10px;align-items:flex-start}
-.step-num{width:24px;height:24px;border-radius:50%;background:rgba(255,215,0,0.1);border:1.5px solid rgba(255,215,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--gold);flex-shrink:0}
-.step-text{font-size:13px;color:var(--dim);line-height:1.4;padding-top:2px}
+.act-tag.team{background:rgba(56,191,255,0.1);color:var(--sky)}
+.game-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}
+.game-link{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px;text-decoration:none;display:flex;flex-direction:column;gap:7px;transition:all .2s}
+.game-link:hover{border-color:rgba(56,191,255,0.3);transform:translateY(-2px)}
+.gl-icon{font-size:20px}
+.gl-title{font-size:13px;font-weight:800;color:var(--text)}
+.gl-type{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(56,191,255,0.1);color:var(--sky)}
+.sidebar{display:flex;flex-direction:column;gap:14px}
+.side-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px}
+.side-title{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-bottom:12px}
+.quest-steps{display:flex;flex-direction:column;gap:9px}
+.quest-step{display:flex;gap:9px;align-items:flex-start}
+.step-num{width:22px;height:22px;border-radius:50%;background:rgba(56,191,255,0.1);border:1.5px solid rgba(56,191,255,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--sky);flex-shrink:0}
+.step-text{font-size:12px;color:var(--dim);line-height:1.4;padding-top:2px}
 .step-text strong{color:var(--text);display:block}
-.key-vocab{display:flex;flex-direction:column;gap:6px}
-.vocab-item{padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;cursor:pointer;transition:background .15s}
+.key-vocab{display:flex;flex-direction:column;gap:5px}
+.vocab-item{padding:7px 10px;background:rgba(255,255,255,0.03);border-radius:7px;cursor:pointer;transition:background .15s}
 .vocab-item:hover{background:rgba(255,255,255,0.06)}
-.vocab-term{font-size:13px;font-weight:700;color:var(--sky)}
-.vocab-def{font-size:11px;color:var(--dim);line-height:1.4;display:none;margin-top:4px}
+.vocab-term{font-size:12px;font-weight:700;color:var(--sky)}
+.vocab-def{font-size:11px;color:var(--dim);line-height:1.4;display:none;margin-top:3px}
 .vocab-item.open .vocab-def{display:block}
-.nav-chapters{display:flex;flex-direction:column;gap:6px}
-.ch-nav-btn{display:block;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--dim);font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;text-align:center}
-.ch-nav-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--text)}
-.realm-badge-card{background:linear-gradient(135deg,rgba(56,191,255,0.08),rgba(0,229,160,0.06));border:1px solid rgba(56,191,255,0.2);border-radius:14px;padding:20px;text-align:center}
-.badge-icon{font-size:36px;margin-bottom:8px}
-.badge-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--sky);margin-bottom:4px}
-.badge-sub{font-size:12px;color:var(--dim);line-height:1.4}
-.progress-bar{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;margin-top:12px;overflow:hidden}
-.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--sky),var(--emerald));border-radius:3px;transition:width 1s ease}
-footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.ch-nav-row{display:flex;flex-direction:column;gap:6px}
+.ch-nav-btn{display:block;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--dim);font-size:12px;font-weight:600;text-decoration:none;transition:all .15s;text-align:center}
+.ch-nav-btn:hover{border-color:rgba(56,191,255,0.3);color:var(--text)}
+.realm-badge-card{background:linear-gradient(135deg,rgba(56,191,255,0.08),rgba(0,229,160,0.05));border:1px solid rgba(56,191,255,0.2);border-radius:13px;padding:18px;text-align:center}
+.badge-icon{font-size:32px;margin-bottom:6px}
+.badge-title{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--sky);margin-bottom:3px}
+.badge-sub{font-size:11px;color:var(--dim);line-height:1.4}
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600}
-.footer-tags{font-size:13px;color:var(--dim)}
-@media(max-width:700px){.ch-hero,.breadcrumb{padding-left:20px;padding-right:20px}.main-grid{padding:0 20px 60px}.vocab-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.ch-hero,.breadcrumb,.main-grid{padding-left:20px;padding-right:20px}.vocab-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div id="stars"></div>
-
 <nav>
   <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
   <div class="nav-links">
     <a class="nav-link" href="index.html">Home</a>
     <a class="nav-link" href="chapters.html">Chapters</a>
     <a class="nav-link" href="arcade.html">Arcade</a>
-    <a class="nav-link" href="quest.html">Quest</a>
+    <a class="nav-link" href="quest.html">My Quest</a>
   </div>
 </nav>
 
 <div class="breadcrumb">
-  <a href="index.html">Home</a><span>›</span>
-  <a href="chapters.html">Chapters</a><span>›</span>
-  Chapter 1
+  <a href="index.html">Home</a><span>›</span><a href="chapters.html">Chapters</a><span>›</span>Chapter 1
 </div>
 
 <div class="ch-hero">
@@ -135,10 +115,10 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
   <h1 class="ch-title">Chapter 1<br>Understanding Health & Wellness</h1>
   <p class="ch-sub">Your health is more than just feeling sick or not — it's the complete picture of your physical, mental, emotional, and social well-being. This chapter is your foundation for everything that follows.</p>
   <div class="ch-meta">
-    <div class="meta-item"><span class="meta-icon">📅</span>Weeks <span class="meta-val">1–2</span></div>
-    <div class="meta-item"><span class="meta-icon">📖</span>Lessons: <span class="meta-val">4</span></div>
-    <div class="meta-item"><span class="meta-icon">🏆</span>Realm Badge: <span class="meta-val">Wellness Apprentice</span></div>
-    <div class="meta-item"><span class="meta-icon">⚔</span>Boss Battle: <span class="meta-val">Health Jeopardy</span></div>
+    <div class="meta-item">📅 Weeks <span class="meta-val">1–2</span></div>
+    <div class="meta-item">📖 Lessons: <span class="meta-val">4</span></div>
+    <div class="meta-item">🏆 Badge: <span class="meta-val">Wellness Apprentice</span></div>
+    <div class="meta-item">⚔ Boss: <span class="meta-val">Health Jeopardy</span></div>
   </div>
   <div class="lesson-pills">
     <span class="lesson-pill">L1: What is Health?</span>
@@ -149,15 +129,10 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
 </div>
 
 <div class="main-grid">
-  <!-- MAIN CONTENT -->
   <div>
-
     <!-- PDF -->
     <div class="content-section">
-      <div class="sec-header">
-        <span class="sec-icon">📄</span>
-        <span class="sec-title">Chapter PDF</span>
-      </div>
+      <div class="sec-header"><span class="sec-icon">📄</span><span class="sec-title">Chapter PDF</span></div>
       <a class="pdf-card" href="Chapter_01_Understanding_Health_and_Wellness.pdf" target="_blank">
         <div class="pdf-icon">📘</div>
         <div class="pdf-info">
@@ -168,242 +143,173 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
       </a>
     </div>
 
-    <!-- VOCAB GAMES -->
+    <!-- VOCAB GAMES — fixed to use vocab_engine.html -->
     <div class="content-section">
-      <div class="sec-header">
-        <span class="sec-icon">🎮</span>
-        <span class="sec-title">Vocabulary Games</span>
-      </div>
+      <div class="sec-header"><span class="sec-icon">🎮</span><span class="sec-title">Vocabulary Games</span></div>
       <div class="vocab-grid">
-        <a class="vocab-card" href="vocab_ch01_flashcard.html" style="--vc:#38BFFF">
+        <a class="vocab-card" href="vocab_engine.html?ch=1" style="--vc:#38BFFF">
           <div class="vc-icon">🃏</div>
           <div class="vc-title">Flashcard Flip</div>
           <div class="vc-desc">Tap to flip — term to definition. Study solo or quiz a partner.</div>
-          <div class="vc-count">20 terms</div>
+          <div class="vc-count">15 terms · all lessons</div>
         </a>
-        <a class="vocab-card" href="vocab_ch01_speedquiz.html" style="--vc:#FF3B5C">
+        <a class="vocab-card" href="vocab_engine.html?ch=1" style="--vc:#FF3B5C" onclick="localStorage.setItem('lowVocabMode','speedquiz')">
           <div class="vc-icon">⚡</div>
           <div class="vc-title">Speed Quiz</div>
-          <div class="vc-desc">Timed multiple choice. 4 answers per question. Race the clock!</div>
-          <div class="vc-count">20 questions · 30s each</div>
+          <div class="vc-desc">Timed multiple choice — 30 seconds per question. Race the clock!</div>
+          <div class="vc-count">30s per question</div>
         </a>
-        <a class="vocab-card" href="vocab_ch01_wordbuild.html" style="--vc:#00E5A0">
+        <a class="vocab-card" href="vocab_engine.html?ch=1" style="--vc:#00E5A0">
           <div class="vc-icon">🔤</div>
           <div class="vc-title">Word Builder</div>
-          <div class="vc-desc">Read the definition, type the term. Scrambled letters for hints.</div>
-          <div class="vc-count">20 terms</div>
+          <div class="vc-desc">Read the definition, type the term. Scrambled letter hints available.</div>
+          <div class="vc-count">All Chapter 1 terms</div>
         </a>
-        <a class="vocab-card" href="vocab_ch01_conceptmap.html" style="--vc:#FFD700">
+        <a class="vocab-card" href="vocab_engine.html?ch=1" style="--vc:#FFD700">
           <div class="vc-icon">🗺</div>
           <div class="vc-title">Concept Map</div>
-          <div class="vc-desc">Drag and connect — match terms to the correct health dimension.</div>
-          <div class="vc-count">20 terms · 4 categories</div>
+          <div class="vc-desc">Drag and drop terms into the correct category.</div>
+          <div class="vc-count">Grouped by topic</div>
         </a>
       </div>
     </div>
 
-    <!-- QUEST ACTIVITIES -->
+    <!-- ACTIVITIES -->
     <div class="content-section">
-      <div class="sec-header">
-        <span class="sec-icon">⚔</span>
-        <span class="sec-title">Quest Activities</span>
-      </div>
+      <div class="sec-header"><span class="sec-icon">⚔</span><span class="sec-title">Quest Activities</span></div>
       <div class="activity-list">
-
         <div class="activity-item">
           <div class="act-icon">📊</div>
           <div class="act-body">
             <div class="act-title">Side Quest 1 — Health Triangle Self-Assessment</div>
             <div class="act-desc">Rate yourself honestly on all three sides of the health triangle — physical, mental/emotional, and social. Identify one goal for each side.</div>
-            <div class="act-meta">
-              <span class="act-tag solo">Solo Quest</span>
-              <span class="act-tag">~15 min</span>
-              <span class="act-tag">Week 1</span>
-            </div>
+            <div class="act-meta"><span class="act-tag">Solo Quest</span><span class="act-tag">~15 min</span><span class="act-tag">Week 1</span></div>
           </div>
         </div>
-
         <div class="activity-item">
-          <div class="act-icon">🗺</div>
+          <div class="act-icon">🌐</div>
           <div class="act-body">
-            <div class="act-title">Exploration — 7 Dimensions of Wellness Map</div>
+            <div class="act-title">Exploration — 7 Dimensions Wellness Wheel</div>
             <div class="act-desc">Create a personal wellness wheel showing where you are on all 7 dimensions — physical, emotional, intellectual, social, spiritual, environmental, and occupational. Color-coded and honest.</div>
-            <div class="act-meta">
-              <span class="act-tag solo">Solo Quest</span>
-              <span class="act-tag">~20 min</span>
-              <span class="act-tag">Week 1</span>
-            </div>
+            <div class="act-meta"><span class="act-tag">Solo Quest</span><span class="act-tag">~20 min</span><span class="act-tag">Week 1</span></div>
           </div>
         </div>
-
         <div class="activity-item">
           <div class="act-icon">📰</div>
           <div class="act-body">
             <div class="act-title">Exploration — Health in the News</div>
-            <div class="act-desc">Find one recent health news story (2023–2025). Identify which dimension of the health triangle it relates to, whether the source is credible, and what the key takeaway is for teens.</div>
-            <div class="act-meta">
-              <span class="act-tag team">Team Event</span>
-              <span class="act-tag">~25 min</span>
-              <span class="act-tag">Week 2</span>
-            </div>
+            <div class="act-desc">Find one recent health news story (2023–2025). Identify which dimension of the health triangle it relates to, whether the source is credible, and the key takeaway for teens.</div>
+            <div class="act-meta"><span class="act-tag team">Team Event</span><span class="act-tag">~25 min</span><span class="act-tag">Week 2</span></div>
           </div>
         </div>
-
         <div class="activity-item">
           <div class="act-icon">🎯</div>
           <div class="act-body">
             <div class="act-title">Habit Challenge — 2-Week Healthy Habit Tracker</div>
-            <div class="act-desc">Choose ONE health habit to build over 2 weeks: sleep, water intake, screen time, physical activity, or fruit/vegetable servings. Track daily with a simple log. Report at the end of Realm I.</div>
-            <div class="act-meta">
-              <span class="act-tag solo">Solo Quest</span>
-              <span class="act-tag">2 Weeks</span>
-              <span class="act-tag">Chapter 1–2</span>
-            </div>
+            <div class="act-desc">Choose ONE health habit to build over 2 weeks: sleep, water intake, screen time, physical activity, or fruit/vegetable servings. Track daily. Report back at Realm I boss battle.</div>
+            <div class="act-meta"><span class="act-tag">Solo Quest</span><span class="act-tag">2 Weeks</span><span class="act-tag">Chapters 1–2</span></div>
           </div>
         </div>
-
-        <div class="activity-item" style="border-color:rgba(255,59,92,0.3)">
+        <div class="activity-item" style="border-color:rgba(255,59,92,0.25)">
           <div class="act-icon">👑</div>
           <div class="act-body">
             <div class="act-title">Boss Battle — Health Jeopardy: Foundation Keep</div>
-            <div class="act-desc">The chapter boss battle. 5 categories covering both Chapter 1 and Chapter 2 content. Daily Double, Final Jeopardy with wagers. Teams compete for Realm I victory.</div>
-            <div class="act-meta">
-              <span class="act-tag boss">Boss Battle</span>
-              <span class="act-tag team">Full Class</span>
-              <span class="act-tag">~45 min</span>
-            </div>
+            <div class="act-desc">5 categories covering Chapters 1 & 2. Daily Double, Final Jeopardy with wagers. Teams compete for the Wellness Apprentice badge.</div>
+            <div class="act-meta"><span class="act-tag boss">Boss Battle</span><span class="act-tag team">Full Class</span><span class="act-tag">~45 min</span></div>
           </div>
-          <a href="game01_jeopardy.html" target="_blank" style="align-self:center;padding:9px 16px;background:rgba(255,59,92,0.15);border:1px solid rgba(255,59,92,0.35);border-radius:8px;color:#FF3B5C;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;transition:all .15s">▶ Launch</a>
+          <a href="game01_jeopardy.html" target="_blank" style="align-self:center;padding:8px 14px;background:rgba(255,59,92,0.15);border:1px solid rgba(255,59,92,0.3);border-radius:8px;color:#FF3B5C;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">▶ Launch</a>
         </div>
-
       </div>
     </div>
 
-    <!-- CHAPTER GAMES -->
+    <!-- RECOMMENDED GAMES -->
     <div class="content-section">
-      <div class="sec-header">
-        <span class="sec-icon">🎰</span>
-        <span class="sec-title">Recommended Games for This Chapter</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <a class="vocab-card" href="game05_hot_takes.html" target="_blank" style="--vc:#FFD700">
-          <div class="vc-icon">⚡</div>
-          <div class="vc-title">Hot Takes Buzzer Battle</div>
-          <div class="vc-desc">Perfect warm-up for Chapter 1 debates on what "health" really means.</div>
-          <div class="vc-count">Daily warm-up</div>
+      <div class="sec-header"><span class="sec-icon">🎰</span><span class="sec-title">Recommended Games</span></div>
+      <div class="game-grid2">
+        <a class="game-link" href="game05_hot_takes.html" target="_blank">
+          <div class="gl-icon">⚡</div><div class="gl-title">Hot Takes Buzzer Battle</div>
+          <div style="font-size:11px;color:var(--dim)">Perfect Day 1 warm-up</div>
+          <div class="gl-type">▶ Play Now</div>
         </a>
-        <a class="vocab-card" href="game12_would_you_rather.html" target="_blank" style="--vc:#00E5A0">
-          <div class="vc-icon">🤔</div>
-          <div class="vc-title">Would You Rather</div>
-          <div class="vc-desc">Opens great discussion on how students prioritize their own health dimensions.</div>
-          <div class="vc-count">Discussion opener</div>
+        <a class="game-link" href="game12_would_you_rather.html" target="_blank">
+          <div class="gl-icon">🤔</div><div class="gl-title">Would You Rather</div>
+          <div style="font-size:11px;color:var(--dim)">Opens health values discussion</div>
+          <div class="gl-type">▶ Play Now</div>
         </a>
-        <a class="vocab-card" href="game15_myth_busters.html" target="_blank" style="--vc:#a855f7">
-          <div class="vc-icon">💥</div>
-          <div class="vc-title">Myth Busters</div>
-          <div class="vc-desc">Busting health myths is the perfect first-day hook — students are always surprised.</div>
-          <div class="vc-count">Day 1 hook</div>
+        <a class="game-link" href="game15_myth_busters.html" target="_blank">
+          <div class="gl-icon">💥</div><div class="gl-title">Myth Busters</div>
+          <div style="font-size:11px;color:var(--dim)">Best first-day hook game</div>
+          <div class="gl-type">▶ Play Now</div>
         </a>
-        <a class="vocab-card" href="game11_taboo.html" target="_blank" style="--vc:#FF8C00">
-          <div class="vc-icon">🤐</div>
-          <div class="vc-title">Health Taboo</div>
-          <div class="vc-desc">Test vocab mastery at the end of Chapter 1 before moving to Chapter 2.</div>
-          <div class="vc-count">Vocab check</div>
+        <a class="game-link" href="game11_taboo.html" target="_blank">
+          <div class="gl-icon">🤐</div><div class="gl-title">Health Taboo</div>
+          <div style="font-size:11px;color:var(--dim)">Vocab check before boss battle</div>
+          <div class="gl-type">▶ Play Now</div>
         </a>
       </div>
     </div>
-
   </div>
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-
     <div class="realm-badge-card">
       <div class="badge-icon">🏰</div>
       <div class="badge-title">Foundation Keep</div>
-      <div class="badge-sub">Complete Chapter 1 & 2 quests + boss battle to earn the Wellness Apprentice badge.</div>
-      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-      <div style="font-size:12px;color:var(--dim);margin-top:6px">0% complete</div>
+      <div class="badge-sub">Complete Ch 1 & 2 quests + boss battle to earn the <strong>Wellness Apprentice</strong> badge.</div>
     </div>
-
     <div class="side-card">
       <div class="side-title">Quest Checklist</div>
       <div class="quest-steps">
-        <div class="quest-step">
-          <div class="step-num">1</div>
-          <div class="step-text"><strong>Read the PDF</strong>Chapter 1 — all 4 lessons</div>
-        </div>
-        <div class="quest-step">
-          <div class="step-num">2</div>
-          <div class="step-text"><strong>Complete vocab games</strong>All 4 game types for Chapter 1</div>
-        </div>
-        <div class="quest-step">
-          <div class="step-num">3</div>
-          <div class="step-text"><strong>Self-Assessment</strong>Health Triangle + 7 Dimensions</div>
-        </div>
-        <div class="quest-step">
-          <div class="step-num">4</div>
-          <div class="step-text"><strong>Start Habit Challenge</strong>Choose and begin tracking your habit</div>
-        </div>
-        <div class="quest-step">
-          <div class="step-num">5</div>
-          <div class="step-text"><strong>Chapter 2 PDF + vocab</strong>Complete Realm I content</div>
-        </div>
-        <div class="quest-step" style="opacity:.5">
-          <div class="step-num" style="border-color:rgba(255,59,92,0.4);color:#FF3B5C">★</div>
-          <div class="step-text"><strong>Boss Battle — Jeopardy</strong>Defeat the Foundation Keep boss</div>
-        </div>
+        <div class="quest-step"><div class="step-num">1</div><div class="step-text"><strong>Read the PDF</strong>All 4 lessons</div></div>
+        <div class="quest-step"><div class="step-num">2</div><div class="step-text"><strong>Vocab Games</strong>All 4 game types</div></div>
+        <div class="quest-step"><div class="step-num">3</div><div class="step-text"><strong>Self-Assessment</strong>Health Triangle + 7 Dimensions</div></div>
+        <div class="quest-step"><div class="step-num">4</div><div class="step-text"><strong>Habit Challenge</strong>Choose your habit and start tracking</div></div>
+        <div class="quest-step"><div class="step-num">5</div><div class="step-text"><strong>Chapter 2</strong>PDF + vocab + activities</div></div>
+        <div class="quest-step"><div class="step-num" style="border-color:rgba(255,59,92,0.4);color:#FF3B5C">★</div><div class="step-text"><strong>Boss Battle — Jeopardy</strong>Defeat Foundation Keep</div></div>
       </div>
     </div>
-
     <div class="side-card">
-      <div class="side-title">Key Vocab — Quick Review</div>
+      <div class="side-title">Key Vocab — Click to Reveal</div>
       <div class="key-vocab" id="vocab-list"></div>
     </div>
-
     <div class="side-card">
-      <div class="side-title">Chapter Navigation</div>
-      <div class="nav-chapters">
+      <div class="side-title">Navigate</div>
+      <div class="ch-nav-row">
         <a class="ch-nav-btn" href="chapter02.html">Chapter 2 → Skills for a Healthy Life</a>
         <a class="ch-nav-btn" href="chapters.html">← All 28 Chapters</a>
         <a class="ch-nav-btn" href="realm1.html">🏰 Realm I Overview</a>
       </div>
     </div>
-
   </div>
 </div>
 
 <footer>
   <div class="footer-brand">⚔ The Legend of Wellness</div>
-  <div class="footer-tags">#OnedayIwokeup &nbsp;·&nbsp; #Doppitup</div>
+  <div style="font-size:13px;color:var(--dim)">#OnedayIwokeup · #Doppitup</div>
   <div style="font-size:12px;color:rgba(255,255,255,0.25)">Chapter 1 of 28</div>
 </footer>
 
 <script>
 const VOCAB=[
   {term:"Health",def:"A combination of physical, mental/emotional, and social well-being — not just the absence of disease."},
-  {term:"Wellness",def:"The quality of life that results from taking steps toward achieving your full health potential across all dimensions."},
-  {term:"Health Triangle",def:"A model representing the three sides of health: physical, mental/emotional, and social — all three must be balanced."},
+  {term:"Wellness",def:"The quality of life that results from taking steps toward achieving your full health potential."},
+  {term:"Health Triangle",def:"A model showing the three sides of health: physical, mental/emotional, and social — all must be balanced."},
   {term:"Lifestyle factors",def:"Personal behaviors and habits that affect your long-term health, both positively and negatively."},
-  {term:"Health literacy",def:"The ability to find, understand, evaluate, and apply health information to make responsible health decisions."},
+  {term:"Health literacy",def:"The ability to find, understand, evaluate, and apply health information to make responsible decisions."},
   {term:"Heredity",def:"The passing of traits from biological parents to their children through genes."},
-  {term:"Environment",def:"All living and nonliving things around you, including your community, culture, and physical surroundings."},
+  {term:"Environment",def:"All living and nonliving things around you, including community, culture, and physical surroundings."},
   {term:"Culture",def:"The beliefs, values, and practices shared by a group of people — a major influence on health decisions."},
-  {term:"Peers",def:"People of the same age who share similar interests; a powerful influence on teen health behavior."},
-  {term:"Risk behaviors",def:"Actions or habits that increase the likelihood of negative outcomes to one's health or the health of others."},
+  {term:"Peers",def:"People of the same age who share similar interests — a powerful influence on teen health behavior."},
+  {term:"Risk behaviors",def:"Actions or habits that increase the likelihood of negative outcomes to one's health or others."},
 ];
-
 const vl=document.getElementById('vocab-list');
-VOCAB.forEach((v,i)=>{
+VOCAB.forEach(v=>{
   const el=document.createElement('div');
   el.className='vocab-item';
   el.innerHTML=`<div class="vocab-term">${v.term}</div><div class="vocab-def">${v.def}</div>`;
   el.onclick=()=>el.classList.toggle('open');
   vl.appendChild(el);
 });
-
-// Animate progress bar on load
-setTimeout(()=>{document.getElementById('progress-fill').style.width='0%';},300);
 </script>
 </body>
 </html>
