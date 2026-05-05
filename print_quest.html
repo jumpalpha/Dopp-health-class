@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quest Sheet — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* SCREEN STYLES */
+:root{--gold:#FFD700;--bg:#05070F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:rgba(5,7,15,0.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);text-decoration:none}
+.nav-logo span{color:var(--dim);font-weight:400}
+.nav-links{display:flex;gap:6px}
+.nav-link{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;color:var(--dim);text-decoration:none;border:1px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--text);border-color:var(--border);background:var(--card)}
+
+.screen-only{display:block}
+.screen-header{padding:90px 28px 28px;text-align:center;max-width:800px;margin:0 auto}
+.screen-title{font-family:'Cinzel',serif;font-size:28px;font-weight:700;color:var(--gold);margin-bottom:8px}
+.screen-sub{font-size:14px;color:var(--dim);line-height:1.6;margin-bottom:24px}
+.print-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:32px}
+.ctrl-btn{padding:12px 24px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s}
+.btn-print{background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.15));border:1.5px solid rgba(255,215,0,0.4);color:var(--gold)}
+.btn-print:hover{background:linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,140,0,0.25))}
+.btn-back{background:var(--card);border:1px solid var(--border);color:var(--dim)}
+.print-preview{max-width:800px;margin:0 auto 60px;padding:0 28px}
+.preview-label{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:12px;text-align:center}
+
+/* PRINT DOCUMENT */
+.print-doc{background:#fff;color:#111;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+
+/* PRINT STYLES — activated on print */
+@media print {
+  nav,.screen-only,.screen-header,.print-controls,.preview-label { display:none !important; }
+  body { background:#fff !important; padding:0 !important; }
+  .print-preview { margin:0; padding:0; max-width:100%; }
+  .print-doc { box-shadow:none; border-radius:0; page-break-inside:avoid; }
+  .realm-section { page-break-inside:avoid; }
+  @page { margin:0.5in; size:letter portrait; }
+}
+
+/* DOCUMENT INTERNALS */
+.doc-header{background:#1a1a2e;color:#fff;padding:24px 28px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.doc-logo{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:#FFD700;letter-spacing:1px}
+.doc-logo-sub{font-size:11px;color:rgba(255,215,0,0.6);margin-top:2px}
+.doc-title-block{text-align:center;flex:1}
+.doc-title{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:#FFD700}
+.doc-subtitle{font-size:11px;color:rgba(255,255,255,0.6);margin-top:3px}
+.student-block{text-align:right;min-width:140px}
+.student-line{display:flex;align-items:center;gap:8px;margin-bottom:8px;justify-content:flex-end}
+.student-label{font-size:10px;color:rgba(255,255,255,0.6);white-space:nowrap}
+.student-field{border-bottom:1.5px solid rgba(255,215,0,0.4);width:100px;height:18px}
+
+.doc-body{padding:16px 20px}
+
+/* REALM SECTIONS */
+.realm-section{margin-bottom:14px;border:1.5px solid #ddd;border-radius:8px;overflow:hidden}
+.realm-header{display:flex;align-items:center;gap:10px;padding:7px 12px;color:#fff}
+.realm-icon{font-size:16px;flex-shrink:0}
+.realm-info{flex:1}
+.realm-name{font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:.3px}
+.realm-meta{font-size:10px;opacity:.8;margin-top:1px}
+.realm-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.15);white-space:nowrap}
+.realm-tasks{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.task-item{display:flex;align-items:flex-start;gap:7px;padding:5px 10px;border-top:1px solid #f0f0f0;font-size:10.5px;color:#333;line-height:1.4}
+.task-item:nth-child(odd){border-right:1px solid #f0f0f0}
+.task-check{width:13px;height:13px;border:1.5px solid #999;border-radius:3px;flex-shrink:0;margin-top:1px}
+.task-boss{color:#c0392b;font-weight:700}
+.task-text{flex:1}
+
+/* LEGEND */
+.doc-legend{display:flex;gap:16px;padding:10px 20px 14px;border-top:2px solid #eee;background:#fafafa;flex-wrap:wrap;align-items:center}
+.legend-title{font-size:10px;font-weight:700;color:#666;letter-spacing:.5px;text-transform:uppercase}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#555}
+.legend-check{width:11px;height:11px;border:1.5px solid #999;border-radius:2px;flex-shrink:0}
+
+/* XP TRACKER */
+.xp-tracker{background:#1a1a2e;padding:12px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.xp-label{font-size:10px;color:rgba(255,215,0,0.7);font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.xp-boxes{display:flex;gap:3px}
+.xp-box{width:22px;height:22px;border:1.5px solid rgba(255,215,0,0.4);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,215,0,0.6)}
+.xp-box.filled{background:rgba(255,215,0,0.3)}
+
+/* URL BAR */
+.doc-url{background:#f8f8f8;border-top:1px solid #eee;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:#888}
+.doc-url-link{font-weight:700;color:#1565C0}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="quest.html">My Quest</a>
+    <a class="nav-link" href="leaderboard.html">🏆 Hall</a>
+  </div>
+</nav>
+
+<div class="screen-only">
+  <div class="screen-header">
+    <div class="screen-title">🖨 Printable Quest Sheet</div>
+    <p class="screen-sub">A physical checklist of every task across all 9 realms. Students can track progress on paper alongside the digital quest tracker. Best printed double-sided on a single sheet of paper.</p>
+    <div class="print-controls">
+      <button class="ctrl-btn btn-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="ctrl-btn btn-back" onclick="history.back()">← Back</button>
+    </div>
+    <div class="preview-label">Print Preview — exactly what will be printed</div>
+  </div>
+</div>
+
+<div class="print-preview">
+<div class="print-doc">
+
+  <!-- DOCUMENT HEADER -->
+  <div class="doc-header">
+    <div>
+      <div class="doc-logo">⚔ Legend of Wellness</div>
+      <div class="doc-logo-sub">#OnedayIwokeup · #Doppitup</div>
+    </div>
+    <div class="doc-title-block">
+      <div class="doc-title">QUEST PROGRESS SHEET</div>
+      <div class="doc-subtitle">28 Chapters · 9 Realms · 3-Month Adventure · Dopp Health Class</div>
+    </div>
+    <div class="student-block">
+      <div class="student-line"><span class="student-label">Name:</span><div class="student-field"></div></div>
+      <div class="student-line"><span class="student-label">Period:</span><div class="student-field" style="width:60px"></div></div>
+      <div class="student-line"><span class="student-label">Started:</span><div class="student-field" style="width:70px"></div></div>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- REALM I -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#1565C0">
+        <span class="realm-icon">🏰</span>
+        <div class="realm-info"><div class="realm-name">Realm I — Foundation Keep</div><div class="realm-meta">Chapters 1–2 · Weeks 1–2</div></div>
+        <span class="realm-badge">Wellness Apprentice</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapter 1 PDF — all 4 lessons</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapter 2 PDF — all 4 lessons</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 1 Vocab: Flashcard Flip</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 2 Vocab: Flashcard Flip</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 1 Vocab: Speed Quiz</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 2 Vocab: Speed Quiz</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Health Triangle Self-Assessment</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">7 Dimensions Wellness Wheel</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Health in the News Activity</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">2-Week Habit Tracker Started</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 BOSS BATTLE — Health Jeopardy: Foundation Keep</div></div>
+      </div>
+    </div>
+
+    <!-- REALM II -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#6A1B9A">
+        <span class="realm-icon">🧠</span>
+        <div class="realm-info"><div class="realm-name">Realm II — Mind Citadel</div><div class="realm-meta">Chapters 3–5 · Weeks 3–5</div></div>
+        <span class="realm-badge">Mind Knight</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapter 3 PDF</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapter 4 PDF</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapter 5 PDF</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 3–5 Vocab Games (all modes)</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Emotion Mapping Activity</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Personal Stress Management Plan</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Mental Health Resource Research</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Stigma Awareness Campaign</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 BOSS BATTLE — Who Wants to Be a Millionaire: Mind Citadel</div></div>
+      </div>
+    </div>
+
+    <!-- REALM III -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#C62828">
+        <span class="realm-icon">💞</span>
+        <div class="realm-info"><div class="realm-name">Realm III — Relationship Realm</div><div class="realm-meta">Chapters 6–9 · Weeks 6–9</div></div>
+        <span class="realm-badge">Social Champion</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapters 6–9 PDFs</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 6–9 Vocab Games (all modes)</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Healthy Relationship Reflection</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Conflict Resolution Role-Play</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Cyberbullying Response Plan</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Family Dynamics Discussion</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 BOSS BATTLE — Health Jeopardy: Relationship Realm</div></div>
+      </div>
+    </div>
+
+    <!-- REALM IV -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#1B5E20">
+        <span class="realm-icon">🥗</span>
+        <div class="realm-info"><div class="realm-name">Realm IV — Nourish Dungeon</div><div class="realm-meta">Chapters 10–12 · Weeks 9–11</div></div>
+        <span class="realm-badge">Body Warrior</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapters 10–12 PDFs</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 10–12 Vocab Games (all modes)</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">MyPlate Meal Planning Activity</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Fad Diet De-bunker Challenge</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">One-Week Fitness Log</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Healthy vs. Junk Cart Comparison</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 BOSS BATTLE — Who Wants to Be a Millionaire: Nourish Dungeon</div></div>
+      </div>
+    </div>
+
+    <!-- REALM V -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#E65100">
+        <span class="realm-icon">⚙️</span>
+        <div class="realm-info"><div class="realm-name">Realm V — Body Labyrinth</div><div class="realm-meta">Chapters 13–16 · Weeks 11–14</div></div>
+        <span class="realm-badge">System Sage</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapters 13–16 PDFs</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 13–16 Vocab Games (all modes)</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Body System Diagram Activity</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Diagnose-the-Patient Challenge</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">SPF & UV Protection Lab</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Hormone Impact Research</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 BOSS BATTLE — Health Jeopardy: Body Labyrinth</div></div>
+      </div>
+    </div>
+
+    <!-- REALM VI -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#00838F">
+        <span class="realm-icon">🌱</span>
+        <div class="realm-info"><div class="realm-name">Realm VI — Life Cycle Shrine</div><div class="realm-meta">Chapters 17–18 · Weeks 15–16</div></div>
+        <span class="realm-badge">Life Keeper</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapters 17–18 PDFs</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 17–18 Vocab Games (all modes)</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Prenatal Health Decision Tree</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Genetics Card Sort Activity</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Teen Brain Reflection</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Life Stage Timeline</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 BOSS BATTLE — Who Wants to Be a Millionaire: Life Cycle Shrine</div></div>
+      </div>
+    </div>
+
+    <!-- REALM VII -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#7B1FA2">
+        <span class="realm-icon">💀</span>
+        <div class="realm-info"><div class="realm-name">Realm VII — Shadow World</div><div class="realm-meta">Chapters 19–22 · Weeks 17–20</div></div>
+        <span class="realm-badge">Shadow Slayer</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapters 19–22 PDFs</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 19–22 Vocab Games (all modes)</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Fentanyl Awareness Mission</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Refusal Skills Role-Play</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Substance Risk Scenario Cards</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">2-Week Habit Tracker — Final Report</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 BOSS BATTLE — Health Jeopardy: Shadow World</div></div>
+      </div>
+    </div>
+
+    <!-- REALM VIII -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#37474F">
+        <span class="realm-icon">🏥</span>
+        <div class="realm-info"><div class="realm-name">Realm VIII — Disease Fortress</div><div class="realm-meta">Chapters 23–25 · Weeks 21–24</div></div>
+        <span class="realm-badge">Health Guardian</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapters 23–25 PDFs</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 23–25 Vocab Games (all modes)</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Epidemic Simulation Activity</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Heart Disease Risk Calculator</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">HIV Prevention Awareness Sheet</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Disease Detective Challenge</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 BOSS BATTLE — Who Wants to Be a Millionaire: Disease Fortress</div></div>
+      </div>
+    </div>
+
+    <!-- REALM IX -->
+    <div class="realm-section">
+      <div class="realm-header" style="background:#F57F17">
+        <span class="realm-icon">★</span>
+        <div class="realm-info"><div class="realm-name">Realm IX — The Final Tower</div><div class="realm-meta">Chapters 26–28 · Weeks 25–27</div></div>
+        <span class="realm-badge">★ Master of Wellness</span>
+      </div>
+      <div class="realm-tasks">
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Read Chapters 26–28 PDFs</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Ch 26–28 Vocab Games (all modes)</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Home Safety Assessment</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Hands-Only CPR Demonstration</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Community Health Advocacy Project</div></div>
+        <div class="task-item"><div class="task-check"></div><div class="task-text">Health Shark Tank Pitch</div></div>
+        <div class="task-item" style="grid-column:span 2"><div class="task-check"></div><div class="task-text task-boss">👑 FINAL BOSS — Grand Wellness Assessment: All 9 Realms</div></div>
+      </div>
+    </div>
+
+  </div><!-- /doc-body -->
+
+  <!-- XP TRACKER -->
+  <div class="xp-tracker">
+    <div class="xp-label">Badge Progress</div>
+    <div class="xp-boxes">
+      <div class="xp-box">🏰</div><div class="xp-box">🧠</div><div class="xp-box">💞</div>
+      <div class="xp-box">🥗</div><div class="xp-box">⚙️</div><div class="xp-box">🌱</div>
+      <div class="xp-box">💀</div><div class="xp-box">🏥</div><div class="xp-box">★</div>
+    </div>
+    <div style="flex:1;border-bottom:1.5px solid rgba(255,215,0,0.3);margin:0 12px;align-self:flex-end;height:18px"></div>
+    <div style="font-size:10px;color:rgba(255,215,0,0.6)">Color each badge as you earn it</div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="doc-legend">
+    <div class="legend-title">Legend:</div>
+    <div class="legend-item"><div class="legend-check"></div>Incomplete task</div>
+    <div class="legend-item"><div class="legend-check" style="background:#1B5E20;border-color:#1B5E20"></div>Completed ✓</div>
+    <div class="legend-item"><span style="color:#c0392b;font-size:11px;font-weight:700">👑</span> Boss Battle — required for badge</div>
+    <div style="flex:1"></div>
+    <div style="font-size:10px;color:#888">Total tasks: 76 · Total XP: 2,800</div>
+  </div>
+
+  <!-- URL BAR -->
+  <div class="doc-url">
+    <span>Digital version with progress saving:</span>
+    <span class="doc-url-link">jumpalpha.github.io/Dopp-health-class/quest.html</span>
+    <span>Full game arcade:</span>
+    <span class="doc-url-link">jumpalpha.github.io/Dopp-health-class/arcade.html</span>
+  </div>
+
+</div><!-- /print-doc -->
+</div><!-- /print-preview -->
+
+</body>
+</html>

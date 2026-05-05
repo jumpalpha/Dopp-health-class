@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hall of Champions — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--gold-dim:#8a6d00;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--purple:#a855f7;--bg:#05070F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text:#F0F4FF;--dim:rgba(240,244,255,0.50)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(255,215,0,0.08) 0%,transparent 65%),#05070F}
+#stars::before{content:'';position:absolute;inset:0;background-image:
+  radial-gradient(1px 1px at 12% 20%,rgba(255,255,255,0.8) 0%,transparent 100%),
+  radial-gradient(1.5px 1.5px at 42% 8%,rgba(255,215,0,0.9) 0%,transparent 100%),
+  radial-gradient(1px 1px at 68% 35%,rgba(56,191,255,0.7) 0%,transparent 100%),
+  radial-gradient(1px 1px at 88% 60%,rgba(255,255,255,0.6) 0%,transparent 100%),
+  radial-gradient(1px 1px at 25% 78%,rgba(0,229,160,0.8) 0%,transparent 100%),
+  radial-gradient(1px 1px at 55% 90%,rgba(255,255,255,0.5) 0%,transparent 100%)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:rgba(5,7,15,0.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);text-decoration:none}
+.nav-logo span{color:var(--dim);font-weight:400}
+.nav-links{display:flex;gap:6px}
+.nav-link{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;color:var(--dim);text-decoration:none;border:1px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--text);border-color:var(--border);background:var(--card)}
+.nav-link.active{color:var(--gold);border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.06)}
+
+/* PAGE HEADER */
+.page-header{position:relative;z-index:1;padding:100px 28px 40px;text-align:center;max-width:860px;margin:0 auto}
+.header-badge{display:inline-block;font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--gold-dim);border:1px solid rgba(255,215,0,0.2);padding:5px 16px;border-radius:20px;background:rgba(255,215,0,0.04);margin-bottom:16px}
+.page-title{font-family:'Cinzel Decorative',serif;font-size:clamp(28px,5vw,52px);font-weight:900;background:linear-gradient(135deg,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;line-height:1.15}
+.page-sub{font-size:15px;color:var(--dim);line-height:1.7;max-width:520px;margin:0 auto}
+
+/* TOP 3 PODIUM */
+.podium-section{position:relative;z-index:1;max-width:760px;margin:0 auto 40px;padding:0 28px}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:24px}
+.podium-slot{display:flex;flex-direction:column;align-items:center;gap:8px}
+.podium-avatar{font-size:32px;animation:float 3s ease-in-out infinite}
+.podium-avatar.p2{animation-delay:.5s}
+.podium-avatar.p3{animation-delay:1s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.podium-name{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--text);text-align:center;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podium-score{font-size:12px;font-weight:700;color:var(--dim)}
+.podium-badges{font-size:12px;text-align:center}
+.podium-block{display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0;font-family:'Cinzel Decorative',serif;font-weight:700;font-size:22px}
+.podium-block.p1{width:120px;height:100px;background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,140,0,0.15));border:2px solid rgba(255,215,0,0.5);color:#FFD700}
+.podium-block.p2{width:100px;height:75px;background:linear-gradient(135deg,rgba(200,200,200,0.15),rgba(160,160,160,0.08));border:2px solid rgba(200,200,200,0.3);color:#C0C0C0}
+.podium-block.p3{width:100px;height:60px;background:linear-gradient(135deg,rgba(180,120,60,0.15),rgba(140,90,40,0.08));border:2px solid rgba(180,120,60,0.3);color:#CD7F32}
+.podium-base{height:4px;background:var(--border);border-radius:0 0 4px 4px;width:100%}
+
+/* SUBMIT FORM */
+.submit-section{position:relative;z-index:1;max-width:760px;margin:0 auto 32px;padding:0 28px}
+.submit-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px}
+.submit-title{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;letter-spacing:.5px}
+.submit-grid{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end}
+@media(max-width:640px){.submit-grid{grid-template-columns:1fr 1fr;}.submit-btn{grid-column:span 2}}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.5px;text-transform:uppercase}
+.form-input{background:rgba(255,255,255,0.06);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-size:14px;font-weight:700;padding:10px 14px;font-family:'Nunito',sans-serif;transition:border-color .15s}
+.form-input:focus{outline:none;border-color:rgba(255,215,0,0.4)}
+.form-select{background:rgba(255,255,255,0.06);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-size:13px;padding:10px 12px;font-family:'Nunito',sans-serif;cursor:pointer}
+.form-select option{background:#0d1020;color:var(--text)}
+.submit-btn{padding:11px 24px;border-radius:9px;background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.15));border:1.5px solid rgba(255,215,0,0.35);color:var(--gold);font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;white-space:nowrap}
+.submit-btn:hover{background:linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,140,0,0.25));box-shadow:0 4px 16px rgba(255,215,0,0.2)}
+.privacy-note{font-size:11px;color:var(--dim);margin-top:10px;line-height:1.5}
+
+/* LEADERBOARD TABLE */
+.lb-section{position:relative;z-index:1;max-width:760px;margin:0 auto 40px;padding:0 28px}
+.lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.lb-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold-dim);letter-spacing:1px;text-transform:uppercase}
+.lb-controls{display:flex;gap:8px;flex-wrap:wrap}
+.lb-filter{padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s}
+.lb-filter:hover,.lb-filter.active{background:rgba(255,215,0,0.08);border-color:rgba(255,215,0,0.3);color:var(--gold)}
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table th{font-size:11px;font-weight:700;color:var(--dim);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);letter-spacing:.5px;text-transform:uppercase}
+.lb-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;vertical-align:middle}
+.lb-table tr:last-child td{border:none}
+.lb-table tr:hover td{background:rgba(255,255,255,0.02)}
+.lb-table tr.my-row td{background:rgba(255,215,0,0.04)}
+.rank-badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+.rank-1{background:rgba(255,215,0,0.2);color:#FFD700;border:1px solid rgba(255,215,0,0.4)}
+.rank-2{background:rgba(192,192,192,0.15);color:#C0C0C0;border:1px solid rgba(192,192,192,0.3)}
+.rank-3{background:rgba(205,127,50,0.15);color:#CD7F32;border:1px solid rgba(205,127,50,0.3)}
+.rank-other{background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border)}
+.player-cell{display:flex;align-items:center;gap:10px}
+.player-av{font-size:20px}
+.player-name{font-weight:700;color:var(--text)}
+.player-title{font-size:11px;color:var(--dim);margin-top:1px}
+.xp-cell{font-weight:800;color:var(--gold)}
+.badges-cell{display:flex;gap:4px;flex-wrap:wrap}
+.badge-dot{font-size:14px}
+.realm-cell{font-size:12px;color:var(--dim)}
+.delete-btn{padding:4px 8px;border-radius:5px;background:rgba(255,59,92,0.1);border:1px solid rgba(255,59,92,0.2);color:#FF3B5C;font-size:11px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;display:none}
+.lb-table tr:hover .delete-btn{display:block}
+
+/* STATS STRIP */
+.stats-strip{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;max-width:760px;margin:0 auto 40px;padding:0 28px}
+.stats-strip{background:transparent;border:none;gap:10px}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat-num{font-family:'Cinzel Decorative',serif;font-size:26px;font-weight:700;color:var(--gold);margin-bottom:3px}
+.stat-label{font-size:11px;color:var(--dim);font-weight:600}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:#0d1020;border:1px solid rgba(255,215,0,0.3);border-radius:12px;padding:13px 24px;font-size:14px;font-weight:700;color:var(--gold);z-index:300;transition:transform .3s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 20px;color:var(--dim)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty-text{font-size:14px;line-height:1.6}
+
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:20px}
+.footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600}
+
+@media(max-width:700px){nav{padding:11px 16px}.page-header,.podium-section,.submit-section,.lb-section{padding-left:16px;padding-right:16px}.stats-strip{grid-template-columns:1fr 1fr;padding:0 16px}.podium-block.p1{width:100px;height:80px}.podium-block.p2,.podium-block.p3{width:80px}}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<div class="toast" id="toast"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="quest.html">My Quest</a>
+    <a class="nav-link active" href="leaderboard.html">🏆 Hall</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-badge">Dopp Health Class · Class of 2025</div>
+  <h1 class="page-title">Hall of Champions</h1>
+  <p class="page-sub">The top Health Heroes of the Legend of Wellness. Complete quests, earn badges, and claim your spot on the board.</p>
+</div>
+
+<!-- PODIUM -->
+<div class="podium-section" id="podium-section"></div>
+
+<!-- STATS -->
+<div class="stats-strip" id="stats-strip" style="padding:0 28px;max-width:760px;margin:0 auto 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;position:relative;z-index:1"></div>
+
+<!-- SUBMIT -->
+<div class="submit-section">
+  <div class="submit-card">
+    <div class="submit-title">⚔ Post Your Score</div>
+    <div class="submit-grid">
+      <div class="form-group">
+        <label class="form-label">Your Name</label>
+        <input class="form-input" id="entry-name" placeholder="Health Hero name..." maxlength="20">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Avatar</label>
+        <select class="form-select" id="entry-avatar">
+          <option value="⚔">⚔ Warrior</option>
+          <option value="🛡">🛡 Guardian</option>
+          <option value="🏹">🏹 Ranger</option>
+          <option value="🧙">🧙 Mage</option>
+          <option value="🦸">🦸 Hero</option>
+          <option value="🧝">🧝 Elf</option>
+          <option value="🦊">🦊 Fox</option>
+          <option value="🐉">🐉 Dragon</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Badges Earned</label>
+        <select class="form-select" id="entry-badges">
+          <option value="0">0 — Just started</option>
+          <option value="1">1 — Foundation Keep</option>
+          <option value="2">2 — Mind Citadel</option>
+          <option value="3">3 — Relationship Realm</option>
+          <option value="4">4 — Nourish Dungeon</option>
+          <option value="5">5 — Body Labyrinth</option>
+          <option value="6">6 — Life Cycle Shrine</option>
+          <option value="7">7 — Shadow World</option>
+          <option value="8">8 — Disease Fortress</option>
+          <option value="9">9 — ★ Master of Wellness</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="submitScore()">Post Score →</button>
+    </div>
+    <div class="privacy-note">💡 Scores are saved in your browser and shared with classmates on this device. No account needed. Your teacher can reset all scores at any time.</div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="lb-section">
+  <div class="lb-header">
+    <div class="lb-title">🏆 Current Rankings</div>
+    <div class="lb-controls">
+      <button class="lb-filter active" onclick="setFilter('all',this)">All Heroes</button>
+      <button class="lb-filter" onclick="setFilter('badges',this)">By Badges</button>
+      <button class="lb-filter" onclick="setFilter('alpha',this)">A–Z</button>
+      <button class="lb-filter" onclick="resetBoard()">🗑 Clear All</button>
+    </div>
+  </div>
+  <div id="lb-body"></div>
+</div>
+
+<footer>
+  <div class="footer-brand">⚔ The Legend of Wellness</div>
+  <div style="font-size:13px;color:var(--dim)">#OnedayIwokeup · #Doppitup</div>
+  <a href="quest.html" style="font-size:13px;color:var(--dim);text-decoration:none">⚔ My Quest →</a>
+</footer>
+
+<script>
+const BADGE_NAMES = ['','Wellness Apprentice','Mind Knight','Social Champion','Body Warrior','System Sage','Life Keeper','Shadow Slayer','Health Guardian','★ Master of Wellness'];
+const BADGE_ICONS = ['','🏰','🧠','💞','🥗','⚙️','🌱','💀','🏥','★'];
+const XP_PER_BADGE = 350;
+
+let sortMode = 'all';
+let entries = [];
+
+function load() {
+  try { entries = JSON.parse(localStorage.getItem('low_leaderboard')) || []; }
+  catch { entries = []; }
+  // seed with demo entries if empty so board isn't blank on first load
+  if (entries.length === 0) {
+    entries = [
+      { name:'Mr. Dopp', avatar:'🧙', badges:9, ts: Date.now()-999999 },
+      { name:'Health Hero', avatar:'⚔', badges:1, ts: Date.now()-500000 },
+    ];
+    save();
+  }
+  render();
+}
+
+function save() { localStorage.setItem('low_leaderboard', JSON.stringify(entries)); }
+
+function calcXP(badges) { return badges * XP_PER_BADGE; }
+
+function sorted() {
+  const e = [...entries];
+  if (sortMode === 'badges') return e.sort((a,b) => b.badges - a.badges || b.ts - a.ts);
+  if (sortMode === 'alpha') return e.sort((a,b) => a.name.localeCompare(b.name));
+  return e.sort((a,b) => b.badges - a.badges || b.ts - a.ts);
+}
+
+function render() {
+  renderStats();
+  renderPodium();
+  renderTable();
+}
+
+function renderStats() {
+  const total = entries.length;
+  const masters = entries.filter(e => e.badges >= 9).length;
+  const avgBadges = total ? (entries.reduce((s,e)=>s+e.badges,0)/total).toFixed(1) : 0;
+  const topBadges = total ? Math.max(...entries.map(e=>e.badges)) : 0;
+  document.getElementById('stats-strip').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-label">Heroes Enrolled</div></div>
+    <div class="stat-box"><div class="stat-num">${masters}</div><div class="stat-label">Masters of Wellness</div></div>
+    <div class="stat-box"><div class="stat-num">${avgBadges}</div><div class="stat-label">Avg Badges</div></div>
+    <div class="stat-box"><div class="stat-num">${topBadges}</div><div class="stat-label">Top Badge Count</div></div>`;
+}
+
+function renderPodium() {
+  const top = sorted().slice(0,3);
+  while (top.length < 3) top.push(null);
+  const order = [top[1], top[0], top[2]]; // 2nd, 1st, 3rd
+  const cls = ['p2','p1','p3'];
+  const pos = ['2nd','1st','3rd'];
+  const podiumEl = document.getElementById('podium-section');
+  if (entries.length === 0) { podiumEl.innerHTML = ''; return; }
+  podiumEl.innerHTML = `<div class="podium">
+    ${order.map((e,i) => e ? `
+      <div class="podium-slot">
+        <div class="podium-avatar ${cls[i]}">${e.avatar}</div>
+        <div class="podium-name">${e.name}</div>
+        <div class="podium-score">${calcXP(e.badges).toLocaleString()} XP</div>
+        <div class="podium-badges">${BADGE_ICONS.slice(1,e.badges+1).join('')}</div>
+        <div class="podium-block ${cls[i]}">${pos[i]}</div>
+        <div class="podium-base"></div>
+      </div>` : `<div class="podium-slot"><div class="podium-block ${cls[i]}" style="opacity:.2">${pos[i]}</div><div class="podium-base"></div></div>`
+    ).join('')}
+  </div>`;
+}
+
+function renderTable() {
+  const s = sorted();
+  const lb = document.getElementById('lb-body');
+  if (s.length === 0) {
+    lb.innerHTML = `<div class="empty-state"><div class="empty-icon">🗺</div><div class="empty-text">No heroes on the board yet.<br>Be the first to post your score!</div></div>`;
+    return;
+  }
+  lb.innerHTML = `<table class="lb-table">
+    <thead><tr>
+      <th style="width:40px">Rank</th>
+      <th>Hero</th>
+      <th>Realm Reached</th>
+      <th>Badges</th>
+      <th>XP</th>
+      <th></th>
+    </tr></thead>
+    <tbody>${s.map((e,i) => {
+      const rankCls = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+      return `<tr>
+        <td><div class="rank-badge ${rankCls}">${i+1}</div></td>
+        <td><div class="player-cell"><div class="player-av">${e.avatar}</div><div><div class="player-name">${e.name}</div><div class="player-title">${e.badges>=9?'★ Master of Wellness':e.badges>0?BADGE_NAMES[e.badges]:'Novice Adventurer'}</div></div></div></td>
+        <td class="realm-cell">${e.badges>=9?'The Final Tower ⭐':e.badges>0?'Realm '+e.badges+' — '+BADGE_NAMES[e.badges]:'Not started'}</td>
+        <td><div class="badges-cell">${BADGE_ICONS.slice(1,e.badges+1).map(b=>`<span class="badge-dot">${b}</span>`).join('') || '<span style="color:var(--dim);font-size:12px">—</span>'}</div></td>
+        <td class="xp-cell">${calcXP(e.badges).toLocaleString()}</td>
+        <td><button class="delete-btn" onclick="deleteEntry(${i})">Remove</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+function submitScore() {
+  const name = document.getElementById('entry-name').value.trim();
+  const avatar = document.getElementById('entry-avatar').value;
+  const badges = parseInt(document.getElementById('entry-badges').value);
+  if (!name) { document.getElementById('entry-name').focus(); showToast('Enter your hero name first!'); return; }
+  // check for duplicate name — update instead
+  const existing = entries.findIndex(e => e.name.toLowerCase() === name.toLowerCase());
+  if (existing >= 0) {
+    entries[existing] = { name, avatar, badges, ts: Date.now() };
+    showToast(`Updated ${name}'s score! ${badges} badge${badges!==1?'s':''} earned.`);
+  } else {
+    entries.push({ name, avatar, badges, ts: Date.now() });
+    showToast(`${name} added to the Hall of Champions! ${badges > 0 ? BADGE_NAMES[badges] + ' badge!' : 'Keep going!'}`);
+  }
+  save(); render();
+  document.getElementById('entry-name').value = '';
+}
+
+function deleteEntry(idx) {
+  const s = sorted();
+  const target = s[idx];
+  entries = entries.filter(e => !(e.name === target.name && e.ts === target.ts));
+  save(); render(); showToast('Entry removed.');
+}
+
+function setFilter(mode, btn) {
+  sortMode = mode;
+  document.querySelectorAll('.lb-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable(); renderPodium();
+}
+
+function resetBoard() {
+  if (!confirm('Clear ALL leaderboard entries? This cannot be undone.')) return;
+  entries = []; save(); render(); showToast('Board cleared. New competition begins!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Also pull from quest.html localStorage if available
+function pullFromQuest() {
+  try {
+    const q = JSON.parse(localStorage.getItem('lowQuest'));
+    if (q && q.name) {
+      const REALMS = [{},{},{},{},{},{},{},{},{tasks:Array(10).fill(null)}];
+      // count badges from quest data
+      const myBadges = (() => {
+        let b = 0;
+        const realmIds = ['r1','r2','r3','r4','r5','r6','r7','r8','r9'];
+        const taskCounts = [8,10,12,10,11,7,12,9,10];
+        realmIds.forEach((id,i) => {
+          let done = 0;
+          for(let t=0;t<taskCounts[i];t++) if(q.tasks && q.tasks[id+'_'+t]) done++;
+          if(done===taskCounts[i]) b++;
+        });
+        return b;
+      })();
+      document.getElementById('entry-name').value = q.name;
+      document.getElementById('entry-avatar').value = q.avatar || '⚔';
+      document.getElementById('entry-badges').value = myBadges;
+      showToast('Loaded your quest data! Click Post Score to submit.');
+    }
+  } catch(e) {}
+}
+
+// Add a "Load from My Quest" button
+document.addEventListener('DOMContentLoaded', () => {
+  const card = document.querySelector('.submit-card');
+  const hint = card.querySelector('.privacy-note');
+  const btn = document.createElement('button');
+  btn.className = 'lb-filter';
+  btn.style.cssText = 'margin-top:10px;margin-right:8px';
+  btn.textContent = '⚔ Auto-fill from My Quest';
+  btn.onclick = pullFromQuest;
+  card.insertBefore(btn, hint);
+});
+
+load();
+</script>
+</body>
+</html>
