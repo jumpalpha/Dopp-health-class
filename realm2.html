@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Realm 2 — Mind Citadel · Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--ch:#a855f7;--bg:#05070F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 50% at 40% 0%,rgba(168,85,247,0.15) 0%,transparent 65%),#05070F}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:rgba(5,7,15,0.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);text-decoration:none}
+.nav-logo span{color:var(--dim);font-weight:400}
+.nav-links{display:flex;gap:6px}
+.nav-link{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;color:var(--dim);text-decoration:none;border:1px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--text);border-color:var(--border);background:var(--card)}
+.breadcrumb{position:relative;z-index:1;padding:86px 28px 0;max-width:1100px;margin:0 auto;font-size:13px;color:var(--dim)}
+.breadcrumb a{color:var(--dim);text-decoration:none} .breadcrumb span{margin:0 8px}
+
+/* HERO */
+.realm-hero{position:relative;z-index:1;padding:22px 28px 48px;max-width:1100px;margin:0 auto}
+.realm-num-tag{display:inline-block;font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:3px;color:#a855f7;border:1px solid #a855f744;padding:5px 16px;border-radius:20px;background:#a855f710;margin-bottom:14px}
+.realm-hero-top{display:flex;align-items:flex-start;gap:24px;margin-bottom:20px;flex-wrap:wrap}
+.realm-icon-lg{font-size:64px;flex-shrink:0;line-height:1}
+.realm-title{font-family:'Cinzel Decorative',serif;font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.1;background:linear-gradient(135deg,#a855f7,#a855f799);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.realm-tagline{font-family:'Cinzel',serif;font-size:15px;color:var(--dim);font-style:italic;margin-bottom:10px}
+.realm-meta{display:flex;gap:14px;flex-wrap:wrap}
+.meta-pill{background:#a855f714;border:1px solid #a855f733;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;color:#a855f7}
+.realm-theme{font-size:15px;color:var(--dim);line-height:1.75;max-width:700px;margin-bottom:36px}
+
+/* BADGE CARD */
+.badge-banner{background:linear-gradient(135deg,#a855f718,#a855f708);border:2px solid #a855f744;border-radius:16px;padding:22px 28px;margin-bottom:28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.badge-icon-wrap{font-size:48px;flex-shrink:0}
+.badge-text-wrap{flex:1}
+.badge-label{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+.badge-name{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:#a855f7;margin-bottom:4px}
+.badge-desc{font-size:13px;color:var(--dim);line-height:1.5}
+.badge-req{font-size:12px;color:var(--dim);margin-top:8px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid var(--border)}
+
+/* SECTIONS */
+.section{max-width:1100px;margin:0 auto;padding:0 28px 32px;position:relative;z-index:1}
+.sec-label{font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:2px;color:#a855f7;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#a855f744,transparent)}
+
+/* CHAPTER CARDS */
+.chapter-list{display:flex;flex-direction:column;gap:10px;margin-bottom:36px}
+.ch-card{background:var(--card);border:1px solid var(--border);border-left:3px solid #a855f7;border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:16px;text-decoration:none;transition:all .2s}
+.ch-card:hover{border-color:#a855f766;background:#a855f708;transform:translateX(4px)}
+.ch-num-badge{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:#a855f7;background:#a855f714;border-radius:8px;padding:4px 10px;white-space:nowrap;flex-shrink:0}
+.ch-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px}
+.ch-desc{font-size:12px;color:var(--dim);line-height:1.4}
+.ch-links{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.ch-link{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,0.05);color:var(--dim);text-decoration:none;border:1px solid var(--border);transition:all .15s}
+.ch-link:hover{background:#a855f714;border-color:#a855f744;color:#a855f7}
+
+/* ACTIVITIES */
+.activity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:36px}
+.act-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;transition:all .2s}
+.act-card:hover{border-color:#a855f744;transform:translateY(-2px)}
+.act-icon{font-size:22px;margin-bottom:8px}
+.act-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px}
+.act-desc{font-size:12px;color:var(--dim);line-height:1.5}
+.act-type{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#a855f714;color:#a855f7;margin-top:8px}
+
+/* GAMES */
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:36px}
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-decoration:none;display:flex;flex-direction:column;gap:8px;transition:all .2s}
+.game-card:hover{border-color:#a855f744;transform:translateY(-2px)}
+.game-icon{font-size:24px}
+.game-title{font-size:14px;font-weight:800;color:var(--text)}
+.game-note{font-size:11px;color:var(--dim);line-height:1.4;flex:1}
+.game-play{display:block;text-align:center;padding:8px;border-radius:8px;background:#a855f714;border:1px solid #a855f733;color:#a855f7;font-size:12px;font-weight:700;transition:all .15s}
+.game-play:hover{background:#a855f728;border-color:#a855f766}
+
+/* BOSS BATTLE */
+.boss-card{background:linear-gradient(135deg,rgba(255,59,92,0.08),rgba(255,59,92,0.04));border:2px solid rgba(255,59,92,0.3);border-radius:16px;padding:24px 28px;margin-bottom:36px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.boss-icon{font-size:40px;flex-shrink:0}
+.boss-body{flex:1}
+.boss-label{font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,59,92,0.8);text-transform:uppercase;margin-bottom:4px}
+.boss-title{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+.boss-desc{font-size:13px;color:var(--dim);line-height:1.5}
+.boss-btn{padding:12px 24px;border-radius:10px;background:rgba(255,59,92,0.15);border:1.5px solid rgba(255,59,92,0.4);color:#FF3B5C;font-size:14px;font-weight:800;text-decoration:none;white-space:nowrap;transition:all .2s;font-family:'Nunito',sans-serif}
+.boss-btn:hover{background:rgba(255,59,92,0.25);border-color:rgba(255,59,92,0.7)}
+
+/* REALM NAV */
+.realm-nav{display:flex;gap:10px;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap}
+.realm-nav-btn{flex:1;min-width:140px;padding:12px 18px;background:var(--card);border:1px solid var(--border);border-radius:10px;text-align:center;text-decoration:none;transition:all .2s;font-size:13px;font-weight:700;color:var(--dim)}
+.realm-nav-btn:hover{border-color:#a855f744;color:var(--text)}
+.realm-nav-btn.primary{background:#a855f714;border-color:#a855f744;color:#a855f7}
+
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:20px}
+.footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600}
+@media(max-width:700px){nav{padding:11px 16px}.realm-hero,.section,.breadcrumb{padding-left:16px;padding-right:16px}.realm-hero{padding-top:18px}.activity-grid{grid-template-columns:1fr}.game-grid{grid-template-columns:1fr 1fr}.boss-card{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="quest.html">My Quest</a>
+  </div>
+</nav>
+<div class="breadcrumb"><a href="index.html">Home</a><span>›</span><a href="index.html#quest-map">Quest Map</a><span>›</span>Realm 2</div>
+
+<div class="realm-hero">
+  <div class="realm-num-tag">Realm 2 of 9</div>
+  <div class="realm-hero-top">
+    <div class="realm-icon-lg">🧠</div>
+    <div>
+      <div class="realm-title">Mind Citadel</div>
+      <div class="realm-tagline">"The strongest muscle you have is the one you can't flex."</div>
+      <div class="realm-meta">
+        <span class="meta-pill">📅 Weeks 3–5</span>
+        <span class="meta-pill">📖 3 Chapters</span>
+        <span class="meta-pill">🏆 Mind Knight</span>
+      </div>
+    </div>
+  </div>
+  <div class="realm-theme">Mental health is health. This realm covers understanding your emotions, building resilience, managing stress, and knowing when and how to get help — for yourself and for others.</div>
+</div>
+
+<div class="section">
+  <div class="badge-banner">
+    <div class="badge-icon-wrap">🏅</div>
+    <div class="badge-text-wrap">
+      <div class="badge-label">Realm Badge</div>
+      <div class="badge-name">Mind Knight</div>
+      <div class="badge-desc">Earn this badge by completing all chapter quests and defeating the boss battle.</div>
+      <div class="badge-req">✓ Read all 3 chapter PDFs &nbsp;·&nbsp; ✓ Complete vocab games &nbsp;·&nbsp; ✓ Finish all quest activities &nbsp;·&nbsp; ✓ Win the boss battle</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">📖 Chapters in This Realm</div>
+  <div class="chapter-list">
+    <a class="ch-card" href="chapter03.html">
+      <span class="ch-num-badge">Chapter 3</span>
+      <div>
+        <div class="ch-title">Mental and Emotional Health</div>
+        <div class="ch-desc">Self-concept, self-esteem, empathy, emotional intelligence, and resiliency.</div>
+        <div class="ch-links">
+          <a class="ch-link" href="Chapter_03_Achieving_Mental_and_Emotional_Health.pdf" target="_blank">📄 PDF</a>
+          <a class="ch-link" href="vocab_engine.html?ch=3" target="_blank">🎮 Vocab</a>
+          <a class="ch-link" href="chapter03.html">⚔ Quests</a>
+        </div>
+      </div>
+    </a>
+    <a class="ch-card" href="chapter04.html">
+      <span class="ch-num-badge">Chapter 4</span>
+      <div>
+        <div class="ch-title">Managing Stress</div>
+        <div class="ch-desc">The science of stress, the fight-or-flight response, and real strategies that work.</div>
+        <div class="ch-links">
+          <a class="ch-link" href="Chapter_04_Managing_Stress_and_Coping_with_Loss.pdf" target="_blank">📄 PDF</a>
+          <a class="ch-link" href="vocab_engine.html?ch=4" target="_blank">🎮 Vocab</a>
+          <a class="ch-link" href="chapter04.html">⚔ Quests</a>
+        </div>
+      </div>
+    </a>
+    <a class="ch-card" href="chapter05.html">
+      <span class="ch-num-badge">Chapter 5</span>
+      <div>
+        <div class="ch-title">Mental and Emotional Problems</div>
+        <div class="ch-desc">Mental disorders, suicide prevention, eating disorders, and getting help.</div>
+        <div class="ch-links">
+          <a class="ch-link" href="Chapter_05_Mental_and_Emotional_Problems.pdf" target="_blank">📄 PDF</a>
+          <a class="ch-link" href="vocab_engine.html?ch=5" target="_blank">🎮 Vocab</a>
+          <a class="ch-link" href="chapter05.html">⚔ Quests</a>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">⚔ Quest Activities</div>
+  <div class="activity-grid">
+    <div class="act-card">
+      <div class="act-icon">🗺</div>
+      <div class="act-title">Emotion Mapping Activity</div>
+      <div class="act-desc">Map your most common emotions across a typical school week — what triggers them?</div>
+      <span class="act-type">Solo</span>
+    </div>
+    <div class="act-card">
+      <div class="act-icon">📋</div>
+      <div class="act-title">Personal Stress Management Plan</div>
+      <div class="act-desc">Identify your top 3 stressors and 3 specific coping strategies for each.</div>
+      <span class="act-type">Solo</span>
+    </div>
+    <div class="act-card">
+      <div class="act-icon">🔍</div>
+      <div class="act-title">Mental Health Resource Research</div>
+      <div class="act-desc">Find 3 local or national mental health resources teens can actually use.</div>
+      <span class="act-type">Team</span>
+    </div>
+    <div class="act-card">
+      <div class="act-icon">💬</div>
+      <div class="act-title">Stigma Awareness Campaign</div>
+      <div class="act-desc">Design a simple message that challenges one mental health stigma.</div>
+      <span class="act-type">Team</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">👑 Boss Battle</div>
+  <div class="boss-card">
+    <div class="boss-icon">👑</div>
+    <div class="boss-body">
+      <div class="boss-label">Realm 2 Boss Battle</div>
+      <div class="boss-title">Who Wants to Be a Millionaire</div>
+      <div class="boss-desc">Defeat this boss to earn the <strong>Mind Knight</strong> badge and unlock the next realm. Full class event — teams compete, stakes are high.</div>
+    </div>
+    <a class="boss-btn" href="game04_millionaire.html" target="_blank">▶ Launch Boss Battle</a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">🎮 Recommended Games for This Realm</div>
+  <div class="game-grid">
+    <a class="game-card" href="game12_would_you_rather.html" target="_blank">
+      <div class="game-icon">🤔</div>
+      <div class="game-title">Would You Rather</div>
+      <div class="game-note">Perfect for mental health ethics discussions</div>
+      <span class="game-play">▶ Play Now</span>
+    </a>
+    <a class="game-card" href="game10_imposter.html" target="_blank">
+      <div class="game-icon">🚨</div>
+      <div class="game-title">Health Imposter</div>
+      <div class="game-note">Spot mental health misinformation</div>
+      <span class="game-play">▶ Play Now</span>
+    </a>
+    <a class="game-card" href="game07_survivor.html" target="_blank">
+      <div class="game-icon">🔥</div>
+      <div class="game-title">Health Survivor</div>
+      <div class="game-note">Debate mental health policy questions</div>
+      <span class="game-play">▶ Play Now</span>
+    </a>
+    <a class="game-card" href="game15_myth_busters.html" target="_blank">
+      <div class="game-icon">💥</div>
+      <div class="game-title">Myth Busters</div>
+      <div class="game-note">Mental health myths are everywhere</div>
+      <span class="game-play">▶ Play Now</span>
+    </a>
+
+  </div>
+</div>
+
+<div class="section">
+  <div class="realm-nav">
+    <a class="realm-nav-btn" href="realm1.html">← Realm 1</a>
+    <a class="realm-nav-btn" href="index.html">🗺 Quest Map</a>
+    <a class="realm-nav-btn primary" href="realm3.html">Realm 3 →</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">⚔ The Legend of Wellness</div>
+  <div style="font-size:13px;color:var(--dim)">#OnedayIwokeup · #Doppitup</div>
+  <div style="font-size:12px;color:rgba(255,255,255,0.25)">Realm 2 of 9</div>
+</footer>
+</body>
+</html>

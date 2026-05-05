@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lost in the Realm — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--bg:#05070F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(255,59,92,0.08) 0%,transparent 70%),#05070F}
+#stars::before{content:'';position:absolute;inset:0;
+  background-image:radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,0.8) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 15%,rgba(255,215,0,0.9) 0%,transparent 100%),
+    radial-gradient(1px 1px at 80% 60%,rgba(56,191,255,0.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 35% 75%,rgba(255,255,255,0.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 75% 85%,rgba(0,229,160,0.8) 0%,transparent 100%)}
+.content{position:relative;z-index:1;max-width:560px}
+.lost-icon{font-size:80px;margin-bottom:16px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.error-code{font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(255,59,92,0.8);text-transform:uppercase;margin-bottom:12px}
+.title{font-family:'Cinzel Decorative',serif;font-size:clamp(24px,5vw,44px);font-weight:900;
+  background:linear-gradient(135deg,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:10px;line-height:1.2}
+.subtitle{font-family:'Cinzel',serif;font-size:16px;color:rgba(240,244,255,0.6);margin-bottom:20px;font-style:italic}
+.desc{font-size:15px;color:rgba(240,244,255,0.55);line-height:1.7;margin-bottom:36px}
+.nav-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.nav-btn{padding:14px 16px;border-radius:12px;text-decoration:none;font-size:14px;font-weight:800;
+  transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)}
+.nav-btn:hover{transform:translateY(-2px);border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.06)}
+.nav-btn-icon{font-size:24px}
+.nav-btn-label{font-size:13px;color:var(--text)}
+.nav-btn-sub{font-size:11px;color:var(--dim)}
+.home-btn{padding:14px 32px;border-radius:12px;background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.15));
+  border:1.5px solid rgba(255,215,0,0.4);color:#FFD700;font-size:15px;font-weight:800;
+  text-decoration:none;transition:all .2s;font-family:'Nunito',sans-serif;display:inline-block}
+.home-btn:hover{background:linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,140,0,0.25));
+  box-shadow:0 4px 20px rgba(255,215,0,0.25)}
+.quest-tip{margin-top:24px;font-size:12px;color:rgba(240,244,255,0.3);font-style:italic}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<div class="content">
+  <div class="lost-icon">🧭</div>
+  <div class="error-code">404 — Page Not Found</div>
+  <div class="title">You've Left the Known Realm</div>
+  <div class="subtitle">"Even the greatest adventurers get lost sometimes."</div>
+  <p class="desc">The page you're looking for doesn't exist — or it may have moved to a different part of the Legend of Wellness. Use the map below to find your way back.</p>
+
+  <div class="nav-options">
+    <a class="nav-btn" href="index.html"><span class="nav-btn-icon">🏠</span><span class="nav-btn-label">Home Base</span><span class="nav-btn-sub">Quest map & overview</span></a>
+    <a class="nav-btn" href="chapters.html"><span class="nav-btn-icon">📖</span><span class="nav-btn-label">All Chapters</span><span class="nav-btn-sub">All 28 chapters</span></a>
+    <a class="nav-btn" href="arcade.html"><span class="nav-btn-icon">🎮</span><span class="nav-btn-label">Game Arcade</span><span class="nav-btn-sub">All 15 games</span></a>
+    <a class="nav-btn" href="quest.html"><span class="nav-btn-icon">⚔</span><span class="nav-btn-label">My Quest</span><span class="nav-btn-sub">Progress tracker</span></a>
+  </div>
+
+  <a class="home-btn" href="index.html">⚔ Return to the Legend of Wellness</a>
+  <div class="quest-tip">#OnedayIwokeup · #Doppitup</div>
+</div>
+</body>
+</html>
