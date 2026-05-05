@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Wheel of Fortune — Health Edition</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#0d47a1;color:#fff;padding:16px;min-height:100vh}.hdr{background:#1565C0;border:2px solid #FFD700;border-radius:10px;padding:14px 20px;text-align:center;margin-bottom:14px}.hdr-title{font-size:22px;font-weight:700;color:#FFD700;letter-spacing:3px}.score-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.score-box{flex:1;min-width:80px;background:rgba(0,0,0,0.3);border-radius:8px;padding:8px 12px;text-align:center;cursor:pointer;border:1px solid rgba(255,215,0,0.3)}.score-box.active{border-color:#FFD700;background:rgba(255,215,0,0.1)}.score-label{font-size:11px;color:rgba(255,255,255,0.7)}.score-val{font-size:18px;font-weight:700;color:#FFD700}.wheel-wrap{display:flex;justify-content:center;margin-bottom:14px}.puzzle-area{background:#0d47a1;border:2px solid rgba(255,215,0,0.5);border-radius:10px;padding:16px;margin-bottom:12px;text-align:center}.cat-label{color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}.letter-row{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:4px}.letter-tile{width:28px;height:32px;background:#1565C0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#FFD700;border:1px solid rgba(255,215,0,0.3)}.letter-tile.revealed{background:#fff;color:#0d47a1}.keyboard{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:12px}.key{width:34px;height:34px;border-radius:6px;border:0.5px solid rgba(255,255,255,0.3);background:rgba(0,0,0,0.3);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}.key:hover:not(.used){background:rgba(255,255,255,0.2)}.key.hit{background:#1B5E20;color:#fff}.key.miss{background:#B71C1C;color:#fff}.status{background:rgba(0,0,0,0.3);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:rgba(255,255,255,0.8);text-align:center}.btn{padding:9px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}.btn-spin{background:#FFD700;color:#0d47a1;font-size:15px;padding:11px 28px}.btn-solve{background:#1B5E20;color:#fff}.btn-next{background:#6A1B9A;color:#fff}.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}.solve-input{display:flex;gap:8px;margin-bottom:10px}.solve-input input{flex:1;font-family:inherit;font-size:14px;padding:8px 12px;border:0.5px solid rgba(255,215,0,0.5);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff}</style>
+</head><body>
+<div class="hdr"><div class="hdr-title">WHEEL OF FORTUNE</div><div style="font-size:12px;color:rgba(255,215,0,0.7);margin-top:3px">Health Edition — Legend of Wellness</div></div>
+<div class="score-bar" id="score-bar"></div>
+<div class="wheel-wrap"><canvas id="wheel" width="220" height="220"></canvas></div>
+<div class="status" id="status">Click Spin to start! Set teams below.</div>
+<div class="btns">
+  <button class="btn btn-spin" id="spin-btn" onclick="spinWheel()">Spin the Wheel</button>
+  <button class="btn btn-solve" onclick="showSolve()">Solve Puzzle</button>
+  <button class="btn btn-next" onclick="nextPuzzle()">Next Puzzle</button>
+</div>
+<div id="solve-area"></div>
+<div class="puzzle-area" id="puzzle-area"></div>
+<div class="keyboard" id="keyboard"></div>
+<div style="margin-bottom:10px"><div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px">Teams:</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap" id="team-setup"></div></div>
+<script>
+const PUZZLES=[
+  {phrase:"FETAL ALCOHOL SPECTRUM DISORDER",cat:"Health Terms"},
+  {phrase:"UNDETECTABLE EQUALS UNTRANSMITTABLE",cat:"HIV Knowledge"},
+  {phrase:"HANDS ONLY CPR",cat:"First Aid"},
+  {phrase:"PREFRONTAL CORTEX",cat:"Brain Science"},
+  {phrase:"CARDIOVASCULAR DISEASE",cat:"Noncommunicable Diseases"},
+  {phrase:"MYPLATE HALF FRUITS AND VEGETABLES",cat:"Nutrition"},
+  {phrase:"SIXTY MINUTES OF PHYSICAL ACTIVITY",cat:"Fitness Goals"},
+  {phrase:"ENVIRONMENTAL TOBACCO SMOKE",cat:"Tobacco"},
+  {phrase:"NALOXONE REVERSES OPIOID OVERDOSE",cat:"Drug Safety"},
+  {phrase:"ABCDE RULE FOR MELANOMA",cat:"Skin Health"},
+  {phrase:"SEVEN DIMENSIONS OF WELLNESS",cat:"Wellness"},
+  {phrase:"BLOOD ALCOHOL CONCENTRATION",cat:"Alcohol"},
+];
+const WEDGES=[
+  {label:'$500',val:500,color:'#1565C0'},{label:'$300',val:300,color:'#6A1B9A'},
+  {label:'BANKRUPT',val:'bankrupt',color:'#B71C1C'},{label:'$700',val:700,color:'#1B5E20'},
+  {label:'$400',val:400,color:'#E65100'},{label:'FREE SPIN',val:'free',color:'#F9A825'},
+  {label:'$600',val:600,color:'#0277BD'},{label:'$250',val:250,color:'#4A148C'},
+  {label:'BANKRUPT',val:'bankrupt',color:'#B71C1C'},{label:'$1000',val:1000,color:'#1B5E20'},
+  {label:'$350',val:350,color:'#880E4F'},{label:'$450',val:450,color:'#1565C0'},
+  {label:'$800',val:800,color:'#2E7D32'},{label:'LOSE TURN',val:'lose',color:'#37474F'},
+  {label:'$550',val:550,color:'#6A1B9A'},{label:'$1500',val:1500,color:'#BF360C'},
+];
+let teams=['Team 1','Team 2'],scores=[0,0],currentTeam=0;
+let puzzleIdx=0,currentPuzzle=null,revealed=[],usedLetters=[],currentVal=0,spinning=false,freeSpin=false,angle=0,targetAngle=0,animFrame=null,timerInt=null;
+function initPuzzle(){currentPuzzle=PUZZLES[puzzleIdx%PUZZLES.length];revealed=currentPuzzle.phrase.split('').map(c=>c===' ');usedLetters=[];currentVal=0;renderKeyboard();renderPuzzle();updateStatus('Spin the wheel to get a value, then guess a letter!');}
+function drawWheel(rot){const c=document.getElementById('wheel');const ctx=c.getContext('2d');const cx=110,cy=110,r=105;ctx.clearRect(0,0,220,220);const arc=2*Math.PI/WEDGES.length;WEDGES.forEach((w,i)=>{const start=rot+i*arc,end=start+arc;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,end);ctx.closePath();ctx.fillStyle=w.color;ctx.fill();ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1;ctx.stroke();ctx.save();ctx.translate(cx,cy);ctx.rotate(start+arc/2);ctx.textAlign='right';ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';ctx.fillText(w.label,r-6,4);ctx.restore();});ctx.beginPath();ctx.arc(cx,cy,14,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();ctx.fillStyle='#0d47a1';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.fillText('SPIN',cx,cy+3);ctx.beginPath();ctx.moveTo(cx+r+8,cy-7);ctx.lineTo(cx+r+16,cy);ctx.lineTo(cx+r+8,cy+7);ctx.closePath();ctx.fillStyle='#FFD700';ctx.fill();}
+function spinWheel(){if(spinning)return;spinning=true;document.getElementById('spin-btn').disabled=true;const extra=Math.random()*Math.PI*4+Math.PI*6;targetAngle=angle+extra;animate();}
+function animate(){const diff=targetAngle-angle;if(diff<0.01){spinning=false;document.getElementById('spin-btn').disabled=false;angle=targetAngle%(2*Math.PI);const arc=2*Math.PI/WEDGES.length;const norm=((2*Math.PI-angle)%(2*Math.PI));const idx=Math.floor(norm/arc)%WEDGES.length;handleWedge(WEDGES[idx]);drawWheel(angle);return;}const speed=Math.max(0.01,diff*0.05);angle+=speed;drawWheel(angle);animFrame=requestAnimationFrame(animate);}
+function handleWedge(w){if(w.val==='bankrupt'){scores[currentTeam]=0;renderScores();updateStatus('BANKRUPT! '+teams[currentTeam]+' loses everything. Turn passes.');nextTeam();}else if(w.val==='lose'){updateStatus('LOSE A TURN! Pass.');nextTeam();}else if(w.val==='free'){freeSpin=true;updateStatus('FREE SPIN! Spin again or guess!');}else{currentVal=w.val;updateStatus(teams[currentTeam]+' landed on $'+w.val+'! Guess a letter.');}}
+function guessLetter(letter){if(usedLetters.includes(letter)||spinning)return;usedLetters.push(letter);const hits=currentPuzzle.phrase.split('').filter((c,i)=>c===letter&&!revealed[i]).length;currentPuzzle.phrase.split('').forEach((c,i)=>{if(c===letter)revealed[i]=true;});if(hits>0){scores[currentTeam]+=currentVal*hits;updateStatus(letter+' appears '+hits+' time'+(hits>1?'s':'')+'! +$'+(currentVal*hits).toLocaleString());}else{updateStatus('No '+letter+'s! '+(freeSpin?'FREE SPIN — spin again!':'Turn passes.'));if(!freeSpin)nextTeam();freeSpin=false;}currentVal=0;renderPuzzle();renderKeyboard();renderScores();if(revealed.every(v=>v))setTimeout(()=>updateStatus('PUZZLE SOLVED! '+teams[currentTeam]+' wins this round!'),300);}
+function showSolve(){const area=document.getElementById('solve-area');if(area.innerHTML){area.innerHTML='';return;}area.innerHTML=`<div class="solve-input"><input id="solve-in" placeholder="Type full puzzle answer..." onkeydown="if(event.key==='Enter')checkSolve()"><button class="btn btn-solve" onclick="checkSolve()">Submit</button></div>`;document.getElementById('solve-in').focus();}
+function checkSolve(){const inp=document.getElementById('solve-in');if(!inp)return;const guess=inp.value.trim().toUpperCase();if(guess===currentPuzzle.phrase){scores[currentTeam]+=1000;revealed=currentPuzzle.phrase.split('').map(()=>true);renderPuzzle();renderScores();updateStatus('CORRECT! +$1,000 bonus!');document.getElementById('solve-area').innerHTML='';}else{updateStatus('Wrong! Turn passes.');nextTeam();document.getElementById('solve-area').innerHTML='';}}
+function nextTeam(){currentTeam=(currentTeam+1)%teams.length;renderScores();}
+function nextPuzzle(){puzzleIdx++;initPuzzle();}
+function updateStatus(msg){document.getElementById('status').textContent=msg;}
+function renderPuzzle(){const rows=[];let row=[];currentPuzzle.phrase.split('').forEach((c,i)=>{if(c===' '){rows.push([...row]);row=[];}else row.push({c,rev:revealed[i],i});});if(row.length)rows.push(row);document.getElementById('puzzle-area').innerHTML=`<div class="cat-label">${currentPuzzle.cat}</div>${rows.map(r=>`<div class="letter-row">${r.map(({c,rev})=>`<div class="letter-tile${rev?' revealed':''}">${rev?c:''}</div>`).join('')}</div>`).join('<div style="height:4px"></div>')}`;}
+function renderKeyboard(){document.getElementById('keyboard').innerHTML='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l=>{const used=usedLetters.includes(l);const hit=used&&currentPuzzle.phrase.includes(l);return`<button class="key${used?(hit?' hit':' miss'):''}" onclick="guessLetter('${l}')">${l}</button>`;}).join('');}
+function renderScores(){document.getElementById('score-bar').innerHTML=teams.map((t,i)=>`<div class="score-box${i===currentTeam?' active':''}" onclick="currentTeam=${i};renderScores()"><div class="score-label">${t}</div><div class="score-val">$${scores[i].toLocaleString()}</div></div>`).join('');}
+function setupTeams(){document.getElementById('team-setup').innerHTML=`${teams.map((t,i)=>`<input id="tn${i}" value="${t}" style="width:110px;font-size:12px;padding:5px 8px;border:0.5px solid rgba(255,215,0,0.3);border-radius:6px;background:rgba(0,0,0,0.3);color:#fff;font-family:inherit" onchange="teams[${i}]=this.value;renderScores()">`).join('')}<button class="btn btn-next" style="font-size:12px;padding:5px 10px" onclick="if(teams.length<4){teams.push('Team '+(teams.length+1));scores.push(0);setupTeams();renderScores();}">+ Team</button>`;}
+drawWheel(0);setupTeams();initPuzzle();renderScores();
+</script>
+</body></html>

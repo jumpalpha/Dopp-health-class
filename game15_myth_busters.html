@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Myth Busters — Health Edition</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f1a0f;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#1a2e1a;border:2px solid #4ade80;border-radius:12px;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.hdr-title{font-size:20px;font-weight:700;color:#4ade80;letter-spacing:1px}
+.hdr-right{display:flex;gap:14px;align-items:center}
+.stat-pill{background:#0f2d0f;border:1px solid #4ade80;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:#4ade80}
+.timer-badge{background:#ef4444;border-radius:8px;padding:4px 12px;font-size:18px;font-weight:700;min-width:44px;text-align:center}
+.timer-badge.safe{background:#4ade80;color:#0f1a0f}
+.myth-card{background:#1a2e1a;border:3px solid #4ade80;border-radius:14px;padding:22px;margin-bottom:14px;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:border-color .3s}
+.myth-card.busted{border-color:#ef4444;background:#2d0f0f}
+.myth-card.confirmed{border-color:#4ade80;background:#0f2d0f}
+.myth-num{font-size:11px;color:#6b7280;letter-spacing:1px;margin-bottom:8px}
+.myth-category{display:inline-block;background:#0f2d0f;border:1px solid #4ade80;color:#4ade80;font-size:11px;font-weight:600;padding:3px 10px;border-radius:10px;margin-bottom:10px}
+.myth-text{font-size:17px;color:#f0fdf4;line-height:1.6;font-weight:500}
+.verdict-banner{border-radius:10px;padding:12px 20px;margin-bottom:12px;text-align:center}
+.verdict-banner.busted{background:#7f1d1d;border:2px solid #ef4444}
+.verdict-banner.confirmed{background:#14532d;border:2px solid #4ade80}
+.verdict-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.verdict-title.busted{color:#fca5a5}
+.verdict-title.confirmed{color:#86efac}
+.verdict-explanation{font-size:13px;line-height:1.5;color:#d1fae5}
+.answer-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.btn-true{background:#14532d;border:3px solid #4ade80;border-radius:10px;padding:16px;cursor:pointer;text-align:center;font-size:18px;font-weight:700;color:#4ade80;font-family:inherit;transition:background .15s}
+.btn-true:hover:not(:disabled){background:#166534}
+.btn-true:disabled{opacity:.4;cursor:default}
+.btn-false{background:#7f1d1d;border:3px solid #ef4444;border-radius:10px;padding:16px;cursor:pointer;text-align:center;font-size:18px;font-weight:700;color:#fca5a5;font-family:inherit;transition:background .15s}
+.btn-false:hover:not(:disabled){background:#991b1b}
+.btn-false:disabled{opacity:.4;cursor:default}
+.score-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.score-card{flex:1;min-width:80px;background:#1a2e1a;border:1.5px solid #333;border-radius:10px;padding:10px;text-align:center}
+.score-card.active{border-color:#4ade80}
+.score-in{background:transparent;border:none;border-bottom:1.5px solid #4ade80;color:#4ade80;font-size:12px;font-weight:600;width:100%;text-align:center;font-family:inherit;padding:3px 0;margin-bottom:3px}
+.score-val{font-size:20px;font-weight:700;color:#4ade80}
+.streak-badge{font-size:10px;color:#f59e0b;margin-top:2px}
+.progress{height:6px;background:#1a2e1a;border-radius:3px;margin-bottom:10px;overflow:hidden}
+.progress-fill{height:100%;background:#4ade80;border-radius:3px;transition:width .4s}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-next{background:#4ade80;color:#0f1a0f;font-size:15px;padding:12px 28px}
+.btn-reset{background:#374151;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.results-card{background:#1a2e1a;border:2px solid #4ade80;border-radius:12px;padding:20px;margin-bottom:14px}
+.myth-log{font-size:12px;padding:6px 0;border-bottom:1px solid #1f2937;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.myth-log:last-child{border-bottom:none}
+.log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.log-dot.correct{background:#4ade80}
+.log-dot.wrong{background:#ef4444}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const MYTHS=[
+  {myth:"Vaping is safe because it's 'just water vapor' — it can't hurt your lungs.",answer:false,cat:"Tobacco & Vaping",explanation:"BUSTED! E-cigarette aerosol contains nicotine, ultrafine particles, heavy metals (lead, nickel, tin), and volatile organic compounds. It is NOT water vapor. Regular vaping causes measurable lung inflammation."},
+  {myth:"A person with HIV who maintains an undetectable viral load through medication cannot sexually transmit the virus.",answer:true,cat:"HIV/AIDS",explanation:"CONFIRMED! U=U (Undetectable = Untransmittable) is established scientific consensus confirmed by multiple large clinical trials. ART makes HIV untransmittable."},
+  {myth:"Eating sugar causes children to become hyperactive.",answer:false,cat:"Nutrition",explanation:"BUSTED! Multiple double-blind studies find NO link between sugar and hyperactivity. Parents who believed their kids had sugar expected to see it — and did. It's a well-documented expectation effect."},
+  {myth:"You lose most of your body heat through your head.",answer:false,cat:"Biology",explanation:"BUSTED! The head loses heat in proportion to its surface area (~10%). If you wore a hat but had bare legs, you'd lose far more heat from your legs. This myth came from a flawed 1950s military study."},
+  {myth:"Cracking your knuckles causes arthritis.",answer:false,cat:"Skeletal System",explanation:"BUSTED! A physician cracked the knuckles on one hand every day for 60 years as a self-experiment — no arthritis difference. Multiple studies confirm: knuckle cracking does not cause arthritis."},
+  {myth:"Fentanyl-laced counterfeit pills look different from real prescription pills, so you can identify them by sight.",answer:false,cat:"Drug Safety",explanation:"BUSTED! Counterfeit fentanyl pills are pressed with identical markings, colors, and shapes as real medications. There is absolutely NO way to identify them visually. This is why they're so deadly."},
+  {myth:"Teens who begin drinking before age 15 are 4–5 times more likely to develop alcohol use disorder than those who wait.",answer:true,cat:"Alcohol",explanation:"CONFIRMED! This is a well-established finding. The developing adolescent brain is especially sensitive to alcohol's effects on the reward pathways — early use dramatically increases addiction risk."},
+  {myth:"We only use 10% of our brains.",answer:false,cat:"Neuroscience",explanation:"BUSTED! Brain imaging shows virtually all areas of the brain are active at some point, and we use nearly all of our brain over any given day. This myth likely stems from misquoted neuroscience from the early 1900s."},
+  {myth:"The 2017 American Heart Association lowered the threshold for Stage 1 Hypertension from 140/90 to 130/80.",answer:true,cat:"Cardiovascular",explanation:"CONFIRMED! The 2017 AHA guidelines reclassified 46.7% of U.S. adults as having high blood pressure. Stage 1 now begins at 130/80 mmHg — not 140/90 as stated in older health textbooks."},
+  {myth:"Antibiotics are an effective treatment for the flu (influenza).",answer:false,cat:"Disease",explanation:"BUSTED! Influenza is caused by a virus. Antibiotics only kill bacteria — they have zero effect on viruses. Using antibiotics unnecessarily contributes to antibiotic resistance, a major global health crisis."},
+  {myth:"Naloxone (Narcan) is now available over the counter without a prescription.",answer:true,cat:"Drug Safety",explanation:"CONFIRMED! In 2023, the FDA approved naloxone (Narcan) as OTC. It can be purchased at most pharmacies without a prescription and rapidly reverses opioid overdose when sprayed in the nose."},
+  {myth:"Shaving makes hair grow back thicker and darker.",answer:false,cat:"Skin Health",explanation:"BUSTED! Shaving cuts hair at the widest point, making stubble feel coarser — but it doesn't change the follicle. Hair thickness, color, and growth rate are genetically determined and unaffected by shaving."},
+  {myth:"The colorectal cancer screening age was lowered from 50 to 45 in 2021 because rates in young adults are rising.",answer:true,cat:"Cancer",explanation:"CONFIRMED! The American Cancer Society lowered the recommended starting age to 45. Colorectal cancer is now the leading cause of cancer death in men under 50 — and rates in young adults are rising sharply."},
+  {myth:"You need to drink exactly 8 glasses of water per day.",answer:false,cat:"Nutrition",explanation:"BUSTED! The '8×8' rule has no scientific basis. Hydration needs vary by body size, activity level, climate, and diet (many foods contain water). The right amount is different for everyone — urine color is a better guide."},
+  {myth:"Hands-Only CPR (no rescue breaths) is now recommended for untrained bystanders responding to adult cardiac arrest.",answer:true,cat:"First Aid",explanation:"CONFIRMED! The AHA updated its guidelines. For untrained bystanders, Hands-Only CPR (100–120 compressions/min, center of chest) is just as effective for adult cardiac arrest and far more likely to be performed."},
+  {myth:"Teen smoking rates are higher today than they were in the 1990s due to the rise of vaping.",answer:false,cat:"Tobacco",explanation:"BUSTED! Traditional cigarette smoking among teens has actually dropped to a historic low of just 1.4% in 2024 — down from 26%+ in the late 1990s. Overall tobacco use among teens is at a 25-year low."},
+  {myth:"A suntan is a sign of healthy skin from outdoor activity.",answer:false,cat:"Skin Health",explanation:"BUSTED! A tan IS skin damage. It's the skin's response to UV radiation — melanin production is triggered to protect against further damage. Using a tanning bed before age 35 increases melanoma risk by 75%."},
+  {myth:"Gardasil 9 (current HPV vaccine) protects against 9 strains of HPV — up from the original 4 strains.",answer:true,cat:"STIs & Vaccines",explanation:"CONFIRMED! The current Gardasil 9 covers 9 HPV strains responsible for ~90% of HPV-related cancers. The original Gardasil covered only 4 strains. Recommended for all people ages 9–26 (catch-up to 45)."},
+];
+
+let teams=['Team 1','Team 2'];let scores=[0,0];let currentTeam=0;let streaks=[0,0];
+let qIdx=0;let shuffled=[];let answered=false;let log=[];let running=false;let timer=0;let timerInt=null;
+let mode='class';
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5);}
+function init(){shuffled=shuffle(MYTHS);qIdx=0;scores=[0,0];streaks=[0,0];currentTeam=0;answered=false;log=[];running=false;timer=20;clearInterval(timerInt);mode='class';render();}
+
+function render(){
+  if(qIdx>=shuffled.length){renderResults();return;}
+  const m=shuffled[qIdx];
+  const pct=Math.round(qIdx/shuffled.length*100);
+  document.getElementById('app').innerHTML=`
+    <div class="hdr">
+      <div class="hdr-title">MYTH BUSTERS</div>
+      <div class="hdr-right">
+        <div class="stat-pill">${qIdx+1}/${shuffled.length}</div>
+        ${running?`<div class="timer-badge${timer>10?' safe':''}" id="timer">${timer}</div>`:''}
+      </div>
+    </div>
+    <div class="score-row">${teams.map((t,i)=>`<div class="score-card${i===currentTeam?' active':''}"><input class="score-in" value="${t}" onchange="teams[${i}]=this.value"><div class="score-val">${scores[i]}</div><div class="streak-badge">${streaks[i]>=2?'🔥 Streak x'+streaks[i]:''}</div></div>`).join('')}
+    </div>
+    <div class="progress"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="myth-card${answered?(m.answer?'':' busted'):''}" id="myth-card">
+      <div class="myth-num">Myth ${qIdx+1} of ${shuffled.length}</div>
+      <span class="myth-category">${m.cat}</span>
+      <div class="myth-text">${m.myth}</div>
+    </div>
+    ${answered?`<div class="verdict-banner ${m.answer?'confirmed':'busted'}">
+      <div class="verdict-title ${m.answer?'confirmed':'busted'}">${m.answer?'✅ CONFIRMED — TRUE!':'🚫 BUSTED — FALSE!'}</div>
+      <div class="verdict-explanation">${m.explanation}</div>
+    </div>`:''}
+    <div class="answer-btns">
+      <button class="btn-true" onclick="answer(true)" ${answered?'disabled':''}>TRUE ✓</button>
+      <button class="btn-false" onclick="answer(false)" ${answered?'disabled':''}>FALSE ✗</button>
+    </div>
+    ${answered?`<div class="btns"><button class="btn btn-next" onclick="nextQ()">Next Myth →</button></div>`:`<div class="btns">${!running?`<button class="btn btn-next" style="background:#1a2e1a;border:1.5px solid #4ade80;color:#4ade80;font-size:13px;padding:10px 18px" onclick="startTimer()">Timed Mode (20s)</button>`:''}</div>`}
+    <div class="btns"><button class="btn btn-reset" onclick="init()">Restart</button></div>`;
+  if(running&&!answered) startTimerDisplay();
+}
+
+function startTimer(){
+  running=true;timer=20;
+  startTimerDisplay();
+  render();
+}
+
+function startTimerDisplay(){
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    timer=Math.max(0,timer-1);
+    const el=document.getElementById('timer');
+    if(el){el.textContent=timer;el.className='timer-badge'+(timer>10?' safe':'');}
+    if(timer<=0){clearInterval(timerInt);autoAnswer();}
+  },1000);
+}
+
+function autoAnswer(){answered=true;clearInterval(timerInt);render();}
+
+function answer(bool){
+  clearInterval(timerInt);
+  if(answered) return;
+  answered=true;
+  const m=shuffled[qIdx];
+  const correct=bool===m.answer;
+  const pts=correct?(100+(streaks[currentTeam]>=2?50:0)):0;
+  if(correct){scores[currentTeam]+=pts;streaks[currentTeam]++;}else{streaks[currentTeam]=0;}
+  log.push({myth:m.myth,answer:bool,correct,cat:m.cat});
+  render();
+}
+
+function nextQ(){
+  clearInterval(timerInt);answered=false;qIdx++;
+  currentTeam=(currentTeam+1)%teams.length;
+  render();
+}
+
+function renderResults(){
+  const total=log.length;const correct=log.filter(l=>l.correct).length;const pct=Math.round(correct/total*100);
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">MYTH BUSTERS — FINAL</div></div>
+    <div class="results-card">
+      <div style="font-size:22px;font-weight:700;color:#4ade80;text-align:center;margin-bottom:6px">Results</div>
+      <div style="text-align:center;font-size:14px;color:#9ca3af;margin-bottom:14px">${correct} of ${total} myths correctly identified (${pct}%)</div>
+      ${teams.map((t,i)=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1f2937"><span style="color:#d1d5db">${t}</span><span style="font-weight:700;color:#4ade80">${scores[i]} pts</span></div>`).join('')}
+    </div>
+    <div class="results-card">
+      <div style="font-size:14px;font-weight:600;color:#4ade80;margin-bottom:10px">Your Answers:</div>
+      ${log.map(l=>`<div class="myth-log"><div class="log-dot ${l.correct?'correct':'wrong'}"></div><div style="flex:1;color:#d1d5db;font-size:12px">${l.myth.substring(0,80)}${l.myth.length>80?'...':''}</div><span style="font-size:11px;font-weight:600;color:${l.correct?'#4ade80':'#ef4444'};flex-shrink:0">${l.correct?'✓':'✗'} ${l.answer?'TRUE':'FALSE'}</span></div>`).join('')}
+    </div>
+    <div class="btns"><button class="btn btn-next" onclick="init()">Play Again</button></div>`;
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Would You Rather — Health Edition</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0c1a0c;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#14290f;border:2px solid #4ade80;border-radius:12px;padding:14px 20px;text-align:center;margin-bottom:14px}
+.hdr-title{font-size:22px;font-weight:700;color:#4ade80;letter-spacing:1px}
+.hdr-sub{font-size:12px;color:rgba(74,222,128,0.6);margin-top:3px}
+.q-num{font-size:12px;color:#6b7280;text-align:center;margin-bottom:8px}
+.versus-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch;margin-bottom:12px}
+.option-a{background:#14290f;border:3px solid #4ade80;border-radius:12px;padding:18px;cursor:pointer;transition:background .15s,border-color .15s;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:140px}
+.option-a:hover:not(.voted){background:#1a3d15}
+.option-a.voted{background:#166534;border-color:#22c55e}
+.option-b{background:#14290f;border:3px solid #3b82f6;border-radius:12px;padding:18px;cursor:pointer;transition:background .15s,border-color .15s;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:140px}
+.option-b:hover:not(.voted){background:#1e2d4a}
+.option-b.voted{background:#1e40af;border-color:#60a5fa}
+.opt-label{font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:8px;opacity:.7}
+.opt-text{font-size:15px;color:#fff;line-height:1.5}
+.opt-pct{font-size:22px;font-weight:700;margin-top:8px}
+.vs-badge{background:#f59e0b;color:#000;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;align-self:center}
+.bar-section{margin-bottom:14px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bar-label{font-size:12px;color:#9ca3af;min-width:24px}
+.bar-track{flex:1;height:14px;background:#1f2937;border-radius:7px;overflow:hidden}
+.bar-fill-a{height:100%;background:#4ade80;border-radius:7px;transition:width .5s}
+.bar-fill-b{height:100%;background:#3b82f6;border-radius:7px;transition:width .5s}
+.bar-num{font-size:12px;color:#fff;min-width:36px;text-align:right}
+.debate-box{background:#14290f;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:12px;font-size:13px;color:#fbbf24;line-height:1.5;display:none}
+.debate-box.show{display:block}
+.fact-box{background:#0f2027;border-left:3px solid #4ade80;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:12px;font-size:13px;color:#86efac;line-height:1.5;display:none}
+.fact-box.show{display:block}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-a{background:#4ade80;color:#000}
+.btn-b{background:#3b82f6;color:#fff}
+.btn-debate{background:#f59e0b;color:#000}
+.btn-fact{background:#166534;color:#fff}
+.btn-next{background:#4ade80;color:#000;font-size:15px;padding:12px 28px}
+.btn-reset{background:#374151;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.status{background:#14290f;border-radius:8px;padding:10px;font-size:13px;color:rgba(255,255,255,0.6);text-align:center;margin-bottom:10px;min-height:36px}
+.vote-counter{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:8px}
+.category{display:inline-block;background:#166534;color:#4ade80;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;margin-bottom:8px;letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const QS=[
+  {a:"Have perfect skin your whole life but never be able to eat your favorite food again",b:"Eat whatever you want but have serious acne your entire life",cat:"Nutrition & Skin",debate:"Is what we eat actually linked to skin health? What does the research say?",fact:"Diet and skin health are connected. High-glycemic foods and dairy may worsen acne in some people, though research is still evolving. A diet rich in antioxidants supports skin health."},
+  {a:"Know you're going to have a heart attack at age 60 but live comfortably until then",b:"Not know your health future but have to exercise 2 hours daily for the rest of your life",cat:"Cardiovascular",debate:"Would knowing your health future change your lifestyle choices? Should everyone get genetic testing for disease risk?",fact:"Knowing cardiovascular disease risk can motivate lifestyle change — but can also cause anxiety. Regular physical activity reduces heart disease risk by up to 35%."},
+  {a:"Live in a world where all junk food is banned by law",b:"Live in a world where healthcare costs 10× what it does now",cat:"Public Health",debate:"Should governments ban ultra-processed foods, or is that a violation of personal freedom?",fact:"Ultra-processed foods contribute to obesity, diabetes, and heart disease. Countries like Mexico and Chile have implemented soda taxes and warning labels with measurable results."},
+  {a:"Never be able to use social media again, but sleep perfectly every night",b:"Use social media freely but always sleep 4 hours less than recommended",cat:"Mental Health & Sleep",debate:"Is social media actually harmful to teen mental health, or is that overstated by adults?",fact:"Teens who use social media 3+ hours/day have double the risk of depression and anxiety. The teen brain's dopamine system is especially sensitive to social feedback loops."},
+  {a:"Have perfect physical health but struggle with depression for life",b:"Have perfect mental health but live with a chronic physical disability",cat:"Mental vs. Physical Health",debate:"Is mental health or physical health more important to overall wellness? Can you have one without the other?",fact:"Mental and physical health are deeply interconnected. Depression raises the risk of heart disease, diabetes, and immune dysfunction. Physical illness increases depression risk by 25–50%."},
+  {a:"Find out at 16 that you carry a gene that gives you a 70% chance of cancer at 40",b:"Never know your genetic risks and live with uncertainty",cat:"Genetics & Privacy",debate:"Should genetic testing for disease risk be routine for teens? Who should have access to the results?",fact:"The BRCA1/2 genes give 50–85% lifetime risk of breast cancer. Many people who know their risk choose preventive measures. But genetic anxiety is a real documented psychological issue."},
+  {a:"Be able to eat perfectly healthy forever but hate every meal",b:"Enjoy every single meal but always eat poorly",cat:"Nutrition",debate:"Is enjoying food part of health? Can you be truly healthy if you hate eating?",fact:"Food satisfaction and psychological relationship with eating ARE health factors. Orthorexia (obsessive 'healthy eating') is a recognized eating disorder. Joy around food is part of holistic wellness."},
+  {a:"Have to give everyone you know a full honest health lecture every time they make a bad choice",b:"Silently watch everyone around you make unhealthy choices without saying a word",cat:"Community Health",debate:"What's the line between caring about others' health and being preachy? How do you influence health behavior without lecturing?",fact:"Research shows health lecturing ('nagging') is rarely effective and often backfires. Motivational interviewing — asking open questions and listening — is far more effective at changing behavior."},
+  {a:"Live in a world where everyone knows your BMI, blood pressure, and health stats",b:"Live in a world with no healthcare system but total privacy about your health",cat:"Privacy & Public Health",debate:"Should health data be private, or would sharing it (anonymously) benefit public health enough to justify it?",fact:"Electronic health records improve care coordination and catch drug interactions — but data breaches affect millions. The CDC uses de-identified data for disease tracking."},
+  {a:"Work in healthcare for your entire career even if you hate it",b:"Follow your dream career but work in a job with known health hazards (noise, chemicals, sedentary lifestyle)",cat:"Occupational Health",debate:"Should schools do more to educate teens about the health risks of different careers? Is work-life balance a health issue?",fact:"Occupational health is one of the 7 dimensions of wellness. Sedentary desk jobs increase cardiovascular risk. Noise-induced hearing loss is the #1 occupational disease in the U.S."},
+];
+
+let qIdx=0;let votesA=0;let votesB=0;let voted=false;let showDebate=false;let showFact=false;
+let totalA=0;let totalB=0;
+
+function render(){
+  const q=QS[qIdx];
+  const totalV=votesA+votesB;
+  const pctA=totalV?Math.round(votesA/totalV*100):50;
+  const pctB=totalV?Math.round(votesB/totalV*100):50;
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">WOULD YOU RATHER?</div><div class="hdr-sub">Health Edition — Legend of Wellness</div></div>
+    <div class="q-num">Question ${qIdx+1} of ${QS.length}</div>
+    <div style="text-align:center;margin-bottom:8px"><span class="category">${q.cat}</span></div>
+    <div class="versus-grid">
+      <div class="option-a${voted?' voted':''}" onclick="${voted?'':'voteA()'}">
+        <div class="opt-label" style="color:#4ade80">OPTION A</div>
+        <div class="opt-text">${q.a}</div>
+        ${voted?`<div class="opt-pct" style="color:#4ade80">${pctA}%</div>`:''}
+      </div>
+      <div class="vs-badge">OR</div>
+      <div class="option-b${voted?' voted':''}" onclick="${voted?'':'voteB()'}">
+        <div class="opt-label" style="color:#3b82f6">OPTION B</div>
+        <div class="opt-text">${q.b}</div>
+        ${voted?`<div class="opt-pct" style="color:#3b82f6">${pctB}%</div>`:''}
+      </div>
+    </div>
+    ${voted?`
+    <div class="vote-counter"><span style="color:#4ade80">A: ${votesA} votes</span><span>Total: ${totalV}</span><span style="color:#3b82f6">B: ${votesB} votes</span></div>
+    <div class="bar-section">
+      <div class="bar-row"><div class="bar-label" style="color:#4ade80">A</div><div class="bar-track"><div class="bar-fill-a" style="width:${pctA}%"></div></div><div class="bar-num">${pctA}%</div></div>
+      <div class="bar-row"><div class="bar-label" style="color:#3b82f6">B</div><div class="bar-track"><div class="bar-fill-b" style="width:${pctB}%"></div></div><div class="bar-num">${pctB}%</div></div>
+    </div>`:''}
+    <div class="debate-box${showDebate?' show':''}">${q.debate}</div>
+    <div class="fact-box${showFact?' show':''}">${q.fact}</div>
+    <div class="status" id="status">${voted?'Voted! Open a class debate or see the health fact.':'Click your choice — then compare with the class!'}</div>
+    <div class="btns">
+      ${!voted?`<button class="btn btn-a" onclick="voteA()">A</button><button class="btn btn-b" onclick="voteB()">B</button>`:''}
+      ${voted?`<button class="btn btn-a" onclick="voteA()">+1 A</button><button class="btn btn-b" onclick="voteB()">+1 B</button>`:''}
+      <button class="btn btn-debate" onclick="toggleDebate()">Debate Prompt</button>
+      <button class="btn btn-fact" onclick="toggleFact()">Health Fact</button>
+    </div>
+    <div class="btns">
+      <button class="btn btn-next" onclick="next()">Next Question →</button>
+      <button class="btn btn-reset" onclick="init()">Restart</button>
+    </div>`;
+}
+
+function voteA(){votesA++;voted=true;totalA++;render();}
+function voteB(){votesB++;voted=true;totalB++;render();}
+function toggleDebate(){showDebate=!showDebate;render();}
+function toggleFact(){showFact=!showFact;render();}
+function next(){
+  qIdx=(qIdx+1)%QS.length;voted=false;votesA=0;votesB=0;showDebate=false;showFact=false;render();
+}
+function init(){qIdx=0;voted=false;votesA=0;votesB=0;showDebate=false;showFact=false;totalA=0;totalB=0;render();}
+
+init();
+</script>
+</body>
+</html>

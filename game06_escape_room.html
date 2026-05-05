@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Escape Room — Legend of Wellness</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0a0a0a;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#111;border:1px solid #222;border-radius:12px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.hdr-title{font-size:20px;font-weight:600;color:#00E5FF;letter-spacing:1px}
+.timer-display{font-size:24px;font-weight:700;color:#FF5252;min-width:60px;text-align:right}
+.room-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.room-btn{background:#111;border:2px solid #333;border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s}
+.room-btn:hover{border-color:#00E5FF}
+.room-btn.done{border-color:#4CAF50}
+.room-icon{font-size:28px;margin-bottom:6px}
+.room-name{font-size:13px;font-weight:600;color:#00E5FF}
+.room-status{font-size:11px;color:#888;margin-top:3px}
+.scenario-box{background:#111;border:1px solid #333;border-radius:10px;padding:16px;margin-bottom:12px}
+.scenario-title{font-size:16px;font-weight:600;color:#00E5FF;margin-bottom:8px;text-align:center}
+.scenario-text{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6}
+.progress{display:flex;gap:6px;margin-bottom:12px}
+.prog-dot{flex:1;height:8px;border-radius:4px;background:#222;transition:background .3s}
+.prog-dot.done{background:#4CAF50}
+.prog-dot.active{background:#00E5FF}
+.clue-item{background:#111;border:1.5px solid #333;border-radius:10px;padding:14px;margin-bottom:8px;transition:border-color .2s}
+.clue-item.active{border-color:#FF9800}
+.clue-item.solved{border-color:#4CAF50;background:rgba(76,175,80,0.08)}
+.clue-item.locked{opacity:.35}
+.clue-header{display:flex;justify-content:space-between;margin-bottom:6px}
+.clue-label{font-size:13px;font-weight:600;color:#00E5FF}
+.clue-tag{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600}
+.tag-active{background:#FF9800;color:#000}
+.tag-solved{background:#4CAF50;color:#000}
+.tag-locked{background:#333;color:#888}
+.clue-q{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5;margin-bottom:8px}
+.clue-explanation{font-size:12px;color:#4CAF50;margin-top:6px;padding-top:6px;border-top:1px solid #222;line-height:1.4}
+.input-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.clue-input{flex:1;min-width:160px;background:#1a1a1a;border:1px solid #444;border-radius:6px;color:#fff;font-size:13px;padding:8px 12px;font-family:inherit}
+.clue-input:focus{outline:none;border-color:#00E5FF}
+.btn{padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-check{background:#0288D1;color:#fff}
+.btn-hint{background:#333;color:#aaa}
+.btn-start{background:#00E5FF;color:#000;font-size:15px;padding:12px 32px}
+.btn-reset{background:#333;color:#fff}
+.btn-next{background:#4CAF50;color:#fff;font-size:15px;padding:12px 28px}
+.hint-text{font-size:12px;color:#FF9800;margin-top:6px}
+.status{background:#111;border-radius:8px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,0.7);text-align:center;margin-bottom:10px;min-height:38px}
+.main-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.info-strip{display:flex;justify-content:space-between;align-items:center;background:#111;border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:13px;color:#aaa;flex-wrap:wrap;gap:8px}
+.info-strip span{color:#fff;font-weight:600}
+.win-box{background:#111;border:2px solid #4CAF50;border-radius:12px;padding:24px;text-align:center;margin-bottom:14px}
+.win-title{font-size:28px;font-weight:700;color:#4CAF50;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const ROOMS=[
+  {title:"The Opioid Emergency",icon:"🚨",
+   scenario:"A teen at a party has collapsed. Their lips are turning bluish, breathing is very slow, and they won't wake up. Someone says they may have taken a pill from a friend. Solve all 5 clues to get help in time.",
+   clues:[
+    {label:"Clue 1",q:"What synthetic opioid — 50–100× stronger than morphine — is now found in counterfeit pills visually identical to real prescriptions?",ans:["fentanyl"],hint:"Starts with F. Now involved in ~80% of teen drug overdose deaths.",exp:"Fentanyl laced pills are visually indistinguishable from real prescriptions. One pill can be fatal."},
+    {label:"Clue 2",q:"Name the OTC medication (no prescription needed) that reverses opioid overdose when sprayed in the nose.",ans:["naloxone","narcan"],hint:"Brand name is Narcan. Now available over the counter.",exp:"Naloxone (Narcan) reverses opioid overdose within minutes. Every household should have it."},
+    {label:"Clue 3",q:"What type of CPR does the AHA recommend for untrained bystanders helping an unconscious adult — no rescue breaths required?",ans:["hands only","hands-only","compression only","compressions only"],hint:"Two words. Second word is 'only'.",exp:"Hands-Only CPR: push hard and fast on center of chest at 100–120/min. 'Stayin' Alive' tempo."},
+    {label:"Clue 4",q:"What laws protect people from prosecution when they call 911 during a drug overdose emergency?",ans:["good samaritan","samaritan laws","samaritan"],hint:"Named after the biblical figure who helped a stranger.",exp:"Good Samaritan laws exist in most states. They encourage people to call for help without fear of arrest."},
+    {label:"Clue 5",q:"Where are drug dealers increasingly selling fentanyl-laced pills directly to teens? Name the general platform type.",ans:["social media","snapchat","instagram","tiktok","online"],hint:"You use it every day on your phone to share photos and videos.",exp:"8 in 10 teen fentanyl deaths involve social media contact. Report any suspicious offers immediately."},
+  ]},
+  {title:"The Disease Outbreak",icon:"🦠",
+   scenario:"A mysterious illness is spreading through Wellness High School. The nurse has 5 clues to identify the pathogen, stop the spread, and protect the community. Work fast — more students are getting sick every minute.",
+   clues:[
+    {label:"Clue 1",q:"This pathogen invades living cells, hijacks them to replicate, and CANNOT be treated with antibiotics. What type is it?",ans:["virus","viral"],hint:"Antibiotics only kill bacteria — not this type.",exp:"Viruses replicate inside host cells. Antibiotics don't work. Antivirals and vaccines are the tools."},
+    {label:"Clue 2",q:"The illness spreads when infected people breathe, cough, or sneeze tiny droplets into the air. What is this transmission route called?",ans:["airborne","droplet","respiratory"],hint:"Think of what happens in a crowded classroom when someone coughs.",exp:"Airborne/droplet transmission spreads flu, COVID-19, and many respiratory illnesses. Ventilation and masks help."},
+    {label:"Clue 3",q:"What strategy trains the immune system to recognize and fight a specific pathogen WITHOUT causing the disease?",ans:["vaccine","vaccination","vaccines","immunization"],hint:"You got these as a child and as a teen for HPV and meningococcal disease.",exp:"Vaccines have prevented more death and disability than almost any other public health tool in history."},
+    {label:"Clue 4",q:"Name the proteins produced by B cells that target specific antigens on a pathogen and mark it for destruction.",ans:["antibodies","antibody"],hint:"Your immune system 'remembers' how to make these after infection or vaccination.",exp:"Antibodies are highly specific. Memory B cells can produce them rapidly on re-exposure — that's immunity."},
+    {label:"Clue 5",q:"When enough people are immune that a disease can't spread easily — protecting even those who can't be vaccinated — what is it called?",ans:["herd immunity","community immunity","herd protection"],hint:"First word is an animal-group term. Second word is immunity.",exp:"Herd immunity protects newborns, immunocompromised people, and others who can't be vaccinated."},
+  ]},
+  {title:"The Cardiac Emergency",icon:"❤️",
+   scenario:"You're at a sporting event when an adult nearby collapses. They are unconscious and not breathing normally. You have 5 minutes. Unlock each clue to save their life.",
+   clues:[
+    {label:"Clue 1",q:"What does FAST stand for? Each letter is a warning sign or action for stroke/cardiac emergency recognition.",ans:["face arm speech time","face arms speech time","face drooping arm weakness speech difficulty time"],hint:"Face drooping, Arm weakness, Speech difficulty, Time to call 911.",exp:"FAST: Face drooping, Arm weakness, Speech difficulty, Time to call 911. Every minute of delay = 1.9 million brain cells lost."},
+    {label:"Clue 2",q:"Before anything else in a medical emergency in the U.S. — what 3-digit number do you call?",ans:["911","nine one one"],hint:"Three digits you've known since kindergarten.",exp:"Call 911 first. Dispatchers guide you through CPR in real time and dispatch help simultaneously."},
+    {label:"Clue 3",q:"For adult Hands-Only CPR, how many compressions per minute is the correct rate? Think of a famous Bee Gees song.",ans:["100","120","100 to 120","100-120","100–120","one hundred","one hundred to one twenty"],hint:"'Stayin' Alive' plays at almost exactly this tempo.",exp:"100–120 compressions per minute, at least 2 inches deep, center of chest, allow full recoil each time."},
+    {label:"Clue 4",q:"What device — now found in most schools, gyms, and airports — delivers a shock to restore normal heart rhythm? Give the abbreviation.",ans:["aed","automated external defibrillator"],hint:"Three letters. You've seen the green box on the gym wall.",exp:"AEDs guide anyone step by step with voice instructions. You cannot harm someone by using one correctly."},
+    {label:"Clue 5",q:"The Chain of Survival has 5 links. Name the first 3 in order.",ans:["call cpr aed","call 911 cpr aed","call compressions aed","911 cpr aed"],hint:"Call → CPR → AED → Advanced care → Post-arrest care",exp:"Every link matters. Survival drops 7–10% for every minute without CPR or defibrillation."},
+  ]},
+];
+
+let roomIdx=0,clueIdx=0,solvedClues=[],hints=[],running=false,seconds=300,timerInt=null,totalHints=0;
+let roomsDone=[];
+
+function init(idx){
+  roomIdx=idx;clueIdx=0;solvedClues=[];hints=[];running=false;seconds=300;totalHints=0;
+  clearInterval(timerInt);render();
+}
+
+function render(){
+  const room=ROOMS[roomIdx];
+  const allSolved=solvedClues.length===room.clues.length;
+  document.getElementById('app').innerHTML=`
+    <div class="hdr">
+      <div class="hdr-title">HEALTH ESCAPE ROOM</div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:12px;color:#888">Room ${roomIdx+1}/${ROOMS.length}</span>
+        <div class="timer-display" id="timer">${formatTime(seconds)}</div>
+      </div>
+    </div>
+    <div class="info-strip">
+      <div>Clues solved: <span>${solvedClues.length} / ${room.clues.length}</span></div>
+      <div>Hints used: <span>${totalHints}</span></div>
+      <div>Rooms escaped: <span>${roomsDone.length} / ${ROOMS.length}</span></div>
+    </div>
+    <div class="scenario-box">
+      <div class="scenario-title">${room.icon} ${room.title}</div>
+      <div class="scenario-text">${room.scenario}</div>
+    </div>
+    <div class="progress">${room.clues.map((_,i)=>`<div class="prog-dot${solvedClues.includes(i)?' done':i===clueIdx?' active':''}"></div>`).join('')}</div>
+    ${room.clues.map((c,i)=>{
+      const isSolved=solvedClues.includes(i);
+      const isActive=i===clueIdx&&!isSolved;
+      const isLocked=i>clueIdx&&!isSolved;
+      return `<div class="clue-item${isSolved?' solved':isActive?' active':isLocked?' locked':''}">
+        <div class="clue-header">
+          <span class="clue-label">${c.label}</span>
+          <span class="clue-tag ${isSolved?'tag-solved':isLocked?'tag-locked':'tag-active'}">${isSolved?'SOLVED':isLocked?'LOCKED':'ACTIVE'}</span>
+        </div>
+        <div class="clue-q">${c.q}</div>
+        ${isSolved?`<div class="clue-explanation">✓ ${c.exp}</div>`:''}
+        ${isActive?`
+          <div class="input-row">
+            <input class="clue-input" id="inp${i}" placeholder="Type your answer..." onkeydown="if(event.key==='Enter')check(${i})">
+            <button class="btn btn-check" onclick="check(${i})">Submit</button>
+            <button class="btn btn-hint" onclick="showHint(${i})">${hints.includes(i)?'Hide Hint':'Get Hint'}</button>
+          </div>
+          ${hints.includes(i)?`<div class="hint-text">Hint: ${c.hint}</div>`:''}
+        `:''}
+      </div>`;
+    }).join('')}
+    <div class="status" id="status">${running?'Solve each clue in order. Each answer unlocks the next!':'Click "Start Timer" when your team is ready!'}</div>
+    <div class="main-btns">
+      ${!running&&!allSolved?`<button class="btn btn-start" onclick="startTimer()">Start Timer</button>`:''}
+      ${allSolved?`<button class="btn btn-next" onclick="escape()">ESCAPED! ${roomIdx<ROOMS.length-1?'Enter Room '+(roomIdx+2):'Finish!'}</button>`:''}
+      <button class="btn btn-reset" onclick="init(roomIdx)">Reset Room</button>
+    </div>`;
+}
+
+function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${m}:${sec.toString().padStart(2,'0')}`;}
+
+function startTimer(){
+  running=true;
+  timerInt=setInterval(()=>{
+    seconds=Math.max(0,seconds-1);
+    const el=document.getElementById('timer');
+    if(el) el.textContent=formatTime(seconds);
+    if(seconds<=0){clearInterval(timerInt);timeUp();}
+  },1000);
+  render();
+}
+
+function check(i){
+  const inp=document.getElementById('inp'+i);if(!inp)return;
+  const val=inp.value.trim().toLowerCase();
+  const c=ROOMS[roomIdx].clues[i];
+  if(c.ans.some(a=>val.includes(a)||a.split(' ').every(w=>val.includes(w)))){
+    if(!solvedClues.includes(i))solvedClues.push(i);
+    clueIdx=Math.max(clueIdx,i+1);
+    document.getElementById('status').textContent=`CORRECT! ${i<ROOMS[roomIdx].clues.length-1?'Clue '+(i+2)+' unlocked! Keep going!':'ALL CLUES SOLVED! Hit Escaped!'}`;
+    if(solvedClues.length===ROOMS[roomIdx].clues.length)clearInterval(timerInt);
+    render();
+  } else {
+    document.getElementById('status').textContent='Not quite — check your spelling or try a different phrasing!';
+    inp.style.borderColor='#FF5252';
+    setTimeout(()=>{const el=document.getElementById('inp'+i);if(el)el.style.borderColor='#444';},1200);
+  }
+}
+
+function showHint(i){
+  if(hints.includes(i)){hints=hints.filter(h=>h!==i);}else{hints.push(i);totalHints++;}
+  render();
+}
+
+function timeUp(){
+  document.getElementById('status').textContent=`TIME'S UP! ${solvedClues.length}/${ROOMS[roomIdx].clues.length} clues solved. Answers revealed below.`;
+  ROOMS[roomIdx].clues.forEach((_,i)=>{if(!solvedClues.includes(i))solvedClues.push(i);});
+  render();
+}
+
+function escape(){
+  if(!roomsDone.includes(roomIdx))roomsDone.push(roomIdx);
+  if(roomIdx<ROOMS.length-1){init(roomIdx+1);}
+  else{showWin();}
+}
+
+function showWin(){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH ESCAPE ROOM</div></div>
+    <div class="win-box">
+      <div class="win-title">ALL ROOMS ESCAPED!</div>
+      <div style="color:#aaa;font-size:14px;margin-bottom:12px">Your team solved all ${ROOMS.reduce((a,r)=>a+r.clues.length,0)} clues across ${ROOMS.length} rooms!</div>
+      <div style="font-size:20px;color:#00E5FF;font-weight:600">${totalHints===0?'PERFECT RUN — Zero hints!':totalHints<=3?'Excellent work!':totalHints<=6?'Great effort!':'Well done!'}</div>
+      <div style="color:#888;font-size:13px;margin-top:6px">Total hints used: ${totalHints}</div>
+    </div>
+    <div class="main-btns"><button class="btn btn-start" onclick="init(0)">Play Again</button></div>`;
+}
+
+init(0);
+</script>
+</body>
+</html>

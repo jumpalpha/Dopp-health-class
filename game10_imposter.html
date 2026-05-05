@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Imposter — Legend of Wellness</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0a0f1a;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:14px 20px;text-align:center;margin-bottom:14px}
+.hdr-title{font-size:22px;font-weight:700;background:linear-gradient(135deg,#ef4444,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px}
+.hdr-sub{font-size:12px;color:#6b7280;margin-top:3px}
+.alert-banner{background:#7f1d1d;border:1px solid #ef4444;border-radius:8px;padding:10px 14px;text-align:center;margin-bottom:12px;font-size:14px;font-weight:600;color:#fca5a5;letter-spacing:.5px}
+.players-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px}
+.crew-card{border-radius:10px;padding:10px;text-align:center;border:2px solid #374151;background:#111827;transition:border-color .2s}
+.crew-card.imposter{border-color:#ef4444}
+.crew-card.ejected{opacity:.25;border-color:#374151}
+.crew-card.accused{border-color:#f59e0b;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{border-color:#f59e0b}50%{border-color:#ef4444}}
+.crew-avatar{font-size:26px;margin-bottom:4px}
+.crew-name{font-size:12px;font-weight:600;color:#e5e7eb;margin-bottom:2px}
+.crew-role{font-size:10px;color:#6b7280}
+.vote-count{font-size:14px;font-weight:700;color:#ef4444;margin-top:2px}
+.statement-card{background:#111827;border:1px solid #374151;border-radius:12px;padding:16px;margin-bottom:12px}
+.statement-from{font-size:11px;color:#6b7280;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.avatar-sm{font-size:18px}
+.statement-text{font-size:15px;color:#f3f4f6;line-height:1.6;font-style:italic;padding:10px 14px;background:#0a0f1a;border-radius:8px;border-left:3px solid #374151;margin-bottom:8px}
+.statement-text.wrong{border-left-color:#ef4444;background:#1c0a0a}
+.statement-text.correct{border-left-color:#10b981;background:#0a1c14}
+.fact-check{font-size:12px;line-height:1.5;padding:8px 12px;border-radius:6px;display:none;margin-top:6px}
+.fact-check.show{display:block}
+.fact-check.busted{background:#7f1d1d;color:#fca5a5}
+.fact-check.verified{background:#064e3b;color:#6ee7b7}
+.vote-section{background:#111827;border:2px solid #ef4444;border-radius:12px;padding:14px;margin-bottom:12px}
+.vote-title{font-size:14px;font-weight:700;color:#ef4444;margin-bottom:8px;text-align:center;letter-spacing:1px}
+.vote-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.vote-btn{background:#0a0f1a;border:1.5px solid #374151;border-radius:8px;padding:8px;cursor:pointer;text-align:center;font-size:12px;color:#fff;transition:border-color .15s}
+.vote-btn:hover:not(.disabled){border-color:#ef4444}
+.vote-btn.voted{border-color:#ef4444;background:#1c0a0a}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-eject{background:#ef4444;color:#fff;font-size:15px;padding:12px 28px}
+.btn-reveal{background:#a855f7;color:#fff}
+.btn-next{background:#1d4ed8;color:#fff}
+.btn-reset{background:#374151;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.status{background:#111827;border-radius:8px;padding:10px;font-size:13px;color:#9ca3af;text-align:center;margin-bottom:10px;min-height:36px}
+.result-box{border-radius:12px;padding:20px;text-align:center;margin-bottom:14px}
+.result-box.imposter-caught{background:#064e3b;border:2px solid #10b981}
+.result-box.imposter-escaped{background:#7f1d1d;border:2px solid #ef4444}
+.result-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.task-list{background:#111827;border-radius:10px;padding:14px;margin-bottom:12px}
+.task-title{font-size:13px;font-weight:600;color:#a855f7;margin-bottom:8px}
+.task-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1f2937;font-size:13px;color:#d1d5db;cursor:pointer}
+.task-item:last-child{border-bottom:none}
+.task-item.done{color:#10b981;text-decoration:line-through;opacity:.6}
+.task-check{width:16px;height:16px;border-radius:3px;border:1.5px solid #374151;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px}
+.task-check.checked{background:#10b981;border-color:#10b981;color:#fff}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const STATEMENTS=[
+  {speaker:0,wrong:true,text:"I heard that vaping is basically harmless — it's just water vapor, so it can't hurt your lungs.",fact:"BUSTED: E-cigarette aerosol contains nicotine, ultrafine particles, heavy metals (lead, nickel), and VOCs. It is NOT water vapor."},
+  {speaker:1,wrong:false,text:"Fentanyl is so dangerous because it's 50–100 times more potent than morphine, and it's now found in counterfeit pills that look exactly like real prescriptions.",fact:"VERIFIED: This is accurate. Fentanyl is responsible for ~80% of teen drug overdose deaths."},
+  {speaker:2,wrong:true,text:"Teens who drink a little alcohol socially are actually fine — the brain doesn't really get affected until you're drinking heavily every day.",fact:"BUSTED: Alcohol affects the developing adolescent brain at any level. Teens who drink before 15 are 4–5× more likely to develop AUD."},
+  {speaker:3,wrong:false,text:"The HPV vaccine Gardasil 9 protects against 9 strains of HPV — and it's recommended for all people starting at ages 11–12.",fact:"VERIFIED: Gardasil 9 covers 9 HPV strains, up from the original 4. Catch-up dosing is available through age 45."},
+  {speaker:4,wrong:true,text:"If someone's blood pressure is 125 over 75, they're totally normal and have nothing to worry about.",fact:"BUSTED: 125/75 falls in the 'Elevated' category (120–129/less than 80) per 2017 AHA guidelines. Not hypertension, but worth monitoring."},
+  {speaker:5,wrong:false,text:"U=U means Undetectable equals Untransmittable — people with HIV who maintain an undetectable viral load through ART cannot sexually transmit the virus.",fact:"VERIFIED: U=U is established scientific consensus confirmed by multiple large clinical trials."},
+  {speaker:0,wrong:true,text:"Eating a ton of sugar makes kids hyperactive — we've all seen it happen at birthday parties.",fact:"BUSTED: Multiple double-blind studies have found NO link between sugar and hyperactivity. It's a persistent myth — likely a placebo/expectation effect."},
+  {speaker:1,wrong:false,text:"Tobacco kills more Americans every year than alcohol, car accidents, firearms, and illegal drugs — combined.",fact:"VERIFIED: Tobacco kills 480,000+ Americans annually — more than all those causes added together."},
+  {speaker:2,wrong:true,text:"You can tell a fentanyl-laced pill just by looking at it — they're usually a different color or have rough edges.",fact:"BUSTED: Counterfeit fentanyl pills are visually INDISTINGUISHABLE from real medications. There is no way to tell by looking."},
+  {speaker:3,wrong:false,text:"Hands-Only CPR means 100–120 chest compressions per minute — no rescue breaths needed for untrained bystanders helping an adult.",fact:"VERIFIED: The AHA updated guidelines recommend Hands-Only CPR for untrained bystanders. 'Stayin' Alive' sets the correct tempo."},
+  {speaker:4,wrong:true,text:"The meningococcal vaccine is optional and mainly for people traveling abroad — most teens don't need it.",fact:"BUSTED: The meningococcal vaccine is now routinely recommended for ALL teens at ages 11–12, with a booster at 16. Bacterial meningitis can be fatal within hours."},
+  {speaker:5,wrong:false,text:"Colorectal cancer screening now starts at age 45 — it was lowered from 50 because rates in younger adults are rising sharply.",fact:"VERIFIED: The ACS lowered the recommended starting age to 45 in 2021. Colorectal cancer is now the leading cancer cause of death in men under 50."},
+];
+
+const NAMES=["Alex","Sam","Jordan","Riley","Morgan","Casey"];
+const AVATARS=["🟦","🟥","🟨","🟩","🟪","🟧"];
+let imposterIdx=Math.floor(Math.random()*6);
+let statIdx=0;let phase='game';let votes={};let ejected=[];let imposterCaught=false;
+let tasks=['Check: Is vaping safe?','Check: What is U=U?','Check: Is the sugar-hyperactivity link real?','Review CPR guidelines','Verify vaccine recommendations'];
+let tasksDone=[];
+let score=0;
+
+function render(){
+  const g=document.getElementById('app');
+  if(phase==='result'){renderResult();return;}
+  if(statIdx>=STATEMENTS.length){phase='vote';renderVote();return;}
+  const stmt=STATEMENTS[statIdx];
+  const active=NAMES.map((_,i)=>i).filter(i=>!ejected.includes(i));
+  g.innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH IMPOSTER</div><div class="hdr-sub">Find who is spreading health misinformation!</div></div>
+    <div class="alert-banner">⚠ ALERT: A Health Imposter is spreading false health information. Identify them before they corrupt the class!</div>
+    <div class="players-grid">${NAMES.map((n,i)=>`
+      <div class="crew-card${ejected.includes(i)?' ejected':''}">
+        <div class="crew-avatar">${AVATARS[i]}</div>
+        <div class="crew-name">${n}</div>
+        <div class="crew-role">${ejected.includes(i)?'Ejected':'Crewmate'}</div>
+      </div>`).join('')}
+    </div>
+    <div class="task-list">
+      <div class="task-title">📋 Fact-Check Tasks (click to complete)</div>
+      ${tasks.map((t,i)=>`<div class="task-item${tasksDone.includes(i)?' done':''}" onclick="completeTask(${i})"><div class="task-check${tasksDone.includes(i)?' checked':''}">${tasksDone.includes(i)?'✓':''}</div>${t}</div>`).join('')}
+    </div>
+    <div class="statement-card">
+      <div class="statement-from"><span class="avatar-sm">${AVATARS[stmt.speaker]}</span><strong style="color:#e5e7eb">${NAMES[stmt.speaker]}</strong> <span style="color:#6b7280">says:</span></div>
+      <div class="statement-text${stmt.wrong?' wrong':''}">"${stmt.text}"</div>
+      <div class="fact-check${stmt.wrong?' busted':' verified'}" id="fact-check">
+        ${stmt.wrong?'🚫 MISINFORMATION DETECTED':'✅ FACT VERIFIED'}: ${stmt.fact}
+      </div>
+    </div>
+    <div class="status" id="status">Statement ${statIdx+1} of ${STATEMENTS.length}. Discuss with your team — is this true or false?</div>
+    <div class="btns">
+      <button class="btn btn-reveal" onclick="revealFact()">Fact Check</button>
+      <button class="btn btn-next" onclick="nextStatement()">Next Statement</button>
+      <button class="btn btn-eject" onclick="renderVote()">Call Meeting — Vote!</button>
+    </div>`;
+}
+
+function revealFact(){
+  const fc=document.getElementById('fact-check');
+  if(fc) fc.classList.add('show');
+  const stmt=STATEMENTS[statIdx];
+  if(!stmt.wrong) score+=100; else score+=200;
+  document.getElementById('status').textContent=stmt.wrong?'MISINFORMATION DETECTED! +200 pts for catching it!':'True statement confirmed. +100 pts.';
+}
+
+function nextStatement(){statIdx++;render();}
+
+function completeTask(i){
+  if(!tasksDone.includes(i))tasksDone.push(i);
+  render();
+}
+
+function renderVote(){
+  phase='vote';
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">EMERGENCY MEETING</div><div class="hdr-sub">Vote out the Health Imposter!</div></div>
+    <div class="alert-banner">Someone is spreading health misinformation. VOTE THEM OUT!</div>
+    <div class="vote-section">
+      <div class="vote-title">🗳 WHO IS THE IMPOSTER?</div>
+      <div style="font-size:13px;color:#9ca3af;text-align:center;margin-bottom:10px">Based on the misinformation you heard — who do you suspect?</div>
+      <div class="vote-grid">${NAMES.map((n,i)=>{
+        if(ejected.includes(i)) return '';
+        const vc=Object.values(votes).filter(v=>v===i).length;
+        return `<div class="vote-btn${vc>0?' voted':''}" onclick="castVote(${i})">${AVATARS[i]} ${n}<br><span style="color:#ef4444;font-weight:700">${vc} vote${vc!==1?'s':''}</span></div>`;
+      }).join('')}</div>
+    </div>
+    <div class="btns">
+      <button class="btn btn-eject" onclick="eject()">EJECT!</button>
+      <button class="btn btn-reset" onclick="phase='game';render()">Skip Voting</button>
+    </div>`;
+}
+
+let voteKey=0;
+function castVote(i){votes[voteKey++]=i;renderVote();}
+
+function eject(){
+  const tally={};
+  Object.values(votes).forEach(i=>{tally[i]=(tally[i]||0)+1;});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){alert('No votes cast!');return;}
+  const ejectedIdx=parseInt(sorted[0][0]);
+  ejected.push(ejectedIdx);
+  imposterCaught=ejectedIdx===imposterIdx;
+  phase='result';
+  renderResult(ejectedIdx);
+}
+
+function renderResult(ejectedIdx){
+  const wasImposter=ejectedIdx===imposterIdx;
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">MEETING RESULTS</div></div>
+    <div class="result-box${wasImposter?' imposter-caught':' imposter-escaped'}">
+      <div style="font-size:40px;margin-bottom:8px">${wasImposter?'🚀':'😱'}</div>
+      <div class="result-title" style="color:${wasImposter?'#10b981':'#ef4444'}">${wasImposter?'IMPOSTER EJECTED!':'WRONG PLAYER!'}</div>
+      <div style="font-size:20px;font-weight:700;color:#fff;margin:8px 0">${NAMES[ejectedIdx||0]} was ${wasImposter?'THE IMPOSTER!':'innocent!'}</div>
+      ${wasImposter?`<div style="font-size:13px;color:#6ee7b7;margin-top:6px">The real imposter was ${NAMES[imposterIdx]} — spreading health misinformation in statements ${STATEMENTS.filter(s=>s.speaker===imposterIdx&&s.wrong).map(s=>STATEMENTS.indexOf(s)+1).join(', ')}.</div>`:`<div style="font-size:13px;color:#fca5a5;margin-top:6px">The real imposter was ${NAMES[imposterIdx]}! They escaped by spreading misinformation that went undetected.</div>`}
+    </div>
+    <div style="background:#111827;border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="font-size:13px;color:#a855f7;font-weight:600;margin-bottom:8px">Misinformation Summary — what the imposter spread:</div>
+      ${STATEMENTS.filter(s=>s.speaker===imposterIdx&&s.wrong).map(s=>`<div style="background:#1c0a0a;border-left:3px solid #ef4444;padding:8px 10px;margin-bottom:6px;font-size:13px;line-height:1.5;border-radius:0 6px 6px 0"><div style="font-style:italic;color:#fca5a5;margin-bottom:4px">"${s.text}"</div><div style="color:#6b7280">${s.fact}</div></div>`).join('')}
+    </div>
+    <div class="btns"><button class="btn btn-reset" onclick="newGame()" style="font-size:15px;padding:12px 28px">Play Again</button></div>`;
+}
+
+function newGame(){
+  imposterIdx=Math.floor(Math.random()*6);
+  statIdx=0;phase='game';votes={};ejected=[];imposterCaught=false;tasksDone=[];score=0;voteKey=0;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Pictionary Blitz — Legend of Wellness</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0c1a2e;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#1e3a5f;border:2px solid #38bdf8;border-radius:12px;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.hdr-title{font-size:20px;font-weight:700;color:#38bdf8;letter-spacing:1px}
+.timer-lg{font-size:28px;font-weight:700;color:#f59e0b;min-width:50px;text-align:right}
+.timer-lg.warning{color:#ef4444}
+.score-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.team-box{flex:1;min-width:100px;background:#1e3a5f;border:2px solid #1d4ed8;border-radius:10px;padding:8px;text-align:center}
+.team-box.active{border-color:#38bdf8}
+.team-in{background:transparent;border:none;border-bottom:2px solid #38bdf8;color:#38bdf8;font-size:13px;font-weight:700;width:100%;text-align:center;font-family:inherit;padding:3px 0;margin-bottom:3px}
+.team-pts{font-size:20px;font-weight:700;color:#38bdf8}
+.word-card{background:#1e3a5f;border:3px solid #38bdf8;border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.word-category{font-size:11px;color:#7dd3fc;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.word-target{font-size:32px;font-weight:700;color:#f0f9ff;letter-spacing:1px;margin-bottom:8px}
+.word-hint{font-size:13px;color:#7dd3fc;line-height:1.4}
+.word-hidden{font-size:20px;color:#1e3a5f;background:#38bdf8;border-radius:8px;padding:6px 18px;letter-spacing:4px}
+.canvas-area{background:#fff;border-radius:10px;margin-bottom:10px;position:relative;cursor:crosshair;touch-action:none}
+.tool-bar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
+.color-btn{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:border-color .15s}
+.color-btn.active{border-color:#fff}
+.size-btn{background:#1e3a5f;border:1.5px solid #38bdf8;border-radius:6px;color:#38bdf8;font-size:12px;font-weight:600;padding:4px 8px;cursor:pointer}
+.btn{padding:9px 18px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-start{background:#38bdf8;color:#0c1a2e;font-size:15px;padding:12px 28px}
+.btn-correct{background:#10b981;color:#fff}
+.btn-skip{background:#6b7280;color:#fff}
+.btn-clear{background:#ef4444;color:#fff}
+.btn-next{background:#38bdf8;color:#0c1a2e;font-size:15px;padding:12px 24px}
+.btn-reset{background:#334155;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.status{background:#1e3a5f;border-radius:8px;padding:10px;font-size:13px;color:#93c5fd;text-align:center;margin-bottom:10px;min-height:36px}
+.instructions{background:#0f2d47;border-left:3px solid #38bdf8;padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:12px;font-size:13px;color:#bae6fd;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const WORDS=[
+  {word:"HEART",cat:"Body Systems",hint:"Pumps blood through the entire body"},
+  {word:"LUNGS",cat:"Body Systems",hint:"Where oxygen enters the blood"},
+  {word:"SYRINGE",cat:"Medical Tools",hint:"Used to inject vaccines or draw blood"},
+  {word:"SUNSCREEN",cat:"Skin Health",hint:"Protects against UV rays — SPF 30+"},
+  {word:"TREADMILL",cat:"Fitness",hint:"Exercise machine for running indoors"},
+  {word:"BRAIN",cat:"Nervous System",hint:"Control center of the entire body"},
+  {word:"BACTERIA",cat:"Disease",hint:"Microscopic single-celled organism — can be treated with antibiotics"},
+  {word:"AMBULANCE",cat:"Emergency",hint:"Vehicle that rushes patients to the hospital"},
+  {word:"BLOOD PRESSURE CUFF",cat:"Cardiovascular",hint:"Device wrapped around arm to measure hypertension"},
+  {word:"TOOTHBRUSH",cat:"Dental Health",hint:"Use it twice daily to prevent plaque"},
+  {word:"YOGA",cat:"Mental Health",hint:"Mind-body practice combining stretching and breathing"},
+  {word:"CIGARETTE",cat:"Tobacco",hint:"Contains nicotine, tar, and 7,000 chemicals"},
+  {word:"STOMACH",cat:"Digestive System",hint:"Organ that uses acid to break down food"},
+  {word:"SKELETON",cat:"Skeletal System",hint:"206 bones supporting the body"},
+  {word:"VIRUS",cat:"Disease",hint:"Microscopic pathogen — antibiotics won't work"},
+  {word:"THERMOMETER",cat:"Medical Tools",hint:"Measures body temperature — fever is above 100.4°F"},
+  {word:"ALLERGY",cat:"Immune System",hint:"Overreaction to a normally harmless substance"},
+  {word:"CPR",cat:"First Aid",hint:"Chest compressions to restore circulation"},
+  {word:"DEFIBRILLATOR",cat:"Emergency",hint:"Electric shock device — AED — restores heart rhythm"},
+  {word:"SPINE",cat:"Body Systems",hint:"Column of vertebrae protecting the spinal cord"},
+  {word:"KIDNEY",cat:"Excretory System",hint:"Filters waste from the blood into urine"},
+  {word:"ASTHMA INHALER",cat:"Respiratory",hint:"Device delivering medication to open airways"},
+  {word:"FOOD PYRAMID",cat:"Nutrition",hint:"Visual guide to healthy eating — now replaced by MyPlate"},
+  {word:"MOSQUITO",cat:"Disease Vectors",hint:"Insect that spreads malaria and dengue fever"},
+];
+
+let teams=['Team 1','Team 2','Team 3'];let scores=[0,0,0];let currentTeam=0;
+let wordIdx=0;let shuffled=[];let timer=60;let timerInt=null;let running=false;
+let canvas,ctx,painting=false;let brushColor='#000000';let brushSize=5;
+let currentWordVisible=false;
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5);}
+function init(){shuffled=shuffle(WORDS);wordIdx=0;scores=[0,0,0];currentTeam=0;running=false;clearInterval(timerInt);timer=60;currentWordVisible=false;renderSetup();}
+
+function renderSetup(){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH PICTIONARY BLITZ</div><div class="timer-lg">60</div></div>
+    <div class="instructions">
+      <strong>How to play:</strong><br>
+      1. Click <em>Reveal Word</em> — only the drawer sees the word!<br>
+      2. Draw on the canvas — NO letters, numbers, or talking!<br>
+      3. Teammates shout guesses — teacher clicks Correct when they get it!<br>
+      4. Get as many words right in 60 seconds!
+    </div>
+    <div style="font-size:13px;color:#93c5fd;margin-bottom:8px">Teams (edit names):</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      ${teams.map((t,i)=>`<input value="${t}" style="background:#1e3a5f;border:1.5px solid #38bdf8;border-radius:6px;color:#38bdf8;font-size:13px;padding:6px 10px;font-family:inherit;width:110px" onchange="teams[${i}]=this.value">`).join('')}
+      <button class="btn btn-reset" onclick="if(teams.length<5){teams.push('Team '+(teams.length+1));scores.push(0);renderSetup()}" style="font-size:12px;padding:6px 10px">+ Team</button>
+    </div>
+    <div class="btns"><button class="btn btn-start" onclick="renderGame()">Start Game</button></div>`;
+}
+
+function renderGame(){
+  if(wordIdx>=shuffled.length){shuffled=shuffle(WORDS);wordIdx=0;}
+  const w=shuffled[wordIdx];
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH PICTIONARY</div><div class="timer-lg${timer<=15?' warning':''}" id="timer">${timer}</div></div>
+    <div class="score-bar">${teams.map((t,i)=>`<div class="team-box${i===currentTeam?' active':''}"><input class="team-in" value="${t}" onchange="teams[${i}]=this.value"><div class="team-pts">${scores[i]}</div></div>`).join('')}</div>
+    <div class="word-card">
+      <div class="word-category">${w.cat}</div>
+      ${currentWordVisible?`<div class="word-target">${w.word}</div><div class="word-hint">${w.hint}</div>`:`<div class="word-hidden">? ? ? ? ?</div><div style="font-size:12px;color:#7dd3fc;margin-top:6px">Only the drawer should click Reveal!</div>`}
+    </div>
+    <div class="tool-bar">
+      ${['#000000','#ef4444','#3b82f6','#22c55e','#f59e0b','#a855f7','#ec4899','#fff'].map(c=>`<div class="color-btn${brushColor===c?' active':''}" style="background:${c};border-color:${brushColor===c?'#fff':'#374151'}" onclick="brushColor='${c}';renderGame()"></div>`).join('')}
+      <span style="font-size:12px;color:#7dd3fc;margin-left:8px">Size:</span>
+      ${[3,6,12,20].map(s=>`<button class="size-btn${brushSize===s?' active':''}" onclick="brushSize=${s};renderGame()" style="${brushSize===s?'border-color:#f59e0b;color:#f59e0b':''}">${s}</button>`).join('')}
+      <button class="btn btn-clear" style="font-size:12px;padding:5px 10px;margin-left:auto" onclick="clearCanvas()">Clear</button>
+    </div>
+    <canvas id="canvas" class="canvas-area" width="640" height="280" style="width:100%;height:240px"></canvas>
+    <div class="status" id="status">${running?`${teams[currentTeam]} is drawing! Guess the word!`:'Click Reveal Word, then Start Timer!'}</div>
+    <div class="btns">
+      ${!currentWordVisible?`<button class="btn btn-start" onclick="revealWord()">Reveal Word (Drawer Only)</button>`:''}
+      ${currentWordVisible&&!running?`<button class="btn btn-start" onclick="startTimer()">Start Timer</button>`:''}
+      ${running?`<button class="btn btn-correct" onclick="correct()">✓ Correct! +1</button>`:''}
+      ${running?`<button class="btn btn-skip" onclick="skip()">Skip Word</button>`:''}
+    </div>
+    <div class="btns">
+      <button class="btn btn-next" onclick="nextTeam()">Next Team's Turn</button>
+      <button class="btn btn-reset" onclick="init()">New Game</button>
+    </div>`;
+  setupCanvas();
+  if(running) startTimerDisplay();
+}
+
+function revealWord(){currentWordVisible=true;renderGame();}
+
+function startTimer(){
+  running=true;timer=60;
+  startTimerDisplay();
+  renderGame();
+}
+
+function startTimerDisplay(){
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    timer=Math.max(0,timer-1);
+    const el=document.getElementById('timer');
+    if(el){el.textContent=timer;el.className='timer-lg'+(timer<=15?' warning':'');}
+    if(timer<=0){clearInterval(timerInt);endRound();}
+  },1000);
+}
+
+function endRound(){
+  running=false;
+  document.getElementById('status').textContent=`Time's up! ${teams[currentTeam]} earned points this round.`;
+}
+
+function correct(){scores[currentTeam]++;wordIdx++;currentWordVisible=false;renderGame();}
+function skip(){wordIdx++;currentWordVisible=false;renderGame();}
+
+function nextTeam(){
+  clearInterval(timerInt);running=false;timer=60;currentWordVisible=false;
+  currentTeam=(currentTeam+1)%teams.length;renderGame();
+}
+
+function setupCanvas(){
+  canvas=document.getElementById('canvas');if(!canvas)return;
+  ctx=canvas.getContext('2d');
+  canvas.addEventListener('mousedown',e=>{painting=true;draw(e);});
+  canvas.addEventListener('mousemove',e=>{if(painting)draw(e);});
+  canvas.addEventListener('mouseup',()=>painting=false);
+  canvas.addEventListener('mouseleave',()=>painting=false);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();painting=true;draw(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(painting)draw(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchend',()=>painting=false);
+}
+
+function draw(e){
+  if(!ctx)return;
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width;const scaleY=canvas.height/rect.height;
+  const x=(e.clientX-rect.left)*scaleX;const y=(e.clientY-rect.top)*scaleY;
+  ctx.lineWidth=brushSize;ctx.lineCap='round';ctx.strokeStyle=brushColor;
+  ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);
+}
+
+function clearCanvas(){if(ctx)ctx.clearRect(0,0,640,280);}
+
+init();
+</script>
+</body>
+</html>

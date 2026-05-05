@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Jeopardy — Legend of Wellness</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0a0a2e;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#1a237e;color:#fff;border-radius:10px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.hdr-title{font-size:20px;font-weight:700;letter-spacing:1px;color:#FFD700}
+.scores{display:flex;gap:16px}
+.score-box{background:rgba(255,255,255,0.15);border-radius:8px;padding:8px 16px;text-align:center;cursor:pointer;min-width:100px}
+.score-box:hover{background:rgba(255,255,255,0.25)}
+.score-box.active{background:rgba(255,215,0,0.3);border:1.5px solid #FFD700}
+.score-label{font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:2px}
+.score-val{font-size:22px;font-weight:700;color:#FFD700}
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+.cat-header{background:#1a237e;color:#fff;border-radius:8px;padding:10px 6px;text-align:center;font-size:12px;font-weight:700;min-height:52px;display:flex;align-items:center;justify-content:center}
+.cell{background:#1a237e;color:#FFD700;border-radius:8px;padding:8px 4px;text-align:center;font-size:18px;font-weight:700;cursor:pointer;min-height:64px;display:flex;align-items:center;justify-content:center;border:0.5px solid rgba(255,215,0,0.2);transition:background .15s}
+.cell:hover:not(.used){background:#283593}
+.cell.used{background:#0d1b5e;color:rgba(255,255,255,0.1);cursor:default}
+.cell.daily-double{border:2px solid #FFD700}
+.modal-wrap{background:rgba(10,10,40,0.95);border-radius:12px;padding:0;margin-bottom:14px;overflow:hidden}
+.modal-header{background:#1a237e;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
+.modal-cat{font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;text-transform:uppercase}
+.modal-pts{font-size:18px;color:#FFD700;font-weight:700}
+.modal-body{padding:20px 18px}
+.clue-text{font-size:17px;color:#fff;line-height:1.6;text-align:center;margin-bottom:20px;min-height:60px}
+.answer-text{font-size:15px;color:#81C784;border-top:0.5px solid rgba(255,255,255,0.15);padding-top:14px;margin-top:4px;display:none;line-height:1.5}
+.answer-text.show{display:block}
+.modal-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{padding:9px 18px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-reveal{background:#1565C0;color:#fff}
+.btn-correct{background:#2E7D32;color:#fff}
+.btn-wrong{background:#C62828;color:#fff}
+.btn-close{background:rgba(255,255,255,0.1);color:#fff}
+.dd-input{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.dd-input label{color:rgba(255,255,255,0.8);font-size:13px}
+.dd-input input{background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,215,0,0.5);border-radius:6px;color:#FFD700;font-size:16px;font-weight:700;padding:6px 10px;width:100px;font-family:inherit}
+.fj-section{background:#111;border:2px solid #FFD700;border-radius:10px;padding:14px 18px;margin-bottom:14px}
+.fj-title{color:#FFD700;font-size:14px;font-weight:700;margin-bottom:10px}
+.status-bar{font-size:12px;color:rgba(255,255,255,0.5);text-align:center;padding:6px 0}
+.setup-panel{padding:8px 0 14px}
+.team-input{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.team-input input{flex:1;font-family:inherit;background:rgba(255,255,255,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:8px 12px;font-size:14px;color:#fff}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="setup-view">
+  <div style="background:#1a237e;border-radius:10px;padding:20px;margin-bottom:14px;text-align:center">
+    <div style="font-size:28px;font-weight:700;color:#FFD700;letter-spacing:2px;margin-bottom:6px">HEALTH JEOPARDY</div>
+    <div style="color:rgba(255,255,255,0.7);font-size:13px">Legend of Wellness — Classroom Edition</div>
+  </div>
+  <div class="setup-panel">
+    <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:10px">Enter team names (2–4 teams):</div>
+    <div class="team-input"><input id="t1" value="Team 1" placeholder="Team 1"></div>
+    <div class="team-input"><input id="t2" value="Team 2" placeholder="Team 2"></div>
+    <div class="team-input"><input id="t3" value="" placeholder="Team 3 (optional)"></div>
+    <div class="team-input"><input id="t4" value="" placeholder="Team 4 (optional)"></div>
+    <button class="btn btn-correct" style="margin-top:10px;width:100%;font-size:15px;padding:12px" onclick="startGame()">Start Game</button>
+  </div>
+</div>
+<div id="game-view" style="display:none">
+  <div class="hdr">
+    <div class="hdr-title">HEALTH JEOPARDY</div>
+    <div class="scores" id="scores-bar"></div>
+  </div>
+  <div id="modal-area"></div>
+  <div class="board" id="board"></div>
+  <div class="fj-section" id="fj-section">
+    <div class="fj-title">Final Jeopardy — Category: <span style="color:#FFD700">The Big Picture (All Chapters)</span></div>
+    <div style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:10px">Complete the board first, then play Final Jeopardy.</div>
+    <div id="fj-controls"><button class="btn btn-reveal" onclick="showFinalJeopardy()">Reveal Final Jeopardy Clue</button></div>
+  </div>
+  <div class="status-bar" id="status-bar">Click any dollar value to begin. Daily Double is hidden on the board!</div>
+</div>
+</div>
+<script>
+const CATS=["Wellness & Mental Health","Body Systems","Nutrition & Fitness","Substances & Risks","Disease & Safety"];
+const QS=[
+  [{q:"This term describes the combination of physical, mental/emotional, and social well-being.",a:"What is health?",dd:false},
+   {q:"The three sides of this model represent physical, mental/emotional, and social health.",a:"What is the health triangle?",dd:false},
+   {q:"This type of health refers to your ability to handle stress and express emotions appropriately.",a:"What is mental/emotional health?",dd:true},
+   {q:"A person with this quality accepts responsibility, has self-confidence, and resists negative peer pressure.",a:"What is good character?",dd:false},
+   {q:"These are the seven components of wellness — physical, emotional, intellectual, social, spiritual, environmental, and this seventh one.",a:"What is occupational wellness?",dd:false}],
+  [{q:"This largest organ of your body acts as a barrier against pathogens and regulates temperature.",a:"What is the skin?",dd:false},
+   {q:"The last brain region to fully mature — not complete until ~age 25 — responsible for impulse control.",a:"What is the prefrontal cortex?",dd:false},
+   {q:"With 206 bones, this system provides structural support and produces blood cells.",a:"What is the skeletal system?",dd:true},
+   {q:"This endocrine gland is called the 'master gland' because it regulates all other endocrine glands.",a:"What is the pituitary gland?",dd:false},
+   {q:"These microscopic filtering units of the kidney — over a million per kidney — remove waste from blood.",a:"What are nephrons?",dd:false}],
+  [{q:"According to MyPlate, make half your plate these two food groups.",a:"What are fruits and vegetables?",dd:false},
+   {q:"This nutrient is your body's main energy source — get 45–65% of calories from it.",a:"What are carbohydrates?",dd:false},
+   {q:"Current recommendation for teens is at least this many minutes of physical activity every day.",a:"What is 60 minutes?",dd:true},
+   {q:"This eating disorder involves cycles of binge eating followed by purging — most common in males.",a:"What is binge eating disorder?",dd:false},
+   {q:"These five principles of building fitness: specificity, overload, progression, regularity, and this fifth one.",a:"What is type (F.I.T.T.)?",dd:false}],
+  [{q:"This synthetic opioid is 50–100 times more potent than morphine and is found in counterfeit pills.",a:"What is fentanyl?",dd:false},
+   {q:"The federal minimum age to purchase tobacco products in the U.S., raised in December 2019.",a:"What is 21?",dd:false},
+   {q:"In 2024, only this percentage of 8th–12th graders reported past-30-day alcohol use — a 25-year low.",a:"What is 13%?",dd:true},
+   {q:"This OTC medication rapidly reverses an opioid overdose when sprayed in the nose.",a:"What is naloxone (Narcan)?",dd:false},
+   {q:"U=U stands for this — meaning a person with undetectable viral load cannot sexually transmit HIV.",a:"What is Undetectable equals Untransmittable?",dd:false}],
+  [{q:"The most common STI in the United States.",a:"What is HPV?",dd:false},
+   {q:"This disease is the #1 cause of death in the United States.",a:"What is cardiovascular disease?",dd:false},
+   {q:"The ABCDE rule is used to check moles for this — the most serious form of skin cancer.",a:"What is melanoma?",dd:true},
+   {q:"Updated CPR guidelines recommend this type of CPR for untrained bystanders with adult cardiac arrest.",a:"What is Hands-Only CPR?",dd:false},
+   {q:"This leading preventable cause of intellectual disability results from alcohol exposure during pregnancy.",a:"What are Fetal Alcohol Spectrum Disorders (FASD)?",dd:false}]
+];
+const VALS=[200,400,600,800,1000];
+const FJ={q:"This final chapter covers the health care system, air quality, and protecting land and water.",a:"What is Chapter 28: Community and Environmental Health?"};
+let teams=[],scores=[],used=[],activeQ=null,revealedAnswer=false,currentTeam=0,ddWager=0;
+function startGame(){
+  const names=[document.getElementById('t1').value.trim(),document.getElementById('t2').value.trim(),document.getElementById('t3').value.trim(),document.getElementById('t4').value.trim()].filter(n=>n);
+  if(names.length<2){alert('Please enter at least 2 team names.');return;}
+  teams=names;scores=names.map(()=>0);used=Array.from({length:5},()=>Array(5).fill(false));
+  document.getElementById('setup-view').style.display='none';
+  document.getElementById('game-view').style.display='block';
+  renderScores();renderBoard();
+}
+function renderScores(){
+  document.getElementById('scores-bar').innerHTML=teams.map((t,i)=>`<div class="score-box ${i===currentTeam?'active':''}" onclick="currentTeam=${i};renderScores()"><div class="score-label">${t}</div><div class="score-val">$${scores[i].toLocaleString()}</div></div>`).join('');
+}
+function renderBoard(){
+  const b=document.getElementById('board');b.innerHTML='';
+  CATS.forEach(c=>{const d=document.createElement('div');d.className='cat-header';d.textContent=c;b.appendChild(d);});
+  VALS.forEach((v,ri)=>{CATS.forEach((_,ci)=>{
+    const d=document.createElement('div');
+    d.className='cell'+(used[ci][ri]?' used':'')+(QS[ci][ri].dd?' daily-double':'');
+    d.textContent=used[ci][ri]?'':('$'+v.toLocaleString());
+    if(!used[ci][ri])d.onclick=()=>openQ(ci,ri,v);
+    b.appendChild(d);
+  });});
+}
+function openQ(ci,ri,val){
+  if(used[ci][ri])return;
+  activeQ={ci,ri,val};revealedAnswer=false;ddWager=val;
+  const q=QS[ci][ri];const isDD=q.dd;
+  document.getElementById('modal-area').innerHTML=`<div class="modal-wrap">
+    <div class="modal-header"><span class="modal-cat">${CATS[ci]}</span><span class="modal-pts">${isDD?'DAILY DOUBLE':'$'+val.toLocaleString()}</span></div>
+    <div class="modal-body">
+      ${isDD?`<div class="dd-input"><label>Wager (max $${Math.max(val,scores[currentTeam]).toLocaleString()}):</label><input type="number" id="dd-wager" value="${val}" min="100" max="${Math.max(val,scores[currentTeam])}"></div>`:''}
+      <div class="clue-text">${q.q}</div>
+      <div class="answer-text" id="answer-text">Correct response: <strong>${q.a}</strong></div>
+      <div class="modal-btns">
+        <button class="btn btn-reveal" onclick="revealAnswer()" id="reveal-btn">Reveal Answer</button>
+        <button class="btn btn-correct" onclick="award(true)" id="correct-btn" style="display:none">Correct</button>
+        <button class="btn btn-wrong" onclick="award(false)" id="wrong-btn" style="display:none">Wrong</button>
+        <button class="btn btn-close" onclick="closeQ()">Close</button>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.4)">Current turn: <strong style="color:#FFD700">${teams[currentTeam]}</strong></div>
+    </div></div>`;
+}
+function revealAnswer(){
+  revealedAnswer=true;
+  document.getElementById('answer-text').classList.add('show');
+  document.getElementById('reveal-btn').style.display='none';
+  const q=QS[activeQ.ci][activeQ.ri];const isDD=q.dd;
+  const wager=isDD?parseInt(document.getElementById('dd-wager').value)||activeQ.val:activeQ.val;
+  ddWager=wager;
+  document.getElementById('correct-btn').style.display='';document.getElementById('correct-btn').textContent=`Correct (+$${wager.toLocaleString()})`;
+  document.getElementById('wrong-btn').style.display='';document.getElementById('wrong-btn').textContent=`Wrong (-$${wager.toLocaleString()})`;
+}
+function award(correct){
+  if(!revealedAnswer)return;
+  scores[currentTeam]+=(correct?1:-1)*ddWager;
+  used[activeQ.ci][activeQ.ri]=true;
+  document.getElementById('modal-area').innerHTML='';
+  currentTeam=(currentTeam+1)%teams.length;
+  renderScores();renderBoard();
+  if(used.every(col=>col.every(v=>v)))document.getElementById('status-bar').textContent='Board complete! Play Final Jeopardy below.';
+}
+function closeQ(){document.getElementById('modal-area').innerHTML='';if(activeQ){used[activeQ.ci][activeQ.ri]=true;}renderBoard();}
+function showFinalJeopardy(){
+  document.getElementById('fj-controls').innerHTML=`<div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;margin-bottom:12px"><div style="color:#FFD700;font-size:13px;font-weight:700;margin-bottom:8px">Final Jeopardy Clue:</div><div style="color:#fff;font-size:15px;line-height:1.6">${FJ.q}</div></div>
+  <div style="color:#FFD700;font-size:13px;font-weight:700;margin-bottom:8px">Enter wagers, then reveal answer:</div>
+  ${teams.map((t,i)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="color:rgba(255,255,255,0.8);font-size:13px;min-width:80px">${t}</span><input id="fj-w${i}" type="number" value="${Math.max(0,scores[i])}" min="0" max="${Math.max(0,scores[i])}" style="background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,215,0,0.5);border-radius:6px;color:#FFD700;font-size:14px;padding:5px 8px;width:100px;font-family:inherit"></div>`).join('')}
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-reveal" onclick="revealFJ()">Reveal Answer</button></div>`;
+}
+function revealFJ(){
+  const wagers=teams.map((_,i)=>parseInt(document.getElementById('fj-w'+i).value)||0);
+  document.getElementById('fj-controls').innerHTML=`<div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;margin-bottom:12px"><div style="color:#FFD700;font-size:13px;font-weight:700;margin-bottom:8px">Correct response:</div><div style="color:#81C784;font-size:15px;line-height:1.6">${FJ.a}</div></div>
+  ${teams.map((t,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="color:rgba(255,255,255,0.8);font-size:13px;min-width:80px">${t}</span><span style="color:#FFD700;font-size:13px">wager: $${wagers[i].toLocaleString()}</span><button class="btn btn-correct" style="padding:6px 12px;font-size:12px" onclick="fjScore(${i},${wagers[i]},true)">Correct</button><button class="btn btn-wrong" style="padding:6px 12px;font-size:12px" onclick="fjScore(${i},${wagers[i]},false)">Wrong</button></div>`).join('')}
+  <button class="btn btn-reveal" style="margin-top:10px" onclick="showWinner()">Show Final Scores</button>`;
+}
+function fjScore(i,w,correct){scores[i]+=(correct?1:-1)*w;renderScores();}
+function showWinner(){
+  const max=Math.max(...scores);const winner=teams[scores.indexOf(max)];
+  document.getElementById('fj-section').innerHTML=`<div style="text-align:center;padding:16px 0"><div style="font-size:24px;color:#FFD700;font-weight:700;margin-bottom:8px">FINAL SCORES</div>${teams.map((t,i)=>`<div style="color:${scores[i]===max?'#FFD700':'rgba(255,255,255,0.7)'};font-size:${scores[i]===max?'20px':'15px'};margin:4px 0;font-weight:${scores[i]===max?'700':'400'}">${t}: $${scores[i].toLocaleString()}${scores[i]===max?' WINNER!':''}</div>`).join('')}</div>`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Survivor — Legend of Wellness</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#1a0a00;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#3E2723,#1a0a00);border:1px solid #5D4037;border-radius:12px;padding:14px 20px;text-align:center;margin-bottom:14px}
+.hdr-title{font-size:24px;font-weight:700;color:#FFD54F;letter-spacing:2px}
+.hdr-sub{font-size:12px;color:rgba(255,213,79,0.6);margin-top:3px}
+.tribe{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px}
+.player-card{background:#2C1810;border:2px solid #5D4037;border-radius:10px;padding:10px;text-align:center;position:relative}
+.player-card.immune{border-color:#FFD54F}
+.player-card.voted-out{opacity:.3;border-color:#333;text-decoration:line-through}
+.player-card.has-vote{border-color:#FF5252}
+.player-avatar{font-size:24px;margin-bottom:4px}
+.player-name{font-size:12px;font-weight:600;color:#FFD54F;margin-bottom:2px}
+.player-pts{font-size:18px;font-weight:700;color:#fff}
+.vote-badge{position:absolute;top:4px;right:4px;background:#FF5252;color:#fff;font-size:10px;font-weight:700;padding:2px 5px;border-radius:6px}
+.immune-badge{position:absolute;top:4px;left:4px;font-size:12px}
+.q-card{background:#2C1810;border:1px solid #5D4037;border-radius:10px;padding:16px;margin-bottom:12px}
+.q-round{font-size:11px;color:#8D6E63;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.q-text{font-size:15px;color:#fff;line-height:1.6;margin-bottom:10px}
+.q-debate{background:#1a0a00;border-left:3px solid #FFD54F;padding:8px 12px;font-size:13px;color:#FFD54F;margin-bottom:10px;line-height:1.5}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.opt{background:#1a0a00;border:1.5px solid #5D4037;border-radius:8px;padding:10px 12px;cursor:pointer;color:#fff;font-size:13px;transition:border-color .15s}
+.opt:hover:not(.disabled){border-color:#FFD54F}
+.opt.correct{background:#1B5E20;border-color:#4CAF50}
+.opt.wrong{background:#7f0000;border-color:#FF5252}
+.opt.disabled{cursor:default}
+.answer-reveal{background:#1a0a00;border-left:3px solid #4CAF50;padding:8px 12px;font-size:13px;color:#81C784;margin-bottom:10px;display:none;line-height:1.5}
+.answer-reveal.show{display:block}
+.vote-section{background:#2C1810;border:2px solid #FF5252;border-radius:10px;padding:14px;margin-bottom:12px}
+.vote-title{font-size:14px;font-weight:700;color:#FF5252;margin-bottom:8px;text-align:center;letter-spacing:1px}
+.vote-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.vote-btn{background:#1a0a00;border:1.5px solid #5D4037;border-radius:8px;padding:8px;cursor:pointer;text-align:center;font-size:13px;color:#fff;transition:border-color .15s}
+.vote-btn:hover:not(.disabled){border-color:#FF5252}
+.vote-btn.voted{border-color:#FF5252;background:rgba(255,82,82,0.15)}
+.vote-btn.disabled{opacity:.4;cursor:default}
+.immunity-section{background:#2C1810;border:2px solid #FFD54F;border-radius:10px;padding:14px;margin-bottom:12px}
+.immunity-title{font-size:14px;font-weight:700;color:#FFD54F;margin-bottom:8px;text-align:center}
+.immunity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.imm-btn{background:#1a0a00;border:1.5px solid #5D4037;border-radius:8px;padding:8px;cursor:pointer;text-align:center;font-size:13px;color:#fff;transition:border-color .15s}
+.imm-btn:hover:not(.disabled){border-color:#FFD54F}
+.imm-btn.selected{border-color:#FFD54F;background:rgba(255,213,79,0.15)}
+.imm-btn.disabled{opacity:.4;cursor:default}
+.status{background:#2C1810;border-radius:8px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,0.7);text-align:center;margin-bottom:10px;min-height:38px}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.btn{padding:10px 22px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-main{background:#FFD54F;color:#1a0a00}
+.btn-vote{background:#FF5252;color:#fff}
+.btn-reset{background:#333;color:#fff}
+.tribal{background:#1a0a00;border:2px solid #FF5252;border-radius:12px;padding:20px;text-align:center;margin-bottom:14px}
+.tribal-title{font-size:20px;font-weight:700;color:#FF5252;margin-bottom:8px}
+.snuff{font-size:36px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const QUESTIONS=[
+  {q:"What is the #1 cause of preventable death in the United States?",opts:["A: Car accidents","B: Tobacco use","C: Drug overdoses","D: Obesity"],ans:1,pts:300,debate:"Should energy drinks be banned for anyone under 18? Argue your side."},
+  {q:"Which blood pressure reading indicates Stage 1 Hypertension per updated 2017 AHA guidelines?",opts:["A: 120/80","B: 130/80","C: 140/90","D: 150/95"],ans:1,pts:400,debate:"Should fast food restaurants be required to post calorie counts prominently on menus? Debate."},
+  {q:"Teen drinking is at a 25-year low. What percentage of 8th–12th graders reported past-30-day alcohol use in 2024?",opts:["A: 45%","B: 26%","C: 20%","D: 13%"],ans:3,pts:500,debate:"Should the drinking age be raised to 25 based on brain development research? Defend your position."},
+  {q:"Fentanyl is approximately how many times more potent than heroin?",opts:["A: 5 times","B: 10 times","C: 25 times","D: 50 times"],ans:3,pts:500,debate:"Should naloxone (Narcan) be required in every high school nurse's office? Why or why not?"},
+  {q:"The current HPV vaccine (Gardasil 9) protects against how many HPV strains?",opts:["A: 2","B: 4","C: 9","D: 14"],ans:2,pts:400,debate:"Should the HPV vaccine be required for school attendance like MMR vaccines? Argue your side."},
+  {q:"What does U=U mean in HIV treatment?",opts:["A: Untested = Unsafe","B: Undetectable = Untransmittable","C: Uninfected = Unprotected","D: Universal = Unavoidable"],ans:1,pts:500,debate:"Should HIV status be required to be disclosed to all partners? Discuss privacy vs. public health."},
+  {q:"Colorectal cancer screening age was lowered in 2021. What is the new recommended starting age?",opts:["A: 40","B: 45","C: 50","D: 55"],ans:1,pts:400,debate:"Should health insurance be required to cover ALL preventive screenings at no cost? Debate."},
+  {q:"What is the compression rate per minute for adult CPR?",opts:["A: 60–80","B: 80–100","C: 100–120","D: 120–140"],ans:2,pts:300,debate:"Should CPR training be mandatory for all high school graduation requirements? Defend your view."},
+  {q:"Which law raised the minimum age to purchase tobacco products in the U.S. from 18 to 21?",opts:["A: Clean Air Act","B: Tobacco 21","C: Youth Tobacco Act","D: FDA Modernization Act"],ans:1,pts:400,debate:"Should vaping and e-cigarettes be classified as tobacco products and banned from schools? Why?"},
+  {q:"Approximately how many Americans die from cardiovascular disease every year?",opts:["A: 200,000","B: 450,000","C: 919,000","D: 1.2 million"],ans:2,pts:500,debate:"Should PE class be required every single day of high school? Make your case."},
+];
+
+const AVATARS=["🧑","👩","🧑‍🦱","👩‍🦰","🧑‍🦲","👩‍🦳","🧑‍🦳","👨"];
+let players=[];let scores=[];let immune=-1;let eliminated=[];let votes={};let qIdx=0;
+let phase='setup';let answered=false;let selectedVote=-1;let immuneSelected=-1;
+
+function setup(){
+  const names=["Alex","Jordan","Sam","Riley","Morgan","Casey","Taylor","Drew"];
+  players=names.slice(0,6);scores=players.map(()=>0);immune=-1;eliminated=[];votes={};qIdx=0;phase='question';answered=false;selectedVote=-1;immuneSelected=-1;
+  render();
+}
+
+function activePlayers(){return players.map((_,i)=>i).filter(i=>!eliminated.includes(i));}
+
+function render(){
+  const g=document.getElementById('app');
+  if(phase==='setup'){renderSetup();return;}
+  if(phase==='tribal'){renderTribal();return;}
+  if(phase==='win'){renderWin();return;}
+  const q=QUESTIONS[qIdx%QUESTIONS.length];
+  const active=activePlayers();
+  g.innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH SURVIVOR</div><div class="hdr-sub">Round ${qIdx+1} — ${active.length} players remaining</div></div>
+    <div class="tribe">${players.map((p,i)=>{
+      const voteCount=Object.values(votes).filter(v=>v===i).length;
+      return `<div class="player-card${eliminated.includes(i)?' voted-out':immune===i?' immune':voteCount>0?' has-vote':''}">
+        ${immune===i?`<div class="immune-badge">⭐</div>`:''}
+        ${voteCount>0&&!eliminated.includes(i)?`<div class="vote-badge">${voteCount} vote${voteCount>1?'s':''}</div>`:''}
+        <div class="player-avatar">${AVATARS[i%AVATARS.length]}</div>
+        <div class="player-name">${p}</div>
+        <div class="player-pts">${scores[i]}</div>
+      </div>`;
+    }).join('')}</div>
+    <div class="q-card">
+      <div class="q-round">Round ${qIdx+1} — Health Challenge</div>
+      <div class="q-text">${q.q}</div>
+      ${q.debate?`<div class="q-debate">🗣 Debate prompt: "${q.debate}"</div>`:''}
+      <div class="options">${q.opts.map((o,i)=>`<div class="opt${answered?(i===q.ans?' correct':(i!==q.ans&&answered?' disabled wrong-if-picked':' disabled')):''}" onclick="${answered?'':'pick('+i+')'}">${o}</div>`).join('')}</div>
+      <div class="answer-reveal${answered?' show':''}" id="ans">The correct answer is: <strong>${q.opts[q.ans]}</strong></div>
+    </div>
+    <div class="status" id="status">${answered?`Correct answer revealed! Debate if prompted, then conduct tribal council.`:`Each active player answers — teacher scores each one. Worth ${q.pts} pts.`}</div>
+    <div class="btns">
+      ${!answered?`<button class="btn btn-main" onclick="revealAnswer()">Reveal Answer</button>`:''}
+      ${answered?`<button class="btn btn-main" onclick="showImmunity()">Award Immunity ⭐</button>`:''}
+      <button class="btn btn-reset" onclick="setup()">Restart</button>
+    </div>`;
+}
+
+function pick(i){
+  if(answered) return;
+  const q=QUESTIONS[qIdx%QUESTIONS.length];
+  if(i===q.ans){
+    scores[activePlayers()[0]]+=q.pts;
+  }
+  answered=true;render();
+}
+
+function revealAnswer(){answered=true;render();}
+
+function showImmunity(){
+  const active=activePlayers();
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">IMMUNITY CHALLENGE</div><div class="hdr-sub">Who earns protection this round?</div></div>
+    <div class="immunity-section">
+      <div class="immunity-title">⭐ Award Immunity to:</div>
+      <div class="immunity-grid">${active.map(i=>`<div class="imm-btn${immuneSelected===i?' selected':''}" onclick="selectImmune(${i})">${AVATARS[i%AVATARS.length]} ${players[i]}<br><span style="font-size:11px;color:#888">${scores[i]} pts</span></div>`).join('')}</div>
+    </div>
+    <div class="status">The player with immunity CANNOT be voted out this round.</div>
+    <div class="btns"><button class="btn btn-main" onclick="startVoting()" ${immuneSelected<0?'disabled':''}>Proceed to Tribal Council</button></div>`;
+}
+
+function selectImmune(i){immuneSelected=i;immune=i;showImmunity();}
+
+function startVoting(){
+  if(immune<0) return;
+  const active=activePlayers().filter(i=>i!==immune);
+  votes={};selectedVote=-1;
+  renderVoting(active);
+}
+
+function renderVoting(active){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">TRIBAL COUNCIL</div><div class="hdr-sub">Vote someone out — ${immune>=0?players[immune]+' has immunity':''}</div></div>
+    <div class="vote-section">
+      <div class="vote-title">🗳 CAST YOUR VOTE</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;margin-bottom:10px">Teacher tallies class votes. Click to add a vote to each player.</div>
+      <div class="vote-grid">${players.map((p,i)=>{
+        if(eliminated.includes(i)||i===immune) return '';
+        const vc=Object.values(votes).filter(v=>v===i).length;
+        return `<div class="vote-btn${vc>0?' voted':''}" onclick="addVote(${i})">${AVATARS[i%AVATARS.length]} ${p}<br><span style="font-size:12px;color:#FF5252;font-weight:700">${vc} vote${vc!==1?'s':''}</span></div>`;
+      }).join('')}
+      </div>
+    </div>
+    <div class="status">Add votes from the class, then click Snuff the Torch to eliminate the player with the most votes.</div>
+    <div class="btns">
+      <button class="btn btn-vote" onclick="tallyVotes()">Snuff the Torch 🔥</button>
+      <button class="btn btn-reset" onclick="render()">Back</button>
+    </div>`;
+}
+
+function addVote(i){
+  if(!votes[Object.keys(votes).length]) votes[Object.keys(votes).length]=i;
+  else votes[Date.now()]=i;
+  const active=activePlayers().filter(p=>p!==immune);
+  renderVoting(active);
+}
+
+function tallyVotes(){
+  const tally={};
+  Object.values(votes).forEach(i=>{tally[i]=(tally[i]||0)+1;});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){alert('No votes cast!');return;}
+  const loser=parseInt(sorted[0][0]);
+  eliminated.push(loser);
+  votes={};immuneSelected=-1;immune=-1;
+  phase='tribal';
+  renderTribal(loser);
+}
+
+function renderTribal(loser){
+  const active=activePlayers();
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">TRIBAL COUNCIL</div></div>
+    <div class="tribal">
+      <div class="snuff">🔥</div>
+      <div class="tribal-title">${players[loser]}, the tribe has spoken.</div>
+      <div style="color:#aaa;font-size:13px;margin-bottom:14px">${players[loser]} has been voted out. ${active.length} players remain.</div>
+      ${active.length===1?`<div style="color:#FFD54F;font-size:18px;font-weight:700;margin-bottom:8px">SOLE SURVIVOR: ${players[active[0]]}! 🏆</div>`:''}
+    </div>
+    <div class="btns">
+      ${active.length>1?`<button class="btn btn-main" onclick="nextRound()">Continue to Next Round</button>`:''}
+      ${active.length===1?`<button class="btn btn-main" onclick="renderWin(${active[0]})">See Final Results</button>`:''}
+      <button class="btn btn-reset" onclick="setup()">New Game</button>
+    </div>`;
+}
+
+function nextRound(){qIdx++;answered=false;phase='question';render();}
+
+function renderWin(winner){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH SURVIVOR</div></div>
+    <div style="background:#2C1810;border:2px solid #FFD54F;border-radius:12px;padding:24px;text-align:center;margin-bottom:14px">
+      <div style="font-size:36px;margin-bottom:8px">🏆</div>
+      <div style="font-size:24px;font-weight:700;color:#FFD54F;margin-bottom:6px">SOLE SURVIVOR</div>
+      <div style="font-size:20px;color:#fff;margin-bottom:8px">${players[winner!==undefined?winner:activePlayers()[0]]}</div>
+      <div style="font-size:14px;color:#8D6E63">Final score: ${scores[winner!==undefined?winner:activePlayers()[0]]} pts</div>
+      <div style="margin-top:14px">
+        <div style="font-size:13px;color:#FFD54F;margin-bottom:6px">All Scores:</div>
+        ${players.map((p,i)=>`<div style="font-size:13px;color:${eliminated.indexOf(i)>=0?'#555':'#fff'};margin:3px 0">${p}: ${scores[i]} pts ${eliminated.indexOf(i)>=0?'(voted out round '+(eliminated.indexOf(i)+1)+')':' WINNER'}</div>`).join('')}
+      </div>
+    </div>
+    <div class="btns"><button class="btn btn-main" onclick="setup()">Play Again</button></div>`;
+}
+
+function renderSetup(){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH SURVIVOR</div><div class="hdr-sub">Legend of Wellness Edition</div></div>
+    <div style="background:#2C1810;border-radius:10px;padding:16px;margin-bottom:14px">
+      <div style="font-size:14px;color:#FFD54F;font-weight:600;margin-bottom:8px">How to Play</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8">
+        1. Each round, all active players answer a health question (teacher scores).<br>
+        2. The teacher optionally opens a class debate on the prompt.<br>
+        3. Award immunity to the top scorer.<br>
+        4. The class votes someone out at Tribal Council.<br>
+        5. Last player standing is the Sole Survivor!
+      </div>
+    </div>
+    <div class="btns"><button class="btn btn-main" onclick="setup()" style="font-size:16px;padding:14px 36px">Start the Game</button></div>`;
+}
+
+renderSetup();
+</script>
+</body>
+</html>

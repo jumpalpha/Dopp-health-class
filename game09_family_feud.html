@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Family Feud — Legend of Wellness</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#880000;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#4a0000,#880000);border:2px solid #FFD700;border-radius:12px;padding:14px 20px;text-align:center;margin-bottom:14px}
+.hdr-title{font-size:24px;font-weight:700;color:#FFD700;letter-spacing:2px}
+.survey-banner{background:#FFD700;color:#4a0000;border-radius:8px;padding:8px 16px;text-align:center;font-size:16px;font-weight:700;margin-bottom:12px;letter-spacing:1px}
+.score-board{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:14px}
+.team-score{background:#4a0000;border:2px solid #880000;border-radius:10px;padding:14px;text-align:center}
+.team-score.active{border-color:#FFD700}
+.team-name-in{background:transparent;border:none;border-bottom:2px solid #FFD700;color:#FFD700;font-size:15px;font-weight:700;width:100%;text-align:center;font-family:inherit;padding:4px 0;margin-bottom:4px}
+.team-score-val{font-size:28px;font-weight:700;color:#FFD700}
+.round-pts{background:#FFD700;color:#4a0000;border-radius:8px;padding:10px;text-align:center;font-size:22px;font-weight:700}
+.q-card{background:#4a0000;border:2px solid #FFD700;border-radius:10px;padding:14px;margin-bottom:12px;text-align:center}
+.q-label{font-size:11px;color:rgba(255,215,0,0.7);letter-spacing:1px;margin-bottom:6px}
+.q-text{font-size:16px;color:#FFD700;font-weight:700;line-height:1.5}
+.answers-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.answer-tile{background:#4a0000;border:2px solid #660000;border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:border-color .15s;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.answer-tile:hover:not(.revealed){border-color:#FFD700}
+.answer-tile.revealed{background:#2d6a00;border-color:#4CAF50}
+.answer-tile.empty{opacity:.3;cursor:default}
+.answer-num{font-size:11px;color:rgba(255,215,0,0.6);margin-bottom:3px}
+.answer-text{font-size:14px;font-weight:700;color:#FFD700}
+.answer-pts{font-size:12px;color:rgba(255,255,255,0.7)}
+.strikes{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
+.strike{width:36px;height:36px;border-radius:50%;border:2px solid #660000;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:transparent}
+.strike.active{background:#FF5252;border-color:#FF5252;color:#fff}
+.status{background:#4a0000;border-radius:8px;padding:10px;font-size:13px;color:rgba(255,255,255,0.7);text-align:center;margin-bottom:10px;min-height:36px}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-steal{background:#1565C0;color:#fff}
+.btn-pass{background:#E65100;color:#fff}
+.btn-reveal{background:#2E7D32;color:#fff}
+.btn-strike{background:#FF5252;color:#fff}
+.btn-next{background:#FFD700;color:#4a0000;font-size:15px;padding:12px 24px}
+.btn-reset{background:#333;color:#fff}
+.fast-money{background:#4a0000;border:2px solid #FFD700;border-radius:10px;padding:14px;margin-bottom:12px}
+.fast-title{font-size:16px;font-weight:700;color:#FFD700;text-align:center;margin-bottom:10px}
+.fast-q{font-size:13px;color:#fff;margin-bottom:6px;padding:6px 0;border-bottom:1px solid #660000}
+.fast-a{font-size:12px;color:#81C784;margin-bottom:8px;display:none}
+.fast-a.show{display:block}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;margin-left:6px;background:#FFD700;color:#4a0000}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const QUESTIONS=[
+  {survey:"Name a reason teens say they try tobacco or vaping for the first time.",answers:[
+    {text:"Peer pressure / friends were doing it",pts:42},{text:"Curiosity",pts:28},{text:"Stress relief",pts:14},{text:"Looks cool / social image",pts:9},{text:"Boredom",pts:5},{text:"Rebellion",pts:2},
+  ]},
+  {survey:"Name something people commonly skip that dramatically raises their risk of cardiovascular disease.",answers:[
+    {text:"Exercise / physical activity",pts:38},{text:"Doctor check-ups",pts:24},{text:"Breakfast",pts:16},{text:"Sleep",pts:12},{text:"Medication",pts:7},{text:"Drinking water",pts:3},
+  ]},
+  {survey:"According to teens, name the most common reason they don't get enough sleep.",answers:[
+    {text:"Phone / social media",pts:45},{text:"Homework",pts:27},{text:"Can't fall asleep (anxiety)",pts:15},{text:"Sports / activities",pts:8},{text:"TV or gaming",pts:4},{text:"Work",pts:1},
+  ]},
+  {survey:"Name a health myth that many people still believe is true.",answers:[
+    {text:"You need 8 glasses of water per day (exact)",pts:31},{text:"You lose most heat through your head",pts:24},{text:"Cracking knuckles causes arthritis",pts:19},{text:"We only use 10% of our brains",pts:14},{text:"Sugar causes hyperactivity in kids",pts:8},{text:"Shaving makes hair grow back thicker",pts:4},
+  ]},
+  {survey:"Name a way teens say they cope with stress in a healthy way.",answers:[
+    {text:"Exercise / sports",pts:36},{text:"Music",pts:25},{text:"Talk to friends",pts:18},{text:"Sleep",pts:11},{text:"Art / creative outlet",pts:7},{text:"Deep breathing / meditation",pts:3},
+  ]},
+  {survey:"Name a reason teens give for not eating healthily.",answers:[
+    {text:"Fast food is cheaper / more convenient",pts:39},{text:"Junk food tastes better",pts:26},{text:"Not enough time",pts:17},{text:"Parents don't buy healthy food",pts:11},{text:"Don't know how to cook",pts:5},{text:"Dieting / restriction pressure",pts:2},
+  ]},
+  {survey:"Name something associated with a higher risk of developing Type 2 diabetes.",answers:[
+    {text:"Obesity / being overweight",pts:41},{text:"Poor diet / high sugar intake",pts:29},{text:"Physical inactivity",pts:16},{text:"Family history",pts:9},{text:"High blood pressure",pts:4},{text:"Age",pts:1},
+  ]},
+  {survey:"Name a vaccine teens are recommended to receive.",answers:[
+    {text:"HPV vaccine (Gardasil)",pts:33},{text:"Flu (influenza) vaccine",pts:28},{text:"Tdap (tetanus, diphtheria, pertussis)",pts:18},{text:"Meningococcal vaccine",pts:13},{text:"COVID-19 vaccine",pts:6},{text:"Hepatitis B",pts:2},
+  ]},
+];
+
+const FAST_MONEY_Q=[
+  {q:"Name the #1 cause of preventable death in the U.S.",a:"Tobacco use (480,000+ deaths/year)",pts:100},
+  {q:"Name a body system that includes the heart and blood vessels.",a:"Cardiovascular system",pts:80},
+  {q:"What does CPR stand for?",a:"Cardiopulmonary Resuscitation",pts:70},
+  {q:"Name the emergency number in the United States.",a:"911",pts:95},
+  {q:"What drug reverses an opioid overdose — now available OTC?",a:"Naloxone / Narcan",pts:60},
+];
+
+let teams=['Team 1','Team 2'];let scores=[0,0];let currentTeam=0;
+let qIdx=0;let revealed=[];let strikes=0;let roundPts=0;let phase='face-off';
+
+function render(){
+  const q=QUESTIONS[qIdx];
+  const totalRevealed=revealed.reduce((a,b)=>a+b,0)?revealed.reduce((s,_,i)=>s+(revealed[i]?q.answers[i].pts:0),0):0;
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH FAMILY FEUD</div></div>
+    <div class="survey-banner">SURVEY SAYS!</div>
+    <div class="score-board">
+      <div class="team-score${currentTeam===0?' active':''}">
+        <input class="team-name-in" value="${teams[0]}" onchange="teams[0]=this.value">
+        <div class="team-score-val">${scores[0]}</div>
+      </div>
+      <div class="round-pts">${roundPts || '?'}</div>
+      <div class="team-score${currentTeam===1?' active':''}">
+        <input class="team-name-in" value="${teams[1]}" onchange="teams[1]=this.value">
+        <div class="team-score-val">${scores[1]}</div>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-label">QUESTION ${qIdx+1} OF ${QUESTIONS.length}</div>
+      <div class="q-text">${q.survey}</div>
+    </div>
+    <div class="answers-grid">${q.answers.map((a,i)=>`
+      <div class="answer-tile${!a.text?' empty':revealed[i]?' revealed':''}" onclick="revealAnswer(${i})">
+        <div class="answer-num">${i+1}</div>
+        ${revealed[i]?`<div class="answer-text">${a.text}</div><div class="answer-pts">${a.pts} pts</div>`:`<div class="answer-text">${a.pts} pts hidden</div>`}
+      </div>`).join('')}
+    </div>
+    <div class="strikes">${[0,1,2].map(i=>`<div class="strike${i<strikes?' active':''}">✗</div>`).join('')}</div>
+    <div class="status" id="status">${teams[currentTeam]}'s turn. Click an answer tile to reveal it, or click Strike/Pass.</div>
+    <div class="btns">
+      <button class="btn btn-strike" onclick="addStrike()">✗ Strike</button>
+      <button class="btn btn-pass" onclick="passTurn()">Pass Turn</button>
+      <button class="btn btn-steal" onclick="steal()">STEAL!</button>
+      <button class="btn btn-reveal" onclick="revealAll()">Reveal All</button>
+      <button class="btn btn-next" onclick="nextQuestion()">Next Question →</button>
+    </div>
+    <div style="text-align:center;margin-bottom:10px">
+      <button class="btn btn-reset" onclick="showFastMoney()">Fast Money Round</button>
+      <button class="btn btn-reset" style="margin-left:8px" onclick="init()">New Game</button>
+    </div>`;
+  document.getElementById('status').textContent=`${teams[currentTeam]}'s turn. Click tiles to reveal. Revealed: ${totalRevealed} pts so far.`;
+}
+
+function revealAnswer(i){
+  const q=QUESTIONS[qIdx];
+  if(revealed[i]||!q.answers[i].text) return;
+  revealed[i]=true;
+  roundPts+=q.answers[i].pts;
+  render();
+}
+
+function addStrike(){
+  strikes++;
+  if(strikes>=3){
+    document.getElementById('status').textContent='3 STRIKES! Other team can steal!';
+  }
+  render();
+}
+
+function passTurn(){currentTeam=(currentTeam+1)%2;strikes=0;render();}
+
+function steal(){
+  const pts=roundPts;
+  scores[currentTeam]+=pts;
+  document.getElementById('status').textContent=`${teams[currentTeam]} steals ${pts} points!`;
+  revealed=QUESTIONS[qIdx].answers.map(()=>true);
+  roundPts=pts;
+  render();
+}
+
+function revealAll(){revealed=QUESTIONS[qIdx].answers.map(()=>true);roundPts=QUESTIONS[qIdx].answers.reduce((s,a)=>s+a.pts,0);render();}
+
+function nextQuestion(){
+  scores[currentTeam]+=roundPts;
+  qIdx=(qIdx+1)%QUESTIONS.length;
+  revealed=[];strikes=0;roundPts=0;currentTeam=(currentTeam+1)%2;
+  render();
+}
+
+function showFastMoney(){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">FAST MONEY ROUND</div></div>
+    <div class="survey-banner">SPEED ROUND — 30 SECONDS!</div>
+    <div class="fast-money">
+      <div class="fast-title">Teacher reads questions fast — reveal answers one by one!</div>
+      ${FAST_MONEY_Q.map((q,i)=>`
+        <div class="fast-q" onclick="revealFast(${i})">${i+1}. ${q.q} <span class="tag">${q.pts} pts</span></div>
+        <div class="fast-a" id="fa${i}">✓ ${q.a}</div>
+      `).join('')}
+    </div>
+    <div class="btns">
+      <button class="btn btn-next" onclick="init()">New Game</button>
+      <button class="btn btn-reset" onclick="render()">Back to Game</button>
+    </div>`;
+}
+
+function revealFast(i){const el=document.getElementById('fa'+i);if(el)el.classList.toggle('show');}
+
+function init(){qIdx=0;revealed=[];strikes=0;roundPts=0;currentTeam=0;render();}
+
+init();
+</script>
+</body>
+</html>

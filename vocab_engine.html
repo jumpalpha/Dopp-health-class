@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocab Games — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--sky:#38BFFF;--emerald:#00E5A0;--crimson:#FF3B5C;--purple:#a855f7;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 60px}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(56,191,255,0.08) 0%,transparent 70%),#05070F}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(5,7,15,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-back{font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:var(--gold);text-decoration:none;display:flex;align-items:center;gap:6px}
+.nav-title{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--text);text-align:center}
+.nav-score{font-size:14px;font-weight:800;color:var(--emerald);min-width:80px;text-align:right}
+
+/* GAME SELECTOR */
+.game-selector{position:relative;z-index:1;display:flex;gap:8px;padding:16px 24px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02)}
+.game-tab{padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px}
+.game-tab:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
+.game-tab.active{color:var(--gold);border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.08)}
+.chapter-info{margin-left:auto;font-size:12px;color:var(--dim);display:flex;align-items:center;gap:10px}
+
+/* MAIN AREA */
+#game-area{position:relative;z-index:1;padding:24px;max-width:860px;margin:0 auto}
+
+/* PROGRESS */
+.progress-track{height:4px;background:var(--border);border-radius:2px;margin-bottom:24px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--emerald));border-radius:2px;transition:width .4s ease}
+
+/* SCORE HUD */
+.score-hud{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.hud-pill{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;border:1px solid var(--border);background:var(--card)}
+.hud-pill.correct{color:var(--emerald);border-color:rgba(0,229,160,0.3)}
+.hud-pill.wrong{color:var(--crimson);border-color:rgba(255,59,92,0.3)}
+.hud-pill.streak{color:var(--gold);border-color:rgba(255,215,0,0.3)}
+.hud-pill.total{color:var(--text)}
+
+/* ─── FLASHCARD GAME ─── */
+.flashcard-wrap{perspective:1000px;margin-bottom:20px;cursor:pointer}
+.flashcard{width:100%;min-height:240px;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.flashcard.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:18px;padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.card-front{background:linear-gradient(135deg,rgba(56,191,255,0.12),rgba(0,229,160,0.06));border:1px solid rgba(56,191,255,0.2)}
+.card-back{background:linear-gradient(135deg,rgba(255,215,0,0.10),rgba(255,140,0,0.06));border:1px solid rgba(255,215,0,0.2);transform:rotateY(180deg)}
+.card-label{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:16px;font-family:'Cinzel',serif}
+.card-term{font-size:clamp(20px,4vw,30px);font-weight:800;color:var(--text);line-height:1.3}
+.card-def{font-size:16px;color:var(--dim);line-height:1.6}
+.card-hint{font-size:12px;color:var(--dim);margin-top:16px;opacity:.7}
+.fc-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{padding:11px 24px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-correct{background:rgba(0,229,160,0.15);color:var(--emerald);border:1px solid rgba(0,229,160,0.3)}
+.btn-correct:hover{background:rgba(0,229,160,0.25)}
+.btn-wrong{background:rgba(255,59,92,0.12);color:var(--crimson);border:1px solid rgba(255,59,92,0.25)}
+.btn-wrong:hover{background:rgba(255,59,92,0.22)}
+.btn-flip{background:rgba(255,215,0,0.1);color:var(--gold);border:1px solid rgba(255,215,0,0.25);font-size:16px}
+.btn-next{background:rgba(56,191,255,0.12);color:var(--sky);border:1px solid rgba(56,191,255,0.25)}
+.btn-restart{background:var(--card);color:var(--dim);border:1px solid var(--border)}
+
+/* ─── SPEED QUIZ GAME ─── */
+.quiz-question{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:16px;text-align:center}
+.quiz-q-label{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);font-family:'Cinzel',serif;margin-bottom:10px}
+.quiz-def{font-size:17px;color:var(--text);line-height:1.6}
+.quiz-timer{height:5px;background:var(--border);border-radius:3px;margin-top:16px;overflow:hidden}
+.quiz-timer-fill{height:100%;background:linear-gradient(90deg,var(--emerald),var(--sky));border-radius:3px;transition:width .1s linear}
+.quiz-timer-fill.warning{background:linear-gradient(90deg,#FF8C00,var(--crimson))}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.quiz-opt{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);text-align:left;font-family:'Nunito',sans-serif;transition:all .15s;line-height:1.4}
+.quiz-opt:hover:not(.disabled){border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.06)}
+.quiz-opt.correct{background:rgba(0,229,160,0.15);border-color:var(--emerald);color:var(--emerald)}
+.quiz-opt.wrong{background:rgba(255,59,92,0.12);border-color:var(--crimson);color:var(--crimson)}
+.quiz-opt.disabled{cursor:default}
+.quiz-explanation{background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--emerald);line-height:1.5;display:none;margin-bottom:12px}
+.quiz-explanation.show{display:block}
+
+/* ─── WORD BUILDER GAME ─── */
+.wb-def{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;text-align:center}
+.wb-def-label{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);font-family:'Cinzel',serif;margin-bottom:8px}
+.wb-def-text{font-size:16px;color:var(--text);line-height:1.6}
+.wb-answer-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.wb-input{flex:1;min-width:180px;background:rgba(255,255,255,0.05);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;font-weight:700;padding:12px 16px;font-family:'Nunito',sans-serif;letter-spacing:1px;text-transform:uppercase}
+.wb-input:focus{outline:none;border-color:var(--sky)}
+.wb-input.correct-input{border-color:var(--emerald);background:rgba(0,229,160,0.08)}
+.wb-input.wrong-input{border-color:var(--crimson);background:rgba(255,59,92,0.08)}
+.wb-submit{padding:12px 24px;border-radius:10px;background:rgba(56,191,255,0.15);border:1px solid rgba(56,191,255,0.3);color:var(--sky);font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;white-space:nowrap}
+.wb-submit:hover{background:rgba(56,191,255,0.25)}
+.wb-hint-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.wb-letter{width:36px;height:36px;border-radius:8px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--gold);cursor:pointer;transition:all .15s;user-select:none}
+.wb-letter:hover{background:rgba(255,215,0,0.15)}
+.wb-letter.used{opacity:.3;cursor:default}
+.wb-reveal{font-size:13px;color:var(--dim);cursor:pointer;text-decoration:underline;margin-top:4px;display:inline-block}
+.wb-feedback{text-align:center;font-size:14px;font-weight:700;padding:10px;border-radius:8px;margin-bottom:12px;display:none}
+.wb-feedback.show{display:block}
+.wb-feedback.good{background:rgba(0,229,160,0.1);color:var(--emerald)}
+.wb-feedback.bad{background:rgba(255,59,92,0.1);color:var(--crimson)}
+
+/* ─── CONCEPT MAP GAME ─── */
+.cmap-instruction{font-size:13px;color:var(--dim);text-align:center;margin-bottom:16px;padding:10px;background:var(--card);border-radius:8px;border:1px solid var(--border)}
+.cmap-categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.cmap-cat{border-radius:14px;padding:14px;border:2px dashed var(--cat-border,var(--border));background:var(--cat-bg,var(--card));min-height:120px;transition:all .2s}
+.cmap-cat.drag-over{border-style:solid;filter:brightness(1.2)}
+.cmap-cat-title{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--cat-color,var(--gold));margin-bottom:10px;letter-spacing:.5px}
+.cmap-drop-zone{min-height:60px;display:flex;flex-direction:column;gap:6px}
+.cmap-chip{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:grab;user-select:none;transition:all .15s;color:var(--text)}
+.cmap-chip:hover{background:rgba(255,255,255,0.13)}
+.cmap-chip:active{cursor:grabbing;transform:scale(0.97)}
+.cmap-chip.correct-chip{background:rgba(0,229,160,0.15);border-color:var(--emerald);color:var(--emerald);cursor:default}
+.cmap-chip.wrong-chip{background:rgba(255,59,92,0.12);border-color:var(--crimson);color:var(--crimson)}
+.cmap-word-bank{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:16px}
+.cmap-bank-title{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--dim);margin-bottom:10px;font-family:'Cinzel',serif}
+.cmap-bank-chips{display:flex;flex-wrap:wrap;gap:8px;min-height:40px}
+
+/* ─── RESULTS ─── */
+.results-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:32px;text-align:center;margin-bottom:20px}
+.results-icon{font-size:52px;margin-bottom:12px}
+.results-grade{font-family:'Cinzel',serif;font-size:clamp(28px,6vw,52px);font-weight:700;margin-bottom:6px}
+.results-grade.a{color:var(--emerald)}
+.results-grade.b{color:var(--sky)}
+.results-grade.c{color:var(--gold)}
+.results-grade.d{color:#FF8C00}
+.results-sub{font-size:16px;color:var(--dim);margin-bottom:20px}
+.results-stats{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+.rs{text-align:center;padding:12px 20px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid var(--border)}
+.rs-num{font-size:24px;font-weight:800;color:var(--text)}
+.rs-label{font-size:12px;color:var(--dim);margin-top:2px}
+.missed-list{text-align:left;background:rgba(255,59,92,0.05);border:1px solid rgba(255,59,92,0.15);border-radius:12px;padding:16px;margin-bottom:16px}
+.missed-title{font-size:12px;font-weight:700;color:var(--crimson);margin-bottom:10px;letter-spacing:.5px;font-family:'Cinzel',serif}
+.missed-item{padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px}
+.missed-item:last-child{border:none}
+.missed-term{font-weight:700;color:var(--text)}
+.missed-def{color:var(--dim);font-size:12px;margin-top:2px}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+
+<nav>
+  <a class="nav-back" href="javascript:history.back()">← Back</a>
+  <div class="nav-title" id="nav-title">Vocab Games</div>
+  <div class="nav-score" id="nav-score"></div>
+</nav>
+
+<div class="game-selector">
+  <button class="game-tab active" onclick="switchGame('flashcard',this)">🃏 Flashcard Flip</button>
+  <button class="game-tab" onclick="switchGame('speedquiz',this)">⚡ Speed Quiz</button>
+  <button class="game-tab" onclick="switchGame('wordbuild',this)">🔤 Word Builder</button>
+  <button class="game-tab" onclick="switchGame('conceptmap',this)">🗺 Concept Map</button>
+  <div class="chapter-info" id="chapter-info"></div>
+</div>
+
+<div id="game-area">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="score-hud" id="score-hud"></div>
+  <div id="game-content"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// VOCAB DATA — All 28 Chapters
+// ═══════════════════════════════════════════════════════════
+const ALL_CHAPTERS = {
+  1: {title:"Understanding Health & Wellness", color:"#38BFFF", terms:[
+    {t:"Health",d:"A combination of physical, mental/emotional, and social well-being — not just the absence of disease.",cat:"Core Concepts"},
+    {t:"Wellness",d:"The quality of life that results from taking positive steps toward achieving your full health potential.",cat:"Core Concepts"},
+    {t:"Health Triangle",d:"A model showing the three sides of health: physical, mental/emotional, and social — all must be balanced.",cat:"Core Concepts"},
+    {t:"Lifestyle factors",d:"Personal behaviors and habits that affect your long-term health, both positively and negatively.",cat:"Influences"},
+    {t:"Health literacy",d:"The ability to find, understand, evaluate, and apply health information to make responsible decisions.",cat:"Core Concepts"},
+    {t:"Heredity",d:"The passing of traits from biological parents to their children through genes.",cat:"Influences"},
+    {t:"Environment",d:"All living and nonliving things around you, including your community, culture, and physical surroundings.",cat:"Influences"},
+    {t:"Culture",d:"The beliefs, values, and practices shared by a group of people — a major influence on health decisions.",cat:"Influences"},
+    {t:"Peers",d:"People of the same age who share similar interests; a powerful influence on teen health behavior.",cat:"Influences"},
+    {t:"Risk behaviors",d:"Actions or habits that increase the likelihood of negative outcomes to one's health or others.",cat:"Core Concepts"},
+    {t:"Prevention",d:"Taking action to avoid disease, injury, and other health problems before they occur.",cat:"Core Concepts"},
+    {t:"Abstinence",d:"The deliberate decision to refrain from a risky behavior.",cat:"Core Concepts"},
+    {t:"Health promotion",d:"The process of enabling people to increase control over and improve their health.",cat:"Core Concepts"},
+    {t:"Protective factors",d:"Conditions or attributes that reduce the impact of risk factors on health outcomes.",cat:"Core Concepts"},
+    {t:"Attitude",d:"A feeling or disposition toward a person, object, or idea that influences behavior.",cat:"Influences"},
+  ]},
+  2: {title:"Skills for a Healthy Life", color:"#38BFFF", terms:[
+    {t:"Goal setting",d:"The process of identifying something you want to accomplish and creating a plan to achieve it.",cat:"Skills"},
+    {t:"SMART goals",d:"Goals that are Specific, Measurable, Achievable, Realistic, and Time-bound.",cat:"Skills"},
+    {t:"Decision making",d:"A five-step process for making healthy, responsible choices.",cat:"Skills"},
+    {t:"Values",d:"The beliefs and principles that guide your behavior and decisions.",cat:"Core Concepts"},
+    {t:"Refusal skills",d:"Strategies that help you say no to things that are harmful or illegal.",cat:"Skills"},
+    {t:"Conflict resolution",d:"A process for resolving disagreements in a peaceful, constructive way.",cat:"Skills"},
+    {t:"Stress management",d:"Techniques for controlling and reducing the physical and emotional effects of stress.",cat:"Skills"},
+    {t:"Communication skills",d:"The ability to share information clearly with others using listening, speaking, and body language.",cat:"Skills"},
+    {t:"Self-management",d:"The ability to control your emotions, behaviors, and actions to make healthy choices.",cat:"Skills"},
+    {t:"Advocacy",d:"Taking action to promote health and influence others to make positive choices.",cat:"Skills"},
+    {t:"Accessing information",d:"The skill of finding and evaluating reliable, accurate health information from valid sources.",cat:"Skills"},
+    {t:"Analyzing influences",d:"The ability to identify and examine the factors that affect health beliefs and behaviors.",cat:"Skills"},
+  ]},
+  3: {title:"Mental and Emotional Health", color:"#a855f7", terms:[
+    {t:"Mental health",d:"The state of your psychological and emotional well-being — how you think, feel, and cope with life.",cat:"Mental Health"},
+    {t:"Emotions",d:"Signals that tell your mind and body how to react to situations.",cat:"Mental Health"},
+    {t:"Self-concept",d:"The view you have of yourself — your strengths, weaknesses, thoughts, and feelings.",cat:"Mental Health"},
+    {t:"Self-esteem",d:"The confidence and satisfaction you have in yourself and your own abilities.",cat:"Mental Health"},
+    {t:"Empathy",d:"The ability to understand and share the feelings of another person.",cat:"Mental Health"},
+    {t:"Emotional intelligence",d:"The ability to recognize, understand, and manage your own emotions and recognize emotions in others.",cat:"Mental Health"},
+    {t:"Resiliency",d:"The ability to recover from setbacks, adapt to change, and keep going in the face of adversity.",cat:"Mental Health"},
+    {t:"Grief",d:"The emotional response to loss — a normal and necessary process that takes time.",cat:"Mental Health"},
+    {t:"Coping strategies",d:"Healthy ways of managing and reducing the emotional pain of difficult situations.",cat:"Mental Health"},
+    {t:"Defense mechanisms",d:"Unconscious mental strategies used to protect yourself from uncomfortable emotions.",cat:"Mental Health"},
+    {t:"Positive affirmations",d:"Statements that remind you of your strengths and help reinforce a positive self-image.",cat:"Mental Health"},
+    {t:"Mindfulness",d:"The practice of focusing attention on the present moment with openness and without judgment.",cat:"Mental Health"},
+  ]},
+  4: {title:"Managing Stress", color:"#a855f7", terms:[
+    {t:"Stress",d:"The body's and mind's reaction to everyday demands and threats, real or perceived.",cat:"Stress"},
+    {t:"Stressor",d:"Any situation, event, or person that causes stress.",cat:"Stress"},
+    {t:"Fight-or-flight response",d:"The body's automatic physiological reaction to a perceived threat — prepares to fight or flee.",cat:"Stress"},
+    {t:"Adrenaline",d:"The hormone released during stress that increases heart rate, blood pressure, and energy.",cat:"Stress"},
+    {t:"Eustress",d:"Positive stress that motivates and energizes, such as excitement before a sports event.",cat:"Stress"},
+    {t:"Distress",d:"Negative stress that feels overwhelming and harmful to health.",cat:"Stress"},
+    {t:"Chronic stress",d:"Ongoing, long-term stress that persists over weeks or months and damages health.",cat:"Stress"},
+    {t:"Relaxation response",d:"The body's ability to slow down and recover after a stressful event.",cat:"Stress"},
+    {t:"Time management",d:"The practice of organizing and prioritizing tasks to reduce stress and increase productivity.",cat:"Coping"},
+    {t:"Support network",d:"Friends, family, and others who provide emotional encouragement and practical help.",cat:"Coping"},
+    {t:"Burnout",d:"A state of physical and emotional exhaustion from prolonged, unmanaged stress.",cat:"Stress"},
+    {t:"Cortisol",d:"The primary stress hormone; sustained high levels damage the immune system and cardiovascular health.",cat:"Stress"},
+  ]},
+  5: {title:"Mental and Emotional Problems", color:"#a855f7", terms:[
+    {t:"Mental disorder",d:"An illness that affects a person's thinking, feeling, or behavior significantly enough to cause distress.",cat:"Disorders"},
+    {t:"Anxiety disorder",d:"A category of mental health conditions characterized by excessive, persistent fear or worry.",cat:"Disorders"},
+    {t:"Depression",d:"A mood disorder marked by persistent sadness, hopelessness, loss of interest, and low energy.",cat:"Disorders"},
+    {t:"Suicide",d:"The act of intentionally ending one's own life — a preventable public health crisis.",cat:"Crisis"},
+    {t:"Suicide prevention",d:"Strategies and actions to recognize warning signs and connect people to help before a crisis.",cat:"Crisis"},
+    {t:"Eating disorder",d:"A serious mental illness involving extreme disturbances in eating behavior and body image.",cat:"Disorders"},
+    {t:"Anorexia nervosa",d:"An eating disorder involving severe restriction of food intake driven by fear of weight gain.",cat:"Disorders"},
+    {t:"Bulimia nervosa",d:"An eating disorder involving cycles of binge eating followed by purging behaviors.",cat:"Disorders"},
+    {t:"PTSD",d:"Post-Traumatic Stress Disorder — a mental health condition triggered by experiencing or witnessing trauma.",cat:"Disorders"},
+    {t:"Therapy",d:"Treatment by a trained mental health professional using evidence-based psychological methods.",cat:"Treatment"},
+    {t:"Psychiatry",d:"A branch of medicine focused on diagnosing, treating, and preventing mental disorders.",cat:"Treatment"},
+    {t:"Stigma",d:"Negative attitudes or discrimination against people with mental health conditions — a major barrier to seeking help.",cat:"Social"},
+  ]},
+  6: {title:"Building Healthy Relationships", color:"#FF3B5C", terms:[
+    {t:"Relationship",d:"A bond or connection between people based on shared experiences, trust, and mutual care.",cat:"Relationships"},
+    {t:"Communication",d:"The process of sharing information, thoughts, and feelings using verbal and nonverbal methods.",cat:"Skills"},
+    {t:"Active listening",d:"Fully concentrating on what someone is saying, showing you understand, and responding thoughtfully.",cat:"Skills"},
+    {t:"Assertiveness",d:"The ability to express your thoughts and feelings confidently and respectfully, without aggression.",cat:"Skills"},
+    {t:"Boundary",d:"A limit you set to protect your physical, emotional, and mental well-being in relationships.",cat:"Relationships"},
+    {t:"Trust",d:"The firm belief in the reliability, truth, or ability of another person — the foundation of healthy relationships.",cat:"Relationships"},
+    {t:"Respect",d:"Treating others with consideration for their feelings, rights, and boundaries.",cat:"Relationships"},
+    {t:"Reciprocity",d:"The mutual exchange of benefits, care, or support between people in a healthy relationship.",cat:"Relationships"},
+    {t:"Jealousy",d:"A feeling of insecurity or fear of losing something or someone to another — can damage relationships.",cat:"Relationships"},
+    {t:"Healthy relationship",d:"A relationship built on trust, respect, communication, equality, and support for each other's goals.",cat:"Relationships"},
+  ]},
+  7: {title:"Conflict Resolution", color:"#FF3B5C", terms:[
+    {t:"Conflict",d:"A disagreement or struggle between people with different needs, wishes, or values.",cat:"Conflict"},
+    {t:"Negotiation",d:"A process where two sides discuss a problem to find a solution that satisfies both parties.",cat:"Resolution"},
+    {t:"Mediation",d:"A conflict resolution process where a neutral third party helps two sides reach an agreement.",cat:"Resolution"},
+    {t:"Compromise",d:"An agreement where each side gives up something to resolve a conflict.",cat:"Resolution"},
+    {t:"Peer pressure",d:"The influence that people your age can have on your attitudes and behaviors.",cat:"Conflict"},
+    {t:"Passive",d:"A communication style that avoids expressing feelings or needs — often leads to resentment.",cat:"Communication"},
+    {t:"Aggressive",d:"A communication style that expresses feelings in ways that violate others' rights.",cat:"Communication"},
+    {t:"Passive-aggressive",d:"An indirect way of expressing negative feelings while appearing cooperative on the surface.",cat:"Communication"},
+    {t:"I-messages",d:"Statements that express your feelings without blaming others: 'I feel... when... because...'",cat:"Skills"},
+    {t:"Tolerance",d:"Accepting and respecting differences in others, even when you disagree.",cat:"Resolution"},
+    {t:"De-escalation",d:"Strategies to reduce the intensity of a conflict before it becomes violent or harmful.",cat:"Resolution"},
+  ]},
+  8: {title:"Violence Prevention", color:"#FF3B5C", terms:[
+    {t:"Violence",d:"The intentional use of physical force or power to injure, damage, or destroy people or property.",cat:"Violence"},
+    {t:"Bullying",d:"Repeated aggressive behavior intended to hurt, embarrass, or control another person.",cat:"Violence"},
+    {t:"Cyberbullying",d:"Using digital technology to harass, humiliate, or threaten another person — can happen 24/7.",cat:"Violence"},
+    {t:"Sexual harassment",d:"Unwelcome sexual advances, requests for sexual favors, or verbal or physical conduct of a sexual nature.",cat:"Violence"},
+    {t:"Abuse",d:"The mistreatment of another person — can be physical, emotional, sexual, or neglect.",cat:"Violence"},
+    {t:"Domestic violence",d:"A pattern of abusive behavior used to establish power and control over an intimate partner.",cat:"Violence"},
+    {t:"Gang",d:"A group of people involved in illegal activity who use violence to protect territory and promote their group.",cat:"Violence"},
+    {t:"Bystander effect",d:"The tendency for individuals to be less likely to help someone when others are present.",cat:"Prevention"},
+    {t:"Upstander",d:"Someone who actively speaks up or takes action to support a person being mistreated.",cat:"Prevention"},
+    {t:"Dating violence",d:"Physical, emotional, or sexual abuse within a romantic relationship — affects 1 in 3 teens.",cat:"Violence"},
+  ]},
+  9: {title:"Family Relationships", color:"#FF3B5C", terms:[
+    {t:"Family",d:"A group of people connected by birth, marriage, adoption, or strong commitment who support one another.",cat:"Family"},
+    {t:"Nuclear family",d:"A family unit consisting of two parents and their children living together.",cat:"Family"},
+    {t:"Extended family",d:"Family members beyond the nuclear unit — grandparents, aunts, uncles, cousins.",cat:"Family"},
+    {t:"Blended family",d:"A family formed when two adults with children from previous relationships form a new household.",cat:"Family"},
+    {t:"Adoption",d:"The legal process by which a person or couple takes a child of other parents as their own.",cat:"Family"},
+    {t:"Family dynamics",d:"The patterns of interaction between family members that influence everyone's behavior and health.",cat:"Family"},
+    {t:"Sibling rivalry",d:"Competition or jealousy between brothers and sisters — normal but manageable with communication.",cat:"Family"},
+    {t:"Divorce",d:"The legal end of a marriage — affects all family members and requires adjustment.",cat:"Family"},
+    {t:"Unconditional love",d:"Love given without conditions or requirements — a fundamental developmental need of children.",cat:"Family"},
+    {t:"Family roles",d:"The expectations and responsibilities assigned to each family member within the family system.",cat:"Family"},
+  ]},
+  10: {title:"Nutrition for Health", color:"#00E5A0", terms:[
+    {t:"Nutrients",d:"Substances in food that provide energy and materials the body needs to grow, repair, and function.",cat:"Nutrition"},
+    {t:"Carbohydrates",d:"The body's primary energy source; should make up 45–65% of daily calories.",cat:"Macronutrients"},
+    {t:"Proteins",d:"Nutrients that build and repair cells, muscles, and tissues; made of amino acids.",cat:"Macronutrients"},
+    {t:"Fats",d:"Nutrients that store energy, protect organs, and support vitamin absorption; essential in moderation.",cat:"Macronutrients"},
+    {t:"Vitamins",d:"Organic compounds needed in small amounts to regulate body functions and prevent disease.",cat:"Micronutrients"},
+    {t:"Minerals",d:"Inorganic substances (calcium, iron, zinc) essential for bone health, blood, and body functions.",cat:"Micronutrients"},
+    {t:"MyPlate",d:"The USDA visual guide showing the five food groups and recommended proportions for healthy eating.",cat:"Guidelines"},
+    {t:"Calorie",d:"A unit of energy; the amount of energy in food that the body uses to perform functions.",cat:"Nutrition"},
+    {t:"Dietary fiber",d:"Indigestible plant material that supports digestive health, lowers cholesterol, and controls blood sugar.",cat:"Nutrition"},
+    {t:"Saturated fat",d:"A type of fat found in animal products that raises LDL (bad) cholesterol when consumed in excess.",cat:"Nutrition"},
+    {t:"Trans fat",d:"An artificially created fat that raises bad cholesterol and lowers good cholesterol — largely banned.",cat:"Nutrition"},
+    {t:"Nutrition label",d:"The panel on food packaging showing calorie count, nutrients, and percent daily values.",cat:"Guidelines"},
+  ]},
+  11: {title:"Managing Weight", color:"#00E5A0", terms:[
+    {t:"Body Mass Index (BMI)",d:"A ratio of weight to height used as a screening tool for healthy weight — not a diagnosis.",cat:"Assessment"},
+    {t:"Metabolism",d:"The rate at which your body converts food into energy — affects weight management.",cat:"Physiology"},
+    {t:"Basal metabolic rate",d:"The number of calories your body needs to maintain basic functions at rest.",cat:"Physiology"},
+    {t:"Caloric balance",d:"The relationship between calories consumed and calories burned through activity.",cat:"Weight Management"},
+    {t:"Body image",d:"The way you see and feel about your physical appearance.",cat:"Mental Health"},
+    {t:"Eating disorder",d:"A serious mental illness with extreme disturbances in eating behavior, body image, and weight.",cat:"Disorders"},
+    {t:"Anorexia nervosa",d:"An eating disorder involving extreme restriction of food intake driven by fear of weight gain.",cat:"Disorders"},
+    {t:"Bulimia nervosa",d:"An eating disorder with cycles of binge eating followed by purging.",cat:"Disorders"},
+    {t:"Binge eating disorder",d:"Recurrent episodes of eating large amounts of food rapidly without purging — most common ED.",cat:"Disorders"},
+    {t:"Fad diet",d:"A popular diet promising quick weight loss that typically lacks scientific support and is unsustainable.",cat:"Weight Management"},
+    {t:"Weight management",d:"A long-term approach to maintaining a healthy weight through balanced nutrition and physical activity.",cat:"Weight Management"},
+    {t:"Obesity",d:"A condition of excess body fat that increases risk of diabetes, heart disease, and other conditions.",cat:"Assessment"},
+  ]},
+  12: {title:"Physical Activity", color:"#00E5A0", terms:[
+    {t:"Physical activity",d:"Any movement that uses energy — from walking to organized sports.",cat:"Fitness"},
+    {t:"Exercise",d:"Planned, structured, repetitive physical activity done to improve or maintain fitness.",cat:"Fitness"},
+    {t:"Aerobic exercise",d:"Sustained activity that increases heart and breathing rate — improves cardiovascular fitness.",cat:"Fitness Types"},
+    {t:"Anaerobic exercise",d:"Short, intense bursts of activity that don't rely on oxygen — builds strength and power.",cat:"Fitness Types"},
+    {t:"Flexibility",d:"The range of motion available at a joint — maintained through stretching.",cat:"Fitness Components"},
+    {t:"Muscle strength",d:"The maximum force a muscle or muscle group can exert in a single effort.",cat:"Fitness Components"},
+    {t:"Muscle endurance",d:"The ability of a muscle to perform repeated contractions over time without fatigue.",cat:"Fitness Components"},
+    {t:"Cardiovascular endurance",d:"The ability of the heart and lungs to supply oxygen during sustained physical activity.",cat:"Fitness Components"},
+    {t:"FITT principle",d:"Frequency, Intensity, Time, and Type — the four variables used to design an effective workout.",cat:"Training"},
+    {t:"Overload principle",d:"To improve fitness, you must gradually increase the demand placed on the body.",cat:"Training"},
+    {t:"Warm-up",d:"Low-intensity activity before exercise that prepares muscles and reduces injury risk.",cat:"Training"},
+    {t:"Cool-down",d:"Low-intensity activity after exercise that gradually returns the body to its resting state.",cat:"Training"},
+  ]},
+  13: {title:"Personal Health Care", color:"#FF8C00", terms:[
+    {t:"Epidermis",d:"The outer, thinner layer of skin composed of living and dead cells.",cat:"Skin"},
+    {t:"Dermis",d:"The thicker inner layer of skin containing blood vessels, nerves, and glands.",cat:"Skin"},
+    {t:"Melanin",d:"The pigment that gives skin, hair, and eyes their color and provides some UV protection.",cat:"Skin"},
+    {t:"Sebaceous glands",d:"Structures in the dermis that produce sebum — an oily secretion that moisturizes skin and hair.",cat:"Skin"},
+    {t:"Melanoma",d:"The most serious and potentially fatal form of skin cancer — detected using the ABCDE rule.",cat:"Skin"},
+    {t:"Periodontium",d:"The structures immediately surrounding a tooth, including the gum, ligaments, and jawbone.",cat:"Dental"},
+    {t:"Plaque",d:"A sticky film of bacteria and food particles on teeth that produces acids causing decay.",cat:"Dental"},
+    {t:"Halitosis",d:"Bad breath caused by food, poor oral hygiene, bacteria, or gum disease.",cat:"Dental"},
+    {t:"Periodontal disease",d:"Inflammation and infection of the gum and supporting structures of the teeth.",cat:"Dental"},
+    {t:"Sclera",d:"The tough white outer layer of the eye.",cat:"Eyes & Ears"},
+    {t:"Retina",d:"The inner layer of the eye containing light-sensitive rods and cones.",cat:"Eyes & Ears"},
+    {t:"Tinnitus",d:"A ringing, buzzing, or hissing sound in the ear with no external source — warning sign of hearing damage.",cat:"Eyes & Ears"},
+  ]},
+  14: {title:"Skeletal, Muscular & Nervous Systems", color:"#FF8C00", terms:[
+    {t:"Cartilage",d:"Strong, flexible connective tissue that cushions joints and forms soft structures like the nose and ears.",cat:"Skeletal"},
+    {t:"Ossification",d:"The process by which cartilage is converted into bone during development.",cat:"Skeletal"},
+    {t:"Ligament",d:"A band of fibrous connective tissue that connects bone to bone at a joint.",cat:"Skeletal"},
+    {t:"Tendon",d:"A fibrous cord that connects muscle to bone.",cat:"Skeletal"},
+    {t:"Scoliosis",d:"An abnormal lateral (side-to-side) curvature of the spine.",cat:"Skeletal"},
+    {t:"Osteoporosis",d:"A condition of progressive bone tissue loss that makes bones weak and fracture-prone.",cat:"Skeletal"},
+    {t:"Skeletal muscles",d:"Muscles attached to bones that produce voluntary body movements.",cat:"Muscular"},
+    {t:"Cardiac muscle",d:"The involuntary striated muscle that forms the walls of the heart — beats ~100,000 times/day.",cat:"Muscular"},
+    {t:"Tendinitis",d:"Inflammation of a tendon, usually from overuse or injury.",cat:"Muscular"},
+    {t:"Neurons",d:"Nerve cells that transmit messages to and from the brain and spinal cord.",cat:"Nervous"},
+    {t:"Cerebrum",d:"The largest part of the brain; center of conscious thought, learning, memory, and voluntary movement.",cat:"Nervous"},
+    {t:"Cerebellum",d:"The part of the brain that coordinates skeletal muscle movement, balance, and posture.",cat:"Nervous"},
+    {t:"Brain stem",d:"The stalk connecting the spinal cord to the rest of the brain; regulates vital involuntary functions.",cat:"Nervous"},
+    {t:"Epilepsy",d:"A neurological disorder characterized by recurrent, unpredictable seizures.",cat:"Nervous"},
+  ]},
+  15: {title:"Cardiovascular, Respiratory & Digestive Systems", color:"#FF8C00", terms:[
+    {t:"Plasma",d:"The liquid portion of blood (~55%), carrying nutrients, proteins, hormones, and salts.",cat:"Cardiovascular"},
+    {t:"Hemoglobin",d:"The oxygen-carrying protein in red blood cells, containing iron.",cat:"Cardiovascular"},
+    {t:"Platelets",d:"Blood cell fragments that initiate clotting when a vessel is damaged.",cat:"Cardiovascular"},
+    {t:"Capillaries",d:"The smallest blood vessels; the site of gas and nutrient exchange between blood and cells.",cat:"Cardiovascular"},
+    {t:"Blood pressure",d:"The force blood exerts against artery walls as the heart pumps — measured in mmHg.",cat:"Cardiovascular"},
+    {t:"Diaphragm",d:"The dome-shaped muscle below the lungs that drives breathing.",cat:"Respiratory"},
+    {t:"Trachea",d:"The windpipe; carries air from the throat to the bronchi.",cat:"Respiratory"},
+    {t:"Asthma",d:"A chronic inflammatory condition in which airways narrow, causing difficulty breathing.",cat:"Respiratory"},
+    {t:"Emphysema",d:"A progressive, irreversible disease that destroys alveolar walls; almost always caused by smoking.",cat:"Respiratory"},
+    {t:"Mastication",d:"The mechanical process of chewing.",cat:"Digestive"},
+    {t:"Peristalsis",d:"Rhythmic, involuntary muscle contractions that move food through the digestive tract.",cat:"Digestive"},
+    {t:"Nephrons",d:"The microscopic filtering units of the kidney; each kidney has over one million.",cat:"Excretory"},
+  ]},
+  16: {title:"Endocrine & Reproductive Health", color:"#FF8C00", terms:[
+    {t:"Endocrine glands",d:"Ductless organs that release hormones directly into the bloodstream.",cat:"Endocrine"},
+    {t:"Hormones",d:"Chemical messengers that regulate body functions including growth, metabolism, mood, and reproduction.",cat:"Endocrine"},
+    {t:"Thyroid gland",d:"Neck gland that produces thyroxine, regulating metabolism, body heat, and bone growth.",cat:"Endocrine"},
+    {t:"Pancreas",d:"Dual-function organ that regulates blood sugar through insulin (lowers) and glucagon (raises).",cat:"Endocrine"},
+    {t:"Pituitary gland",d:"The 'master gland' that regulates all other endocrine glands.",cat:"Endocrine"},
+    {t:"Testosterone",d:"The primary male sex hormone; drives puberty, muscle development, and sperm production.",cat:"Reproductive"},
+    {t:"Testes",d:"The two male reproductive glands that produce sperm and testosterone.",cat:"Reproductive"},
+    {t:"Ovaries",d:"The female reproductive glands that store ova and produce estrogen and progesterone.",cat:"Reproductive"},
+    {t:"Ovulation",d:"The monthly release of a mature egg from an ovary into the fallopian tube.",cat:"Reproductive"},
+    {t:"Menstruation",d:"The monthly shedding of the uterine lining when pregnancy has not occurred.",cat:"Reproductive"},
+    {t:"Uterus",d:"The hollow, muscular organ that nourishes and protects a developing fetus during pregnancy.",cat:"Reproductive"},
+    {t:"Puberty",d:"The biological process by which the body develops adult reproductive and secondary sex characteristics.",cat:"Reproductive"},
+  ]},
+  17: {title:"The Beginning of the Life Cycle", color:"#38BFFF", terms:[
+    {t:"Fertilization",d:"The union of a sperm and egg cell, resulting in a zygote; also called conception.",cat:"Prenatal"},
+    {t:"Implantation",d:"The process by which the zygote attaches to and burrows into the uterine wall.",cat:"Prenatal"},
+    {t:"Embryo",d:"The developing organism from weeks 3–8 of pregnancy.",cat:"Prenatal"},
+    {t:"Fetus",d:"The developing organism from week 9 through birth.",cat:"Prenatal"},
+    {t:"Prenatal care",d:"The health practices and medical supervision a pregnant woman undertakes to protect her health and her baby's.",cat:"Prenatal"},
+    {t:"Fetal Alcohol Spectrum Disorders",d:"A range of permanent conditions caused by prenatal alcohol exposure — 100% preventable.",cat:"Prenatal"},
+    {t:"Chromosomes",d:"Thread-like structures in the cell nucleus that carry the genetic code; humans have 46 (23 pairs).",cat:"Genetics"},
+    {t:"Genes",d:"Segments of chromosomes that are the basic units of heredity; each codes for specific traits.",cat:"Genetics"},
+    {t:"DNA",d:"The double-helix molecule that makes up chromosomes and contains the complete genetic code.",cat:"Genetics"},
+    {t:"Gene therapy",d:"A medical treatment that corrects genetic disorders by introducing, repairing, or replacing defective genes.",cat:"Genetics"},
+    {t:"Developmental tasks",d:"The milestones and experiences that must occur at each life stage for healthy growth.",cat:"Development"},
+    {t:"Autonomy",d:"The growing confidence and ability to control one's own body and choices — key in early childhood.",cat:"Development"},
+  ]},
+  18: {title:"The Life Cycle Continues", color:"#38BFFF", terms:[
+    {t:"Adolescence",d:"The developmental period between childhood and adulthood, marked by puberty and significant changes.",cat:"Development"},
+    {t:"Cognition",d:"The ability to reason, think abstractly, and arrive at solutions; develops significantly during adolescence.",cat:"Development"},
+    {t:"Prefrontal cortex",d:"Brain region responsible for planning, reasoning, and impulse control — not fully mature until ~age 25.",cat:"Brain"},
+    {t:"Physical maturity",d:"The state at which the body and all its organs are fully developed.",cat:"Development"},
+    {t:"Emotional maturity",d:"The state at which mental and emotional capabilities are fully developed.",cat:"Development"},
+    {t:"Commitment",d:"A promise or pledge to another person; the foundation of marriage and other lasting partnerships.",cat:"Adulthood"},
+    {t:"Transitions",d:"Significant life changes that occur at all stages of life and require adjustment.",cat:"Adulthood"},
+    {t:"Empty-nest syndrome",d:"The feelings of sadness some parents experience when children grow up and leave home.",cat:"Adulthood"},
+    {t:"Integrity",d:"In late adulthood, the sense of having lived according to one's values and that the life has been meaningful.",cat:"Adulthood"},
+    {t:"Menopause",d:"The natural biological process marking the end of a woman's menstrual cycles, typically in the late 40s–50s.",cat:"Adulthood"},
+  ]},
+  19: {title:"Medicines & Drugs", color:"#FF3B5C", terms:[
+    {t:"Medicines",d:"Drugs used to treat, prevent, or manage diseases or other medical conditions.",cat:"Medicines"},
+    {t:"Drugs",d:"Substances other than food that change the structure or function of the body or mind.",cat:"Medicines"},
+    {t:"Vaccine",d:"A preparation that trains the immune system to recognize and fight a specific disease without causing it.",cat:"Medicines"},
+    {t:"Side effects",d:"Effects of a medication other than the intended therapeutic effect.",cat:"Medicines"},
+    {t:"Prescription medicines",d:"Medications dispensed only with written approval from a licensed prescriber.",cat:"Medicines"},
+    {t:"Over-the-counter medicines",d:"Medications available without a prescription, approved for self-directed use when label is followed.",cat:"Medicines"},
+    {t:"Medicine misuse",d:"Using a medication in ways other than intended — even without intent to abuse.",cat:"Safety"},
+    {t:"Medicine abuse",d:"Intentionally using a medication for non-medical reasons; illegal and dangerous.",cat:"Safety"},
+    {t:"Drug overdose",d:"A toxic, potentially fatal reaction when a drug is taken in an amount the body cannot safely process.",cat:"Safety"},
+    {t:"Fentanyl",d:"A synthetic opioid 50–100× more potent than morphine; now found in counterfeit pills — responsible for ~80% of teen overdose deaths.",cat:"Drugs"},
+    {t:"Naloxone",d:"A medication (Narcan) that rapidly reverses opioid overdose — now available OTC without prescription.",cat:"Safety"},
+    {t:"Synergistic effect",d:"When two medicines together produce a greater combined effect than either alone — can be dangerous.",cat:"Safety"},
+  ]},
+  20: {title:"Tobacco", color:"#FF3B5C", terms:[
+    {t:"Nicotine",d:"The addictive stimulant drug found in all tobacco products and most e-cigarettes.",cat:"Tobacco"},
+    {t:"Carcinogen",d:"A cancer-causing substance; tobacco smoke contains at least 70 known carcinogens.",cat:"Tobacco"},
+    {t:"Tar",d:"The thick, sticky residue produced when tobacco burns; destroys cilia and alveoli.",cat:"Tobacco"},
+    {t:"Carbon monoxide",d:"A colorless, odorless poisonous gas in tobacco smoke that displaces oxygen in the blood.",cat:"Tobacco"},
+    {t:"Leukoplakia",d:"Thickened, white, leathery patches inside the mouth caused by smokeless tobacco use.",cat:"Tobacco"},
+    {t:"Nicotine withdrawal",d:"The physical and psychological symptoms that occur when a tobacco user stops using nicotine.",cat:"Cessation"},
+    {t:"Nicotine substitutes",d:"Products (patches, gum, lozenges) that deliver controlled doses of nicotine to ease withdrawal.",cat:"Cessation"},
+    {t:"Environmental tobacco smoke",d:"Air contaminated by tobacco smoke; also called secondhand smoke.",cat:"Secondhand"},
+    {t:"Mainstream smoke",d:"Smoke exhaled from a smoker's lungs.",cat:"Secondhand"},
+    {t:"Sidestream smoke",d:"Smoke from the burning end of a cigarette; contains higher concentrations of toxic substances.",cat:"Secondhand"},
+    {t:"E-cigarettes",d:"Electronic devices that heat a nicotine liquid to create an aerosol — NOT water vapor — also called vaping.",cat:"Tobacco"},
+  ]},
+  21: {title:"Alcohol", color:"#FF3B5C", terms:[
+    {t:"Ethanol",d:"The type of alcohol found in beverages; a powerful, addictive depressant drug.",cat:"Alcohol"},
+    {t:"Depressant",d:"A drug that slows the central nervous system — alcohol is a depressant.",cat:"Alcohol"},
+    {t:"Intoxication",d:"The state in which alcohol has significantly impaired a person's physical and mental control.",cat:"Alcohol"},
+    {t:"Binge drinking",d:"Consuming enough alcohol to reach a BAC of 0.08% or above within about 2 hours.",cat:"Alcohol"},
+    {t:"Alcohol poisoning",d:"A severe, potentially fatal physical reaction to alcohol overdose — requires immediate 911 response.",cat:"Alcohol"},
+    {t:"Blood alcohol concentration",d:"The percentage of alcohol in a person's blood — the standard measure of intoxication for driving.",cat:"Alcohol"},
+    {t:"Psychological dependence",d:"A condition in which a person believes they need alcohol to feel good or function normally.",cat:"Dependence"},
+    {t:"Physiological dependence",d:"A condition in which the body has a chemical need for alcohol; stopping causes physical withdrawal.",cat:"Dependence"},
+    {t:"Alcohol use disorder",d:"A chronic brain disease involving compulsive alcohol use despite devastating consequences.",cat:"Dependence"},
+    {t:"Fetal Alcohol Spectrum Disorders",d:"A range of permanent conditions caused by alcohol exposure during pregnancy — leading preventable cause of intellectual disability.",cat:"Effects"},
+  ]},
+  22: {title:"Illegal Drugs", color:"#FF3B5C", terms:[
+    {t:"Substance abuse",d:"The unnecessary or improper use of chemical substances for non-medical purposes.",cat:"Drugs"},
+    {t:"Illegal drugs",d:"Chemical substances that people of any age may not lawfully manufacture, possess, buy, or sell.",cat:"Drugs"},
+    {t:"Addiction",d:"A chronic brain disease involving compulsive drug use despite devastating consequences.",cat:"Drugs"},
+    {t:"Marijuana",d:"A plant whose dried leaves and flowers contain THC; legally variable by state but illegal for minors everywhere.",cat:"Drugs"},
+    {t:"Inhalants",d:"Substances whose fumes are inhaled to produce intoxication; can cause sudden death even on first use.",cat:"Drugs"},
+    {t:"Anabolic steroids",d:"Synthetic hormones similar to testosterone; non-medical use is illegal and causes serious health damage.",cat:"Drugs"},
+    {t:"Hallucinogens",d:"Drugs that alter mood, thoughts, and sensory perceptions, causing hallucinations.",cat:"Drugs"},
+    {t:"Opiates",d:"Drugs derived from or chemically similar to opium; highly effective pain relievers and highly addictive.",cat:"Drugs"},
+    {t:"Stimulants",d:"Drugs that speed up central nervous system activity — cocaine, meth, amphetamines.",cat:"Drugs"},
+    {t:"Rehabilitation",d:"The process of medical and psychological treatment for physiological or psychological dependence on a drug.",cat:"Recovery"},
+    {t:"Counterfeit pills",d:"Pills made to look exactly like real prescriptions but containing fentanyl or other dangerous substances.",cat:"Safety"},
+  ]},
+  23: {title:"Communicable Diseases", color:"#aaaaaa", terms:[
+    {t:"Communicable disease",d:"A disease that spreads from one organism to another or through the environment.",cat:"Disease"},
+    {t:"Infection",d:"The condition that results when pathogens multiply in the body and damage cells.",cat:"Disease"},
+    {t:"Vector",d:"An organism (such as a mosquito or tick) that carries and transmits pathogens.",cat:"Transmission"},
+    {t:"Immune system",d:"The body's network of cells, tissues, organs, and chemicals that fight pathogens.",cat:"Immunity"},
+    {t:"Antibody",d:"A protein produced by B cells that targets a specific antigen, marking it for destruction.",cat:"Immunity"},
+    {t:"Vaccine",d:"A preparation that stimulates the immune system to develop protection against a specific disease.",cat:"Immunity"},
+    {t:"Immunity",d:"The state of being protected against a specific disease.",cat:"Immunity"},
+    {t:"Inflammatory response",d:"The immune system's first response to tissue damage or infection.",cat:"Immunity"},
+    {t:"Pandemic",d:"A global outbreak of an infectious disease — COVID-19 is the most recent major example.",cat:"Epidemiology"},
+    {t:"Epidemic",d:"A disease outbreak that affects many people in the same place at the same time.",cat:"Epidemiology"},
+    {t:"Emerging infections",d:"Communicable diseases whose occurrence in humans has increased significantly in recent decades.",cat:"Epidemiology"},
+    {t:"mRNA vaccine",d:"A vaccine that uses genetic instructions to teach cells to make a harmless piece of a pathogen — COVID-19 type.",cat:"Immunity"},
+  ]},
+  24: {title:"STIs & HIV/AIDS", color:"#aaaaaa", terms:[
+    {t:"Sexually transmitted infection",d:"An infection passed from person to person through sexual contact; also called STD.",cat:"STIs"},
+    {t:"Asymptomatic",d:"Showing no symptoms despite being infected — makes STIs especially dangerous.",cat:"STIs"},
+    {t:"HPV",d:"Human Papillomavirus — the most common STI; high-risk strains cause cancer. Prevented by Gardasil 9.",cat:"STIs"},
+    {t:"Chlamydia",d:"The most reported bacterial STI; mostly asymptomatic; curable with antibiotics; untreated causes infertility.",cat:"STIs"},
+    {t:"Gonorrhea",d:"The second most common bacterial STI; drug resistance is a growing crisis.",cat:"STIs"},
+    {t:"Syphilis",d:"Progresses through stages; congenital syphilis up 700% over the past decade; curable with penicillin.",cat:"STIs"},
+    {t:"HIV",d:"Human Immunodeficiency Virus — attacks CD4+ T cells, progressively destroying the immune system.",cat:"HIV"},
+    {t:"AIDS",d:"Acquired Immunodeficiency Syndrome — the final stage of HIV infection.",cat:"HIV"},
+    {t:"Antiretroviral therapy",d:"The combination of medications that suppress HIV replication — allows near-normal lifespan.",cat:"HIV"},
+    {t:"U=U",d:"Undetectable equals Untransmittable — people with HIV on effective ART cannot sexually transmit the virus.",cat:"HIV"},
+    {t:"PrEP",d:"Pre-Exposure Prophylaxis — reduces HIV transmission risk from sex by ~99% when taken as prescribed.",cat:"HIV"},
+    {t:"Gardasil 9",d:"The current HPV vaccine covering 9 strains — recommended for all people ages 9–26.",cat:"STIs"},
+  ]},
+  25: {title:"Noncommunicable Diseases & Disabilities", color:"#aaaaaa", terms:[
+    {t:"Noncommunicable disease",d:"A disease that cannot be spread from person to person.",cat:"Disease"},
+    {t:"Cardiovascular disease",d:"Any disease affecting the heart or blood vessels; the leading cause of death in the U.S.",cat:"CVD"},
+    {t:"Hypertension",d:"Chronically elevated blood pressure (130/80 or above per 2017 AHA guidelines); the 'silent killer'.",cat:"CVD"},
+    {t:"Atherosclerosis",d:"A disease in which fatty plaques accumulate on artery walls, narrowing and hardening them.",cat:"CVD"},
+    {t:"Stroke",d:"An acute injury in which blood flow to part of the brain is interrupted — requires immediate 911 response.",cat:"CVD"},
+    {t:"Cancer",d:"A disease characterized by the uncontrolled growth and spread of abnormal cells.",cat:"Cancer"},
+    {t:"Tumor",d:"An abnormal mass of tissue; may be benign (non-cancerous) or malignant (cancerous).",cat:"Cancer"},
+    {t:"Metastasis",d:"The spread of cancer from its original location to other parts of the body.",cat:"Cancer"},
+    {t:"Remission",d:"A period when cancer is undetectable or under control.",cat:"Cancer"},
+    {t:"Diabetes",d:"A chronic disease in which the body cannot properly regulate blood glucose.",cat:"Other"},
+    {t:"Allergy",d:"An immune system overreaction to a normally harmless substance (allergen).",cat:"Other"},
+    {t:"Americans with Disabilities Act",d:"The 1990 federal law prohibiting discrimination against people with disabilities.",cat:"Disabilities"},
+  ]},
+  26: {title:"Safety & Injury Prevention", color:"#FFD700", terms:[
+    {t:"Personal safety",d:"The steps you take to reduce your risk of becoming a victim of crime.",cat:"Safety"},
+    {t:"Cyberbullying",d:"The use of digital technology to harass, humiliate, or threaten — affects ~46% of teens.",cat:"Digital Safety"},
+    {t:"Accident chain",d:"The predictable sequence: unsafe situation → unsafe habit → unsafe action = accident.",cat:"Safety"},
+    {t:"Defensive driving",d:"Driving with awareness of potential hazards and taking proactive action to avoid them.",cat:"Road Safety"},
+    {t:"Road rage",d:"Responding to driving incidents with aggression or violence.",cat:"Road Safety"},
+    {t:"Graduated licensing",d:"A staged system that increases driving privileges as new drivers build experience.",cat:"Road Safety"},
+    {t:"Personal flotation device",d:"A life jacket or other approved device that keeps a person afloat — required for boating.",cat:"Outdoor Safety"},
+    {t:"OSHA",d:"The Occupational Safety and Health Administration — the federal agency responsible for workplace safety.",cat:"Safety"},
+    {t:"Fire safety",d:"Practices to prevent and respond to fires — smoke alarms, extinguishers, and escape plans.",cat:"Home Safety"},
+    {t:"Distracted driving",d:"Operating a vehicle while attention is diverted — texting is the most dangerous form.",cat:"Road Safety"},
+  ]},
+  27: {title:"First Aid & Emergencies", color:"#FFD700", terms:[
+    {t:"First aid",d:"The immediate, temporary care given to an ill or injured person until professional care arrives.",cat:"First Aid"},
+    {t:"Good Samaritan laws",d:"Statutes that protect individuals who provide reasonable emergency care in good faith.",cat:"Legal"},
+    {t:"Universal precautions",d:"The practice of treating all blood and body fluids as potentially infectious.",cat:"First Aid"},
+    {t:"CPR",d:"Cardiopulmonary Resuscitation — emergency procedure combining chest compressions and rescue breathing.",cat:"Emergency"},
+    {t:"Hands-Only CPR",d:"Compression-only CPR — AHA-recommended for untrained bystanders responding to adult cardiac arrest.",cat:"Emergency"},
+    {t:"AED",d:"Automated External Defibrillator — delivers electric shock to restore normal heart rhythm.",cat:"Emergency"},
+    {t:"Chain of survival",d:"The sequence: Call 911 → CPR → AED → Advanced care → Post-arrest care.",cat:"Emergency"},
+    {t:"Shock",d:"A life-threatening condition in which circulation is inadequate to supply oxygen to body tissues.",cat:"Emergency"},
+    {t:"Fracture",d:"A break in a bone — requires immobilization and medical evaluation.",cat:"Injuries"},
+    {t:"Concussion",d:"A jarring brain injury caused by a blow or jolt to the head — always warrants medical evaluation.",cat:"Injuries"},
+    {t:"P.R.I.C.E.",d:"Protect, Rest, Ice, Compress, Elevate — the treatment protocol for sprains and strains.",cat:"Injuries"},
+    {t:"Emergency survival kit",d:"A collection of supplies needed to sustain a household for 72+ hours during or after an emergency.",cat:"Preparedness"},
+  ]},
+  28: {title:"Community & Environmental Health", color:"#FFD700", terms:[
+    {t:"Health care system",d:"All the medical care available to a nation's people, the way they receive care, and the way they pay for it.",cat:"Healthcare"},
+    {t:"Primary care physician",d:"A medical doctor who provides physical checkups and general care.",cat:"Healthcare"},
+    {t:"Public health",d:"A community's effort to protect the health of all its people.",cat:"Community"},
+    {t:"Health insurance",d:"Private and government programs that pay for part or all of a person's medical costs.",cat:"Healthcare"},
+    {t:"Air pollution",d:"Contamination of the atmosphere by harmful substances including gases and particulate matter.",cat:"Environment"},
+    {t:"Smog",d:"A form of air pollution created when sunlight reacts with vehicle and industrial emissions.",cat:"Environment"},
+    {t:"Radon",d:"A colorless, odorless radioactive gas from soil — the second leading cause of lung cancer in the U.S.",cat:"Environment"},
+    {t:"EPA",d:"The Environmental Protection Agency — the U.S. government agency responsible for environmental regulations.",cat:"Environment"},
+    {t:"Water pollution",d:"Contamination of water supplies by industrial waste, agricultural runoff, or sewage.",cat:"Environment"},
+    {t:"Hazardous waste",d:"Toxic, corrosive, or flammable materials that require special disposal to protect human health.",cat:"Environment"},
+    {t:"Specialists",d:"Medical doctors who focus on particular kinds of patients or particular medical conditions.",cat:"Healthcare"},
+    {t:"Medical history",d:"Complete and comprehensive information about your immunizations and any health problems you have had.",cat:"Healthcare"},
+  ]},
+};
+
+// ═══════════════════════════════════════════════════════════
+// ENGINE
+// ═══════════════════════════════════════════════════════════
+let chapterNum = parseInt(new URLSearchParams(location.search).get('ch')) || 1;
+let gameMode = 'flashcard';
+let terms = [];
+let idx = 0, correctCount = 0, wrongCount = 0, streak = 0;
+let timerInt = null;
+
+function load() {
+  const ch = ALL_CHAPTERS[chapterNum] || ALL_CHAPTERS[1];
+  terms = shuffle([...ch.terms]);
+  document.getElementById('nav-title').textContent = `Ch ${chapterNum} — ${ch.title}`;
+  document.getElementById('chapter-info').textContent = `${terms.length} terms`;
+  document.title = `Ch ${chapterNum} Vocab — Legend of Wellness`;
+  resetGame();
+  renderGame();
+}
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function switchGame(mode, btn) {
+  gameMode = mode;
+  document.querySelectorAll('.game-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  clearInterval(timerInt);
+  resetGame();
+  renderGame();
+}
+
+function resetGame() {
+  idx = 0; correctCount = 0; wrongCount = 0; streak = 0;
+  terms = shuffle([...ALL_CHAPTERS[chapterNum].terms]);
+  clearInterval(timerInt);
+  updateHUD();
+  updateProgress();
+}
+
+function updateHUD() {
+  document.getElementById('nav-score').textContent = `+${correctCount}`;
+  document.getElementById('score-hud').innerHTML = `
+    <div class="hud-pill correct">✓ ${correctCount}</div>
+    <div class="hud-pill wrong">✗ ${wrongCount}</div>
+    ${streak >= 3 ? `<div class="hud-pill streak">🔥 ${streak} streak</div>` : ''}
+    <div class="hud-pill total">${idx}/${terms.length}</div>`;
+}
+
+function updateProgress() {
+  document.getElementById('progress-fill').style.width = (idx / terms.length * 100) + '%';
+}
+
+function renderGame() {
+  if (idx >= terms.length) { renderResults(); return; }
+  const gc = document.getElementById('game-content');
+  if (gameMode === 'flashcard') renderFlashcard(gc);
+  else if (gameMode === 'speedquiz') renderSpeedQuiz(gc);
+  else if (gameMode === 'wordbuild') renderWordBuild(gc);
+  else if (gameMode === 'conceptmap') renderConceptMap(gc);
+}
+
+// ── FLASHCARD ──
+let fc_flipped = false;
+function renderFlashcard(gc) {
+  fc_flipped = false;
+  const term = terms[idx];
+  gc.innerHTML = `
+    <div class="flashcard-wrap" onclick="flipCard()">
+      <div class="flashcard" id="fc">
+        <div class="card-face card-front">
+          <div class="card-label">Term</div>
+          <div class="card-term">${term.t}</div>
+          <div class="card-hint">Tap to reveal definition</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-label">Definition</div>
+          <div class="card-def">${term.d}</div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-flip" onclick="flipCard()">🔄 Flip</button>
+      <button class="btn btn-correct" onclick="fcScore(true)">✓ Got It</button>
+      <button class="btn btn-wrong" onclick="fcScore(false)">✗ Still Learning</button>
+      <button class="btn btn-restart" onclick="resetGame();renderGame()">↺ Restart</button>
+    </div>`;
+}
+function flipCard() {
+  fc_flipped = !fc_flipped;
+  const fc = document.getElementById('fc');
+  if (fc) fc.classList.toggle('flipped', fc_flipped);
+}
+function fcScore(correct) {
+  if (correct) { correctCount++; streak++; } else { wrongCount++; streak = 0; }
+  idx++;
+  updateHUD(); updateProgress(); renderGame();
+}
+
+// ── SPEED QUIZ ──
+let sq_answered = false, sq_seconds = 30;
+function renderSpeedQuiz(gc) {
+  sq_answered = false; sq_seconds = 30;
+  const term = terms[idx];
+  const wrong = shuffle(terms.filter((_, i) => i !== idx)).slice(0, 3);
+  const opts = shuffle([term, ...wrong]);
+  const pct = sq_seconds / 30 * 100;
+  gc.innerHTML = `
+    <div class="quiz-question">
+      <div class="quiz-q-label">What is the definition of...</div>
+      <div class="quiz-def">${term.d}</div>
+      <div class="quiz-timer"><div class="quiz-timer-fill" id="qtf" style="width:100%"></div></div>
+    </div>
+    <div class="quiz-options">${opts.map((o, i) => `<div class="quiz-opt" id="qo${i}" onclick="sqPick(${i},${o.t === term.t},'${o.t.replace(/'/g,'\\'')}')"><strong>${'ABCD'[i]}.</strong> ${o.t}</div>`).join('')}</div>
+    <div class="quiz-explanation" id="qex">${term.d} — <em>${term.t}</em></div>
+    <div class="fc-controls">
+      <button class="btn btn-restart" onclick="resetGame();renderGame()">↺ Restart</button>
+    </div>`;
+  clearInterval(timerInt);
+  timerInt = setInterval(() => {
+    sq_seconds = Math.max(0, sq_seconds - 0.1);
+    const el = document.getElementById('qtf');
+    if (el) { el.style.width = (sq_seconds / 30 * 100) + '%'; if (sq_seconds < 10) el.classList.add('warning'); }
+    if (sq_seconds <= 0) { clearInterval(timerInt); sqTimeout(); }
+  }, 100);
+}
+function sqPick(i, correct, term) {
+  if (sq_answered) return; sq_answered = true; clearInterval(timerInt);
+  const el = document.getElementById('qo' + i);
+  if (el) el.classList.add(correct ? 'correct' : 'wrong');
+  document.querySelectorAll('.quiz-opt').forEach(o => o.classList.add('disabled'));
+  if (!correct) {
+    document.querySelectorAll('.quiz-opt').forEach(o => { if (o.textContent.includes(terms[idx].t)) o.classList.add('correct'); });
+  }
+  const ex = document.getElementById('qex'); if (ex) ex.classList.add('show');
+  if (correct) { correctCount++; streak++; } else { wrongCount++; streak = 0; }
+  idx++;
+  updateHUD(); updateProgress();
+  setTimeout(() => renderGame(), 1800);
+}
+function sqTimeout() {
+  if (sq_answered) return; sq_answered = true; wrongCount++; streak = 0; idx++;
+  updateHUD(); updateProgress();
+  const ex = document.getElementById('qex'); if (ex) ex.classList.add('show');
+  setTimeout(() => renderGame(), 1800);
+}
+
+// ── WORD BUILDER ──
+let wb_used = [], wb_revealed = false;
+function renderWordBuild(gc) {
+  wb_used = []; wb_revealed = false;
+  const term = terms[idx];
+  const letters = shuffle(term.t.toUpperCase().split(''));
+  gc.innerHTML = `
+    <div class="wb-def">
+      <div class="wb-def-label">What term matches this definition?</div>
+      <div class="wb-def-text">${term.d}</div>
+    </div>
+    <div class="wb-answer-row">
+      <input class="wb-input" id="wb-in" placeholder="Type the term..." onkeydown="if(event.key==='Enter')wbCheck()">
+      <button class="wb-submit" onclick="wbCheck()">Submit</button>
+    </div>
+    <div class="wb-feedback" id="wb-fb"></div>
+    <div style="text-align:center;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--dim);margin-bottom:8px">Scrambled letters (click to use as hint):</div>
+      <div class="wb-hint-row">${letters.map((l, i) => `<div class="wb-letter" id="wbl${i}" onclick="wbUse(${i},'${l}')">${l}</div>`).join('')}</div>
+      <span class="wb-reveal" onclick="wbReveal()">Reveal answer</span>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-next" onclick="wbSkip()">Skip →</button>
+      <button class="btn btn-restart" onclick="resetGame();renderGame()">↺ Restart</button>
+    </div>`;
+}
+function wbUse(i, l) {
+  if (wb_used.includes(i)) return;
+  wb_used.push(i);
+  const el = document.getElementById('wbl' + i);
+  if (el) el.classList.add('used');
+  const inp = document.getElementById('wb-in');
+  if (inp) inp.value += l;
+}
+function wbCheck() {
+  const inp = document.getElementById('wb-in'); if (!inp) return;
+  const val = inp.value.trim().toUpperCase();
+  const correct = val === terms[idx].t.toUpperCase();
+  const fb = document.getElementById('wb-fb');
+  inp.className = 'wb-input ' + (correct ? 'correct-input' : 'wrong-input');
+  if (fb) { fb.className = 'wb-feedback show ' + (correct ? 'good' : 'bad'); fb.textContent = correct ? `✓ Correct! "${terms[idx].t}"` : `✗ The answer was "${terms[idx].t}"`; }
+  if (correct) { correctCount++; streak++; } else { wrongCount++; streak = 0; }
+  idx++;
+  updateHUD(); updateProgress();
+  setTimeout(() => renderGame(), 1600);
+}
+function wbReveal() {
+  const fb = document.getElementById('wb-fb');
+  if (fb) { fb.className = 'wb-feedback show bad'; fb.textContent = `Answer: ${terms[idx].t}`; }
+  const inp = document.getElementById('wb-in');
+  if (inp) { inp.value = terms[idx].t; inp.className = 'wb-input wrong-input'; }
+  wrongCount++; streak = 0; idx++;
+  updateHUD(); updateProgress();
+  setTimeout(() => renderGame(), 1800);
+}
+function wbSkip() { wrongCount++; streak = 0; idx++; updateHUD(); updateProgress(); renderGame(); }
+
+// ── CONCEPT MAP ──
+let cm_placements = {}, cm_checked = false;
+function renderConceptMap(gc) {
+  cm_placements = {}; cm_checked = false;
+  const batch = terms.slice(0, Math.min(12, terms.length));
+  const cats = [...new Set(batch.map(t => t.cat))];
+  const catColors = ['#38BFFF','#00E5A0','#FF3B5C','#a855f7','#FFD700','#FF8C00'];
+  const shuffled = shuffle([...batch]);
+  gc.innerHTML = `
+    <div class="cmap-instruction">Drag each term into the correct category. Click Check when done.</div>
+    <div class="cmap-word-bank">
+      <div class="cmap-bank-title">Word Bank</div>
+      <div class="cmap-bank-chips" id="word-bank">
+        ${shuffled.map(t => `<div class="cmap-chip" id="chip-${t.t.replace(/\s/g,'_')}" draggable="true" ondragstart="cmDragStart(event,'${t.t.replace(/'/g,"\\'")}','${t.cat.replace(/'/g,"\\'")}')"><span>${t.t}</span></div>`).join('')}
+      </div>
+    </div>
+    <div class="cmap-categories">
+      ${cats.map((cat, ci) => `
+        <div class="cmap-cat" id="cat-${ci}" style="--cat-border:${catColors[ci]}44;--cat-bg:${catColors[ci]}08;--cat-color:${catColors[ci]}"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="cmDrop(event,'${cat.replace(/'/g,"\\'")}',${ci})">
+          <div class="cmap-cat-title">${cat}</div>
+          <div class="cmap-drop-zone" id="dz-${ci}"></div>
+        </div>`).join('')}
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-correct" onclick="cmCheck()">✓ Check Answers</button>
+      <button class="btn btn-restart" onclick="renderGame()">↺ Try Again</button>
+      <button class="btn btn-next" onclick="cmNext()">Next Set →</button>
+    </div>`;
+}
+let cmDragData = null;
+function cmDragStart(e, term, cat) { cmDragData = { term, cat }; }
+function cmDrop(e, cat, ci) {
+  e.preventDefault();
+  document.getElementById('cat-' + ci).classList.remove('drag-over');
+  if (!cmDragData) return;
+  cm_placements[cmDragData.term] = { placed: cat, correct: cmDragData.cat };
+  const dz = document.getElementById('dz-' + ci);
+  const chip = document.getElementById('chip-' + cmDragData.term.replace(/\s/g, '_'));
+  if (dz && chip) { dz.appendChild(chip); }
+  cmDragData = null;
+}
+function cmCheck() {
+  let c = 0, w = 0;
+  Object.entries(cm_placements).forEach(([term, data]) => {
+    const chip = document.getElementById('chip-' + term.replace(/\s/g, '_'));
+    if (!chip) return;
+    if (data.placed === data.correct) { chip.classList.add('correct-chip'); c++; }
+    else { chip.classList.add('wrong-chip'); w++; }
+  });
+  correctCount += c; wrongCount += w; streak = c > 0 ? streak + c : 0;
+  idx = Math.min(idx + 12, terms.length);
+  updateHUD(); updateProgress();
+}
+function cmNext() { idx = Math.min(idx + 12, terms.length); updateHUD(); updateProgress(); renderGame(); }
+
+// ── RESULTS ──
+function renderResults() {
+  clearInterval(timerInt);
+  const total = correctCount + wrongCount;
+  const pct = total ? Math.round(correctCount / total * 100) : 0;
+  const grade = pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : 'D';
+  const icons = {A:'🏆',B:'⭐',C:'💪',D:'📚'};
+  const msgs = {A:'Perfect! You mastered all terms!',B:'Great work! Almost there!',C:'Good effort — review the missed terms.',D:'Keep studying — you\'ve got this!'};
+  document.getElementById('game-content').innerHTML = `
+    <div class="results-card">
+      <div class="results-icon">${icons[grade]}</div>
+      <div class="results-grade ${grade.toLowerCase()}">${pct}%</div>
+      <div class="results-sub">${msgs[grade]}</div>
+      <div class="results-stats">
+        <div class="rs"><div class="rs-num" style="color:var(--emerald)">${correctCount}</div><div class="rs-label">Correct</div></div>
+        <div class="rs"><div class="rs-num" style="color:var(--crimson)">${wrongCount}</div><div class="rs-label">Missed</div></div>
+        <div class="rs"><div class="rs-num">${pct}%</div><div class="rs-label">Score</div></div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-correct" onclick="resetGame();renderGame()">↺ Play Again</button>
+      <button class="btn btn-next" onclick="history.back()">← Back to Chapter</button>
+    </div>`;
+  document.getElementById('progress-fill').style.width = '100%';
+}
+
+load();
+</script>
+</body>
+</html>

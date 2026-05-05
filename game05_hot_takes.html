@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Health Hot Takes — Buzzer Battle</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#b71c1c;color:#fff;padding:16px;min-height:100vh}.hdr{background:#7f0000;border-radius:10px;padding:12px 20px;text-align:center;margin-bottom:12px}.hdr-title{font-size:20px;font-weight:700;color:#fff;letter-spacing:1px}.hdr-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px}.players{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.player-card{border-radius:10px;padding:10px;text-align:center;border:2px solid transparent}.player-card.buzzed{border-color:#FFD700}.p-name{font-size:12px;font-weight:700;margin-bottom:2px}.p-score{font-size:22px;font-weight:700}.p-streak{font-size:10px;opacity:.7;margin-top:1px}.buzz-btn{width:100%;margin-top:6px;padding:10px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:background .1s;font-family:inherit}.q-card{background:rgba(0,0,0,0.3);border-radius:10px;padding:16px;margin-bottom:12px;text-align:center}.q-type{font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:6px}.q-text{font-size:15px;line-height:1.6;margin-bottom:8px}.q-pts{font-size:13px;font-weight:700;color:#FFD700}.timer-bar{height:6px;background:rgba(0,0,0,0.3);border-radius:3px;margin-bottom:12px;overflow:hidden}.timer-fill{height:100%;background:#FFD700;border-radius:3px;transition:width .1s linear}.answer-box{background:rgba(0,0,0,0.4);border-radius:10px;padding:14px;margin-bottom:10px;display:none}.answer-box.show{display:block}.answer-label{font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:4px}.answer-text{font-size:14px;font-weight:700}.answer-fact{font-size:12px;color:rgba(255,255,255,0.7);margin-top:6px;line-height:1.4}.status{font-size:13px;color:rgba(255,255,255,0.8);text-align:center;margin-bottom:8px}.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}.btn{padding:9px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}.btn-next{background:#7f0000;color:#fff}.btn-reveal{background:#1565C0;color:#fff}.btn-correct{background:#2E7D32;color:#fff}.btn-wrong{background:#C62828;color:#fff}.btn-neutral{background:rgba(0,0,0,0.3);color:#fff}</style>
+</head><body>
+<div id="game"></div>
+<script>
+const QUESTIONS=[
+  {type:'hot',q:"HOT TAKE: Name the #1 preventable cause of death in the United States.",a:"Tobacco use (480,000+ deaths/year)",fact:"Tobacco kills more than alcohol, car accidents, firearms, and illegal drugs combined.",pts:200},
+  {type:'rapid',q:"What % of teens reported current use of ANY tobacco product in 2024 — a 25-year low?",a:"5.9%",fact:"Traditional cigarette smoking dropped to just 1.4% of high schoolers — a massive public health win.",pts:300},
+  {type:'hot',q:"HOT TAKE: TRUE or FALSE — A person with undetectable HIV cannot sexually transmit the virus.",a:"TRUE — this is U=U: Undetectable equals Untransmittable",fact:"Established by multiple large clinical trials. U=U is scientific consensus.",pts:400},
+  {type:'blitz',q:"BLITZ: Name all 3 types of distraction that make texting while driving deadly. GO!",a:"Visual (eyes off road), Manual (hands off wheel), Cognitive (mind off driving)",fact:"Texting involves all three simultaneously — the most dangerous combination possible.",pts:300},
+  {type:'rapid',q:"What is the compression rate per minute for adult CPR — think of a famous song?",a:"100–120 per minute (rhythm of 'Stayin' Alive')",fact:"Hands-Only CPR — no rescue breaths needed for untrained bystanders with adult arrest.",pts:200},
+  {type:'hot',q:"HOT TAKE: What synthetic opioid is now in ~80% of teen drug overdose deaths?",a:"Fentanyl",fact:"Fentanyl is 50–100× stronger than morphine and found in counterfeit pills indistinguishable from real medications.",pts:400},
+  {type:'rapid',q:"Name the hormone from the pineal gland that regulates sleep — and what suppresses it?",a:"Melatonin — suppressed by screen light (blue light) before bed",fact:"This is why staring at your phone before bed genuinely disrupts sleep.",pts:300},
+  {type:'blitz',q:"BLITZ: What do the letters ABCDE stand for in melanoma detection? GO!",a:"Asymmetry, Border, Color, Diameter, Evolving",fact:"The E (Evolving) was added after the original textbook's ABCD rule.",pts:400},
+  {type:'hot',q:"HOT TAKE: Which blood pressure marks Stage 1 Hypertension per updated 2017 AHA guidelines?",a:"130/80 mmHg (lowered from the old 140/90)",fact:"This reclassified 46.7% of U.S. adults as having high blood pressure.",pts:500},
+  {type:'rapid',q:"What is the only 100% effective method to prevent STI transmission?",a:"Abstinence",fact:"Condoms significantly reduce risk but abstinence is the only 100% effective method.",pts:200},
+  {type:'blitz',q:"BLITZ: Name 4 warning signs someone may be experiencing an opioid overdose. GO!",a:"Blue/gray lips, stopped/slow breathing, unresponsive, limp body, pinpoint pupils",fact:"Call 911 immediately and administer naloxone (Narcan) if available — now available OTC.",pts:500},
+  {type:'hot',q:"HOT TAKE: How many Americans had Alcohol Use Disorder as of 2023?",a:"29.5 million Americans ages 12+ (updated from old '17 million' figure)",fact:"AUD affects far more Americans than previously reported.",pts:400},
+  {type:'rapid',q:"Colorectal cancer screening age was lowered in 2021. What was the old age?",a:"50 years old — now starts at 45",fact:"Colorectal cancer is now the leading cause of cancer death in men under 50.",pts:300},
+  {type:'hot',q:"HOT TAKE: Name the leading preventable cause of intellectual disability in the U.S.",a:"Fetal Alcohol Spectrum Disorders (FASD) — caused by alcohol during pregnancy",fact:"There is no safe amount of alcohol during pregnancy. FASD is 100% preventable.",pts:500},
+  {type:'blitz',q:"BLITZ: What does CPR stand for, and what does AED stand for? GO!",a:"Cardiopulmonary Resuscitation — Automated External Defibrillator",fact:"AEDs are now in most schools, airports, gyms, and malls.",pts:200},
+];
+const COLORS=['#1565C0','#2E7D32','#6A1B9A','#E65100'];
+const PLAYER_BG=['#1a237e','#1B5E20','#4A148C','#BF360C'];
+let players=['Player 1','Player 2','Player 3','Player 4'];
+let scores=[0,0,0,0],streaks=[0,0,0,0];
+let qIdx=0,shuffled=[],buzzedPlayer=-1,revealed=false;
+let timerInterval=null,timeLeft=20;
+function init(){shuffled=[...QUESTIONS].sort(()=>Math.random()-.5);qIdx=0;scores=[0,0,0,0];streaks=[0,0,0,0];buzzedPlayer=-1;revealed=false;render();}
+function render(){if(qIdx>=shuffled.length){renderEnd();return;}const q=shuffled[qIdx];const pts=q.pts+(buzzedPlayer>=0&&streaks[buzzedPlayer]>=2?100:0);
+document.getElementById('game').innerHTML=`
+  <div class="hdr"><div class="hdr-title">HEALTH HOT TAKES</div><div class="hdr-sub">Buzzer Battle — Q ${qIdx+1}/${shuffled.length}</div></div>
+  <div class="players">${players.map((p,i)=>`<div class="player-card${buzzedPlayer===i?' buzzed':''}" style="background:${PLAYER_BG[i]}">
+    <input value="${p}" style="border:none;background:transparent;font-size:11px;font-weight:700;width:100%;text-align:center;color:#fff;font-family:inherit" onchange="players[${i}]=this.value">
+    <div class="p-score" style="color:#FFD700">${scores[i]}</div>
+    <div class="p-streak">${streaks[i]>=2?'Streak x'+streaks[i]+' (+100)':''}</div>
+    <button class="buzz-btn" style="background:${COLORS[i]};color:#fff" onclick="buzz(${i})" ${buzzedPlayer>=0||revealed?'disabled':''}>BUZZ!</button>
+  </div>`).join('')}</div>
+  <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+  <div class="q-card">
+    <div class="q-type">${q.type==='hot'?'Hot Take':q.type==='rapid'?'Rapid Fire':'60-Sec Blitz'}</div>
+    <div class="q-text">${q.q}</div>
+    <div class="q-pts">${pts} pts${buzzedPlayer>=0&&streaks[buzzedPlayer]>=2?' (streak bonus!)':''}</div>
+  </div>
+  <div class="answer-box${revealed?' show':''}" id="ans-box">
+    <div class="answer-label">Correct answer:</div>
+    <div class="answer-text">${q.a}</div>
+    <div class="answer-fact">${q.fact}</div>
+  </div>
+  <div class="status" id="status">${buzzedPlayer>=0?players[buzzedPlayer]+' buzzed in!':revealed?'Score the answer above.':'Waiting for a buzz...'}</div>
+  <div class="btns">
+    ${!revealed?`<button class="btn btn-reveal" onclick="revealAns()">Reveal Answer</button>`:''}
+    ${revealed&&buzzedPlayer>=0?`<button class="btn btn-correct" onclick="scoreIt(true)">Correct (+${pts})</button><button class="btn btn-wrong" onclick="scoreIt(false)">Wrong (-${Math.round(pts/2)})</button>`:''}
+    ${revealed&&buzzedPlayer<0?`<button class="btn btn-next" onclick="nextQ()">Next Question</button>`:''}
+    <button class="btn btn-neutral" onclick="nextQ()">Skip</button>
+  </div>`;
+startTimer();}
+function startTimer(){clearInterval(timerInterval);timeLeft=20;timerInterval=setInterval(()=>{timeLeft=Math.max(0,timeLeft-.1);const el=document.getElementById('timer-fill');if(el)el.style.width=(timeLeft/20*100)+'%';if(timeLeft<=0){clearInterval(timerInterval);if(!revealed&&buzzedPlayer<0){revealAns();}}},100);}
+function buzz(i){if(buzzedPlayer>=0||revealed)return;buzzedPlayer=i;clearInterval(timerInterval);render();}
+function revealAns(){revealed=true;clearInterval(timerInterval);const el=document.getElementById('ans-box');if(el)el.classList.add('show');}
+function scoreIt(correct){const q=shuffled[qIdx];const pts=q.pts+(streaks[buzzedPlayer]>=2?100:0);if(correct){scores[buzzedPlayer]+=pts;streaks[buzzedPlayer]++;}else{scores[buzzedPlayer]-=Math.round(pts/2);streaks[buzzedPlayer]=0;}nextQ();}
+function nextQ(){clearInterval(timerInterval);qIdx++;buzzedPlayer=-1;revealed=false;render();}
+function renderEnd(){const max=Math.max(...scores);const winner=players[scores.indexOf(max)];document.getElementById('game').innerHTML=`<div class="hdr"><div class="hdr-title">GAME OVER</div></div><div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:20px;margin-bottom:12px"><div style="font-size:20px;font-weight:700;text-align:center;margin-bottom:12px">Final Scores</div>${players.map((p,i)=>`<div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:8px;margin-bottom:6px;background:${scores[i]===max?'rgba(255,215,0,0.2)':'rgba(0,0,0,0.2)'}"><span>${p}${scores[i]===max?' WINNER!':''}</span><span style="color:#FFD700;font-weight:700">${scores[i]} pts</span></div>`).join('')}</div><div class="btns"><button class="btn btn-neutral" onclick="init()">Play Again</button></div>`;}
+init();
+</script>
+</body></html>

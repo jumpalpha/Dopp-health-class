@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Taboo — Legend of Wellness</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#1a0050;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#2d0080;border:2px solid #a855f7;border-radius:12px;padding:14px 20px;text-align:center;margin-bottom:14px}
+.hdr-title{font-size:24px;font-weight:700;color:#e879f9;letter-spacing:2px}
+.score-bar{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:12px}
+.team-box{background:#2d0080;border:2px solid #4c1d95;border-radius:10px;padding:10px;text-align:center}
+.team-box.active{border-color:#e879f9}
+.team-in{background:transparent;border:none;border-bottom:2px solid #a855f7;color:#e879f9;font-size:14px;font-weight:700;width:100%;text-align:center;font-family:inherit;padding:4px 0;margin-bottom:4px}
+.team-pts{font-size:24px;font-weight:700;color:#e879f9}
+.timer-lg{background:#e879f9;color:#1a0050;border-radius:10px;padding:12px;text-align:center;font-size:28px;font-weight:700;min-width:70px}
+.timer-lg.warning{background:#f59e0b}
+.timer-lg.danger{background:#ef4444;color:#fff}
+.card{background:#2d0080;border:3px solid #e879f9;border-radius:14px;padding:20px;margin-bottom:12px;text-align:center;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.target-word{font-size:28px;font-weight:700;color:#e879f9;margin-bottom:14px;letter-spacing:1px}
+.forbidden-label{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase}
+.forbidden-list{display:flex;flex-direction:column;gap:6px;width:100%}
+.forbidden-word{background:#1a0050;border:1.5px solid #ef4444;border-radius:6px;padding:6px 12px;font-size:14px;font-weight:600;color:#fca5a5;text-align:center}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .1s}
+.btn:active{transform:scale(.96)}
+.btn-correct{background:#10b981;color:#fff;font-size:16px;padding:14px 28px}
+.btn-skip{background:#6b7280;color:#fff}
+.btn-taboo{background:#ef4444;color:#fff}
+.btn-start{background:#e879f9;color:#1a0050;font-size:16px;padding:14px 32px}
+.btn-reset{background:#4c1d95;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.status{background:#2d0080;border-radius:8px;padding:10px;font-size:13px;color:#c4b5fd;text-align:center;margin-bottom:10px}
+.round-info{font-size:12px;color:#7c3aed;text-align:center;margin-bottom:8px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal-box{background:#1a0050;border:2px solid #e879f9;border-radius:14px;padding:24px;max-width:340px;width:90%;text-align:center}
+.modal-title{font-size:22px;font-weight:700;color:#e879f9;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<script>
+const CARDS=[
+  {word:"FENTANYL",forbidden:["opioid","drug","overdose","synthetic","pain"]},
+  {word:"CARDIOVASCULAR",forbidden:["heart","blood","vessel","cardio","system"]},
+  {word:"ABSTINENCE",forbidden:["sex","STI","pregnancy","prevent","avoid"]},
+  {word:"MELANOMA",forbidden:["skin","cancer","mole","sun","dark"]},
+  {word:"VACCINATION",forbidden:["shot","needle","immune","disease","protect"]},
+  {word:"CEREBRUM",forbidden:["brain","think","memory","large","cortex"]},
+  {word:"HYPERTENSION",forbidden:["blood","pressure","heart","high","silent"]},
+  {word:"PHOTOSYNTHESIS",forbidden:["plant","sun","chlorophyll","light","energy"]},
+  {word:"ANTIBIOTICS",forbidden:["bacteria","medicine","infection","pill","drug"]},
+  {word:"DIABETES",forbidden:["sugar","insulin","blood","type","glucose"]},
+  {word:"OSTEOPOROSIS",forbidden:["bone","calcium","weak","fracture","density"]},
+  {word:"PERISTALSIS",forbidden:["muscle","food","digest","move","intestine"]},
+  {word:"NALOXONE",forbidden:["overdose","reverse","opioid","Narcan","spray"]},
+  {word:"ATHEROSCLEROSIS",forbidden:["artery","plaque","clog","heart","fat"]},
+  {word:"PUBERTY",forbidden:["teen","grow","hormone","change","develop"]},
+  {word:"MELATONIN",forbidden:["sleep","pineal","hormone","dark","night"]},
+  {word:"PATHOGEN",forbidden:["germ","disease","cause","bacteria","virus"]},
+  {word:"EPIDERMIS",forbidden:["skin","outer","layer","cells","body"]},
+  {word:"SEROTONIN",forbidden:["mood","brain","happy","neurotransmitter","chemical"]},
+  {word:"TINNITUS",forbidden:["ears","ringing","hearing","noise","damage"]},
+];
+
+let teams=['Team 1','Team 2'];let scores=[0,0];let currentTeam=0;
+let cardIdx=0;let shuffled=[];let timer=60;let timerInt=null;let running=false;
+let roundScore=0;
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5);}
+
+function init(){
+  shuffled=shuffle(CARDS);cardIdx=0;scores=[0,0];currentTeam=0;roundScore=0;running=false;clearInterval(timerInt);timer=60;
+  render();
+}
+
+function render(){
+  if(cardIdx>=shuffled.length){shuffled=shuffle(CARDS);cardIdx=0;}
+  const card=shuffled[cardIdx];
+  const warn=timer<=15&&timer>5;const danger=timer<=5;
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH TABOO</div></div>
+    <div class="score-bar">
+      <div class="team-box${currentTeam===0?' active':''}">
+        <input class="team-in" value="${teams[0]}" onchange="teams[0]=this.value">
+        <div class="team-pts">${scores[0]}</div>
+      </div>
+      <div class="timer-lg${warn?' warning':danger?' danger':''}" id="timer">${timer}</div>
+      <div class="team-box${currentTeam===1?' active':''}">
+        <input class="team-in" value="${teams[1]}" onchange="teams[1]=this.value">
+        <div class="team-pts">${scores[1]}</div>
+      </div>
+    </div>
+    <div class="round-info">Card ${cardIdx+1} · ${teams[currentTeam]}'s turn · Round score: +${roundScore}</div>
+    <div class="card">
+      <div class="target-word">${running?card.word:'???'}</div>
+      ${running?`<div class="forbidden-label">Do NOT say:</div>
+      <div class="forbidden-list">${card.forbidden.map(w=>`<div class="forbidden-word">${w.toUpperCase()}</div>`).join('')}</div>`:''}
+    </div>
+    <div class="status">${running?'Describe the word WITHOUT using any forbidden words!':'Press Start Turn to begin the 60-second timer!'}</div>
+    <div class="btns">
+      ${!running?`<button class="btn btn-start" onclick="startTurn()">Start Turn</button>`:''}
+      ${running?`<button class="btn btn-correct" onclick="correct()">✓ Got It! +1</button>`:''}
+      ${running?`<button class="btn btn-taboo" onclick="taboo()">✗ Taboo! -1</button>`:''}
+      ${running?`<button class="btn btn-skip" onclick="skip()">Skip</button>`:''}
+    </div>
+    <div class="btns"><button class="btn btn-reset" onclick="init()">New Game</button></div>`;
+}
+
+function startTurn(){
+  running=true;timer=60;roundScore=0;
+  timerInt=setInterval(()=>{
+    timer=Math.max(0,timer-1);
+    const el=document.getElementById('timer');
+    if(el){
+      el.textContent=timer;
+      el.className='timer-lg'+(timer<=15&&timer>5?' warning':timer<=5?' danger':'');
+    }
+    if(timer<=0){clearInterval(timerInt);endTurn();}
+  },1000);
+  render();
+}
+
+function correct(){
+  roundScore++;scores[currentTeam]++;cardIdx++;
+  render();
+}
+
+function taboo(){
+  roundScore--;scores[currentTeam]=Math.max(0,scores[currentTeam]-1);cardIdx++;
+  render();
+}
+
+function skip(){cardIdx++;render();}
+
+function endTurn(){
+  running=false;
+  const other=(currentTeam+1)%2;
+  showModal(`Time's Up!`,`${teams[currentTeam]} earned ${roundScore} points this round.\n${teams[other]}'s turn next!`,()=>{currentTeam=other;timer=60;render();});
+}
+
+function showModal(title,msg,cb){
+  document.getElementById('modal').innerHTML=`<div class="modal-overlay" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-title">${title}</div>
+      <div style="font-size:13px;color:#c4b5fd;line-height:1.6;margin-bottom:16px;white-space:pre-line">${msg}</div>
+      <button class="btn btn-start" onclick="closeModal()">Continue</button>
+    </div>
+  </div>`;
+  window._modalCb=cb;
+}
+function closeModal(){document.getElementById('modal').innerHTML='';if(window._modalCb){window._modalCb();window._modalCb=null;}}
+
+init();
+</script>
+</body>
+</html>

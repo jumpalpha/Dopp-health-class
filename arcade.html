@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Arcade — Legend of Wellness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700;--gold-dim:#B8960C;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;
+  --bg:#05070F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
+  --text:#F0F4FF;--dim:rgba(240,244,255,0.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(56,191,255,0.1) 0%,transparent 70%),#05070F}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(5,7,15,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:var(--gold);text-decoration:none}
+.nav-logo span{color:var(--dim);font-weight:400}
+.nav-links{display:flex;gap:6px}
+.nav-link{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;color:var(--dim);text-decoration:none;border:1px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--text);border-color:var(--border);background:var(--card)}
+.nav-link.active{color:var(--gold);border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.06)}
+.page-header{position:relative;z-index:1;padding:120px 32px 60px;text-align:center;max-width:800px;margin:0 auto}
+.hero-badge{display:inline-block;font-family:'Cinzel',serif;font-size:11px;font-weight:600;letter-spacing:3px;color:var(--emerald);border:1px solid rgba(0,229,160,0.3);padding:6px 16px;border-radius:20px;margin-bottom:20px;background:rgba(0,229,160,0.06)}
+.page-title{font-family:'Cinzel Decorative',serif;font-size:clamp(28px,5vw,52px);font-weight:900;background:linear-gradient(135deg,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:14px;line-height:1.1}
+.page-sub{font-size:15px;color:var(--dim);line-height:1.7;max-width:520px;margin:0 auto}
+.section{position:relative;z-index:1;padding:20px 32px 60px;max-width:1200px;margin:0 auto}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;align-items:center}
+.filter-label{font-family:'Cinzel',serif;font-size:11px;font-weight:600;letter-spacing:2px;color:var(--gold-dim);margin-right:4px}
+.filter-btn{padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;letter-spacing:.3px}
+.filter-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--text)}
+.filter-btn.active{background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.4);color:var(--gold)}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:10px;transition:all .2s;position:relative;overflow:hidden}
+.game-card::before{content:'';position:absolute;inset:0;background:var(--card-glow,transparent);opacity:0;transition:opacity .25s;border-radius:16px}
+.game-card:hover{border-color:rgba(255,255,255,0.15);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+.game-card:hover::before{opacity:1}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.game-icon{font-size:32px}
+.game-type{display:inline-block;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.5px;flex-shrink:0}
+.type-boss{background:rgba(255,59,92,0.15);color:#FF3B5C;border:1px solid rgba(255,59,92,0.25)}
+.type-team{background:rgba(56,191,255,0.15);color:#38BFFF;border:1px solid rgba(56,191,255,0.25)}
+.type-solo{background:rgba(0,229,160,0.15);color:#00E5A0;border:1px solid rgba(0,229,160,0.25)}
+.type-daily{background:rgba(255,215,0,0.15);color:#FFD700;border:1px solid rgba(255,215,0,0.25)}
+.type-wild{background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.25)}
+.game-title{font-size:17px;font-weight:800;color:var(--text);line-height:1.2}
+.game-realm{font-size:11px;font-weight:600;color:var(--gold-dim);letter-spacing:.5px}
+.game-desc{font-size:13px;color:var(--dim);line-height:1.55;flex:1}
+.game-features{display:flex;gap:6px;flex-wrap:wrap}
+.feature{font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;background:rgba(255,255,255,0.05);color:var(--dim)}
+.play-btn{display:block;text-align:center;padding:11px 0;border-radius:10px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,140,0,0.1));border:1px solid rgba(255,215,0,0.25);color:var(--gold);font-size:13px;font-weight:800;text-decoration:none;transition:all .2s;letter-spacing:.3px}
+.play-btn:hover{background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,140,0,0.2));border-color:rgba(255,215,0,0.5);box-shadow:0 4px 16px rgba(255,215,0,0.2)}
+.how-to{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:40px}
+.how-title{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px}
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.how-item{display:flex;gap:10px;align-items:flex-start}
+.how-icon{font-size:20px;flex-shrink:0;margin-top:2px}
+.how-text{font-size:13px;color:var(--dim);line-height:1.5}
+.how-text strong{color:var(--text);display:block;margin-bottom:2px}
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:28px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600}
+.footer-tags{font-size:13px;color:var(--dim)}
+@media(max-width:700px){nav{padding:12px 16px}.nav-link{padding:6px 10px;font-size:12px}.section{padding:20px 20px 50px}.page-header{padding:100px 20px 40px}}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link active" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="quest.html">Quest</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="hero-badge">15 Games · Play in Any Browser · No Install</div>
+  <h1 class="page-title">Game Arcade</h1>
+  <p class="page-sub">Every game opens in your browser — project on the board, split into teams, and go. Works on Chromebooks, tablets, and phones.</p>
+</div>
+
+<div class="section">
+  <div class="how-to">
+    <div class="how-title">How the Games Work</div>
+    <div class="how-grid">
+      <div class="how-item"><div class="how-icon">🖥</div><div class="how-text"><strong>Open in Browser</strong>Click any game — it opens as a standalone HTML file. Project it on the screen or share the link with students.</div></div>
+      <div class="how-item"><div class="how-icon">👥</div><div class="how-text"><strong>Team or Solo</strong>Most games support 2–4 teams. Teacher controls the pacing and scoring from the board.</div></div>
+      <div class="how-item"><div class="how-icon">📚</div><div class="how-text"><strong>Real Content</strong>Every question, myth, and scenario comes directly from the 28 chapter textbook — no filler.</div></div>
+      <div class="how-item"><div class="how-icon">🎯</div><div class="how-text"><strong>Match to Realm</strong>Each game maps to specific realm boss battles, team events, or daily warm-ups in the quest.</div></div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-btn active" onclick="filter('all',this)">All 15</button>
+    <button class="filter-btn" onclick="filter('Boss',this)">Boss Battles</button>
+    <button class="filter-btn" onclick="filter('Team',this)">Team Events</button>
+    <button class="filter-btn" onclick="filter('Daily',this)">Daily Warm-Ups</button>
+    <button class="filter-btn" onclick="filter('Wild',this)">Wild Events</button>
+    <button class="filter-btn" onclick="filter('Solo',this)">Solo Quests</button>
+  </div>
+
+  <div class="game-grid" id="game-grid"></div>
+</div>
+
+<footer>
+  <div class="footer-brand">⚔ The Legend of Wellness</div>
+  <div class="footer-tags">#OnedayIwokeup &nbsp;·&nbsp; #Doppitup</div>
+  <a href="index.html" style="font-size:13px;color:var(--dim);text-decoration:none">← Back to Home</a>
+</footer>
+
+<script>
+const GAMES = [
+  {icon:"📋",title:"Health Jeopardy",type:"Boss",realm:"Any Realm Boss Battle",
+   desc:"5 health categories × 5 dollar values. Hidden Daily Doubles, 2–4 team scoring, Final Jeopardy with wagers. The gold standard classroom game.",
+   features:["2–4 Teams","Daily Double","Final Jeopardy","25 Questions"],
+   glow:"rgba(255,59,92,0.06)",file:"game01_jeopardy.html"},
+  {icon:"💼",title:"Deal or No Deal",type:"Team",realm:"Shadow World (Ch 19–22)",
+   desc:"26 briefcases hide point values, health hazard cards (answer or lose points), and bonus challenges. Banker offers after each round. All about risk decisions.",
+   features:["Solo Play","Risk Decisions","Health Hazard Cards"],
+   glow:"rgba(168,85,247,0.06)",file:"game02_deal_or_no_deal.html"},
+  {icon:"🎡",title:"Wheel of Fortune",type:"Solo",realm:"Vocab Quests — Any Chapter",
+   desc:"Animated spin wheel with 16 wedges including Bankrupt and Free Spin. Guess health vocabulary phrases letter by letter. 13 health phrases to solve.",
+   features:["2–4 Teams","Animated Wheel","Bankrupt Rule","13 Phrases"],
+   glow:"rgba(56,191,255,0.06)",file:"game03_wheel_of_fortune.html"},
+  {icon:"💰",title:"Who Wants to Be a Millionaire",type:"Boss",realm:"Any Realm Boss Battle",
+   desc:"12 escalating health questions from $100 to $1,000,000. Three lifelines: 50/50, Phone a Friend, Ask the Class. Safe havens at Q5 and Q9. Walk-away mechanic.",
+   features:["12 Questions","3 Lifelines","Walk Away","Safe Havens"],
+   glow:"rgba(255,59,92,0.06)",file:"game04_millionaire.html"},
+  {icon:"⚡",title:"Hot Takes Buzzer Battle",type:"Daily",realm:"Any Chapter Opener",
+   desc:"4-player buzzers, Hot Takes, Rapid Fire, and 60-Second Blitz question types. Streak multipliers. 15 shuffled questions with 20-second timer.",
+   features:["4 Players","Streak Bonuses","3 Question Types","Timed"],
+   glow:"rgba(255,215,0,0.06)",file:"game05_hot_takes.html"},
+  {icon:"🔐",title:"Health Escape Room",type:"Team",realm:"Any Realm Team Event",
+   desc:"3 themed rooms: Opioid Emergency, Disease Outbreak, Cardiac Emergency. Each has 5 chained clues that unlock in sequence. 5-minute countdown timer.",
+   features:["3 Rooms","Chained Clues","5-Min Timer","Hint System"],
+   glow:"rgba(56,191,255,0.06)",file:"game06_escape_room.html"},
+  {icon:"🔥",title:"Health Survivor",type:"Wild",realm:"Surprise Event — Any Realm",
+   desc:"Answer health questions, earn immunity, debate real health policies, vote someone out at tribal council. Last player standing wins.",
+   features:["Up to 6 Players","Tribal Debates","Immunity","Vote Out"],
+   glow:"rgba(168,85,247,0.06)",file:"game07_survivor.html"},
+  {icon:"🎰",title:"The Price Is Right",type:"Daily",realm:"Nutrition or Substance Realms",
+   desc:"4 mini-games: Calorie Countdown (guess the calorie count), What Does It Cost? (healthcare expenses), Healthy vs. Junk Cart, and Health Stat Showdown.",
+   features:["4 Mini-Games","Real Data","Calorie Guessing","Cost Awareness"],
+   glow:"rgba(255,215,0,0.06)",file:"game08_price_is_right.html"},
+  {icon:"📺",title:"Health Family Feud",type:"Team",realm:"Any Realm Team Event",
+   desc:"Survey says! Real health survey data powers the answers. Strike system, steal mechanic, Fast Money speed round. 8 health survey questions.",
+   features:["2 Teams","Strike System","Steal","Fast Money"],
+   glow:"rgba(56,191,255,0.06)",file:"game09_family_feud.html"},
+  {icon:"🚨",title:"Health Imposter",type:"Wild",realm:"Disease Fortress (Ch 23–25)",
+   desc:"One secret imposter spreads health misinformation across 12 statements. Everyone must fact-check and identify who's giving false health info before it's too late.",
+   features:["6 Players","Misinformation","Voting","Fact-Check Tasks"],
+   glow:"rgba(168,85,247,0.06)",file:"game10_imposter.html"},
+  {icon:"🤐",title:"Health Taboo",type:"Team",realm:"Vocab-Heavy Chapters",
+   desc:"60-second timer, 20 health vocabulary cards, forbidden word list. Describe the health term without using any of the 5 forbidden words. Teammates shout guesses.",
+   features:["2–4 Teams","60-Second Timer","20 Cards","Forbidden Words"],
+   glow:"rgba(0,229,160,0.06)",file:"game11_taboo.html"},
+  {icon:"🤔",title:"Would You Rather",type:"Daily",realm:"Any Discussion Opener",
+   desc:"10 real health dilemmas with class voting, live percentage bars, debate prompts, and surprising health facts. Perfect for sparking genuine discussion.",
+   features:["Class Voting","10 Dilemmas","Debate Prompts","Health Facts"],
+   glow:"rgba(255,215,0,0.06)",file:"game12_would_you_rather.html"},
+  {icon:"🎨",title:"Health Pictionary Blitz",type:"Team",realm:"Body Systems Realm",
+   desc:"Full drawing canvas with color and brush size controls. 24 health vocabulary words to draw. Multi-team support with 60-second timer.",
+   features:["Full Canvas","24 Health Words","Multi-Team","60s Timer"],
+   glow:"rgba(56,191,255,0.06)",file:"game13_pictionary.html"},
+  {icon:"🦈",title:"Health Shark Tank",type:"Boss",realm:"Final Tower — Chapter 28",
+   desc:"4 real health startup pitches. Rubric scoring across 5 dimensions (health impact, evidence, feasibility, presentation, innovation). Invest or go out!",
+   features:["4 Pitches","5-Point Rubric","Class Voting","Capstone Ready"],
+   glow:"rgba(255,59,92,0.06)",file:"game14_shark_tank.html"},
+  {icon:"💥",title:"Myth Busters",type:"Daily",realm:"Any Chapter Opener",
+   desc:"18 health myths rapid-fire true/false. Timed mode (20 seconds per myth), streak bonuses, team scoring, complete answer log at the end.",
+   features:["18 Myths","Timed Mode","Streak Bonuses","Answer Log"],
+   glow:"rgba(255,215,0,0.06)",file:"game15_myth_busters.html"},
+];
+
+const TYPE_CLS={Boss:'type-boss',Team:'type-team',Solo:'type-solo',Daily:'type-daily',Wild:'type-wild'};
+let activeFilter='all';
+
+function renderGames(){
+  const gg=document.getElementById('game-grid');
+  const visible=activeFilter==='all'?GAMES:GAMES.filter(g=>g.type===activeFilter);
+  gg.innerHTML=visible.map(g=>`
+    <div class="game-card" style="--card-glow:${g.glow}">
+      <div class="card-top">
+        <div class="game-icon">${g.icon}</div>
+        <span class="game-type ${TYPE_CLS[g.type]}">${g.type}</span>
+      </div>
+      <div class="game-title">${g.title}</div>
+      <div class="game-realm">Best for: ${g.realm}</div>
+      <div class="game-desc">${g.desc}</div>
+      <div class="game-features">${g.features.map(f=>`<span class="feature">${f}</span>`).join('')}</div>
+      <a class="play-btn" href="${g.file}" target="_blank">▶ Play Now</a>
+    </div>`).join('');
+}
+
+function filter(type,btn){
+  activeFilter=type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGames();
+}
+
+renderGames();
+</script>
+</body>
+</html>

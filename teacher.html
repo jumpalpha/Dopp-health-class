@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-dim:#8a6d00; --emerald:#00E5A0; --sky:#38BFFF;
+  --crimson:#FF3B5C; --purple:#a855f7; --orange:#FF8C00;
+  --bg:#07090F; --surface:#0d1018; --card:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.08); --text:#F0F4FF; --dim:rgba(240,244,255,0.50);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* SIDEBAR + LAYOUT */
+.layout { display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
+.sidebar { background:var(--surface); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; padding:20px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+.sb-logo { padding:0 18px 20px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+.sb-logo-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--gold); }
+.sb-logo-sub { font-size:11px; color:var(--dim); margin-top:2px; }
+.sb-section { padding:0 12px; margin-bottom:8px; }
+.sb-section-label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--gold-dim);
+  text-transform:uppercase; padding:0 6px; margin-bottom:6px; }
+.sb-btn { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px;
+  font-size:13px; font-weight:700; color:var(--dim); cursor:pointer; transition:all .15s;
+  border:none; background:none; width:100%; text-align:left; font-family:'Nunito',sans-serif; }
+.sb-btn:hover { background:var(--card); color:var(--text); }
+.sb-btn.active { background:rgba(255,215,0,0.08); color:var(--gold); }
+.sb-btn-icon { font-size:16px; flex-shrink:0; }
+.sb-divider { border:none; border-top:1px solid var(--border); margin:12px 12px; }
+.sb-bottom { margin-top:auto; padding:0 12px; }
+
+/* MAIN */
+.main { padding:28px 32px; overflow-y:auto; }
+.page { display:none; }
+.page.active { display:block; }
+
+/* PAGE HEADER */
+.page-hdr { margin-bottom:28px; }
+.page-title { font-family:'Cinzel',serif; font-size:22px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.page-sub { font-size:14px; color:var(--dim); }
+
+/* STAT CARDS */
+.stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:28px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; }
+.stat-card.highlight { border-color:rgba(255,215,0,0.25); background:rgba(255,215,0,0.04); }
+.sc-num { font-family:'Cinzel',serif; font-size:30px; font-weight:700; color:var(--gold); margin-bottom:4px; }
+.sc-label { font-size:12px; color:var(--dim); font-weight:600; }
+.sc-sub { font-size:11px; color:var(--dim); margin-top:4px; }
+
+/* CARDS */
+.card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; }
+.card-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--gold); margin-bottom:14px; letter-spacing:.3px; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+@media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px; }
+@media(max-width:900px) { .three-col { grid-template-columns:1fr; } }
+
+/* GAME LAUNCHER */
+.game-launcher { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+.game-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px;
+  display:flex; flex-direction:column; gap:8px; transition:all .2s; }
+.game-item:hover { border-color:rgba(255,255,255,0.18); transform:translateY(-2px); }
+.gi-top { display:flex; align-items:center; justify-content:space-between; }
+.gi-icon { font-size:22px; }
+.gi-type { font-size:10px; font-weight:700; padding:3px 8px; border-radius:5px; }
+.type-boss { background:rgba(255,59,92,0.15); color:#FF3B5C; }
+.type-team { background:rgba(56,191,255,0.15); color:#38BFFF; }
+.type-daily { background:rgba(255,215,0,0.15); color:#FFD700; }
+.type-wild { background:rgba(168,85,247,0.15); color:#a855f7; }
+.type-solo { background:rgba(0,229,160,0.15); color:#00E5A0; }
+.gi-title { font-size:13px; font-weight:800; color:var(--text); }
+.gi-desc { font-size:11px; color:var(--dim); line-height:1.4; flex:1; }
+.gi-btn { display:block; text-align:center; padding:8px; border-radius:8px; font-size:12px; font-weight:700;
+  background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.25); color:var(--gold);
+  text-decoration:none; transition:all .15s; cursor:pointer; }
+.gi-btn:hover { background:rgba(255,215,0,0.2); }
+
+/* WEEK PLANNER */
+.week-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+.day-col { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; }
+.day-title { font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:var(--gold); margin-bottom:8px; text-align:center; }
+.day-slot { background:rgba(255,255,255,0.03); border-radius:7px; padding:7px 8px; margin-bottom:6px;
+  font-size:11px; color:var(--dim); border-left:2px solid var(--slot-color,var(--border)); min-height:32px; cursor:pointer; }
+.day-slot:hover { background:rgba(255,255,255,0.06); }
+.day-slot.filled { color:var(--text); }
+.slot-time { font-size:10px; color:var(--dim); margin-bottom:2px; }
+.day-add { font-size:11px; color:var(--dim); text-align:center; cursor:pointer; padding:5px;
+  border:1px dashed var(--border); border-radius:6px; opacity:.5; }
+.day-add:hover { opacity:1; border-color:rgba(255,215,0,0.3); color:var(--gold); }
+
+/* REALM TRACKER TABLE */
+.realm-table { width:100%; border-collapse:collapse; }
+.realm-table th { font-size:11px; font-weight:700; color:var(--dim); text-align:left;
+  padding:8px 12px; border-bottom:1px solid var(--border); letter-spacing:.5px; text-transform:uppercase; }
+.realm-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; }
+.realm-table tr:last-child td { border:none; }
+.realm-table tr:hover td { background:rgba(255,255,255,0.02); }
+.rt-realm { display:flex; align-items:center; gap:8px; }
+.rt-icon { font-size:16px; }
+.rt-name { font-weight:700; color:var(--text); }
+.progress-mini { height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; width:100px; }
+.progress-mini-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--gold),#FF8C00); }
+.badge-pill { display:inline-block; font-size:10px; font-weight:700; padding:3px 8px; border-radius:10px;
+  background:rgba(255,215,0,0.1); color:var(--gold); border:1px solid rgba(255,215,0,0.2); }
+
+/* NOTES */
+.notes-area { width:100%; min-height:200px; background:rgba(255,255,255,0.03); border:1px solid var(--border);
+  border-radius:10px; color:var(--text); font-size:13px; padding:14px; font-family:'Nunito',sans-serif;
+  resize:vertical; line-height:1.6; }
+.notes-area:focus { outline:none; border-color:rgba(255,215,0,0.3); }
+.notes-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+@media(max-width:800px) { .notes-row { grid-template-columns:1fr; } }
+
+/* BUTTONS */
+.btn { padding:9px 20px; border-radius:9px; border:none; font-size:13px; font-weight:700;
+  cursor:pointer; font-family:'Nunito',sans-serif; transition:all .15s; }
+.btn:hover { opacity:.85; }
+.btn-gold { background:rgba(255,215,0,0.12); color:var(--gold); border:1px solid rgba(255,215,0,0.25); }
+.btn-primary { background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.15));
+  border:1px solid rgba(255,215,0,0.35); color:var(--gold); }
+.btn-sm { padding:6px 14px; font-size:12px; }
+.btn-danger { background:rgba(255,59,92,0.1); color:var(--crimson); border:1px solid rgba(255,59,92,0.2); }
+
+/* PRINT HINT */
+.print-hint { background:rgba(56,191,255,0.06); border:1px solid rgba(56,191,255,0.2); border-radius:10px;
+  padding:12px 16px; font-size:13px; color:var(--sky); margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+
+/* TAG INPUT */
+.tag-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+.tag { font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px;
+  background:var(--card); border:1px solid var(--border); color:var(--dim); cursor:pointer; transition:all .15s; }
+.tag:hover,.tag.sel { background:rgba(255,215,0,0.1); border-color:rgba(255,215,0,0.35); color:var(--gold); }
+
+/* CHAPTER FILTER */
+.ch-select { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px;
+  color:var(--text); font-size:13px; padding:8px 12px; font-family:'Nunito',sans-serif; min-width:180px; }
+.ch-select:focus { outline:none; border-color:rgba(255,215,0,0.35); }
+
+/* INPUT */
+.form-input { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px;
+  color:var(--text); font-size:13px; padding:8px 12px; font-family:'Nunito',sans-serif; width:100%; }
+.form-input:focus { outline:none; border-color:rgba(255,215,0,0.35); }
+.form-label { font-size:12px; color:var(--dim); font-weight:600; margin-bottom:5px; display:block; }
+.form-group { margin-bottom:12px; }
+
+/* MOBILE SIDEBAR */
+@media(max-width:700px) {
+  .layout { grid-template-columns:1fr; }
+  .sidebar { position:relative; height:auto; flex-direction:row; flex-wrap:wrap;
+    padding:12px; gap:6px; border-right:none; border-bottom:1px solid var(--border); }
+  .sb-logo { display:none; }
+  .sb-section { padding:0; }
+  .sb-section-label { display:none; }
+  .sb-btn { padding:7px 10px; font-size:12px; }
+  .sb-divider,.sb-bottom { display:none; }
+  .main { padding:16px; }
+  .week-grid { grid-template-columns:1fr; }
+  .game-launcher { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">⚔ Legend of Wellness</div>
+    <div class="sb-logo-sub">Teacher Dashboard</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Overview</div>
+    <button class="sb-btn active" onclick="showPage('overview',this)"><span class="sb-btn-icon">📊</span>Overview</button>
+    <button class="sb-btn" onclick="showPage('planner',this)"><span class="sb-btn-icon">📅</span>Week Planner</button>
+    <button class="sb-btn" onclick="showPage('tracker',this)"><span class="sb-btn-icon">🗺</span>Realm Tracker</button>
+  </div>
+
+  <hr class="sb-divider">
+
+  <div class="sb-section">
+    <div class="sb-section-label">Launch</div>
+    <button class="sb-btn" onclick="showPage('arcade',this)"><span class="sb-btn-icon">🎮</span>Game Arcade</button>
+    <button class="sb-btn" onclick="showPage('vocab',this)"><span class="sb-btn-icon">📚</span>Vocab Games</button>
+    <button class="sb-btn" onclick="showPage('chapters',this)"><span class="sb-btn-icon">📖</span>Chapter PDFs</button>
+  </div>
+
+  <hr class="sb-divider">
+
+  <div class="sb-section">
+    <div class="sb-section-label">Tools</div>
+    <button class="sb-btn" onclick="showPage('notes',this)"><span class="sb-btn-icon">📝</span>Class Notes</button>
+    <button class="sb-btn" onclick="showPage('print',this)"><span class="sb-btn-icon">🖨</span>Print / Export</button>
+  </div>
+
+  <div class="sb-bottom">
+    <hr class="sb-divider">
+    <a href="index.html" style="text-decoration:none">
+      <button class="sb-btn"><span class="sb-btn-icon">🏠</span>Student Site</button>
+    </a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- ── OVERVIEW ── -->
+  <div class="page active" id="page-overview">
+    <div class="page-hdr">
+      <div class="page-title">Dashboard Overview</div>
+      <div class="page-sub">At-a-glance view of the Legend of Wellness class — #OnedayIwokeup · #Doppitup</div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card highlight">
+        <div class="sc-num">28</div>
+        <div class="sc-label">Total Chapters</div>
+        <div class="sc-sub">All fully modernized with 2024 data</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-num">9</div>
+        <div class="sc-label">Realms / Units</div>
+        <div class="sc-sub">3-month quest structure</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-num">15</div>
+        <div class="sc-label">Arcade Games</div>
+        <div class="sc-sub">All fully playable in browser</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-num">112</div>
+        <div class="sc-label">Vocab Sessions</div>
+        <div class="sc-sub">4 game types × 28 chapters</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">📅 Current Realm Suggested Schedule</div>
+        <div id="schedule-table"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Quick Launch — Today's Lesson</div>
+        <div class="form-group">
+          <label class="form-label">Which chapter are you on?</label>
+          <select class="ch-select" id="quick-ch" onchange="quickLaunchUpdate()">
+            <option value="">— Select Chapter —</option>
+          </select>
+        </div>
+        <div id="quick-launch-area">
+          <div style="font-size:13px;color:var(--dim);padding:12px 0">Select a chapter above to see recommended activities and launch games.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Daily Routine Suggestions</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+        <div style="background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:10px;padding:14px">
+          <div style="font-size:16px;margin-bottom:6px">⚡</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Warm-Up (5 min)</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.5">Price Is Right · Hot Takes Buzzer · Myth Busters · Would You Rather</div>
+        </div>
+        <div style="background:rgba(56,191,255,0.05);border:1px solid rgba(56,191,255,0.15);border-radius:10px;padding:14px">
+          <div style="font-size:16px;margin-bottom:6px">📖</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Lesson (20–25 min)</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.5">Chapter PDF · Guided notes · Discussion · Real-world connections</div>
+        </div>
+        <div style="background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:10px;padding:14px">
+          <div style="font-size:16px;margin-bottom:6px">🎮</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Activity (15 min)</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.5">Vocab games · Solo quest tasks · Team challenges · Escape room</div>
+        </div>
+        <div style="background:rgba(255,59,92,0.05);border:1px solid rgba(255,59,92,0.15);border-radius:10px;padding:14px">
+          <div style="font-size:16px;margin-bottom:6px">👑</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Boss Day (~45 min)</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.5">End-of-realm Jeopardy or Millionaire · Full class · Team vs team</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WEEK PLANNER ── -->
+  <div class="page" id="page-planner">
+    <div class="page-hdr">
+      <div class="page-title">Week Planner</div>
+      <div class="page-sub">Plan your lessons and activities for the week. Click any slot to edit. Auto-saved.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-gold btn-sm" onclick="prevWeek()">← Previous Week</button>
+      <span id="week-label" style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold)"></span>
+      <button class="btn btn-gold btn-sm" onclick="nextWeek()">Next Week →</button>
+      <button class="btn btn-sm" style="background:var(--card);border:1px solid var(--border);color:var(--dim)" onclick="clearWeek()">Clear Week</button>
+    </div>
+    <div class="week-grid" id="week-grid"></div>
+  </div>
+
+  <!-- ── REALM TRACKER ── -->
+  <div class="page" id="page-tracker">
+    <div class="page-hdr">
+      <div class="page-title">Realm Progress Tracker</div>
+      <div class="page-sub">Track where your class is in each realm. Click a realm to see chapter details and recommended next steps.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Class Position Tracker</div>
+      <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <label class="form-label" style="margin:0">Current class chapter:</label>
+        <select class="ch-select" id="class-ch" onchange="saveClassCh()">
+          <option value="">Not started</option>
+        </select>
+        <button class="btn btn-gold btn-sm" onclick="saveClassCh()">Save</button>
+      </div>
+      <table class="realm-table">
+        <thead>
+          <tr>
+            <th>Realm</th>
+            <th>Chapters</th>
+            <th>Weeks</th>
+            <th>Badge</th>
+            <th>Status</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody id="realm-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card" id="realm-detail-card" style="display:none">
+      <div class="card-title" id="realm-detail-title">Realm Detail</div>
+      <div id="realm-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- ── ARCADE ── -->
+  <div class="page" id="page-arcade">
+    <div class="page-hdr">
+      <div class="page-title">Game Arcade Launcher</div>
+      <div class="page-sub">Click any game to launch it. Opens in a new tab — project on your board. Filter by type for the right moment in class.</div>
+    </div>
+    <div class="tag-row" id="arcade-filter">
+      <span class="tag sel" onclick="filterGames('all',this)">All 15</span>
+      <span class="tag" onclick="filterGames('Boss',this)">Boss Battles</span>
+      <span class="tag" onclick="filterGames('Team',this)">Team Events</span>
+      <span class="tag" onclick="filterGames('Daily',this)">Daily Warm-Ups</span>
+      <span class="tag" onclick="filterGames('Wild',this)">Wild Events</span>
+    </div>
+    <div class="game-launcher" id="game-launcher"></div>
+  </div>
+
+  <!-- ── VOCAB ── -->
+  <div class="page" id="page-vocab">
+    <div class="page-hdr">
+      <div class="page-title">Vocabulary Game Launcher</div>
+      <div class="page-sub">Launch any of the 4 vocab game modes for any chapter. All 28 chapters · 4 game types · 112 sessions total.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Quick Launch</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <select class="ch-select" id="vocab-ch">
+          <option value="">— Select Chapter —</option>
+        </select>
+        <a id="vocab-flashcard" href="vocab_engine.html?ch=1" target="_blank" class="btn btn-gold btn-sm">🃏 Flashcard Flip</a>
+        <a id="vocab-speed" href="vocab_engine.html?ch=1#speedquiz" target="_blank" class="btn btn-gold btn-sm">⚡ Speed Quiz</a>
+        <a id="vocab-word" href="vocab_engine.html?ch=1#wordbuild" target="_blank" class="btn btn-gold btn-sm">🔤 Word Builder</a>
+        <a id="vocab-map" href="vocab_engine.html?ch=1#conceptmap" target="_blank" class="btn btn-gold btn-sm">🗺 Concept Map</a>
+      </div>
+      <div style="font-size:13px;color:var(--dim);line-height:1.6;background:rgba(255,255,255,0.03);border-radius:8px;padding:12px">
+        <strong style="color:var(--text)">Tip:</strong> Flashcard Flip works great for homework / solo study. Speed Quiz is the best warm-up opener. Word Builder builds deeper retention. Concept Map is ideal for review days before boss battles.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">All Chapters Vocab Grid</div>
+      <div id="vocab-grid-all"></div>
+    </div>
+  </div>
+
+  <!-- ── CHAPTERS ── -->
+  <div class="page" id="page-chapters">
+    <div class="page-hdr">
+      <div class="page-title">Chapter PDFs</div>
+      <div class="page-sub">All 28 modernized chapters — click to open any PDF. Updated statistics, 2024 guidelines, #OnedayIwokeup branding.</div>
+    </div>
+    <div id="chapter-pdf-grid"></div>
+  </div>
+
+  <!-- ── NOTES ── -->
+  <div class="page" id="page-notes">
+    <div class="page-hdr">
+      <div class="page-title">Class Notes</div>
+      <div class="page-sub">Personal notes, class observations, lesson ideas. Auto-saved to this browser.</div>
+    </div>
+    <div class="notes-row">
+      <div class="card">
+        <div class="card-title">📝 General Notes</div>
+        <textarea class="notes-area" id="note-general" placeholder="General class notes, observations, ideas..." oninput="saveNote('general',this.value)"></textarea>
+      </div>
+      <div class="card">
+        <div class="card-title">✅ To-Do List</div>
+        <textarea class="notes-area" id="note-todo" placeholder="Tasks, prep reminders, things to do before next class..." oninput="saveNote('todo',this.value)"></textarea>
+      </div>
+    </div>
+    <div class="notes-row">
+      <div class="card">
+        <div class="card-title">🌟 What Worked Well</div>
+        <textarea class="notes-area" id="note-good" placeholder="Games, activities, and lessons that landed well with students..." oninput="saveNote('good',this.value)" style="min-height:140px"></textarea>
+      </div>
+      <div class="card">
+        <div class="card-title">🔧 Things to Adjust</div>
+        <textarea class="notes-area" id="note-adjust" placeholder="What to change, improve, or adapt for next time..." oninput="saveNote('adjust',this.value)" style="min-height:140px"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="saveAllNotes()">💾 Save All Notes</button>
+      <button class="btn" style="background:var(--card);border:1px solid var(--border);color:var(--dim)" onclick="exportNotes()">Export as Text</button>
+    </div>
+  </div>
+
+  <!-- ── PRINT ── -->
+  <div class="page" id="page-print">
+    <div class="page-hdr">
+      <div class="page-title">Print & Export</div>
+      <div class="page-sub">Printable resources for the classroom — syllabi, trackers, activity sheets.</div>
+    </div>
+    <div class="print-hint">ℹ️ Use Ctrl+P (or Cmd+P on Mac) in any game or chapter page to print it. For best print results, set layout to Landscape and disable headers/footers.</div>
+    <div class="three-col">
+      <div class="card" style="cursor:pointer" onclick="printQuest()">
+        <div style="font-size:28px;margin-bottom:8px">🗺</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Quest Progress Sheet</div>
+        <div style="font-size:12px;color:var(--dim);line-height:1.4">Printable checklist of all 9 realms and their tasks. Students track manually.</div>
+        <div class="btn btn-gold btn-sm" style="margin-top:12px;display:inline-block">Print</div>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="printSchedule()">
+        <div style="font-size:28px;margin-bottom:8px">📅</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">3-Month Schedule</div>
+        <div style="font-size:12px;color:var(--dim);line-height:1.4">Full semester overview with realm dates, boss battles, and milestones.</div>
+        <div class="btn btn-gold btn-sm" style="margin-top:12px;display:inline-block">Print</div>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="printVocab()">
+        <div style="font-size:28px;margin-bottom:8px">📚</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Vocab Study Sheets</div>
+        <div style="font-size:12px;color:var(--dim);line-height:1.4">Select any chapter and print all vocabulary terms and definitions.</div>
+        <div class="btn btn-gold btn-sm" style="margin-top:12px;display:inline-block">Print</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+const REALMS = [
+  {id:'r1',name:'Foundation Keep',icon:'🏰',color:'#38BFFF',badge:'Wellness Apprentice',weeks:'1–2',chapters:[1,2],
+   activities:['Chapter 1 & 2 PDF reading','Vocab games (all 4 types)','Health Triangle Self-Assessment','Health in the News','2-Week Habit Tracker','Boss Battle — Health Jeopardy']},
+  {id:'r2',name:'Mind Citadel',icon:'🧠',color:'#a855f7',badge:'Mind Knight',weeks:'3–5',chapters:[3,4,5],
+   activities:['Chapter 3–5 PDFs + Vocab','Emotion Mapping Activity','Stress Management Plan','Mental Health Resource Research','Boss Battle — Millionaire']},
+  {id:'r3',name:'Relationship Realm',icon:'💞',color:'#FF3B5C',badge:'Social Champion',weeks:'6–9',chapters:[6,7,8,9],
+   activities:['Chapter 6–9 PDFs + Vocab','Healthy Relationship Reflection','Conflict Resolution Role-Play','Family Dynamics Discussion','Boss Battle — Health Jeopardy']},
+  {id:'r4',name:'Nourish Dungeon',icon:'🥗',color:'#00E5A0',badge:'Body Warrior',weeks:'9–11',chapters:[10,11,12],
+   activities:['Chapter 10–12 PDFs + Vocab','MyPlate Meal Planning Activity','Fad Diet De-bunker','One-Week Fitness Log','Boss Battle — Millionaire']},
+  {id:'r5',name:'Body Labyrinth',icon:'⚙️',color:'#FF8C00',badge:'System Sage',weeks:'11–14',chapters:[13,14,15,16],
+   activities:['Chapter 13–16 PDFs + Vocab','Body System Diagram','Diagnose-the-Patient Challenge','Boss Battle — Health Jeopardy']},
+  {id:'r6',name:'Life Cycle Shrine',icon:'🌱',color:'#38BFFF',badge:'Life Keeper',weeks:'15–16',chapters:[17,18],
+   activities:['Chapter 17–18 PDFs + Vocab','Prenatal Decision Tree','Teen Brain Reflection','Boss Battle — Millionaire']},
+  {id:'r7',name:'Shadow World',icon:'💀',color:'#FF3B5C',badge:'Shadow Slayer',weeks:'17–20',chapters:[19,20,21,22],
+   activities:['Chapter 19–22 PDFs + Vocab','Fentanyl Awareness Mission','Refusal Skills Role-Play','Substance Risk Scenarios','Boss Battle — Health Jeopardy']},
+  {id:'r8',name:'Disease Fortress',icon:'🏥',color:'#aaa',badge:'Health Guardian',weeks:'21–24',chapters:[23,24,25],
+   activities:['Chapter 23–25 PDFs + Vocab','Epidemic Simulation','HIV Prevention Awareness','Heart Disease Calculator','Boss Battle — Millionaire']},
+  {id:'r9',name:'The Final Tower',icon:'★',color:'#FFD700',badge:'★ Master of Wellness',weeks:'25–27',chapters:[26,27,28],
+   activities:['Chapter 26–28 PDFs + Vocab','Home Safety Assessment','CPR Demonstration','Community Advocacy Project','FINAL BOSS — Grand Wellness Assessment']},
+];
+
+const GAMES = [
+  {icon:'📋',title:'Health Jeopardy',type:'Boss',desc:'5 categories, Daily Double, Final Jeopardy.',file:'game01_jeopardy.html'},
+  {icon:'💼',title:'Deal or No Deal',type:'Team',desc:'26 briefcases with health hazard cards.',file:'game02_deal_or_no_deal.html'},
+  {icon:'🎡',title:'Wheel of Fortune',type:'Solo',desc:'Spin and guess health vocab phrases.',file:'game03_wheel_of_fortune.html'},
+  {icon:'💰',title:'Who Wants to Be a Millionaire',type:'Boss',desc:'12 escalating questions, 3 lifelines.',file:'game04_millionaire.html'},
+  {icon:'⚡',title:'Hot Takes Buzzer Battle',type:'Daily',desc:'4-player buzzers, streaks, 20s timer.',file:'game05_hot_takes.html'},
+  {icon:'🔐',title:'Health Escape Room',type:'Team',desc:'3 rooms, 5 chained clues, 5-min timer.',file:'game06_escape_room.html'},
+  {icon:'🔥',title:'Health Survivor',type:'Wild',desc:'Vote-off, immunity, tribal debates.',file:'game07_survivor.html'},
+  {icon:'🎰',title:'Price Is Right',type:'Daily',desc:'Calorie guessing, healthcare costs.',file:'game08_price_is_right.html'},
+  {icon:'📺',title:'Health Family Feud',type:'Team',desc:'Survey says! Real CDC data.',file:'game09_family_feud.html'},
+  {icon:'🚨',title:'Health Imposter',type:'Wild',desc:'Find the health misinformation spreader.',file:'game10_imposter.html'},
+  {icon:'🤐',title:'Health Taboo',type:'Team',desc:'60-second forbidden word challenge.',file:'game11_taboo.html'},
+  {icon:'🤔',title:'Would You Rather',type:'Daily',desc:'10 health dilemmas, class voting.',file:'game12_would_you_rather.html'},
+  {icon:'🎨',title:'Pictionary Blitz',type:'Team',desc:'Draw health concepts — full canvas.',file:'game13_pictionary.html'},
+  {icon:'🦈',title:'Health Shark Tank',type:'Boss',desc:'4 health startup pitches — invest or out.',file:'game14_shark_tank.html'},
+  {icon:'💥',title:'Myth Busters',type:'Daily',desc:'18 health myths rapid-fire T/F.',file:'game15_myth_busters.html'},
+];
+
+const TYPE_CLS={Boss:'type-boss',Team:'type-team',Solo:'type-solo',Daily:'type-daily',Wild:'type-wild'};
+const CHAPTERS = Array.from({length:28},(_,i)=>i+1);
+const CH_TITLES = ['Understanding Health & Wellness','Skills for a Healthy Life','Mental and Emotional Health','Managing Stress','Mental and Emotional Problems','Building Healthy Relationships','Conflict Resolution','Violence Prevention','Family Relationships','Nutrition for Health','Managing Weight','Physical Activity','Personal Health Care','Skeletal, Muscular & Nervous Systems','Cardiovascular, Respiratory & Digestive Systems','Endocrine & Reproductive Health','The Beginning of the Life Cycle','The Life Cycle Continues','Medicines & Drugs','Tobacco','Alcohol','Illegal Drugs','Communicable Diseases','STIs & HIV/AIDS','Noncommunicable Diseases & Disabilities','Safety & Injury Prevention','First Aid & Emergencies','Community & Environmental Health'];
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  renderPage(id);
+}
+
+function renderPage(id) {
+  if(id==='overview') renderOverview();
+  else if(id==='planner') renderPlanner();
+  else if(id==='tracker') renderTracker();
+  else if(id==='arcade') renderArcade();
+  else if(id==='vocab') renderVocabPage();
+  else if(id==='chapters') renderChaptersPage();
+  else if(id==='notes') loadNotes();
+}
+
+// ═══════════════════════════════════════════════════════════
+// OVERVIEW
+// ═══════════════════════════════════════════════════════════
+function renderOverview() {
+  // schedule
+  const st = document.getElementById('schedule-table');
+  st.innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr>
+      <th style="font-size:11px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left">Realm</th>
+      <th style="font-size:11px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left">Weeks</th>
+      <th style="font-size:11px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left">Chapters</th>
+    </tr></thead>
+    <tbody>${REALMS.map(r=>`<tr>
+      <td style="padding:7px 10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04)">${r.icon} ${r.name}</td>
+      <td style="padding:7px 10px;font-size:12px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,0.04)">Wk ${r.weeks}</td>
+      <td style="padding:7px 10px;font-size:12px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,0.04)">Ch ${r.chapters.join(', ')}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+
+  // chapter select
+  const sel = document.getElementById('quick-ch');
+  sel.innerHTML = '<option value="">— Select Chapter —</option>' +
+    CHAPTERS.map(n=>`<option value="${n}">Ch ${n}: ${CH_TITLES[n-1].substring(0,30)}...</option>`).join('');
+}
+
+function quickLaunchUpdate() {
+  const n = parseInt(document.getElementById('quick-ch').value);
+  const area = document.getElementById('quick-launch-area');
+  if (!n) { area.innerHTML='<div style="font-size:13px;color:var(--dim);padding:12px 0">Select a chapter above to see options.</div>'; return; }
+  const realm = REALMS.find(r => r.chapters.includes(n));
+  const slug = CH_TITLES[n-1].replace(/ /g,'_').replace(/,/g,'').replace(/&/g,'and').replace(/\//g,'_');
+  area.innerHTML = `
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Ch ${n}: ${CH_TITLES[n-1]}</div>
+    <div style="font-size:12px;color:var(--dim);margin-bottom:12px">${realm ? realm.icon+' '+realm.name+' · Weeks '+realm.weeks : ''}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="chapter${String(n).padStart(2,'0')}.html" target="_blank" class="btn btn-gold btn-sm">📖 Chapter Page</a>
+      <a href="Chapter_${String(n).padStart(2,'0')}_${slug}.pdf" target="_blank" class="btn btn-gold btn-sm">📄 PDF</a>
+      <a href="vocab_engine.html?ch=${n}" target="_blank" class="btn btn-gold btn-sm">🎮 Vocab Games</a>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// WEEK PLANNER
+// ═══════════════════════════════════════════════════════════
+let plannerOffset = 0;
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const PERIODS = ['Period 1','Period 2','Period 3','Homework'];
+const SLOT_COLORS = {'#38BFFF':'rgba(56,191,255,0.4)','#a855f7':'rgba(168,85,247,0.4)','#FF3B5C':'rgba(255,59,92,0.4)','#00E5A0':'rgba(0,229,160,0.4)','#FFD700':'rgba(255,215,0,0.4)'};
+
+function getWeekKey() { return 'week_' + plannerOffset; }
+function getWeekPlan() {
+  try { return JSON.parse(localStorage.getItem(getWeekKey())) || {}; } catch { return {}; }
+}
+function saveWeekPlan(plan) { localStorage.setItem(getWeekKey(), JSON.stringify(plan)); }
+function clearWeek() { if(confirm('Clear this week?')) { localStorage.removeItem(getWeekKey()); renderPlanner(); } }
+function prevWeek() { plannerOffset--; renderPlanner(); }
+function nextWeek() { plannerOffset++; renderPlanner(); }
+
+function getWeekDates() {
+  const today = new Date();
+  const monday = new Date(today);
+  const dow = today.getDay();
+  const diff = (dow === 0 ? -6 : 1 - dow) + (plannerOffset * 7);
+  monday.setDate(today.getDate() + diff);
+  return Array.from({length:5}, (_,i) => { const d = new Date(monday); d.setDate(monday.getDate()+i); return d; });
+}
+
+function renderPlanner() {
+  const dates = getWeekDates();
+  const plan = getWeekPlan();
+  document.getElementById('week-label').textContent =
+    dates[0].toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' +
+    dates[4].toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const grid = document.getElementById('week-grid');
+  grid.innerHTML = '';
+  dates.forEach((date,di) => {
+    const col = document.createElement('div');
+    col.className = 'day-col';
+    col.innerHTML = `<div class="day-title">${DAYS[di]}<br><span style="font-weight:400;font-size:10px;opacity:.6">${date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></div>`;
+    PERIODS.forEach((period,pi) => {
+      const key = `${di}_${pi}`;
+      const val = plan[key] || '';
+      const slot = document.createElement('div');
+      slot.className = 'day-slot' + (val ? ' filled' : '');
+      slot.innerHTML = `<div class="slot-time">${period}</div>${val || '<span style="opacity:.4;font-size:10px">+ Add activity</span>'}`;
+      slot.onclick = () => editSlot(di, pi, val);
+      col.appendChild(slot);
+    });
+    const addBtn = document.createElement('div');
+    addBtn.className = 'day-add';
+    addBtn.textContent = '+ Add note';
+    addBtn.onclick = () => editSlot(di, 3, plan[`${di}_3`]||'');
+    col.appendChild(addBtn);
+    grid.appendChild(col);
+  });
+}
+
+function editSlot(di, pi, current) {
+  const val = prompt(`${DAYS[di]} · ${PERIODS[pi]}:\n\nEnter activity (or clear to remove):`, current);
+  if (val === null) return;
+  const plan = getWeekPlan();
+  if (val.trim()) plan[`${di}_${pi}`] = val.trim();
+  else delete plan[`${di}_${pi}`];
+  saveWeekPlan(plan);
+  renderPlanner();
+}
+
+// ═══════════════════════════════════════════════════════════
+// TRACKER
+// ═══════════════════════════════════════════════════════════
+function renderTracker() {
+  const sel = document.getElementById('class-ch');
+  sel.innerHTML = '<option value="">Not started</option>' +
+    CHAPTERS.map(n=>`<option value="${n}">Chapter ${n}: ${CH_TITLES[n-1].substring(0,28)}...</option>`).join('');
+  const saved = localStorage.getItem('teacher_class_ch') || '';
+  sel.value = saved;
+
+  const tbody = document.getElementById('realm-tbody');
+  tbody.innerHTML = '';
+  const classCh = parseInt(localStorage.getItem('teacher_class_ch')) || 0;
+  REALMS.forEach(r => {
+    const maxCh = Math.max(...r.chapters);
+    const status = classCh === 0 ? 'upcoming' : classCh > maxCh ? 'completed' : r.chapters.includes(classCh) ? 'active' : classCh < Math.min(...r.chapters) ? 'upcoming' : 'completed';
+    const pct = status === 'completed' ? 100 : status === 'active' ? 50 : 0;
+    tbody.innerHTML += `<tr onclick="showRealmDetail('${r.id}')" style="cursor:pointer">
+      <td><div class="rt-realm"><div class="rt-icon">${r.icon}</div><div class="rt-name">${r.name}</div></div></td>
+      <td style="font-size:12px;color:var(--dim)">Ch ${r.chapters.join(', ')}</td>
+      <td style="font-size:12px;color:var(--dim)">Wk ${r.weeks}</td>
+      <td><span class="badge-pill">${r.badge}</span></td>
+      <td><span style="font-size:12px;font-weight:700;color:${status==='completed'?'var(--emerald)':status==='active'?'var(--gold)':'var(--dim)'}">${status==='completed'?'✓ Complete':status==='active'?'▶ Active':'— Upcoming'}</span></td>
+      <td><div class="progress-mini"><div class="progress-mini-fill" style="width:${pct}%"></div></div></td>
+    </tr>`;
+  });
+}
+
+function saveClassCh() {
+  const v = document.getElementById('class-ch').value;
+  localStorage.setItem('teacher_class_ch', v);
+  renderTracker();
+}
+
+function showRealmDetail(id) {
+  const r = REALMS.find(r => r.id === id);
+  if (!r) return;
+  const card = document.getElementById('realm-detail-card');
+  const title = document.getElementById('realm-detail-title');
+  const body = document.getElementById('realm-detail-body');
+  card.style.display = 'block';
+  title.textContent = r.icon + ' ' + r.name + ' — Activities';
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:12px">
+      ${r.chapters.map(n=>`<a href="chapter${String(n).padStart(2,'0')}.html" target="_blank" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px 14px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .15s;border-color:${r.color}33">
+        <span style="font-size:16px">📖</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text)">Ch ${n}: ${CH_TITLES[n-1]}</span>
+      </a>`).join('')}
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--dim);margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase">Planned Activities</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${r.activities.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:rgba(255,255,255,0.02);border-radius:7px;border:1px solid var(--border)">
+        <span style="font-size:12px">${a.toLowerCase().includes('boss')||a.toLowerCase().includes('final')?'👑':'⚔'}</span>
+        <span style="font-size:13px;color:var(--text)">${a}</span>
+      </div>`).join('')}
+    </div>`;
+  card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ═══════════════════════════════════════════════════════════
+// ARCADE
+// ═══════════════════════════════════════════════════════════
+let arcadeFilter = 'all';
+function renderArcade() {
+  const launcher = document.getElementById('game-launcher');
+  const filtered = arcadeFilter === 'all' ? GAMES : GAMES.filter(g => g.type === arcadeFilter);
+  launcher.innerHTML = filtered.map(g=>`
+    <div class="game-item">
+      <div class="gi-top"><div class="gi-icon">${g.icon}</div><span class="gi-type ${TYPE_CLS[g.type]}">${g.type}</span></div>
+      <div class="gi-title">${g.title}</div>
+      <div class="gi-desc">${g.desc}</div>
+      <a class="gi-btn" href="${g.file}" target="_blank">▶ Launch Game</a>
+    </div>`).join('');
+}
+
+function filterGames(type, el) {
+  arcadeFilter = type;
+  document.querySelectorAll('#arcade-filter .tag').forEach(t => t.classList.remove('sel'));
+  el.classList.add('sel');
+  renderArcade();
+}
+
+// ═══════════════════════════════════════════════════════════
+// VOCAB PAGE
+// ═══════════════════════════════════════════════════════════
+function renderVocabPage() {
+  const sel = document.getElementById('vocab-ch');
+  sel.innerHTML = '<option value="">— Select Chapter —</option>' +
+    CHAPTERS.map(n=>`<option value="${n}">Ch ${n}: ${CH_TITLES[n-1].substring(0,32)}...</option>`).join('');
+  sel.onchange = () => {
+    const n = sel.value || 1;
+    ['flashcard','speed','word','map'].forEach(t => {
+      const el = document.getElementById('vocab-'+t);
+      if(el) el.href = `vocab_engine.html?ch=${n}` + (t!=='flashcard'?'#'+{speed:'speedquiz',word:'wordbuild',map:'conceptmap'}[t]:'');
+    });
+  };
+
+  const grid = document.getElementById('vocab-grid-all');
+  const colors = ['#38BFFF','#38BFFF','#a855f7','#a855f7','#a855f7','#FF3B5C','#FF3B5C','#FF3B5C','#FF3B5C','#00E5A0','#00E5A0','#00E5A0','#FF8C00','#FF8C00','#FF8C00','#FF8C00','#38BFFF','#38BFFF','#FF3B5C','#FF3B5C','#FF3B5C','#FF3B5C','#aaa','#aaa','#aaa','#FFD700','#FFD700','#FFD700'];
+  grid.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">
+    ${CHAPTERS.map(n=>`<div style="background:var(--card);border:1px solid var(--border);border-left:3px solid ${colors[n-1]};border-radius:8px;padding:10px 12px">
+      <div style="font-size:11px;font-weight:700;color:${colors[n-1]};margin-bottom:3px">Chapter ${n}</div>
+      <div style="font-size:12px;color:var(--text);margin-bottom:8px;line-height:1.3">${CH_TITLES[n-1]}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <a href="vocab_engine.html?ch=${n}" target="_blank" style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--dim);text-decoration:none;border:1px solid var(--border)">🃏</a>
+        <a href="vocab_engine.html?ch=${n}#speedquiz" target="_blank" style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--dim);text-decoration:none;border:1px solid var(--border)">⚡</a>
+        <a href="vocab_engine.html?ch=${n}#wordbuild" target="_blank" style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--dim);text-decoration:none;border:1px solid var(--border)">🔤</a>
+        <a href="vocab_engine.html?ch=${n}#conceptmap" target="_blank" style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--dim);text-decoration:none;border:1px solid var(--border)">🗺</a>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHAPTERS PDF PAGE
+// ═══════════════════════════════════════════════════════════
+function renderChaptersPage() {
+  const colors = ['#38BFFF','#38BFFF','#a855f7','#a855f7','#a855f7','#FF3B5C','#FF3B5C','#FF3B5C','#FF3B5C','#00E5A0','#00E5A0','#00E5A0','#FF8C00','#FF8C00','#FF8C00','#FF8C00','#38BFFF','#38BFFF','#FF3B5C','#FF3B5C','#FF3B5C','#FF3B5C','#aaa','#aaa','#aaa','#FFD700','#FFD700','#FFD700'];
+  const SLUGS = ['Understanding_Health_and_Wellness','Skills_for_a_Healthy_Life','Mental_and_Emotional_Health','Managing_Stress','Mental_and_Emotional_Problems','Building_Healthy_Relationships','Conflict_Resolution','Violence_Prevention','Family_Relationships','Nutrition_for_Health','Managing_Weight','Physical_Activity','Personal_Health_Care','Skeletal_Muscular_and_Nervous_Systems','Cardiovascular_Respiratory_and_Digestive_Systems','Endocrine_and_Reproductive_Health','The_Beginning_of_the_Life_Cycle','The_Life_Cycle_Continues','Medicines_and_Drugs','Tobacco','Alcohol','Illegal_Drugs','Communicable_Diseases','STIs_and_HIV_AIDS','Noncommunicable_Diseases_and_Disabilities','Safety_and_Injury_Prevention','First_Aid_and_Emergencies','Community_and_Environmental_Health'];
+  const grid = document.getElementById('chapter-pdf-grid');
+  REALMS.forEach(r => {
+    grid.innerHTML += `<div style="margin-bottom:20px">
+      <div style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:${r.color};letter-spacing:1px;margin-bottom:8px">${r.icon} ${r.name}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
+        ${r.chapters.map(n=>`<a href="Chapter_${String(n).padStart(2,'0')}_${SLUGS[n-1]}.pdf" target="_blank" style="background:var(--card);border:1px solid var(--border);border-left:3px solid ${r.color};border-radius:8px;padding:10px 14px;text-decoration:none;display:flex;align-items:center;gap:10px;transition:all .15s">
+          <span style="font-size:20px">📘</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text)">Chapter ${n}</div>
+            <div style="font-size:11px;color:var(--dim)">${CH_TITLES[n-1]}</div>
+          </div>
+        </a>`).join('')}
+      </div>
+    </div>`;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// NOTES
+// ═══════════════════════════════════════════════════════════
+function loadNotes() {
+  ['general','todo','good','adjust'].forEach(k => {
+    const el = document.getElementById('note-'+k);
+    if(el) el.value = localStorage.getItem('teacher_note_'+k) || '';
+  });
+}
+function saveNote(k, v) { localStorage.setItem('teacher_note_'+k, v); }
+function saveAllNotes() {
+  ['general','todo','good','adjust'].forEach(k => {
+    const el = document.getElementById('note-'+k);
+    if(el) saveNote(k, el.value);
+  });
+  alert('All notes saved!');
+}
+function exportNotes() {
+  const text = ['general','todo','good','adjust'].map(k => {
+    const labels = {general:'GENERAL NOTES',todo:'TO-DO LIST',good:'WHAT WORKED WELL',adjust:'THINGS TO ADJUST'};
+    return labels[k] + '\n' + '='.repeat(40) + '\n' + (localStorage.getItem('teacher_note_'+k)||'(empty)') + '\n';
+  }).join('\n');
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dopp_class_notes.txt';
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PRINT STUBS
+// ═══════════════════════════════════════════════════════════
+function printQuest() {
+  window.open('quest.html','_blank');
+  setTimeout(() => alert('Open the Quest page → Ctrl+P / Cmd+P to print.'), 500);
+}
+function printSchedule() { alert('Open index.html and print the Quest Map section — Ctrl+P / Cmd+P. Set Layout: Landscape for best results.'); }
+function printVocab() {
+  const n = prompt('Enter chapter number (1–28):');
+  if (n) window.open(`vocab_engine.html?ch=${n}`, '_blank');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+renderOverview();
+</script>
+</body>
+</html>

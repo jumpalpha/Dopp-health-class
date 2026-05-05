@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Shark Tank — Legend of Wellness</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0a0a0a;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#111,#1a1a1a);border:1px solid #333;border-radius:12px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.hdr-title{font-size:22px;font-weight:700;color:#f59e0b;letter-spacing:1px}
+.hdr-sub{font-size:11px;color:#6b7280;margin-top:2px}
+.sharks-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.shark-card{flex:1;min-width:90px;background:#111;border:2px solid #333;border-radius:10px;padding:10px;text-align:center}
+.shark-card.invested{border-color:#f59e0b}
+.shark-avatar{font-size:22px;margin-bottom:3px}
+.shark-name{font-size:11px;font-weight:600;color:#f59e0b;margin-bottom:2px}
+.shark-money{font-size:14px;font-weight:700;color:#fff}
+.tank{display:flex;flex-direction:column;gap:12px}
+.pitch-card{background:#111;border:2px solid #333;border-radius:12px;padding:16px}
+.pitch-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.pitch-company{font-size:18px;font-weight:700;color:#f59e0b}
+.pitch-tagline{font-size:12px;color:#9ca3af;margin-top:2px}
+.pitch-ask{background:#1a1a00;border:1.5px solid #f59e0b;border-radius:8px;padding:8px 12px;text-align:center;min-width:120px}
+.ask-label{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px}
+.ask-val{font-size:16px;font-weight:700;color:#f59e0b}
+.pitch-section{margin-bottom:10px}
+.pitch-section-label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.pitch-text{font-size:13px;color:#d1d5db;line-height:1.6}
+.health-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.metric-box{background:#0a0a0a;border:1px solid #333;border-radius:8px;padding:8px;text-align:center}
+.metric-val{font-size:16px;font-weight:700;color:#f59e0b}
+.metric-label{font-size:10px;color:#6b7280;margin-top:2px}
+.rubric{background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:14px;margin-bottom:12px}
+.rubric-title{font-size:13px;font-weight:600;color:#f59e0b;margin-bottom:10px}
+.rubric-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1f2937}
+.rubric-row:last-child{border-bottom:none}
+.rubric-label{font-size:13px;color:#d1d5db}
+.rubric-stars{display:flex;gap:4px}
+.star{width:24px;height:24px;border-radius:4px;border:1.5px solid #333;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .1s}
+.star.filled{background:#f59e0b;border-color:#f59e0b}
+.star:hover{border-color:#f59e0b}
+.total-score-box{background:#1a1a00;border:2px solid #f59e0b;border-radius:10px;padding:12px 16px;text-align:center;margin-bottom:12px}
+.total-score-label{font-size:12px;color:#9ca3af;margin-bottom:4px}
+.total-score-val{font-size:28px;font-weight:700;color:#f59e0b}
+.decision-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.btn-invest{background:#1B5E20;border:2px solid #4CAF50;color:#fff;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit}
+.btn-invest:hover{background:#2E7D32}
+.btn-out{background:#7f0000;border:2px solid #ef4444;color:#fff;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit}
+.btn-out:hover{background:#991b1b}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-next{background:#f59e0b;color:#000;font-size:15px;padding:12px 28px}
+.btn-reset{background:#374151;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.decision-record{background:#1f2937;border-radius:8px;padding:10px;margin-bottom:10px;font-size:13px}
+.status{background:#111;border-radius:8px;padding:10px;font-size:13px;color:#9ca3af;text-align:center;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const PITCHES=[
+  {company:"SleepSync",tagline:"Smart sleep coaching for teens",
+   ask:"$50,000 for 20% equity",
+   problem:"67% of teens get less than the recommended 8–10 hours of sleep. Sleep deprivation raises depression risk by 3×, impairs prefrontal cortex function, and lowers academic performance.",
+   solution:"SleepSync is a wearable + app that monitors sleep quality, detects screen light exposure, sends smart wind-down reminders, and coaches teens toward 8+ hours using behavioral nudges.",
+   metrics:{revenue:"$12K MRR",users:"2,400",retention:"84%"},
+   healthScore:"Addresses teen sleep crisis directly. Strong health impact evidence. No known harmful side effects."},
+  {company:"NutriMatch",tagline:"AI meal planning for student athletes",
+   ask:"$75,000 for 15% equity",
+   problem:"Teen athletes are at high risk for RED-S (Relative Energy Deficiency in Sports) — a condition where under-fueling causes injury, hormonal disruption, and loss of bone density. Current nutrition apps are designed for adults.",
+   solution:"NutriMatch pairs students with sport-specific nutrition plans, tracks macros against training load, and flags warning signs of disordered eating or under-fueling.",
+   metrics:{revenue:"$8K MRR",users:"1,100",retention:"79%"},
+   healthScore:"Targets a real underserved population. Eating disorder risk is a concern — need clinical oversight."},
+  {company:"BreatheEasy",tagline:"Real-time air quality alerts for asthma patients",
+   ask:"$100,000 for 25% equity",
+   problem:"28 million Americans have asthma. Outdoor air quality varies dramatically block-by-block and hour-by-hour, but patients have no way to anticipate bad air days before leaving home.",
+   solution:"BreatheEasy uses hyperlocal EPA + sensor data to predict asthma trigger conditions for your exact address, sending proactive alerts before dangerous air quality hits.",
+   metrics:{revenue:"$22K MRR",users:"8,500",retention:"91%"},
+   healthScore:"Directly addresses a major noncommunicable disease. Strong adherence data. High community health impact."},
+  {company:"PeerUp",tagline:"Anonymous peer mental health check-ins",
+   ask:"$60,000 for 18% equity",
+   problem:"Only 20% of teens with mental health conditions receive any treatment. Stigma, cost, and wait times are the top barriers. Teens are 5× more likely to talk to a peer than an adult about mental health.",
+   solution:"PeerUp pairs teens with trained peer supporters for anonymous text-based check-ins, backed by licensed counselor oversight and auto-escalation protocols for crisis situations.",
+   metrics:{revenue:"$0 (nonprofit model)",users:"3,200",retention:"88%"},
+   healthScore:"High social need. Crisis escalation protocols are essential. Requires careful regulatory attention."},
+];
+
+const SHARKS=[
+  {name:"Shark A",avatar:"🦈",budget:500000,invested:0},
+  {name:"Shark B",avatar:"🦈",budget:500000,invested:0},
+  {name:"Shark C",avatar:"🦈",budget:500000,invested:0},
+  {name:"Shark D",avatar:"🦈",budget:500000,invested:0},
+];
+
+const RUBRIC_ITEMS=["Health Impact","Evidence & Data","Feasibility","Presentation","Innovation"];
+
+let pitchIdx=0;let stars={};let decisions=[];let sharkDecisions={};
+
+function init(){pitchIdx=0;stars={};decisions=[];sharkDecisions={};RUBRIC_ITEMS.forEach((_,i)=>stars[i]=0);render();}
+
+function render(){
+  if(pitchIdx>=PITCHES.length){renderResults();return;}
+  const p=PITCHES[pitchIdx];
+  const totalStars=Object.values(stars).reduce((a,b)=>a+b,0);
+  const maxStars=RUBRIC_ITEMS.length*5;
+  const scaledScore=Math.round(totalStars/maxStars*100);
+  document.getElementById('app').innerHTML=`
+    <div class="hdr">
+      <div><div class="hdr-title">HEALTH SHARK TANK</div><div class="hdr-sub">Pitch ${pitchIdx+1} of ${PITCHES.length}</div></div>
+    </div>
+    <div class="sharks-row">${SHARKS.map((s,i)=>`<div class="shark-card${sharkDecisions[pitchIdx]===i?' invested':''}"><div class="shark-avatar">${s.avatar}</div><div class="shark-name">${s.name}</div><div class="shark-money">$${(s.budget-s.invested).toLocaleString()}</div></div>`).join('')}</div>
+    <div class="pitch-card">
+      <div class="pitch-header">
+        <div><div class="pitch-company">${p.company}</div><div class="pitch-tagline">${p.tagline}</div></div>
+        <div class="pitch-ask"><div class="ask-label">Asking</div><div class="ask-val">${p.ask}</div></div>
+      </div>
+      <div class="pitch-section"><div class="pitch-section-label">The Problem</div><div class="pitch-text">${p.problem}</div></div>
+      <div class="pitch-section"><div class="pitch-section-label">Our Solution</div><div class="pitch-text">${p.solution}</div></div>
+      <div class="health-metrics">
+        ${Object.entries(p.metrics).map(([k,v])=>`<div class="metric-box"><div class="metric-val">${v}</div><div class="metric-label">${k.charAt(0).toUpperCase()+k.slice(1)}</div></div>`).join('')}
+      </div>
+      <div class="pitch-section"><div class="pitch-section-label">Health Reviewer Notes</div><div class="pitch-text" style="color:#86efac">${p.healthScore}</div></div>
+    </div>
+    <div class="rubric">
+      <div class="rubric-title">Shark Scorecard — Rate each dimension (1–5 stars)</div>
+      ${RUBRIC_ITEMS.map((item,i)=>`
+        <div class="rubric-row">
+          <div class="rubric-label">${item}</div>
+          <div class="rubric-stars">${[1,2,3,4,5].map(n=>`<div class="star${stars[i]>=n?' filled':''}" onclick="rateDim(${i},${n})">★</div>`).join('')}</div>
+        </div>`).join('')}
+    </div>
+    <div class="total-score-box">
+      <div class="total-score-label">Health Innovation Score</div>
+      <div class="total-score-val">${scaledScore} / 100</div>
+    </div>
+    <div style="font-size:13px;color:#6b7280;text-align:center;margin-bottom:8px">Sharks: make your decision!</div>
+    <div class="decision-btns">
+      <div class="btn-invest" onclick="decide('in')">I'm IN! 🦈 Deal</div>
+      <div class="btn-out" onclick="decide('out')">I'm OUT</div>
+    </div>
+    ${decisions[pitchIdx]?`<div class="decision-record">Class decision: <strong style="color:${decisions[pitchIdx]==='in'?'#4CAF50':'#ef4444'}">${decisions[pitchIdx]==='in'?'✓ DEAL — Sharks invest!':'✗ No deal'}</strong> (Score: ${scaledScore}/100)</div>`:''}
+    <div class="btns">
+      <button class="btn btn-next" onclick="nextPitch()">Next Pitch →</button>
+      <button class="btn btn-reset" onclick="init()">Restart</button>
+    </div>`;
+}
+
+function rateDim(dim,val){stars[dim]=val;render();}
+
+function decide(d){
+  decisions[pitchIdx]=d;
+  render();
+}
+
+function nextPitch(){
+  pitchIdx++;RUBRIC_ITEMS.forEach((_,i)=>stars[i]=0);render();
+}
+
+function renderResults(){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">SHARK TANK — RESULTS</div></div>
+    <div style="background:#111;border:2px solid #f59e0b;border-radius:12px;padding:20px;margin-bottom:14px">
+      <div style="font-size:18px;font-weight:700;color:#f59e0b;margin-bottom:12px;text-align:center">All Pitches Scored</div>
+      ${PITCHES.map((p,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #333;flex-wrap:wrap;gap:8px">
+        <div><div style="font-size:14px;font-weight:600;color:#fff">${p.company}</div><div style="font-size:12px;color:#9ca3af">${p.tagline}</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:${decisions[i]==='in'?'#4CAF50':'#ef4444'};font-weight:700">${decisions[i]==='in'?'DEAL ✓':'NO DEAL ✗'}</span>
+        </div>
+      </div>`).join('')}
+      <div style="font-size:14px;color:#f59e0b;font-weight:600;text-align:center;margin-top:14px">
+        Deals made: ${decisions.filter(d=>d==='in').length} / ${PITCHES.length}
+      </div>
+    </div>
+    <div class="btns"><button class="btn btn-next" onclick="init()">New Session</button></div>`;
+}
+
+init();
+</script>
+</body>
+</html>

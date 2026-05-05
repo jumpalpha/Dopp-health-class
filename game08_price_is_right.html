@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Price Is Right — Health Edition</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#002B80;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#E53935,#002B80);border-radius:12px;padding:14px 20px;text-align:center;margin-bottom:14px;border:2px solid #FFD700}
+.hdr-title{font-size:22px;font-weight:700;color:#FFD700;letter-spacing:1px}
+.hdr-sub{font-size:12px;color:rgba(255,215,0,0.7);margin-top:3px}
+.score-bar{display:flex;justify-content:space-between;align-items:center;background:#001a4d;border-radius:10px;padding:10px 16px;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.score-item{text-align:center}
+.score-label{font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px}
+.score-val{font-size:20px;font-weight:700;color:#FFD700}
+.game-card{background:#001a4d;border:2px solid #1565C0;border-radius:12px;padding:16px;margin-bottom:12px}
+.game-title{font-size:16px;font-weight:700;color:#FFD700;margin-bottom:6px}
+.game-desc{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5}
+.item-display{background:#000;border:2px solid #FFD700;border-radius:10px;padding:14px;text-align:center;margin-bottom:12px}
+.item-name{font-size:18px;font-weight:700;color:#FFD700;margin-bottom:4px}
+.item-desc{font-size:12px;color:rgba(255,255,255,0.6)}
+.price-input{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.price-input label{font-size:13px;color:rgba(255,255,255,0.8)}
+.price-input input{background:#001a4d;border:2px solid #1565C0;border-radius:8px;color:#FFD700;font-size:18px;font-weight:700;padding:8px 14px;width:140px;font-family:inherit;text-align:center}
+.price-input input:focus{outline:none;border-color:#FFD700}
+.reveal-box{border-radius:10px;padding:12px 16px;margin-bottom:10px;display:none;text-align:center}
+.reveal-box.show{display:block}
+.reveal-box.win{background:#1B5E20;border:2px solid #4CAF50}
+.reveal-box.lose{background:#7f0000;border:2px solid #FF5252}
+.reveal-box.close{background:#1a4d00;border:2px solid #8BC34A}
+.reveal-label{font-size:13px;font-weight:600;margin-bottom:4px}
+.reveal-price{font-size:24px;font-weight:700;color:#FFD700}
+.reveal-diff{font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px}
+.btn{padding:10px 22px;border-radius:8px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-main{background:#FFD700;color:#002B80;font-size:15px;padding:12px 28px}
+.btn-check{background:#E53935;color:#fff}
+.btn-next{background:#1565C0;color:#fff}
+.btn-reset{background:#333;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px}
+.mini-card{background:#001a4d;border:2px solid #1565C0;border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:border-color .2s}
+.mini-card:hover{border-color:#FFD700}
+.mini-card.done{border-color:#4CAF50;opacity:.6}
+.mini-card.active{border-color:#FFD700}
+.mini-icon{font-size:28px;margin-bottom:6px}
+.mini-name{font-size:13px;font-weight:600;color:#FFD700;margin-bottom:3px}
+.mini-desc{font-size:11px;color:rgba(255,255,255,0.6)}
+.option-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.opt{background:#001a4d;border:2px solid #1565C0;border-radius:8px;padding:10px;cursor:pointer;text-align:center;transition:border-color .15s;font-size:13px;color:#fff}
+.opt:hover:not(.disabled){border-color:#FFD700}
+.opt.selected{border-color:#FFD700;background:rgba(255,215,0,0.1)}
+.opt.correct{background:#1B5E20;border-color:#4CAF50}
+.opt.wrong{background:#7f0000;border-color:#FF5252}
+.status{background:#001a4d;border-radius:8px;padding:10px;font-size:13px;color:rgba(255,255,255,0.7);text-align:center;margin-bottom:10px;min-height:36px}
+.progress-dots{display:flex;gap:6px;justify-content:center;margin-bottom:12px}
+.dot{width:10px;height:10px;border-radius:50%;background:#1565C0}
+.dot.done{background:#4CAF50}
+.dot.active{background:#FFD700}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+let totalScore=0;let gamesDone=[];let currentMini=-1;let qIdx=0;let answered=false;
+
+const MINI_GAMES=[
+  {name:"Calorie Countdown",icon:"🍔",desc:"Guess the calorie count — closest wins!",
+   items:[
+    {name:"Big Mac (McDonald's)",desc:"Quarter pound beef, special sauce, lettuce, cheese",price:550,unit:"calories"},
+    {name:"Venti Pumpkin Spice Latte (Starbucks)",desc:"Whole milk, whipped cream, 16 oz",price:380,unit:"calories"},
+    {name:"Chipotle Chicken Burrito (all toppings)",desc:"Rice, beans, cheese, sour cream, salsa",price:1100,unit:"calories"},
+    {name:"1 Glazed Krispy Kreme Donut",desc:"The classic original glazed",price:190,unit:"calories"},
+    {name:"Large McDonald's French Fries",desc:"Standard large fries",price:490,unit:"calories"},
+  ]},
+  {name:"What Does It Cost?",icon:"💊",desc:"Guess the real healthcare cost — you'll be shocked!",
+   items:[
+    {name:"Ambulance ride (average U.S. city)",desc:"Average cost per ride without insurance",price:1200,unit:"dollars"},
+    {name:"Emergency room visit (no procedure)",desc:"Average for just walking in with no treatment",price:2200,unit:"dollars"},
+    {name:"EpiPen 2-pack (without insurance)",desc:"Retail pharmacy price, 2023",price:650,unit:"dollars"},
+    {name:"Narcan (naloxone) nasal spray (without insurance)",desc:"2-dose pack OTC at pharmacy",price:45,unit:"dollars"},
+    {name:"Dental crown procedure",desc:"Average U.S. cost without insurance",price:1300,unit:"dollars"},
+   ]},
+  {name:"Healthy vs. Junk Cart",icon:"🛒",desc:"Which grocery cart costs more — healthy or junk?",
+   items:[
+    {q:"For 1 week of meals, which cart costs MORE at a typical grocery store?",opts:["A: $120 healthy cart (fresh produce, lean proteins, whole grains)","B: $95 junk cart (chips, frozen pizza, soda, fast food)"],ans:0,fact:"Myth busted! Healthy eating can cost more upfront — but medical bills from poor diet cost far more long-term."},
+    {q:"A daily McDonald's meal deal costs about $8/day. Over ONE YEAR that equals:",opts:["A: About $1,000","B: About $1,800","C: About $2,920","D: About $4,500"],ans:2,fact:"$8 × 365 = $2,920/year on one meal per day — before we count the healthcare costs."},
+    {q:"A pack-a-day smoker at $10/pack spends how much per YEAR on cigarettes?",opts:["A: $1,825","B: $2,500","C: $3,650","D: $5,200"],ans:2,fact:"$10 × 365 = $3,650/year. Over 30 years = $109,500 — before adding healthcare costs."},
+    {q:"Which of these is the most cost-effective preventive health investment?",opts:["A: Annual gym membership ($500)","B: Annual physical exam ($0 with insurance)","C: Daily vitamins ($200/year)","D: Organic groceries ($1,200/year)"],ans:1,fact:"An annual physical is free under the ACA for most insured Americans — and catches problems early when they're cheaper to treat."},
+   ]},
+  {name:"Stat Showdown",icon:"📊",desc:"Guess the real health statistic — closer wins bonus points!",
+   items:[
+    {name:"Americans who die from tobacco EVERY YEAR",desc:"Updated 2024 CDC figure",price:480000,unit:"people"},
+    {name:"Minutes of daily activity recommended for teens",desc:"Current CDC / WHO guideline",price:60,unit:"minutes"},
+    {name:"Americans with Alcohol Use Disorder (2023)",desc:"NIAAA updated figure, ages 12+",price:29500000,unit:"people"},
+    {name:"New HIV infections per year in the U.S.",desc:"CDC 2023 estimate",price:32000,unit:"infections"},
+    {name:"Percent of adult Americans with high blood pressure",desc:"Post-2017 AHA guideline reclassification",price:47,unit:"percent"},
+   ]},
+];
+
+function renderMenu(){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">THE PRICE IS RIGHT</div><div class="hdr-sub">Health Edition — Legend of Wellness</div></div>
+    <div class="score-bar">
+      <div class="score-item"><div class="score-label">Total Score</div><div class="score-val">${totalScore} pts</div></div>
+      <div class="score-item"><div class="score-label">Games Completed</div><div class="score-val">${gamesDone.length} / ${MINI_GAMES.length}</div></div>
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;margin-bottom:12px">Choose a mini-game to play!</div>
+    <div class="mini-grid">${MINI_GAMES.map((g,i)=>`
+      <div class="mini-card${gamesDone.includes(i)?' done':currentMini===i?' active':''}" onclick="startMini(${i})">
+        <div class="mini-icon">${g.icon}</div>
+        <div class="mini-name">${g.name}</div>
+        <div class="mini-desc">${g.desc}</div>
+        ${gamesDone.includes(i)?`<div style="color:#4CAF50;font-size:11px;margin-top:4px;font-weight:600">✓ COMPLETED</div>`:''}
+      </div>`).join('')}
+    </div>
+    ${gamesDone.length===MINI_GAMES.length?`
+      <div style="background:#1B5E20;border:2px solid #4CAF50;border-radius:12px;padding:20px;text-align:center;margin-bottom:14px">
+        <div style="font-size:22px;font-weight:700;color:#FFD700;margin-bottom:6px">ALL GAMES COMPLETE!</div>
+        <div style="font-size:16px;color:#fff">Final Score: <strong>${totalScore} pts</strong></div>
+      </div>`:''}
+    <div class="btns"><button class="btn btn-reset" onclick="reset()">Reset All</button></div>`;
+}
+
+function startMini(i){
+  currentMini=i;qIdx=0;answered=false;
+  renderMini();
+}
+
+function renderMini(){
+  const mini=MINI_GAMES[currentMini];
+  if(mini.items[qIdx] && mini.items[qIdx].opts){renderCartGame();return;}
+  if(currentMini===0||currentMini===1||currentMini===3){renderGuessGame();return;}
+  renderCartGame();
+}
+
+function renderGuessGame(){
+  const mini=MINI_GAMES[currentMini];
+  const item=mini.items[qIdx];
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">${mini.name}</div><div class="hdr-sub">${mini.desc}</div></div>
+    <div class="progress-dots">${mini.items.map((_,i)=>`<div class="dot${i<qIdx?' done':i===qIdx?' active':''}"></div>`).join('')}</div>
+    <div class="item-display">
+      <div class="item-name">${item.name}</div>
+      <div class="item-desc">${item.desc}</div>
+    </div>
+    <div class="price-input">
+      <label>Your guess (in ${item.unit}):</label>
+      <input type="number" id="guess" placeholder="0" min="0" onkeydown="if(event.key==='Enter')checkGuess()">
+    </div>
+    <div class="reveal-box" id="reveal"></div>
+    <div class="status" id="status">Type your best guess and click Submit!</div>
+    <div class="btns">
+      <button class="btn btn-check" id="check-btn" onclick="checkGuess()">Submit Guess</button>
+      <button class="btn btn-next" id="next-btn" style="display:none" onclick="nextItem()">Next Item</button>
+      <button class="btn btn-reset" onclick="renderMenu()">Back to Menu</button>
+    </div>`;
+}
+
+function checkGuess(){
+  const inp=document.getElementById('guess');if(!inp)return;
+  const guess=parseInt(inp.value)||0;
+  const item=MINI_GAMES[currentMini].items[qIdx];
+  const diff=Math.abs(guess-item.price);
+  const pct=diff/item.price;
+  let pts=0,cls='',label='';
+  if(pct===0){pts=500;cls='win';label='EXACT PRICE! 500 pts!';}
+  else if(pct<=0.05){pts=400;cls='win';label='Within 5%! 400 pts!';}
+  else if(pct<=0.15){pts=300;cls='close';label='Close! Within 15%. 300 pts!';}
+  else if(pct<=0.30){pts=200;cls='close';label='Within 30%. 200 pts!';}
+  else if(pct<=0.50){pts=100;cls='lose';label='Off by more than 30%. 100 pts.';}
+  else{pts=0;cls='lose';label='Way off! 0 pts this round.';}
+  totalScore+=pts;
+  const r=document.getElementById('reveal');
+  r.className=`reveal-box show ${cls}`;
+  r.innerHTML=`<div class="reveal-label">${label}</div><div class="reveal-price">${item.price.toLocaleString()} ${item.unit}</div><div class="reveal-diff">Your guess: ${guess.toLocaleString()} — Difference: ${diff.toLocaleString()} ${item.unit}</div>`;
+  document.getElementById('status').textContent=`Actual ${item.unit}: ${item.price.toLocaleString()}. +${pts} pts added to your score!`;
+  document.getElementById('check-btn').style.display='none';
+  document.getElementById('next-btn').style.display='';
+}
+
+function renderCartGame(){
+  const mini=MINI_GAMES[currentMini];
+  const item=mini.items[qIdx];
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">${mini.name}</div><div class="hdr-sub">${mini.desc}</div></div>
+    <div class="progress-dots">${mini.items.map((_,i)=>`<div class="dot${i<qIdx?' done':i===qIdx?' active':''}"></div>`).join('')}</div>
+    <div class="game-card">
+      <div class="game-title">${item.q}</div>
+      <div class="option-grid" id="opts">${item.opts.map((o,i)=>`<div class="opt" onclick="pickCart(${i})" id="opt${i}">${o}</div>`).join('')}</div>
+      <div class="reveal-box" id="reveal"></div>
+      ${item.fact?`<div style="display:none;background:#001a4d;border-left:3px solid #FFD700;padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.8);margin-top:8px;line-height:1.5" id="fact">${item.fact}</div>`:''}
+    </div>
+    <div class="status" id="status">Choose the correct answer!</div>
+    <div class="btns">
+      <button class="btn btn-next" id="next-btn" style="display:none" onclick="nextItem()">Next Question</button>
+      <button class="btn btn-reset" onclick="renderMenu()">Back to Menu</button>
+    </div>`;
+}
+
+function pickCart(i){
+  const item=MINI_GAMES[currentMini].items[qIdx];
+  const correct=i===item.ans;
+  document.querySelectorAll('.opt').forEach((el,idx)=>{
+    el.classList.add('disabled');
+    if(idx===item.ans) el.classList.add('correct');
+    else if(idx===i&&!correct) el.classList.add('wrong');
+  });
+  if(correct){totalScore+=300;document.getElementById('status').textContent='Correct! +300 pts!';}
+  else{document.getElementById('status').textContent='Wrong! See the correct answer above.';}
+  const f=document.getElementById('fact');if(f)f.style.display='block';
+  const r=document.getElementById('reveal');
+  r.className=`reveal-box show ${correct?'win':'lose'}`;
+  r.innerHTML=`<div class="reveal-label">${correct?'Correct! +300 pts':'Wrong! 0 pts'}</div>`;
+  document.getElementById('next-btn').style.display='';
+}
+
+function nextItem(){
+  qIdx++;
+  const mini=MINI_GAMES[currentMini];
+  if(qIdx>=mini.items.length){
+    if(!gamesDone.includes(currentMini))gamesDone.push(currentMini);
+    renderMenu();
+  } else {
+    answered=false;renderMini();
+  }
+}
+
+function reset(){totalScore=0;gamesDone=[];currentMini=-1;qIdx=0;answered=false;renderMenu();}
+
+renderMenu();
+</script>
+</body>
+</html>

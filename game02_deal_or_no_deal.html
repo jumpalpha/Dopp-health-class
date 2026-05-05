@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal or No Deal — Health Edition</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#1a0050;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#2d0080;border:2px solid #FFD700;border-radius:10px;padding:14px 20px;text-align:center;margin-bottom:14px}
+.hdr-title{font-size:22px;font-weight:700;color:#FFD700;letter-spacing:2px}
+.cases-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
+.case{background:#2d0080;border:1.5px solid #7B1FA2;border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;transition:background .15s;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.case:hover:not(.opened):not(.player-case){background:#4a0070}
+.case.opened{background:#111;border-color:#333;cursor:default}
+.case.player-case{background:#7B1FA2;border-color:#FFD700;border-width:2px;cursor:default}
+.case-num{font-size:16px;font-weight:700;color:#FFD700}
+.case-val{font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px}
+.offer-box{background:#2d0080;border:2px solid #FFD700;border-radius:12px;padding:16px;text-align:center;margin-bottom:14px}
+.offer-val{font-size:32px;font-weight:700;color:#FFD700}
+.reveal-box{border-radius:10px;padding:12px 16px;margin-bottom:12px;display:none}
+.reveal-box.show{display:block}
+.reveal-box.good{background:#1B5E20;border:1px solid #4CAF50}
+.reveal-box.bad{background:#7f0000;border:1px solid #FF5252}
+.reveal-box.hazard{background:#5d3a00;border:1px solid #FF9800}
+.btn{padding:11px 24px;border-radius:8px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-deal{background:#2E7D32;color:#fff;font-size:18px;padding:14px 32px}
+.btn-nodeal{background:#C62828;color:#fff;font-size:18px;padding:14px 32px}
+.btn-open{background:#1565C0;color:#fff}
+.btns{display:flex;gap:10px;justify-content:center;margin:10px 0;flex-wrap:wrap}
+.score-bar{display:flex;justify-content:space-between;background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 16px;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.score-item{text-align:center}
+.score-label{font-size:11px;color:rgba(255,255,255,0.6)}
+.score-val-sm{font-size:20px;font-weight:700;color:#FFD700}
+.phase-label{font-size:12px;color:rgba(255,255,255,0.6);text-align:center;margin-bottom:8px}
+.val-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+.val-pill{text-align:center;padding:5px 8px;border-radius:6px;font-size:12px;font-weight:700}
+.val-pill.active{background:#2d0080;color:#FFD700}
+.val-pill.gone{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.2);text-decoration:line-through}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<script>
+const CASES_DATA=[
+  {val:100,type:'pts',label:'100 pts'},{val:200,type:'pts',label:'200 pts'},{val:300,type:'pts',label:'300 pts'},
+  {val:400,type:'pts',label:'400 pts'},{val:500,type:'pts',label:'500 pts'},{val:750,type:'pts',label:'750 pts'},
+  {val:1000,type:'pts',label:'1,000 pts'},{val:1500,type:'pts',label:'1,500 pts'},{val:2000,type:'pts',label:'2,000 pts'},
+  {val:3000,type:'pts',label:'3,000 pts'},{val:5000,type:'pts',label:'5,000 pts'},{val:10000,type:'pts',label:'10,000 pts'},
+  {val:25000,type:'pts',label:'25,000 pts'},
+  {val:-500,type:'hazard',label:'HAZARD',desc:'Tobacco trap: Name 3 carcinogens in cigarette smoke — or lose 500 pts.',fact:'Cigarette smoke contains tar, formaldehyde, arsenic, and 70+ other carcinogens.'},
+  {val:-500,type:'hazard',label:'HAZARD',desc:'Fentanyl facts: True or False — a counterfeit pill looks identical to a real one. (True) Name the OTC antidote. (Narcan)',fact:'Fentanyl-laced pills are visually indistinguishable from real medications. Narcan reverses overdose.'},
+  {val:-1000,type:'hazard',label:'HAZARD',desc:'What % of teens reported past-30-day drinking in 2024? (13%) Wrong = -1,000 pts.',fact:'Teen drinking is at a 25-year low — only 13% of 8th–12th graders combined.'},
+  {val:-1000,type:'hazard',label:'HAZARD',desc:'Congenital syphilis rose nearly what % over the last decade? (700%) Wrong = -1,000 pts.',fact:'Congenital syphilis is up nearly 700% — entirely preventable with prenatal screening.'},
+  {val:-2000,type:'hazard',label:'HAZARD',desc:'Fentanyl-involved overdose deaths in teens rose from 2.7% (2018) to ___% in 2023. (80.8%) Wrong = -2,000 pts.',fact:'Fentanyl now accounts for over 80% of teen drug overdose deaths.'},
+  {val:0,type:'bonus',label:'BONUS',desc:'Health Hero! Name the 3 types of distraction that make texting while driving so dangerous. (+500 pts)',fact:'Visual (eyes off road), Manual (hands off wheel), Cognitive (mind off driving).'},
+  {val:0,type:'bonus',label:'BONUS',desc:'Wellness Champion! What does U=U mean in HIV treatment? (+500 pts)',fact:'Undetectable = Untransmittable. People on ART with undetectable viral load cannot transmit HIV.'},
+  {val:0,type:'bonus',label:'BONUS',desc:'Nutrition Master! How much of MyPlate should be fruits and vegetables? (+500 pts)',fact:'Half your plate should be fruits and vegetables — the single most impactful MyPlate change.'},
+  {val:0,type:'bonus',label:'BONUS',desc:'CPR Hero! What is the compression rate per minute for adult CPR? (100–120) Correct = +500 pts.',fact:"The rhythm of 'Stayin' Alive' by the Bee Gees is almost exactly 100 bpm — perfect for CPR."},
+  {val:1000,type:'pts',label:'1,000 pts'},{val:2500,type:'pts',label:'2,500 pts'},{val:500,type:'pts',label:'500 pts'},
+];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let cases=[],playerCase=-1,opened=[],score=0;
+let phaseIdx=0,opensLeft=[6,5,4,3,2,1,1,1,1],openedThisPhase=0,offerMade=false,gameOver=false,lastReveal=null;
+function init(){cases=shuffle([...CASES_DATA]);playerCase=-1;opened=[];score=0;phaseIdx=0;openedThisPhase=0;offerMade=false;gameOver=false;lastReveal=null;render();}
+function render(){
+  const g=document.getElementById('game');
+  if(playerCase===-1){
+    g.innerHTML=`<div class="hdr"><div class="hdr-title">DEAL OR NO DEAL</div><div style="font-size:12px;color:rgba(255,215,0,0.7);margin-top:3px">Health Edition — Legend of Wellness</div></div>
+    <div class="phase-label">Step 1: Choose YOUR briefcase to protect!</div>
+    <div class="cases-grid">${cases.map((_,i)=>`<div class="case" onclick="pickCase(${i})"><div class="case-num">${i+1}</div></div>`).join('')}</div>`;
+    return;
+  }
+  const remaining=cases.filter((_,i)=>i!==playerCase&&!opened.includes(i));
+  const pts=remaining.filter(c=>c.type==='pts').map(c=>c.val);
+  const offer=pts.length?Math.round(pts.reduce((a,b)=>a+b,0)/pts.length*0.7/50)*50:0;
+  const toOpen=opensLeft[Math.min(phaseIdx,opensLeft.length-1)];
+  const canOffer=openedThisPhase>=toOpen&&!offerMade&&remaining.length>0&&!gameOver;
+  const ptVals=CASES_DATA.filter(c=>c.type==='pts').sort((a,b)=>a.val-b.val);
+  let revHTML='';
+  if(lastReveal){
+    const cls=lastReveal.type==='pts'?(lastReveal.val>0?'good':'bad'):'hazard';
+    revHTML=`<div class="reveal-box ${cls} show"><strong>${lastReveal.type==='pts'?'Case revealed: '+lastReveal.label:lastReveal.type==='hazard'?'⚠️ HEALTH HAZARD!':'🌟 BONUS CHALLENGE!'}</strong><br>${lastReveal.type!=='pts'?lastReveal.desc+'<br><em>'+lastReveal.fact+'</em>':'That value is now off the board!'}</div>`;
+  }
+  g.innerHTML=`<div class="hdr"><div class="hdr-title">DEAL OR NO DEAL</div></div>
+    <div class="score-bar">
+      <div class="score-item"><div class="score-label">Score</div><div class="score-val-sm">${score.toLocaleString()} pts</div></div>
+      <div class="score-item"><div class="score-label">Cases Left</div><div class="score-val-sm">${remaining.length+1}</div></div>
+      <div class="score-item"><div class="score-label">Banker's Offer</div><div class="score-val-sm">${canOffer?offer.toLocaleString()+' pts':'???'}</div></div>
+      <div class="score-item"><div class="score-label">Opens Left</div><div class="score-val-sm">${Math.max(0,toOpen-openedThisPhase)}</div></div>
+    </div>
+    ${revHTML}
+    ${canOffer?`<div class="offer-box"><div style="font-size:12px;color:rgba(255,215,0,0.7);margin-bottom:4px">THE BANKER OFFERS...</div><div class="offer-val">${offer.toLocaleString()} pts</div></div>
+    <div class="btns"><button class="btn btn-deal" onclick="takeDeal(${offer})">DEAL</button><button class="btn btn-nodeal" onclick="noDeal()">NO DEAL</button></div>`:''}
+    ${!canOffer&&!gameOver?`<div class="phase-label">Open ${Math.max(0,toOpen-openedThisPhase)} more case${Math.max(0,toOpen-openedThisPhase)!==1?'s':''}. Your case: #${playerCase+1}</div>`:''}
+    <div class="cases-grid">${cases.map((c,i)=>{
+      if(i===playerCase)return`<div class="case player-case"><div class="case-num">${i+1}</div><div class="case-val">YOURS</div></div>`;
+      if(opened.includes(i))return`<div class="case opened"><div class="case-num" style="color:#555">${i+1}</div><div class="case-val">${c.label}</div></div>`;
+      const canClick=!canOffer&&!gameOver&&openedThisPhase<toOpen;
+      return`<div class="case${canClick?'':''}" style="${canClick?'cursor:pointer':''}" onclick="${canClick?'openCase('+i+')':''}">${canClick?`<div class="case-num">${i+1}</div>`:`<div class="case-num" style="color:#555">${i+1}</div>`}</div>`;
+    }).join('')}</div>
+    <div class="val-grid">${ptVals.map(c=>{const gone=opened.some(i=>cases[i]===c);return`<div class="val-pill${gone?' gone':' active'}">${c.label}</div>`;}).join('')}</div>
+    ${remaining.length===0&&!gameOver?`<div class="btns"><button class="btn btn-deal" onclick="openFinalCase()">Open Your Case!</button></div>`:''}
+    ${gameOver?`<div class="btns"><button class="btn btn-open" onclick="init()">Play Again</button></div>`:''}`;
+}
+function pickCase(i){playerCase=i;openedThisPhase=0;render();}
+function openCase(i){
+  if(opened.includes(i)||i===playerCase||gameOver)return;
+  const toOpen=opensLeft[Math.min(phaseIdx,opensLeft.length-1)];
+  if(openedThisPhase>=toOpen)return;
+  opened.push(i);lastReveal=cases[i];openedThisPhase++;
+  if(lastReveal.type==='hazard')score+=lastReveal.val;
+  if(lastReveal.type==='bonus')score+=500;
+  render();
+}
+function noDeal(){offerMade=false;openedThisPhase=0;phaseIdx=Math.min(phaseIdx+1,opensLeft.length-1);
+  const rem=cases.filter((_,i)=>i!==playerCase&&!opened.includes(i));
+  if(rem.length===0){openFinalCase();return;}render();}
+function takeDeal(offer){score+=offer;gameOver=true;
+  const g=document.getElementById('game');const yourVal=cases[playerCase];
+  g.innerHTML=`<div class="hdr"><div class="hdr-title">YOU TOOK THE DEAL!</div></div>
+    <div class="offer-box"><div style="font-size:13px;color:rgba(255,215,0,0.7);margin-bottom:4px">You banked</div><div class="offer-val">${offer.toLocaleString()} pts</div><div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:8px">Your case (#${playerCase+1}) held: <strong>${yourVal.label}</strong><br>${offer>(yourVal.val||0)?'Smart move!':'Your case was worth more — but safety pays too!'}</div></div>
+    <div class="btns"><button class="btn btn-open" onclick="init()">Play Again</button></div>`;}
+function openFinalCase(){gameOver=true;const yourVal=cases[playerCase];score+=(yourVal.val||0);
+  const g=document.getElementById('game');
+  g.innerHTML=`<div class="hdr"><div class="hdr-title">YOU KEPT YOUR CASE!</div></div>
+    <div class="offer-box"><div style="font-size:13px;color:rgba(255,215,0,0.7);margin-bottom:4px">Case #${playerCase+1} contained</div><div class="offer-val">${yourVal.label}</div></div>
+    <div class="score-bar"><div class="score-item"><div class="score-label">Final Score</div><div class="score-val-sm">${score.toLocaleString()} pts</div></div></div>
+    <div class="btns"><button class="btn btn-open" onclick="init()">Play Again</button></div>`;}
+init();
+</script>
+</body>
+</html>
