@@ -98,7 +98,8 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
   <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
   <div class="nav-links">
     <a class="nav-link" href="index.html">Student Site</a>
-    <a class="nav-link" href="teacher.html">Teacher Dashboard</a>
+    <a class="nav-link" href="leaderboard.html">🏆 Hall of Heroes</a>
+    <a class="nav-link" href="teacher.html">👨‍🏫 Teacher</a>
   </div>
 </nav>
 
@@ -218,11 +219,12 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
 <!-- CONCERN BOX -->
 <div class="section">
   <div class="concern-box">
-    <div class="concern-title">🔒 A Note on Privacy & Content</div>
+    <div class="concern-title">🔒 A Note on Privacy & Data</div>
     <div class="concern-body">
-      <p>The Legend of Wellness website is <strong>public</strong> — any parent or guardian can view everything at <a href="index.html" style="color:var(--sky)">jumpalpha.github.io/Dopp-health-class</a>. There are no login-gated areas. All chapter PDFs, games, and activities are openly accessible.</p>
-      <p style="margin-top:10px">The student progress tracker (<strong>quest.html</strong>) saves data locally in the student's own browser — it is not sent to any server and is not visible to the teacher or other students without the student sharing it. The class leaderboard (<strong>leaderboard.html</strong>) is an opt-in feature where students choose whether to post their score.</p>
-      <p style="margin-top:10px">If you have concerns about any specific content in the course, please reach out directly to Mr. Dopp. We welcome that conversation.</p>
+      <p>The Legend of Wellness website is <strong>public</strong> — any parent or guardian can view everything at <a href="index.html" style="color:var(--sky)">jumpalpha.github.io/Dopp-health-class</a>. All chapter PDFs, games, and activities are openly accessible without any account.</p>
+      <p style="margin-top:10px">The student quest tracker requires a simple account: students register with their <strong>class period code, last name, a chosen display name, and a 4-digit PIN</strong> they set themselves. This information is stored securely on <strong>Supabase</strong> (a US-based cloud database), not on the student's device. No email address, phone number, or sensitive personal information is collected.</p>
+      <p style="margin-top:10px">The <strong>Hall of Heroes leaderboard</strong> is public and shows each student's chosen display name, avatar, XP, and progress. Last names are never displayed. Students control their own display name when they create their account.</p>
+      <p style="margin-top:10px">If you have concerns about any specific content or your student's data, please reach out directly to Mr. Dopp. We welcome that conversation.</p>
     </div>
   </div>
 </div>
@@ -237,7 +239,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
   <div class="faq-list">
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">Does my student need to create an account or give personal information? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">No. The entire site works without any account, login, or personal information. The quest tracker asks for a name and avatar choice, but that's stored only in the browser on that device — it's never transmitted anywhere.</div>
+      <div class="faq-a">All chapter PDFs, games, and vocabulary tools require no account. The quest tracker does require a simple account — students enter their class code, last name, a display name, and a self-chosen PIN. No email, phone number, or sensitive information is collected. Progress is saved to a secure cloud database so students can access their quest from any device.</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">Can my student access the site from home? <span class="faq-toggle">+</span></div>
