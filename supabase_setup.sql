@@ -77,7 +77,8 @@ insert into class_codes (code, label, trimester) values
   ('PERIOD3', 'Period 3', '2026-T1'),
   ('PERIOD4', 'Period 4', '2026-T1'),
   ('PERIOD5', 'Period 5', '2026-T1'),
-  ('PERIOD6', 'Period 6', '2026-T1')
+  ('PERIOD6', 'Period 6', '2026-T1'),
+  ('TEST',    'Test',     '2026-T1')
 on conflict do nothing;
 
 -- ── TO ADD A NEW TRIMESTER ────────────────────────────────────
