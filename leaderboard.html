@@ -3,123 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hall of Champions — Legend of Wellness</title>
+<title>Hall of Heroes — Legend of Wellness</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#FFD700;--gold-dim:#8a6d00;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--purple:#a855f7;--bg:#05070F;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--text:#F0F4FF;--dim:rgba(240,244,255,0.50)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-#stars{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(255,215,0,0.08) 0%,transparent 65%),#05070F}
-#stars::before{content:'';position:absolute;inset:0;background-image:
-  radial-gradient(1px 1px at 12% 20%,rgba(255,255,255,0.8) 0%,transparent 100%),
-  radial-gradient(1.5px 1.5px at 42% 8%,rgba(255,215,0,0.9) 0%,transparent 100%),
-  radial-gradient(1px 1px at 68% 35%,rgba(56,191,255,0.7) 0%,transparent 100%),
-  radial-gradient(1px 1px at 88% 60%,rgba(255,255,255,0.6) 0%,transparent 100%),
-  radial-gradient(1px 1px at 25% 78%,rgba(0,229,160,0.8) 0%,transparent 100%),
-  radial-gradient(1px 1px at 55% 90%,rgba(255,255,255,0.5) 0%,transparent 100%)}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:rgba(5,7,15,0.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
-.nav-logo{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);text-decoration:none}
-.nav-logo span{color:var(--dim);font-weight:400}
-.nav-links{display:flex;gap:6px}
-.nav-link{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;color:var(--dim);text-decoration:none;border:1px solid transparent;transition:all .2s}
-.nav-link:hover{color:var(--text);border-color:var(--border);background:var(--card)}
-.nav-link.active{color:var(--gold);border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.06)}
+:root {
+  --gold:#FFD700; --gold-dim:#8a6d00; --emerald:#00E5A0; --sky:#38BFFF;
+  --crimson:#FF3B5C; --purple:#a855f7; --orange:#FF8C00;
+  --bg:#05070F; --card:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.08);
+  --text:#F0F4FF; --dim:rgba(240,244,255,0.50);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
 
-/* PAGE HEADER */
-.page-header{position:relative;z-index:1;padding:100px 28px 40px;text-align:center;max-width:860px;margin:0 auto}
-.header-badge{display:inline-block;font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--gold-dim);border:1px solid rgba(255,215,0,0.2);padding:5px 16px;border-radius:20px;background:rgba(255,215,0,0.04);margin-bottom:16px}
-.page-title{font-family:'Cinzel Decorative',serif;font-size:clamp(28px,5vw,52px);font-weight:900;background:linear-gradient(135deg,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;line-height:1.15}
-.page-sub{font-size:15px;color:var(--dim);line-height:1.7;max-width:520px;margin:0 auto}
+#stars { position:fixed; inset:0; pointer-events:none; z-index:0;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,215,0,0.07) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,229,160,0.05) 0%, transparent 60%), #05070F; }
+#stars::before { content:''; position:absolute; inset:0;
+  background-image:
+    radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 40% 10%, rgba(255,215,0,0.9) 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 70%, rgba(56,191,255,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 75%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 75% 15%, rgba(0,229,160,0.7) 0%, transparent 100%); }
 
-/* TOP 3 PODIUM */
-.podium-section{position:relative;z-index:1;max-width:760px;margin:0 auto 40px;padding:0 28px}
-.podium{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:24px}
-.podium-slot{display:flex;flex-direction:column;align-items:center;gap:8px}
-.podium-avatar{font-size:32px;animation:float 3s ease-in-out infinite}
-.podium-avatar.p2{animation-delay:.5s}
-.podium-avatar.p3{animation-delay:1s}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.podium-name{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--text);text-align:center;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.podium-score{font-size:12px;font-weight:700;color:var(--dim)}
-.podium-badges{font-size:12px;text-align:center}
-.podium-block{display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0;font-family:'Cinzel Decorative',serif;font-weight:700;font-size:22px}
-.podium-block.p1{width:120px;height:100px;background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,140,0,0.15));border:2px solid rgba(255,215,0,0.5);color:#FFD700}
-.podium-block.p2{width:100px;height:75px;background:linear-gradient(135deg,rgba(200,200,200,0.15),rgba(160,160,160,0.08));border:2px solid rgba(200,200,200,0.3);color:#C0C0C0}
-.podium-block.p3{width:100px;height:60px;background:linear-gradient(135deg,rgba(180,120,60,0.15),rgba(140,90,40,0.08));border:2px solid rgba(180,120,60,0.3);color:#CD7F32}
-.podium-base{height:4px;background:var(--border);border-radius:0 0 4px 4px;width:100%}
+nav { position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:11px 24px; background:rgba(5,7,15,0.85); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold); text-decoration:none; }
+.nav-logo span { color:var(--dim); font-weight:400; }
+.nav-links { display:flex; gap:6px; }
+.nav-link { padding:6px 14px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim);
+  text-decoration:none; border:1px solid transparent; transition:all .15s; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:var(--card); }
+.nav-link.active { color:var(--gold); border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.06); }
 
-/* SUBMIT FORM */
-.submit-section{position:relative;z-index:1;max-width:760px;margin:0 auto 32px;padding:0 28px}
-.submit-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px}
-.submit-title{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);margin-bottom:16px;letter-spacing:.5px}
-.submit-grid{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end}
-@media(max-width:640px){.submit-grid{grid-template-columns:1fr 1fr;}.submit-btn{grid-column:span 2}}
-.form-group{display:flex;flex-direction:column;gap:5px}
-.form-label{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.5px;text-transform:uppercase}
-.form-input{background:rgba(255,255,255,0.06);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-size:14px;font-weight:700;padding:10px 14px;font-family:'Nunito',sans-serif;transition:border-color .15s}
-.form-input:focus{outline:none;border-color:rgba(255,215,0,0.4)}
-.form-select{background:rgba(255,255,255,0.06);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-size:13px;padding:10px 12px;font-family:'Nunito',sans-serif;cursor:pointer}
-.form-select option{background:#0d1020;color:var(--text)}
-.submit-btn{padding:11px 24px;border-radius:9px;background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.15));border:1.5px solid rgba(255,215,0,0.35);color:var(--gold);font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;white-space:nowrap}
-.submit-btn:hover{background:linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,140,0,0.25));box-shadow:0 4px 16px rgba(255,215,0,0.2)}
-.privacy-note{font-size:11px;color:var(--dim);margin-top:10px;line-height:1.5}
+.wrap { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:100px 24px 60px; }
 
-/* LEADERBOARD TABLE */
-.lb-section{position:relative;z-index:1;max-width:760px;margin:0 auto 40px;padding:0 28px}
-.lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.lb-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold-dim);letter-spacing:1px;text-transform:uppercase}
-.lb-controls{display:flex;gap:8px;flex-wrap:wrap}
-.lb-filter{padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s}
-.lb-filter:hover,.lb-filter.active{background:rgba(255,215,0,0.08);border-color:rgba(255,215,0,0.3);color:var(--gold)}
-.lb-table{width:100%;border-collapse:collapse}
-.lb-table th{font-size:11px;font-weight:700;color:var(--dim);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);letter-spacing:.5px;text-transform:uppercase}
-.lb-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;vertical-align:middle}
-.lb-table tr:last-child td{border:none}
-.lb-table tr:hover td{background:rgba(255,255,255,0.02)}
-.lb-table tr.my-row td{background:rgba(255,215,0,0.04)}
-.rank-badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
-.rank-1{background:rgba(255,215,0,0.2);color:#FFD700;border:1px solid rgba(255,215,0,0.4)}
-.rank-2{background:rgba(192,192,192,0.15);color:#C0C0C0;border:1px solid rgba(192,192,192,0.3)}
-.rank-3{background:rgba(205,127,50,0.15);color:#CD7F32;border:1px solid rgba(205,127,50,0.3)}
-.rank-other{background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid var(--border)}
-.player-cell{display:flex;align-items:center;gap:10px}
-.player-av{font-size:20px}
-.player-name{font-weight:700;color:var(--text)}
-.player-title{font-size:11px;color:var(--dim);margin-top:1px}
-.xp-cell{font-weight:800;color:var(--gold)}
-.badges-cell{display:flex;gap:4px;flex-wrap:wrap}
-.badge-dot{font-size:14px}
-.realm-cell{font-size:12px;color:var(--dim)}
-.delete-btn{padding:4px 8px;border-radius:5px;background:rgba(255,59,92,0.1);border:1px solid rgba(255,59,92,0.2);color:#FF3B5C;font-size:11px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;display:none}
-.lb-table tr:hover .delete-btn{display:block}
+.hero { text-align:center; margin-bottom:40px; }
+.hero-icon { font-size:56px; margin-bottom:12px; }
+.hero-title { font-family:'Cinzel Decorative',serif; font-size:28px; font-weight:700;
+  background:linear-gradient(135deg,#FFD700,#FF8C00); -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:8px; }
+.hero-sub { font-size:15px; color:var(--dim); line-height:1.6; }
 
-/* STATS STRIP */
-.stats-strip{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;max-width:760px;margin:0 auto 40px;padding:0 28px}
-.stats-strip{background:transparent;border:none;gap:10px}
-.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
-.stat-num{font-family:'Cinzel Decorative',serif;font-size:26px;font-weight:700;color:var(--gold);margin-bottom:3px}
-.stat-label{font-size:11px;color:var(--dim);font-weight:600}
+/* PODIUM */
+.podium { display:flex; align-items:flex-end; justify-content:center; gap:12px; margin-bottom:40px; }
+.podium-card { background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:20px 16px; text-align:center; flex:1; max-width:220px; transition:all .2s; }
+.podium-card:hover { transform:translateY(-4px); }
+.podium-1 { border-color:rgba(255,215,0,0.35); background:rgba(255,215,0,0.05); padding-bottom:28px; min-height:200px; }
+.podium-2 { border-color:rgba(192,192,192,0.25); background:rgba(192,192,192,0.03); min-height:170px; }
+.podium-3 { border-color:rgba(205,127,50,0.25); background:rgba(205,127,50,0.03); min-height:150px; }
+.podium-rank   { font-size:32px; margin-bottom:6px; }
+.podium-avatar { font-size:36px; margin-bottom:8px; }
+.podium-name   { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; word-break:break-word; }
+.podium-period { font-size:11px; color:var(--dim); margin-bottom:8px; }
+.podium-xp     { font-family:'Cinzel',serif; font-size:20px; font-weight:700; color:var(--gold); }
+.podium-tasks  { font-size:11px; color:var(--dim); margin-top:2px; }
 
-/* TOAST */
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:#0d1020;border:1px solid rgba(255,215,0,0.3);border-radius:12px;padding:13px 24px;font-size:14px;font-weight:700;color:var(--gold);z-index:300;transition:transform .3s;white-space:nowrap}
-.toast.show{transform:translateX(-50%) translateY(0)}
+/* FILTER */
+.filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+.filter-btn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700;
+  border:1px solid var(--border); background:var(--card); color:var(--dim);
+  cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif; }
+.filter-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.18); }
+.filter-btn.active { background:rgba(255,215,0,0.1); border-color:rgba(255,215,0,0.35); color:var(--gold); }
+.refresh-btn { margin-left:auto; padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700;
+  border:1px solid var(--border); background:var(--card); color:var(--dim);
+  cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif; }
+.refresh-btn:hover { color:var(--text); }
 
-/* EMPTY STATE */
-.empty-state{text-align:center;padding:48px 20px;color:var(--dim)}
-.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
-.empty-text{font-size:14px;line-height:1.6}
+/* TABLE */
+.lb-card { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:12px; }
+.lb-table { width:100%; border-collapse:collapse; }
+.lb-table th { font-size:11px; font-weight:700; color:var(--dim); text-align:left;
+  padding:10px 16px; border-bottom:1px solid var(--border); letter-spacing:.5px; text-transform:uppercase; white-space:nowrap; }
+.lb-table td { padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; vertical-align:middle; }
+.lb-table tr:last-child td { border:none; }
+.lb-table tr:hover td { background:rgba(255,255,255,0.02); }
+.progress-mini { height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; width:80px; display:inline-block; vertical-align:middle; }
+.progress-mini-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--gold),#FF8C00); }
+.lb-empty { text-align:center; padding:48px; color:var(--dim); font-size:14px; }
+.refresh-note { text-align:center; font-size:12px; color:var(--dim); margin-top:8px; }
 
-footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:20px}
-.footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600}
-
-@media(max-width:700px){nav{padding:11px 16px}.page-header,.podium-section,.submit-section,.lb-section{padding-left:16px;padding-right:16px}.stats-strip{grid-template-columns:1fr 1fr;padding:0 16px}.podium-block.p1{width:100px;height:80px}.podium-block.p2,.podium-block.p3{width:80px}}
+@media(max-width:640px) {
+  .podium { flex-direction:column; align-items:center; }
+  .podium-card { max-width:100%; width:100%; min-height:unset !important; padding:16px !important; }
+  .hero-title { font-size:20px; }
+  .lb-table th:nth-child(6), .lb-table td:nth-child(6) { display:none; }
+}
 </style>
 <link rel="stylesheet" href="shared.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 <div id="stars"></div>
-<div class="toast" id="toast"></div>
 
 <nav>
   <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
@@ -127,271 +107,201 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
     <a class="nav-link" href="index.html">Home</a>
     <a class="nav-link" href="chapters.html">Chapters</a>
     <a class="nav-link" href="arcade.html">Arcade</a>
-    <a class="nav-link" href="quest.html">My Quest</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
     <a class="nav-link active" href="leaderboard.html">🏆 Hall</a>
+    <a class="nav-link" href="parents.html">👪 Parents</a>
   </div>
 </nav>
 
-<div class="page-header">
-  <div class="header-badge">Dopp Health Class · Class of 2025</div>
-  <h1 class="page-title">Hall of Champions</h1>
-  <p class="page-sub">The top Health Heroes of the Legend of Wellness. Complete quests, earn badges, and claim your spot on the board.</p>
-</div>
-
-<!-- PODIUM -->
-<div class="podium-section" id="podium-section"></div>
-
-<!-- STATS -->
-<div class="stats-strip" id="stats-strip" style="padding:0 28px;max-width:760px;margin:0 auto 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;position:relative;z-index:1"></div>
-
-<!-- SUBMIT -->
-<div class="submit-section">
-  <div class="submit-card">
-    <div class="submit-title">⚔ Post Your Score</div>
-    <div class="submit-grid">
-      <div class="form-group">
-        <label class="form-label">Your Name</label>
-        <input class="form-input" id="entry-name" placeholder="Health Hero name..." maxlength="20">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Avatar</label>
-        <select class="form-select" id="entry-avatar">
-          <option value="⚔">⚔ Warrior</option>
-          <option value="🛡">🛡 Guardian</option>
-          <option value="🏹">🏹 Ranger</option>
-          <option value="🧙">🧙 Mage</option>
-          <option value="🦸">🦸 Hero</option>
-          <option value="🧝">🧝 Elf</option>
-          <option value="🦊">🦊 Fox</option>
-          <option value="🐉">🐉 Dragon</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Badges Earned</label>
-        <select class="form-select" id="entry-badges">
-          <option value="0">0 — Just started</option>
-          <option value="1">1 — Foundation Keep</option>
-          <option value="2">2 — Mind Citadel</option>
-          <option value="3">3 — Relationship Realm</option>
-          <option value="4">4 — Nourish Dungeon</option>
-          <option value="5">5 — Body Labyrinth</option>
-          <option value="6">6 — Life Cycle Shrine</option>
-          <option value="7">7 — Shadow World</option>
-          <option value="8">8 — Disease Fortress</option>
-          <option value="9">9 — ★ Master of Wellness</option>
-        </select>
-      </div>
-      <button class="submit-btn" onclick="submitScore()">Post Score →</button>
-    </div>
-    <div class="privacy-note">💡 Scores are saved in your browser and shared with classmates on this device. No account needed. Your teacher can reset all scores at any time.</div>
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-icon">🏆</div>
+    <div class="hero-title">Hall of Heroes</div>
+    <div class="hero-sub">The greatest wellness warriors of Legend of Wellness.<br>Complete quests, earn XP, and claim your place on the leaderboard.</div>
   </div>
-</div>
 
-<!-- LEADERBOARD -->
-<div class="lb-section">
-  <div class="lb-header">
-    <div class="lb-title">🏆 Current Rankings</div>
-    <div class="lb-controls">
-      <button class="lb-filter active" onclick="setFilter('all',this)">All Heroes</button>
-      <button class="lb-filter" onclick="setFilter('badges',this)">By Badges</button>
-      <button class="lb-filter" onclick="setFilter('alpha',this)">A–Z</button>
-      <button class="lb-filter" onclick="resetBoard()">🗑 Clear All</button>
+  <!-- TOP 3 PODIUM -->
+  <div class="podium">
+    <div class="podium-card podium-2">
+      <div class="podium-rank">🥈</div>
+      <div class="podium-avatar" id="pod-2-avatar">—</div>
+      <div class="podium-name"   id="pod-2-name">—</div>
+      <div class="podium-period" id="pod-2-period">—</div>
+      <div class="podium-xp"    id="pod-2-xp">—</div>
+      <div class="podium-tasks"  id="pod-2-tasks"></div>
+    </div>
+    <div class="podium-card podium-1">
+      <div class="podium-rank">🥇</div>
+      <div class="podium-avatar" id="pod-1-avatar">—</div>
+      <div class="podium-name"   id="pod-1-name">—</div>
+      <div class="podium-period" id="pod-1-period">—</div>
+      <div class="podium-xp"    id="pod-1-xp">—</div>
+      <div class="podium-tasks"  id="pod-1-tasks"></div>
+    </div>
+    <div class="podium-card podium-3">
+      <div class="podium-rank">🥉</div>
+      <div class="podium-avatar" id="pod-3-avatar">—</div>
+      <div class="podium-name"   id="pod-3-name">—</div>
+      <div class="podium-period" id="pod-3-period">—</div>
+      <div class="podium-xp"    id="pod-3-xp">—</div>
+      <div class="podium-tasks"  id="pod-3-tasks"></div>
     </div>
   </div>
-  <div id="lb-body"></div>
-</div>
 
-<footer>
-  <div class="footer-brand">⚔ The Legend of Wellness</div>
-  <div style="font-size:13px;color:var(--dim)">#OnedayIwokeup · #Doppitup</div>
-  <a href="quest.html" style="font-size:13px;color:var(--dim);text-decoration:none">⚔ My Quest →</a>
-</footer>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All Periods</button>
+    <button class="filter-btn" onclick="setFilter('PERIOD1',this)">Period 1</button>
+    <button class="filter-btn" onclick="setFilter('PERIOD2',this)">Period 2</button>
+    <button class="filter-btn" onclick="setFilter('PERIOD3',this)">Period 3</button>
+    <button class="filter-btn" onclick="setFilter('PERIOD4',this)">Period 4</button>
+    <button class="filter-btn" onclick="setFilter('PERIOD5',this)">Period 5</button>
+    <button class="filter-btn" onclick="setFilter('PERIOD6',this)">Period 6</button>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+
+  <div class="lb-card">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th style="width:48px;text-align:center">#</th>
+          <th style="width:40px"></th>
+          <th>Hero</th>
+          <th>Period</th>
+          <th>XP</th>
+          <th>Progress</th>
+          <th>Streak</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+        <tr><td colspan="7" class="lb-empty">⏳ Summoning heroes…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="refresh-note" id="refresh-note"></div>
+</div>
 
 <script>
-const BADGE_NAMES = ['','Wellness Apprentice','Mind Knight','Social Champion','Body Warrior','System Sage','Life Keeper','Shadow Slayer','Health Guardian','★ Master of Wellness'];
-const BADGE_ICONS = ['','🏰','🧠','💞','🥗','⚙️','🌱','💀','🏥','★'];
-const XP_PER_BADGE = 350;
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRIMESTER    = '2026-T1';
+const XP_PER_TASK  = 25;
+const TOTAL_TASKS  = 112;
+const PERIOD_LABELS = {PERIOD1:'Period 1',PERIOD2:'Period 2',PERIOD3:'Period 3',
+  PERIOD4:'Period 4',PERIOD5:'Period 5',PERIOD6:'Period 6',TEST:'Test'};
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let sortMode = 'all';
-let entries = [];
+let allData  = [];
+let lbFilter = 'all';
+let refreshInterval;
 
-function load() {
-  try { entries = JSON.parse(localStorage.getItem('low_leaderboard')) || []; }
-  catch { entries = []; }
-  // seed with demo entries if empty so board isn't blank on first load
-  if (entries.length === 0) {
-    entries = [
-      { name:'Mr. Dopp', avatar:'🧙', badges:9, ts: Date.now()-999999 },
-      { name:'Health Hero', avatar:'⚔', badges:1, ts: Date.now()-500000 },
-    ];
-    save();
+async function loadData() {
+  document.getElementById('lb-body').innerHTML =
+    '<tr><td colspan="7" class="lb-empty">⏳ Summoning heroes…</td></tr>';
+
+  const [studRes, progRes, daysRes] = await Promise.all([
+    db.from('students').select('id, display_name, avatar, class_code').eq('trimester', TRIMESTER),
+    db.from('quest_progress').select('student_id'),
+    db.from('active_days').select('student_id, day_date'),
+  ]);
+
+  if (studRes.error) {
+    document.getElementById('lb-body').innerHTML =
+      '<tr><td colspan="7" class="lb-empty">Could not load data. Try refreshing.</td></tr>';
+    return;
   }
+
+  const taskCounts = {}, dayCounts = {}, streakMap = {};
+  (progRes.data || []).forEach(r => { taskCounts[r.student_id] = (taskCounts[r.student_id] || 0) + 1; });
+
+  const daysByStudent = {};
+  (daysRes.data || []).forEach(r => {
+    if (!daysByStudent[r.student_id]) daysByStudent[r.student_id] = new Set();
+    daysByStudent[r.student_id].add(r.day_date);
+    dayCounts[r.student_id] = (dayCounts[r.student_id] || 0) + 1;
+  });
+  Object.entries(daysByStudent).forEach(([sid, daySet]) => {
+    let streak = 0, d = new Date();
+    while (daySet.has(d.toISOString().slice(0,10))) { streak++; d.setDate(d.getDate()-1); }
+    streakMap[sid] = streak;
+  });
+
+  allData = (studRes.data || []).map(s => ({
+    ...s,
+    tasks  : taskCounts[s.id] || 0,
+    xp     : (taskCounts[s.id] || 0) * XP_PER_TASK,
+    days   : dayCounts[s.id]   || 0,
+    streak : streakMap[s.id]   || 0,
+  })).sort((a, b) => b.xp - a.xp);
+
   render();
-}
-
-function save() { localStorage.setItem('low_leaderboard', JSON.stringify(entries)); }
-
-function calcXP(badges) { return badges * XP_PER_BADGE; }
-
-function sorted() {
-  const e = [...entries];
-  if (sortMode === 'badges') return e.sort((a,b) => b.badges - a.badges || b.ts - a.ts);
-  if (sortMode === 'alpha') return e.sort((a,b) => a.name.localeCompare(b.name));
-  return e.sort((a,b) => b.badges - a.badges || b.ts - a.ts);
+  startCountdown();
 }
 
 function render() {
-  renderStats();
-  renderPodium();
-  renderTable();
+  const rows = lbFilter === 'all' ? allData : allData.filter(s => s.class_code === lbFilter);
+  renderPodium(rows);
+  renderTable(rows);
 }
 
-function renderStats() {
-  const total = entries.length;
-  const masters = entries.filter(e => e.badges >= 9).length;
-  const avgBadges = total ? (entries.reduce((s,e)=>s+e.badges,0)/total).toFixed(1) : 0;
-  const topBadges = total ? Math.max(...entries.map(e=>e.badges)) : 0;
-  document.getElementById('stats-strip').innerHTML = `
-    <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-label">Heroes Enrolled</div></div>
-    <div class="stat-box"><div class="stat-num">${masters}</div><div class="stat-label">Masters of Wellness</div></div>
-    <div class="stat-box"><div class="stat-num">${avgBadges}</div><div class="stat-label">Avg Badges</div></div>
-    <div class="stat-box"><div class="stat-num">${topBadges}</div><div class="stat-label">Top Badge Count</div></div>`;
+function renderPodium(rows) {
+  [1,2,3].forEach(pos => {
+    const s = rows[pos-1];
+    document.getElementById(`pod-${pos}-avatar`).textContent = s ? s.avatar || '⚔' : '—';
+    document.getElementById(`pod-${pos}-name`).textContent   = s ? s.display_name : '—';
+    document.getElementById(`pod-${pos}-period`).textContent = s ? (PERIOD_LABELS[s.class_code] || s.class_code) : '—';
+    document.getElementById(`pod-${pos}-xp`).textContent     = s ? s.xp.toLocaleString() + ' XP' : '—';
+    document.getElementById(`pod-${pos}-tasks`).textContent  = s ? s.tasks + ' tasks done' : '';
+  });
 }
 
-function renderPodium() {
-  const top = sorted().slice(0,3);
-  while (top.length < 3) top.push(null);
-  const order = [top[1], top[0], top[2]]; // 2nd, 1st, 3rd
-  const cls = ['p2','p1','p3'];
-  const pos = ['2nd','1st','3rd'];
-  const podiumEl = document.getElementById('podium-section');
-  if (entries.length === 0) { podiumEl.innerHTML = ''; return; }
-  podiumEl.innerHTML = `<div class="podium">
-    ${order.map((e,i) => e ? `
-      <div class="podium-slot">
-        <div class="podium-avatar ${cls[i]}">${e.avatar}</div>
-        <div class="podium-name">${e.name}</div>
-        <div class="podium-score">${calcXP(e.badges).toLocaleString()} XP</div>
-        <div class="podium-badges">${BADGE_ICONS.slice(1,e.badges+1).join('')}</div>
-        <div class="podium-block ${cls[i]}">${pos[i]}</div>
-        <div class="podium-base"></div>
-      </div>` : `<div class="podium-slot"><div class="podium-block ${cls[i]}" style="opacity:.2">${pos[i]}</div><div class="podium-base"></div></div>`
-    ).join('')}
-  </div>`;
-}
-
-function renderTable() {
-  const s = sorted();
-  const lb = document.getElementById('lb-body');
-  if (s.length === 0) {
-    lb.innerHTML = `<div class="empty-state"><div class="empty-icon">🗺</div><div class="empty-text">No heroes on the board yet.<br>Be the first to post your score!</div></div>`;
+function renderTable(rows) {
+  const tbody = document.getElementById('lb-body');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="lb-empty">No heroes found for this period yet.</td></tr>';
     return;
   }
-  lb.innerHTML = `<table class="lb-table">
-    <thead><tr>
-      <th style="width:40px">Rank</th>
-      <th>Hero</th>
-      <th>Realm Reached</th>
-      <th>Badges</th>
-      <th>XP</th>
-      <th></th>
-    </tr></thead>
-    <tbody>${s.map((e,i) => {
-      const rankCls = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
-      return `<tr>
-        <td><div class="rank-badge ${rankCls}">${i+1}</div></td>
-        <td><div class="player-cell"><div class="player-av">${e.avatar}</div><div><div class="player-name">${e.name}</div><div class="player-title">${e.badges>=9?'★ Master of Wellness':e.badges>0?BADGE_NAMES[e.badges]:'Novice Adventurer'}</div></div></div></td>
-        <td class="realm-cell">${e.badges>=9?'The Final Tower ⭐':e.badges>0?'Realm '+e.badges+' — '+BADGE_NAMES[e.badges]:'Not started'}</td>
-        <td><div class="badges-cell">${BADGE_ICONS.slice(1,e.badges+1).map(b=>`<span class="badge-dot">${b}</span>`).join('') || '<span style="color:var(--dim);font-size:12px">—</span>'}</div></td>
-        <td class="xp-cell">${calcXP(e.badges).toLocaleString()}</td>
-        <td><button class="delete-btn" onclick="deleteEntry(${i})">Remove</button></td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table>`;
+  const rankIcon = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':
+    `<span style="font-family:'Cinzel',serif;color:var(--dim)">${i+1}</span>`;
+  tbody.innerHTML = rows.map((s,i) => {
+    const pct = Math.round(s.tasks / TOTAL_TASKS * 100);
+    return `<tr>
+      <td style="text-align:center">${rankIcon(i)}</td>
+      <td style="font-size:20px">${s.avatar || '⚔'}</td>
+      <td style="font-weight:700;color:var(--text)">${s.display_name}</td>
+      <td style="font-size:12px;color:var(--dim)">${PERIOD_LABELS[s.class_code] || s.class_code}</td>
+      <td style="font-family:'Cinzel',serif;font-weight:700;color:var(--gold)">${s.xp.toLocaleString()}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="progress-mini"><div class="progress-mini-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:11px;color:var(--dim)">${pct}%</span>
+        </div>
+      </td>
+      <td style="color:${s.streak>0?'var(--emerald)':'var(--dim)'}">${s.streak>0?'🔥 '+s.streak:'—'}</td>
+    </tr>`;
+  }).join('');
 }
 
-function submitScore() {
-  const name = document.getElementById('entry-name').value.trim();
-  const avatar = document.getElementById('entry-avatar').value;
-  const badges = parseInt(document.getElementById('entry-badges').value);
-  if (!name) { document.getElementById('entry-name').focus(); showToast('Enter your hero name first!'); return; }
-  // check for duplicate name — update instead
-  const existing = entries.findIndex(e => e.name.toLowerCase() === name.toLowerCase());
-  if (existing >= 0) {
-    entries[existing] = { name, avatar, badges, ts: Date.now() };
-    showToast(`Updated ${name}'s score! ${badges} badge${badges!==1?'s':''} earned.`);
-  } else {
-    entries.push({ name, avatar, badges, ts: Date.now() });
-    showToast(`${name} added to the Hall of Champions! ${badges > 0 ? BADGE_NAMES[badges] + ' badge!' : 'Keep going!'}`);
-  }
-  save(); render();
-  document.getElementById('entry-name').value = '';
+function setFilter(val, el) {
+  lbFilter = val;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  render();
 }
 
-function deleteEntry(idx) {
-  const s = sorted();
-  const target = s[idx];
-  entries = entries.filter(e => !(e.name === target.name && e.ts === target.ts));
-  save(); render(); showToast('Entry removed.');
+function startCountdown() {
+  clearInterval(refreshInterval);
+  const note = document.getElementById('refresh-note');
+  let secs = 60;
+  note.textContent = `Auto-refreshes in ${secs}s`;
+  refreshInterval = setInterval(() => {
+    secs--;
+    if (secs <= 0) { clearInterval(refreshInterval); loadData(); }
+    else note.textContent = `Auto-refreshes in ${secs}s`;
+  }, 1000);
 }
 
-function setFilter(mode, btn) {
-  sortMode = mode;
-  document.querySelectorAll('.lb-filter').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable(); renderPodium();
-}
-
-function resetBoard() {
-  if (!confirm('Clear ALL leaderboard entries? This cannot be undone.')) return;
-  entries = []; save(); render(); showToast('Board cleared. New competition begins!');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// Also pull from quest.html localStorage if available
-function pullFromQuest() {
-  try {
-    const q = JSON.parse(localStorage.getItem('lowQuest'));
-    if (q && q.name) {
-      const REALMS = [{},{},{},{},{},{},{},{},{tasks:Array(10).fill(null)}];
-      // count badges from quest data
-      const myBadges = (() => {
-        let b = 0;
-        const realmIds = ['r1','r2','r3','r4','r5','r6','r7','r8','r9'];
-        const taskCounts = [8,10,12,10,11,7,12,9,10];
-        realmIds.forEach((id,i) => {
-          let done = 0;
-          for(let t=0;t<taskCounts[i];t++) if(q.tasks && q.tasks[id+'_'+t]) done++;
-          if(done===taskCounts[i]) b++;
-        });
-        return b;
-      })();
-      document.getElementById('entry-name').value = q.name;
-      document.getElementById('entry-avatar').value = q.avatar || '⚔';
-      document.getElementById('entry-badges').value = myBadges;
-      showToast('Loaded your quest data! Click Post Score to submit.');
-    }
-  } catch(e) {}
-}
-
-// Add a "Load from My Quest" button
-document.addEventListener('DOMContentLoaded', () => {
-  const card = document.querySelector('.submit-card');
-  const hint = card.querySelector('.privacy-note');
-  const btn = document.createElement('button');
-  btn.className = 'lb-filter';
-  btn.style.cssText = 'margin-top:10px;margin-right:8px';
-  btn.textContent = '⚔ Auto-fill from My Quest';
-  btn.onclick = pullFromQuest;
-  card.insertBefore(btn, hint);
-});
-
-load();
+loadData();
 </script>
 </body>
 </html>
