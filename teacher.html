@@ -570,9 +570,9 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 
 <script>
 // ═══════════════════════════════════════════════════════════
-// PIN GATE  —  default PIN: WELLNESS2026
+// PIN GATE
 // ═══════════════════════════════════════════════════════════
-const PIN_HASH = '7203be188f05dc890b7c67152d9ed8ff7c8b9ba90df199c8a00dff936a89ea0a';
+const PIN_HASH = '9a3b84136cae8f86009596df91507ee5f5c54708cf7b79e374c17c3eca2e519f';
 
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
