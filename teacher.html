@@ -193,6 +193,22 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
+
+<!-- PIN GATE -->
+<div id="pin-gate" style="position:fixed;inset:0;background:#07090F;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px">
+  <div style="font-size:48px;margin-bottom:4px">⚔</div>
+  <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:#FFD700">Teacher Dashboard</div>
+  <div style="font-size:14px;color:rgba(240,244,255,0.5);margin-bottom:8px">Enter your access PIN to continue</div>
+  <input type="password" id="pin-input" maxlength="30" placeholder="Enter PIN"
+    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#F0F4FF;font-size:18px;padding:12px 24px;text-align:center;font-family:'Nunito',sans-serif;width:260px;letter-spacing:4px;outline:none"
+    onkeydown="if(event.key==='Enter')checkPin()">
+  <button onclick="checkPin()"
+    style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);color:#FFD700;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:10px 32px;border-radius:10px;cursor:pointer">
+    Unlock
+  </button>
+  <div id="pin-error" style="color:#FF3B5C;font-size:13px;min-height:20px"></div>
+</div>
+
 <div class="layout">
 
 <!-- SIDEBAR -->
@@ -232,6 +248,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
     <a href="index.html" style="text-decoration:none">
       <button class="sb-btn"><span class="sb-btn-icon">🏠</span>Student Site</button>
     </a>
+    <button class="sb-btn" onclick="lockDashboard()" style="color:var(--crimson)"><span class="sb-btn-icon">🔒</span>Lock Dashboard</button>
   </div>
 </div>
 
@@ -552,6 +569,42 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 </div><!-- /layout -->
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// PIN GATE  —  default PIN: WELLNESS2026
+// ═══════════════════════════════════════════════════════════
+const PIN_HASH = '7203be188f05dc890b7c67152d9ed8ff7c8b9ba90df199c8a00dff936a89ea0a';
+
+async function hashPin(pin) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkPin() {
+  const input = document.getElementById('pin-input').value.trim();
+  if (!input) return;
+  const h = await hashPin(input);
+  if (h === PIN_HASH) {
+    sessionStorage.setItem('teacher_unlocked', '1');
+    document.getElementById('pin-gate').style.display = 'none';
+  } else {
+    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+}
+
+function lockDashboard() {
+  sessionStorage.removeItem('teacher_unlocked');
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-gate').style.display = 'flex';
+}
+
+// Check if already unlocked this session
+if (sessionStorage.getItem('teacher_unlocked') === '1') {
+  document.getElementById('pin-gate').style.display = 'none';
+}
+
 // ═══════════════════════════════════════════════════════════
 // SUPABASE
 // ═══════════════════════════════════════════════════════════
