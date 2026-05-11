@@ -148,6 +148,32 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .form-label { font-size:12px; color:var(--dim); font-weight:600; margin-bottom:5px; display:block; }
 .form-group { margin-bottom:12px; }
 
+/* LEADERBOARD */
+.lb-table { width:100%; border-collapse:collapse; }
+.lb-table th { font-size:11px; font-weight:700; color:var(--dim); text-align:left;
+  padding:8px 12px; border-bottom:1px solid var(--border); letter-spacing:.5px;
+  text-transform:uppercase; cursor:pointer; user-select:none; white-space:nowrap; }
+.lb-table th:hover { color:var(--text); }
+.lb-table th.sorted { color:var(--gold); }
+.lb-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:13px; vertical-align:middle; }
+.lb-table tr:last-child td { border:none; }
+.lb-table tr:hover td { background:rgba(255,255,255,0.02); }
+.lb-avatar { font-size:18px; line-height:1; }
+.lb-filter { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.lb-filter-btn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700;
+  border:1px solid var(--border); background:var(--card); color:var(--dim);
+  cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif; }
+.lb-filter-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.18); }
+.lb-filter-btn.active { background:rgba(255,215,0,0.1); border-color:rgba(255,215,0,0.35); color:var(--gold); }
+.lb-empty { text-align:center; padding:48px 0; color:var(--dim); font-size:14px; }
+.lb-rank-1 { color:#FFD700; font-family:'Cinzel',serif; font-weight:700; }
+.lb-rank-2 { color:#C0C0C0; font-family:'Cinzel',serif; font-weight:700; }
+.lb-rank-3 { color:#CD7F32; font-family:'Cinzel',serif; font-weight:700; }
+.lb-rank-n { color:var(--dim); font-family:'Cinzel',serif; }
+.lb-error { background:rgba(255,59,92,0.08); border:1px solid rgba(255,59,92,0.2);
+  border-radius:10px; padding:14px 18px; color:#FF3B5C; font-size:13px; margin-bottom:16px; }
+
 /* MOBILE SIDEBAR */
 @media(max-width:700px) {
   .layout { grid-template-columns:1fr; }
@@ -164,6 +190,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 }
 </style>
 <link rel="stylesheet" href="shared.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -178,6 +205,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
   <div class="sb-section">
     <div class="sb-section-label">Overview</div>
     <button class="sb-btn active" onclick="showPage('overview',this)"><span class="sb-btn-icon">📊</span>Overview</button>
+    <button class="sb-btn" onclick="showPage('progress',this)"><span class="sb-btn-icon">🏆</span>Class Progress</button>
     <button class="sb-btn" onclick="showPage('planner',this)"><span class="sb-btn-icon">📅</span>Week Planner</button>
     <button class="sb-btn" onclick="showPage('tracker',this)"><span class="sb-btn-icon">🗺</span>Realm Tracker</button>
   </div>
@@ -449,10 +477,91 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
     </div>
   </div>
 
+  <!-- ── CLASS PROGRESS ── -->
+  <div class="page" id="page-progress">
+    <div class="page-hdr">
+      <div class="page-title">Class Progress</div>
+      <div class="page-sub">Live leaderboard — all students across all periods. Pulls directly from Supabase.</div>
+    </div>
+
+    <div id="lb-error-banner" style="display:none"></div>
+
+    <div class="stat-row" style="margin-bottom:20px">
+      <div class="stat-card">
+        <div class="sc-num" id="lb-stat-total">—</div>
+        <div class="sc-label">Students Enrolled</div>
+        <div class="sc-sub" id="lb-stat-trimester">Trimester 2026-T1</div>
+      </div>
+      <div class="stat-card highlight">
+        <div class="sc-num" id="lb-stat-top">—</div>
+        <div class="sc-label">Top Score</div>
+        <div class="sc-sub">Highest XP in view</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-num" id="lb-stat-avg">—</div>
+        <div class="sc-label">Class Average XP</div>
+        <div class="sc-sub">Filtered view</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-num" id="lb-stat-active">—</div>
+        <div class="sc-label">Active (any tasks)</div>
+        <div class="sc-sub">Started the quest</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div class="card-title" style="margin-bottom:0">🏆 Student Leaderboard</div>
+        <button class="btn btn-gold btn-sm" onclick="refreshProgress()">↻ Refresh</button>
+      </div>
+
+      <div class="lb-filter" id="lb-filter">
+        <button class="lb-filter-btn active" onclick="setLbFilter('all',this)">All Periods</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD1',this)">Period 1</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD2',this)">Period 2</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD3',this)">Period 3</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD4',this)">Period 4</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD5',this)">Period 5</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD6',this)">Period 6</button>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width:48px;text-align:center">#</th>
+              <th style="width:40px"></th>
+              <th onclick="setLbSort('name',this)">Name</th>
+              <th onclick="setLbSort('period',this)">Period</th>
+              <th class="sorted" onclick="setLbSort('xp',this)">XP ↓</th>
+              <th onclick="setLbSort('tasks',this)">Tasks</th>
+              <th onclick="setLbSort('days',this)">Active Days</th>
+              <th onclick="setLbSort('streak',this)">Streak</th>
+            </tr>
+          </thead>
+          <tbody id="lb-body">
+            <tr><td colspan="8" class="lb-empty">Click the page to load leaderboard data.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /main -->
 </div><!-- /layout -->
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRIMESTER    = '2026-T1';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+const XP_PER_TASK  = 25;
+const TOTAL_TASKS  = 112; // 2800 XP / 25 per task
+
 // ═══════════════════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════════════════
@@ -512,6 +621,7 @@ function showPage(id, btn) {
 
 function renderPage(id) {
   if(id==='overview') renderOverview();
+  else if(id==='progress') renderProgress();
   else if(id==='planner') renderPlanner();
   else if(id==='tracker') renderTracker();
   else if(id==='arcade') renderArcade();
@@ -803,6 +913,145 @@ function printSchedule() { alert('Open index.html and print the Quest Map sectio
 function printVocab() {
   const n = prompt('Enter chapter number (1–28):');
   if (n) window.open(`vocab_engine.html?ch=${n}`, '_blank');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CLASS PROGRESS LEADERBOARD
+// ═══════════════════════════════════════════════════════════
+let lbData       = null;
+let lbFilter     = 'all';
+let lbSort       = 'xp';
+let lbLoading    = false;
+
+async function renderProgress() {
+  if (lbData) { renderLeaderboard(); return; }
+  await loadProgressData();
+}
+
+async function refreshProgress() {
+  lbData = null;
+  document.getElementById('lb-body').innerHTML =
+    '<tr><td colspan="8" class="lb-empty">Loading...</td></tr>';
+  await loadProgressData();
+}
+
+async function loadProgressData() {
+  if (lbLoading) return;
+  lbLoading = true;
+  setLbError('');
+  document.getElementById('lb-body').innerHTML =
+    '<tr><td colspan="8" class="lb-empty">⏳ Fetching student data…</td></tr>';
+
+  const [studRes, progRes, daysRes] = await Promise.all([
+    db.from('students').select('id, display_name, avatar, class_code').eq('trimester', TRIMESTER),
+    db.from('quest_progress').select('student_id, task_key'),
+    db.from('active_days').select('student_id, day_date'),
+  ]);
+
+  if (studRes.error || progRes.error || daysRes.error) {
+    const msg = (studRes.error || progRes.error || daysRes.error).message;
+    setLbError('Supabase error: ' + msg);
+    document.getElementById('lb-body').innerHTML =
+      '<tr><td colspan="8" class="lb-empty">Could not load data. Check console for details.</td></tr>';
+    lbLoading = false;
+    return;
+  }
+
+  const taskCounts = {}, dayCounts = {}, streakCounts = {};
+  (progRes.data || []).forEach(r => { taskCounts[r.student_id] = (taskCounts[r.student_id] || 0) + 1; });
+
+  // streak: consecutive days from today going backwards
+  const daysByStudent = {};
+  (daysRes.data || []).forEach(r => {
+    if (!daysByStudent[r.student_id]) daysByStudent[r.student_id] = new Set();
+    daysByStudent[r.student_id].add(r.day_date);
+    dayCounts[r.student_id] = (dayCounts[r.student_id] || 0) + 1;
+  });
+  Object.entries(daysByStudent).forEach(([sid, daySet]) => {
+    let streak = 0, d = new Date();
+    while (true) {
+      const key = d.toISOString().slice(0,10);
+      if (daySet.has(key)) { streak++; d.setDate(d.getDate()-1); }
+      else break;
+    }
+    streakCounts[sid] = streak;
+  });
+
+  lbData = (studRes.data || []).map(s => ({
+    ...s,
+    tasks  : taskCounts[s.id] || 0,
+    xp     : (taskCounts[s.id] || 0) * XP_PER_TASK,
+    days   : dayCounts[s.id]   || 0,
+    streak : streakCounts[s.id] || 0,
+  }));
+  lbLoading = false;
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  if (!lbData) return;
+  let rows = lbFilter === 'all' ? [...lbData] : lbData.filter(s => s.class_code === lbFilter);
+
+  const sortMap = { xp:'xp', tasks:'tasks', name:'display_name', period:'class_code', days:'days', streak:'streak' };
+  const key = sortMap[lbSort] || 'xp';
+  rows.sort((a,b) => typeof a[key]==='string' ? a[key].localeCompare(b[key]) : b[key]-a[key]);
+
+  const total   = rows.length;
+  const avgXP   = total ? Math.round(rows.reduce((s,x)=>s+x.xp,0)/total) : 0;
+  const topXP   = total ? rows[0].xp : 0;
+  const active  = rows.filter(s=>s.tasks>0).length;
+
+  document.getElementById('lb-stat-total').textContent     = total;
+  document.getElementById('lb-stat-trimester').textContent = 'Trimester ' + TRIMESTER;
+  document.getElementById('lb-stat-top').textContent       = topXP.toLocaleString() + ' XP';
+  document.getElementById('lb-stat-avg').textContent       = avgXP.toLocaleString() + ' XP';
+  document.getElementById('lb-stat-active').textContent    = active + ' / ' + total;
+
+  const rankClass = i => i===0?'lb-rank-1':i===1?'lb-rank-2':i===2?'lb-rank-3':'lb-rank-n';
+  const rankLabel = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span class="${rankClass(i)}">${i+1}</span>`;
+
+  const tbody = document.getElementById('lb-body');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="lb-empty">No students found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((s,i) => {
+    const pct = Math.round(s.tasks / TOTAL_TASKS * 100);
+    const bar = `<div style="display:flex;align-items:center;gap:6px">
+      <div class="progress-mini" style="width:72px"><div class="progress-mini-fill" style="width:${pct}%"></div></div>
+      <span style="font-size:11px;color:var(--dim)">${s.tasks}/${TOTAL_TASKS}</span></div>`;
+    return `<tr>
+      <td style="text-align:center">${rankLabel(i)}</td>
+      <td class="lb-avatar">${s.avatar || '⚔'}</td>
+      <td style="font-weight:700;color:var(--text)">${s.display_name}</td>
+      <td style="font-size:12px;color:var(--dim)">${s.class_code}</td>
+      <td style="font-family:'Cinzel',serif;font-weight:700;color:var(--gold)">${s.xp.toLocaleString()}</td>
+      <td>${bar}</td>
+      <td style="font-size:12px;color:var(--dim)">${s.days}</td>
+      <td style="font-size:12px;color:${s.streak>0?'var(--emerald)':'var(--dim)'}">${s.streak>0?'🔥 '+s.streak:'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function setLbFilter(val, el) {
+  lbFilter = val;
+  document.querySelectorAll('#lb-filter .lb-filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderLeaderboard();
+}
+
+function setLbSort(val, el) {
+  lbSort = val;
+  document.querySelectorAll('.lb-table th').forEach(th => th.classList.remove('sorted'));
+  if (el) { el.classList.add('sorted'); el.textContent = el.textContent.replace(/ [↑↓]$/,'') + ' ↓'; }
+  renderLeaderboard();
+}
+
+function setLbError(msg) {
+  const el = document.getElementById('lb-error-banner');
+  if (!el) return;
+  if (msg) { el.className = 'lb-error'; el.textContent = msg; el.style.display = 'block'; }
+  else el.style.display = 'none';
 }
 
 // ═══════════════════════════════════════════════════════════

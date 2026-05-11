@@ -138,6 +138,9 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 .av-opt:hover,.av-opt.sel { border-color:var(--gold); background:rgba(255,215,0,0.1); }
 .modal-btn { width:100%; padding:13px; border-radius:10px; background:linear-gradient(135deg,#FFD700,#FF8C00);
   border:none; color:#0a0600; font-size:15px; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; }
+.modal-error { font-size:12px; color:var(--crimson); margin-bottom:10px; min-height:16px; }
+.modal-back { display:block; margin-top:10px; font-size:12px; color:var(--dim); cursor:pointer;
+  background:none; border:none; text-decoration:underline; font-family:'Nunito',sans-serif; width:100%; text-align:center; }
 
 /* BUTTONS */
 .btn { padding:9px 20px; border-radius:9px; border:none; font-size:13px; font-weight:700;
@@ -167,6 +170,7 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
 }
 </style>
 <link rel="stylesheet" href="shared.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 <div id="stars"></div>
@@ -185,23 +189,52 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
   </div>
 </nav>
 
-<!-- NAME MODAL -->
+<!-- LOGIN MODAL (3 steps) -->
 <div class="modal-bg" id="modal">
   <div class="modal-box">
-    <div class="modal-title">Begin Your Quest</div>
-    <div class="modal-sub">Choose your hero name and avatar to start tracking your progress through the Legend of Wellness.</div>
-    <input class="modal-input" id="name-input" placeholder="Your name..." maxlength="20">
-    <div class="modal-avatars" id="avatar-opts">
-      <div class="av-opt sel" onclick="selAv(this,'⚔')">⚔</div>
-      <div class="av-opt" onclick="selAv(this,'🛡')">🛡</div>
-      <div class="av-opt" onclick="selAv(this,'🏹')">🏹</div>
-      <div class="av-opt" onclick="selAv(this,'🧙')">🧙</div>
-      <div class="av-opt" onclick="selAv(this,'🦸')">🦸</div>
-      <div class="av-opt" onclick="selAv(this,'🧝')">🧝</div>
-      <div class="av-opt" onclick="selAv(this,'🦊')">🦊</div>
-      <div class="av-opt" onclick="selAv(this,'🐉')">🐉</div>
+
+    <!-- Step 1: Class code + last name -->
+    <div id="mstep1">
+      <div class="modal-title">Enter the Quest</div>
+      <div class="modal-sub">Enter your class code and last name to continue.</div>
+      <input class="modal-input" id="m-code" placeholder="Class Code (e.g. PERIOD1)" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+      <input class="modal-input" id="m-last" placeholder="Last Name" maxlength="30" onkeydown="if(event.key==='Enter')checkStudent()">
+      <div class="modal-error" id="m-err1"></div>
+      <button class="modal-btn" onclick="checkStudent()">Continue →</button>
     </div>
-    <button class="modal-btn" onclick="saveName()">Start My Quest →</button>
+
+    <!-- Step 2a: Returning student — enter PIN -->
+    <div id="mstep2a" style="display:none">
+      <div class="modal-title">Welcome Back!</div>
+      <div class="modal-sub" id="m-return-sub">Enter your PIN to continue.</div>
+      <input class="modal-input" id="m-pin-return" type="password" maxlength="4" placeholder="4-digit PIN" inputmode="numeric" onkeydown="if(event.key==='Enter')loginReturning()">
+      <div class="modal-error" id="m-err2a"></div>
+      <button class="modal-btn" onclick="loginReturning()">Login →</button>
+      <button class="modal-back" onclick="showStep(1)">← Back</button>
+    </div>
+
+    <!-- Step 2b: New student — create account -->
+    <div id="mstep2b" style="display:none">
+      <div class="modal-title">Begin Your Quest</div>
+      <div class="modal-sub">You're new! Set up your hero.</div>
+      <input class="modal-input" id="m-display" placeholder="First name or nickname" maxlength="20">
+      <div class="modal-avatars" id="avatar-opts">
+        <div class="av-opt sel" onclick="selAv(this,'⚔')">⚔</div>
+        <div class="av-opt" onclick="selAv(this,'🛡')">🛡</div>
+        <div class="av-opt" onclick="selAv(this,'🏹')">🏹</div>
+        <div class="av-opt" onclick="selAv(this,'🧙')">🧙</div>
+        <div class="av-opt" onclick="selAv(this,'🦸')">🦸</div>
+        <div class="av-opt" onclick="selAv(this,'🧝')">🧝</div>
+        <div class="av-opt" onclick="selAv(this,'🦊')">🦊</div>
+        <div class="av-opt" onclick="selAv(this,'🐉')">🐉</div>
+      </div>
+      <input class="modal-input" id="m-pin-new" type="password" maxlength="4" placeholder="Create a 4-digit PIN" inputmode="numeric">
+      <input class="modal-input" id="m-pin-confirm" type="password" maxlength="4" placeholder="Confirm PIN" inputmode="numeric" onkeydown="if(event.key==='Enter')registerNew()">
+      <div class="modal-error" id="m-err2b"></div>
+      <button class="modal-btn" onclick="registerNew()">Start My Quest →</button>
+      <button class="modal-back" onclick="showStep(1)">← Back</button>
+    </div>
+
   </div>
 </div>
 
@@ -268,6 +301,16 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
 
 <script>
 // ═══════════════════════════════════════════════════════════
+// CONFIG  ← Update TRIMESTER each new term
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRIMESTER    = '2026-T1';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════════════════
 const REALMS = [
@@ -321,52 +364,130 @@ const ACHIEVEMENTS = [
 // ═══════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════
-let state = {};
+let student     = null;       // { id, display_name, avatar, class_code }
+let doneKeys    = new Set();  // completed task_keys
+let doneDays    = new Set();  // active day strings YYYY-MM-DD
+let selectedAv  = '⚔';
+let foundStudent = null;      // temp holder during login
 
-function defaultState() {
-  return {
-    name: '', avatar: '⚔',
-    tasks: {}, // realmId_taskIdx: bool
-    activeDays: [], // YYYY-MM-DD strings
-    xp: 0,
-  };
+// ─── PIN HASHING ─────────────────────────────────────────────
+async function hashPin(pin) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin + SUPABASE_URL));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-function load() {
-  try { state = JSON.parse(localStorage.getItem('lowQuest')) || defaultState(); }
-  catch { state = defaultState(); }
-  if (!state.name) { document.getElementById('modal').classList.add('show'); }
-  render();
+// ─── LOAD PROGRESS FROM SUPABASE ─────────────────────────────
+async function loadProgress() {
+  const [{ data: tasks }, { data: days }] = await Promise.all([
+    db.from('quest_progress').select('task_key').eq('student_id', student.id),
+    db.from('active_days').select('day_date').eq('student_id', student.id)
+  ]);
+  doneKeys = new Set((tasks || []).map(t => t.task_key));
+  doneDays = new Set((days || []).map(d => d.day_date));
 }
 
-function save() {
-  localStorage.setItem('lowQuest', JSON.stringify(state));
-}
-
-function calcStats() {
-  let xp = 0, badges = [], totalTasks = 0, bossTasks = 0, vocabTasks = 0;
-  REALMS.forEach(r => {
-    let done = 0;
-    r.tasks.forEach((task, ti) => {
-      if (state.tasks[r.id + '_' + ti]) {
-        done++; xp += XP_PER_TASK; totalTasks++;
-        if (task.toLowerCase().includes('vocab')) vocabTasks++;
-        if (task.toLowerCase().includes('boss')) bossTasks++;
-      }
-    });
-    if (done === r.tasks.length) badges.push(r.badge);
-  });
-  const today = todayStr();
-  let streak = 0;
-  let d = new Date();
-  while (true) {
-    const s = d.toISOString().slice(0,10);
-    if (state.activeDays.includes(s)) { streak++; d.setDate(d.getDate()-1); }
-    else break;
-    if (streak > 365) break;
+// ─── INIT ─────────────────────────────────────────────────────
+async function init() {
+  const sid = localStorage.getItem('qSID_' + TRIMESTER);
+  if (sid) {
+    const { data } = await db.from('students')
+      .select('id,display_name,avatar,class_code')
+      .eq('id', sid).eq('trimester', TRIMESTER).maybeSingle();
+    if (data) {
+      student = data;
+      await loadProgress();
+      render();
+      return;
+    }
+    localStorage.removeItem('qSID_' + TRIMESTER);
   }
-  const totalDays = state.activeDays.length;
-  return { xp, badges, totalTasks, bossTasks, vocabTasks, streak, totalDays };
+  showStep(1);
+  document.getElementById('modal').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOGIN FLOW
+// ═══════════════════════════════════════════════════════════
+function showStep(n) {
+  document.getElementById('mstep1').style.display  = n === 1 ? 'block' : 'none';
+  document.getElementById('mstep2a').style.display = n === 2 ? 'block' : 'none';
+  document.getElementById('mstep2b').style.display = n === 3 ? 'block' : 'none';
+}
+
+async function checkStudent() {
+  const code = document.getElementById('m-code').value.trim().toUpperCase();
+  const last  = document.getElementById('m-last').value.trim();
+  const err   = document.getElementById('m-err1');
+  if (!code || !last) { err.textContent = 'Please fill in both fields.'; return; }
+  err.textContent = 'Checking...';
+
+  const { data: cc } = await db.from('class_codes').select('code').eq('code', code).eq('trimester', TRIMESTER).maybeSingle();
+  if (!cc) { err.textContent = 'Invalid class code. Check with your teacher.'; return; }
+
+  const { data: existing } = await db.from('students')
+    .select('id,display_name,avatar,class_code')
+    .eq('class_code', code).eq('trimester', TRIMESTER).ilike('last_name', last).maybeSingle();
+
+  err.textContent = '';
+  if (existing) {
+    foundStudent = existing;
+    document.getElementById('m-return-sub').textContent = `Welcome back, ${existing.display_name}! Enter your PIN.`;
+    showStep(2);
+    setTimeout(() => document.getElementById('m-pin-return').focus(), 100);
+  } else {
+    foundStudent = { class_code: code, last_name: last };
+    showStep(3);
+    setTimeout(() => document.getElementById('m-display').focus(), 100);
+  }
+}
+
+async function loginReturning() {
+  const pin = document.getElementById('m-pin-return').value.trim();
+  const err = document.getElementById('m-err2a');
+  if (!/^\d{4}$/.test(pin)) { err.textContent = 'PIN must be exactly 4 digits.'; return; }
+  err.textContent = 'Verifying...';
+
+  const hash = await hashPin(pin);
+  const { data } = await db.from('students')
+    .select('id,display_name,avatar,class_code,pin_hash').eq('id', foundStudent.id).maybeSingle();
+
+  if (!data || data.pin_hash !== hash) { err.textContent = 'Incorrect PIN. Try again.'; return; }
+
+  student = { id: data.id, display_name: data.display_name, avatar: data.avatar, class_code: data.class_code };
+  localStorage.setItem('qSID_' + TRIMESTER, student.id);
+  document.getElementById('modal').classList.remove('show');
+  await loadProgress();
+  render();
+  showToast(`Welcome back, ${student.display_name}! ⚔`);
+}
+
+async function registerNew() {
+  const name    = document.getElementById('m-display').value.trim();
+  const pin     = document.getElementById('m-pin-new').value.trim();
+  const confirm = document.getElementById('m-pin-confirm').value.trim();
+  const err     = document.getElementById('m-err2b');
+  if (!name)               { err.textContent = 'Please enter a display name.'; return; }
+  if (!/^\d{4}$/.test(pin)) { err.textContent = 'PIN must be exactly 4 digits (numbers only).'; return; }
+  if (pin !== confirm)     { err.textContent = 'PINs do not match.'; return; }
+  err.textContent = 'Creating your hero...';
+
+  const hash = await hashPin(pin);
+  const { data, error } = await db.from('students').insert({
+    class_code: foundStudent.class_code, last_name: foundStudent.last_name,
+    display_name: name, pin_hash: hash, avatar: selectedAv, trimester: TRIMESTER
+  }).select('id,display_name,avatar,class_code').maybeSingle();
+
+  if (error) {
+    err.textContent = error.code === '23505'
+      ? 'That name already exists in your class. See your teacher.'
+      : 'Error creating account. Try again.';
+    return;
+  }
+  student = data;
+  localStorage.setItem('qSID_' + TRIMESTER, student.id);
+  document.getElementById('modal').classList.remove('show');
+  render();
+  showToast(`Welcome, ${student.display_name}! Your quest begins! ⚔`);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -374,38 +495,50 @@ function calcStats() {
 // ═══════════════════════════════════════════════════════════
 const TITLES = ['Wellness Apprentice','Mind Knight','Social Champion','Body Warrior','System Sage','Life Keeper','Shadow Slayer','Health Guardian','Master of Wellness'];
 
-function render() {
-  const st = calcStats();
-  state.xp = st.xp;
-
-  // hero
-  document.getElementById('hero-avatar').textContent = state.avatar || '⚔';
-  document.getElementById('hero-name').textContent = state.name || 'Health Hero';
-  const titleIdx = Math.min(st.badges.length, TITLES.length-1);
-  document.getElementById('hero-title-tag').textContent = st.badges.length > 0 ? st.badges[st.badges.length-1] : 'Novice Adventurer';
-  document.getElementById('stat-badges').textContent = st.badges.length;
-  document.getElementById('stat-chapters').textContent = Object.keys(state.tasks).filter(k => state.tasks[k]).length ? calcCompletedChapters() : 0;
-  document.getElementById('stat-streak').textContent = st.streak;
-  document.getElementById('stat-xp').textContent = st.xp.toLocaleString();
-  document.getElementById('xp-label').textContent = `${st.xp.toLocaleString()} / ${TOTAL_XP.toLocaleString()} XP`;
-  document.getElementById('xp-fill').style.width = Math.min(100, st.xp / TOTAL_XP * 100) + '%';
-
-  renderStreak();
-  renderRealms(st);
-  renderAchievements(st);
+function calcStats() {
+  let xp = 0, badges = [], totalTasks = 0, bossTasks = 0, vocabTasks = 0;
+  REALMS.forEach(r => {
+    let done = 0;
+    r.tasks.forEach((task, ti) => {
+      if (doneKeys.has(`${r.id}_${ti}`)) {
+        done++; xp += XP_PER_TASK; totalTasks++;
+        if (task.toLowerCase().includes('vocab')) vocabTasks++;
+        if (task.toLowerCase().includes('boss'))  bossTasks++;
+      }
+    });
+    if (done === r.tasks.length) badges.push(r.badge);
+  });
+  let streak = 0;
+  const d = new Date();
+  while (streak < 366) {
+    if (doneDays.has(d.toISOString().slice(0,10))) { streak++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return { xp, badges, totalTasks, bossTasks, vocabTasks, streak, totalDays: doneDays.size };
 }
 
 function calcCompletedChapters() {
-  // count chapters where all tasks for that realm's chapter subset are done — simplified: count chapters with at least 1 task done
   const chDone = new Set();
-  Object.keys(state.tasks).forEach(k => {
-    if (state.tasks[k]) {
-      const rId = k.split('_')[0];
-      const realm = REALMS.find(r => r.id === rId);
-      if (realm) realm.chapters.forEach(c => chDone.add(c));
-    }
+  doneKeys.forEach(k => {
+    const realm = REALMS.find(r => r.id === k.split('_')[0]);
+    if (realm) realm.chapters.forEach(c => chDone.add(c));
   });
   return chDone.size;
+}
+
+function render() {
+  if (!student) return;
+  const st = calcStats();
+  document.getElementById('hero-avatar').textContent   = student.avatar || '⚔';
+  document.getElementById('hero-name').textContent     = student.display_name || 'Health Hero';
+  document.getElementById('hero-title-tag').textContent = st.badges.length > 0 ? st.badges[st.badges.length-1] : 'Novice Adventurer';
+  document.getElementById('stat-badges').textContent   = st.badges.length;
+  document.getElementById('stat-chapters').textContent = calcCompletedChapters();
+  document.getElementById('stat-streak').textContent   = st.streak;
+  document.getElementById('stat-xp').textContent       = st.xp.toLocaleString();
+  document.getElementById('xp-label').textContent      = `${st.xp.toLocaleString()} / ${TOTAL_XP.toLocaleString()} XP`;
+  document.getElementById('xp-fill').style.width       = Math.min(100, st.xp / TOTAL_XP * 100) + '%';
+  renderStreak(); renderRealms(st); renderAchievements(st);
 }
 
 function renderStreak() {
@@ -413,16 +546,13 @@ function renderStreak() {
   document.getElementById('streak-labels').innerHTML = labels.map(l => `<span class="streak-label">${l}</span>`).join('');
   const grid = document.getElementById('streak-grid');
   grid.innerHTML = '';
-  const today = new Date();
-  const todayS = todayStr();
-  // Show last 28 days
+  const today = new Date(); const todayS = todayStr();
   for (let i = 27; i >= 0; i--) {
-    const d = new Date(today); d.setDate(d.getDate() - i);
+    const d = new Date(today); d.setDate(d.getDate()-i);
     const ds = d.toISOString().slice(0,10);
     const div = document.createElement('div');
-    div.className = 'streak-day' + (state.activeDays.includes(ds) ? ' active' : '') + (ds === todayS ? ' today' : '');
-    div.title = ds;
-    div.onclick = () => toggleDay(ds);
+    div.className = 'streak-day' + (doneDays.has(ds) ? ' active' : '') + (ds === todayS ? ' today' : '');
+    div.title = ds; div.onclick = () => toggleDay(ds);
     grid.appendChild(div);
   }
 }
@@ -431,31 +561,29 @@ function renderRealms(st) {
   const grid = document.getElementById('realm-grid');
   grid.innerHTML = '';
   REALMS.forEach(r => {
-    const done = r.tasks.filter((_,ti) => state.tasks[r.id+'_'+ti]).length;
+    const done = r.tasks.filter((_,ti) => doneKeys.has(`${r.id}_${ti}`)).length;
     const pct = Math.round(done / r.tasks.length * 100);
     const completed = done === r.tasks.length;
     const badgeEarned = st.badges.includes(r.badge);
-
     const card = document.createElement('div');
     card.className = 'realm-card' + (completed ? ' completed' : '');
     card.style.setProperty('--rc', r.color);
-
     card.innerHTML = `
       <div class="rc-top">
         <div class="rc-icon">${r.icon}</div>
-        <div class="rc-badge${badgeEarned ? ' earned' : ''}">${badgeEarned ? '★ ' : ''}${r.badge}</div>
+        <div class="rc-badge${badgeEarned?' earned':''}">${badgeEarned?'★ ':''}${r.badge}</div>
       </div>
       <div class="rc-name">${r.name}</div>
       <div class="rc-meta">${r.weeks} · Ch ${r.chapters.join(', ')} · ${done}/${r.tasks.length} tasks · ${pct}%</div>
-      <div class="rc-chapters">${r.chapters.map(c => `<a class="rc-ch${done > 0 ? (done === r.tasks.length ? ' done' : ' partial') : ''}" href="chapter${String(c).padStart(2,'0')}.html" title="Chapter ${c}" onclick="event.stopPropagation()">${c}</a>`).join('')}</div>
+      <div class="rc-chapters">${r.chapters.map(c=>`<a class="rc-ch${done>0?(completed?' done':' partial'):''}" href="chapter${String(c).padStart(2,'0')}.html" title="Ch ${c}" onclick="event.stopPropagation()">${c}</a>`).join('')}</div>
       <div class="realm-progress"><div class="realm-progress-fill" style="width:${pct}%"></div></div>
       <div class="ch-detail" id="detail-${r.id}">
-        ${r.tasks.map((task,ti) => {
-          const checked = !!state.tasks[r.id+'_'+ti];
-          const isBoss = task.toLowerCase().includes('boss') || task.toLowerCase().includes('final boss');
+        ${r.tasks.map((task,ti)=>{
+          const checked = doneKeys.has(`${r.id}_${ti}`);
+          const isBoss = task.toLowerCase().includes('boss');
           return `<div class="ch-task" onclick="toggleTask('${r.id}',${ti})">
-            <div class="task-check${checked ? ' checked' : ''}">${checked ? '✓' : ''}</div>
-            <div class="task-label${checked ? ' checked-label' : ''}">${isBoss ? '👑 ' : ''}${task}</div>
+            <div class="task-check${checked?' checked':''}">${checked?'✓':''}</div>
+            <div class="task-label${checked?' checked-label':''}">${isBoss?'👑 ':''}${task}</div>
             <div class="task-xp">+${XP_PER_TASK} XP</div>
           </div>`;
         }).join('')}
@@ -465,84 +593,98 @@ function renderRealms(st) {
   });
 }
 
-function renderAchievements(st) {
-  const grid = document.getElementById('ach-grid');
-  grid.innerHTML = '';
-  ACHIEVEMENTS.forEach(a => {
-    const unlocked = a.req(st);
-    grid.innerHTML += `<div class="ach-card${unlocked ? ' unlocked' : ' locked'}">
-      <div class="ach-icon">${a.icon}</div>
-      <div class="ach-name">${a.name}</div>
-      <div class="ach-desc">${a.desc}</div>
-      ${unlocked ? '<div class="ach-unlocked-tag">✓ Unlocked</div>' : ''}
-    </div>`;
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-// INTERACTIONS
-// ═══════════════════════════════════════════════════════════
-function toggleTask(realmId, ti) {
-  const key = realmId + '_' + ti;
-  const wasChecked = !!state.tasks[key];
-  state.tasks[key] = !wasChecked;
-  save();
-
-  const st = calcStats();
-  // check for new badge
-  if (!wasChecked) {
-    const realm = REALMS.find(r => r.id === realmId);
-    const allDone = realm.tasks.every((_,i) => state.tasks[realmId+'_'+i]);
-    if (allDone) showToast(`🏆 Badge Earned: ${realm.badge}!`);
-    else showToast(`+${XP_PER_TASK} XP earned!`);
-  }
-  render();
-}
-
 function toggleDetail(id) {
   const el = document.getElementById('detail-' + id);
   if (el) el.classList.toggle('open');
 }
 
-function toggleDay(ds) {
-  const idx = state.activeDays.indexOf(ds);
-  if (idx >= 0) state.activeDays.splice(idx,1);
-  else state.activeDays.push(ds);
-  save(); render();
+function renderAchievements(st) {
+  document.getElementById('ach-grid').innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = a.req(st);
+    return `<div class="ach-card${unlocked?' unlocked':' locked'}">
+      <div class="ach-icon">${a.icon}</div>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+      ${unlocked ? '<div class="ach-unlocked-tag">✓ Unlocked</div>' : ''}
+    </div>`;
+  }).join('');
 }
 
-function markToday() {
+// ═══════════════════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════════════════
+async function toggleTask(realmId, ti) {
+  if (!student) return;
+  const key = `${realmId}_${ti}`;
+  if (doneKeys.has(key)) {
+    doneKeys.delete(key);
+    await db.from('quest_progress').delete().eq('student_id', student.id).eq('task_key', key);
+  } else {
+    doneKeys.add(key);
+    await db.from('quest_progress').upsert(
+      { student_id: student.id, task_key: key },
+      { onConflict: 'student_id,task_key' }
+    );
+    const realm = REALMS.find(r => r.id === realmId);
+    const allDone = realm.tasks.every((_,i) => doneKeys.has(`${realmId}_${i}`));
+    if (allDone) showToast(`🏆 Badge Earned: ${realm.badge}!`);
+    else         showToast(`+${XP_PER_TASK} XP earned!`);
+  }
+  render();
+}
+
+async function toggleDay(ds) {
+  if (!student) return;
+  if (doneDays.has(ds)) {
+    doneDays.delete(ds);
+    await db.from('active_days').delete().eq('student_id', student.id).eq('day_date', ds);
+  } else {
+    doneDays.add(ds);
+    await db.from('active_days').upsert(
+      { student_id: student.id, day_date: ds },
+      { onConflict: 'student_id,day_date' }
+    );
+  }
+  render();
+}
+
+async function markToday() {
   const t = todayStr();
-  if (!state.activeDays.includes(t)) {
-    state.activeDays.push(t);
-    save(); render();
-    showToast('✓ Today marked as active!');
-  } else showToast('Already marked for today!');
+  if (!doneDays.has(t)) { await toggleDay(t); showToast('✓ Today marked as active!'); }
+  else showToast('Already marked for today!');
 }
 
-function todayStr() { return new Date().toISOString().slice(0,10); }
+async function resetAll() {
+  if (!student) return;
+  if (!confirm('Reset ALL your progress? This cannot be undone.')) return;
+  await Promise.all([
+    db.from('quest_progress').delete().eq('student_id', student.id),
+    db.from('active_days').delete().eq('student_id', student.id)
+  ]);
+  doneKeys = new Set(); doneDays = new Set();
+  render(); showToast('Progress reset. New adventure begins!');
+}
 
-let selectedAv = '⚔';
+function showModal() {
+  if (student) {
+    if (confirm('Log out? You can log back in with your class code, last name, and PIN.')) {
+      localStorage.removeItem('qSID_' + TRIMESTER);
+      student = null; doneKeys = new Set(); doneDays = new Set();
+      showStep(1);
+      document.getElementById('modal').classList.add('show');
+    }
+  } else {
+    showStep(1);
+    document.getElementById('modal').classList.add('show');
+  }
+}
+
 function selAv(el, av) {
   document.querySelectorAll('.av-opt').forEach(e => e.classList.remove('sel'));
   el.classList.add('sel'); selectedAv = av;
 }
 
-function showModal() { document.getElementById('modal').classList.add('show'); }
-
-function saveName() {
-  const n = document.getElementById('name-input').value.trim();
-  if (!n) { document.getElementById('name-input').style.borderColor='var(--crimson)'; return; }
-  state.name = n; state.avatar = selectedAv;
-  save(); document.getElementById('modal').classList.remove('show');
-  render(); showToast(`Welcome, ${n}! Your quest begins!`);
-}
-
-function resetAll() {
-  if (!confirm('Reset ALL progress? This cannot be undone.')) return;
-  state = defaultState();
-  save(); render(); showToast('Progress reset. New adventure begins!');
-}
+function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -553,7 +695,7 @@ function showToast(msg) {
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
-load();
+init();
 </script>
 </body>
 </html>
