@@ -1,0 +1,213 @@
+/* ═══════════════════════════════════════════════
+   LEGEND OF WELLNESS — SHARED UI UPGRADE
+   Injected into all pages via <link> tag
+   ═══════════════════════════════════════════════ */
+
+/* ── FONT SIZE UPGRADES ── */
+body { font-size: 16px; }
+
+.ch-sub       { font-size: 17px !important; line-height: 1.85 !important; }
+.act-title    { font-size: 15px !important; }
+.act-desc     { font-size: 13px !important; line-height: 1.55 !important; }
+.vc-title     { font-size: 15px !important; }
+.vc-desc      { font-size: 13px !important; line-height: 1.5 !important; }
+.vc-count     { font-size: 12px !important; }
+.pdf-title    { font-size: 17px !important; }
+.pdf-meta     { font-size: 14px !important; }
+.pdf-btn      { font-size: 14px !important; font-weight: 800 !important; }
+.step-text    { font-size: 14px !important; line-height: 1.5 !important; }
+.vocab-term   { font-size: 14px !important; }
+.vocab-def    { font-size: 12px !important; }
+.side-title   { font-size: 13px !important; letter-spacing: 1px !important; }
+.meta-item    { font-size: 14px !important; }
+.lesson-pill  { font-size: 14px !important; padding: 8px 16px !important; }
+.act-tag      { font-size: 11px !important; padding: 3px 10px !important; }
+.page-sub     { font-size: 17px !important; line-height: 1.8 !important; }
+.section-sub  { font-size: 17px !important; line-height: 1.8 !important; }
+.game-title   { font-size: 17px !important; }
+.game-desc    { font-size: 13px !important; line-height: 1.55 !important; }
+.realm-name   { font-size: 15px !important; }
+.realm-chapters { font-size: 13px !important; }
+.ch-title     { font-size: 14px !important; }
+.stat-label   { font-size: 14px !important; }
+.filter-btn   { font-size: 13px !important; }
+.badge-sub    { font-size: 13px !important; }
+.realm-name-sm { font-size: 16px !important; }
+.realm-meta-sm { font-size: 13px !important; }
+
+/* ── ENHANCED BACKGROUND ── */
+#stars {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(56,191,255,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 45% at 85% 85%, rgba(0,229,160,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 50% at 15% 65%, rgba(255,59,92,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 70% 20%, rgba(168,85,247,0.07) 0%, transparent 55%),
+    #05070F !important;
+}
+
+#stars::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 40% 30% at 20% 20%, rgba(56,191,255,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 25% at 80% 60%, rgba(255,215,0,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50% 90%, rgba(0,229,160,0.05) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='0.8' fill='rgba(255,255,255,0.06)'/%3E%3C/svg%3E");
+  animation: nebulaBreath 14s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes nebulaBreath {
+  0%   { opacity: 0.5; transform: scale(1); }
+  50%  { opacity: 0.85; transform: scale(1.04) translateX(-8px); }
+  100% { opacity: 0.6; transform: scale(0.97) translateX(8px); }
+}
+
+/* ── NAV LINKS — BOLDER ── */
+.nav-link {
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  transition: all .18s !important;
+}
+.nav-link:hover {
+  color: #F0F4FF !important;
+  border-color: rgba(255,255,255,0.28) !important;
+  background: rgba(255,255,255,0.07) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
+}
+.nav-link.active {
+  color: #FFD700 !important;
+  border-color: rgba(255,215,0,0.4) !important;
+  background: rgba(255,215,0,0.08) !important;
+  box-shadow: 0 0 16px rgba(255,215,0,0.12) !important;
+}
+
+/* ── PDF CARD — MORE PROMINENT ── */
+.pdf-card {
+  border-width: 2px !important;
+  transition: all .2s, box-shadow .2s !important;
+}
+.pdf-card:hover {
+  box-shadow: 0 10px 40px rgba(255,215,0,0.2) !important;
+  transform: translateY(-3px) !important;
+}
+
+/* ── VOCAB GAME CARDS — GLOWING LINKS ── */
+.vocab-card {
+  border-width: 2px !important;
+  transition: all .2s, box-shadow .2s !important;
+}
+.vocab-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35), 0 0 0 1px var(--vc, #38BFFF) !important;
+  border-color: var(--vc, #38BFFF) !important;
+}
+
+/* ── ACTIVITY ITEMS ── */
+.activity-item {
+  border-width: 1.5px !important;
+  transition: all .2s, box-shadow .2s !important;
+}
+.activity-item:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ── CHAPTER NAV BUTTONS ── */
+.ch-nav-btn {
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  border-width: 1.5px !important;
+  transition: all .18s !important;
+}
+.ch-nav-btn:hover {
+  color: #FFD700 !important;
+  border-color: rgba(255,215,0,0.45) !important;
+  background: rgba(255,215,0,0.07) !important;
+  box-shadow: 0 0 16px rgba(255,215,0,0.12) !important;
+}
+
+/* ── GAME CARDS ── */
+.game-card {
+  border-width: 1.5px !important;
+}
+.game-card:hover {
+  box-shadow: 0 12px 44px rgba(0,0,0,0.45) !important;
+}
+.game-link {
+  border-width: 1.5px !important;
+}
+.game-link:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35) !important;
+}
+.game-play-btn {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.3px;
+  border-width: 1.5px !important;
+  transition: all .18s !important;
+}
+.game-play-btn:hover {
+  background: rgba(255,215,0,0.14) !important;
+  border-color: rgba(255,215,0,0.45) !important;
+  color: #FFD700 !important;
+  box-shadow: 0 0 20px rgba(255,215,0,0.18) !important;
+}
+
+/* ── REALM CARDS ── */
+.realm-card {
+  border-width: 1.5px !important;
+}
+.realm-card:hover {
+  box-shadow: 0 14px 48px rgba(0,0,0,0.5) !important;
+}
+
+/* ── CHAPTER CARDS (index & chapters page) ── */
+.chapter-card, .ch-card {
+  border-width: 1.5px !important;
+  transition: all .2s, box-shadow .2s !important;
+}
+.chapter-card:hover, .ch-card:hover {
+  box-shadow: 0 6px 28px rgba(0,0,0,0.35) !important;
+}
+
+/* ── HERO BUTTONS ── */
+.btn-hero {
+  font-size: 16px !important;
+  padding: 16px 32px !important;
+  letter-spacing: 0.4px;
+  transition: transform .15s, box-shadow .15s !important;
+}
+.btn-primary:hover {
+  box-shadow: 0 10px 40px rgba(255,180,0,0.55) !important;
+}
+
+/* ── FILTER BUTTONS (arcade) ── */
+.filter-btn {
+  border-width: 1.5px !important;
+  font-weight: 800 !important;
+}
+.filter-btn.active {
+  box-shadow: 0 0 16px rgba(255,215,0,0.15) !important;
+}
+
+/* ── SIDE CARDS ── */
+.side-card, .realm-badge-card {
+  border-width: 1.5px !important;
+}
+
+/* ── VOCAB SIDEBAR ITEMS ── */
+.vocab-item:hover {
+  background: rgba(255,255,255,0.08) !important;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { background: #05070F; }
+::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.18); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,215,0,0.38); }
+
+/* ── SELECTION COLOR ── */
+::selection { background: rgba(56,191,255,0.3); color: #fff; }
