@@ -24,9 +24,11 @@ create table if not exists students (
   pin_hash     text not null,
   avatar       text default '⚔',
   trimester    text not null default '2026-T1',
-  created_at   timestamptz default now(),
-  unique (class_code, lower(last_name), trimester)
+  created_at   timestamptz default now()
 );
+
+create unique index if not exists students_class_name_trimester
+  on students (class_code, lower(last_name), trimester);
 
 -- One row per completed task per student
 create table if not exists quest_progress (
