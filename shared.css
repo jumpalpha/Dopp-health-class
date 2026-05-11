@@ -203,6 +203,119 @@ body { font-size: 16px; }
   background: rgba(255,255,255,0.08) !important;
 }
 
+/* ── MOBILE RESPONSIVE ── */
+
+/* Nav: wrap items to 2 rows on phones so nothing overflows */
+@media (max-width: 640px) {
+  nav {
+    flex-wrap: wrap !important;
+    padding: 10px 14px !important;
+    gap: 6px !important;
+  }
+  .nav-links {
+    flex-wrap: wrap !important;
+    gap: 3px !important;
+    width: 100% !important;
+  }
+  .nav-link {
+    padding: 5px 9px !important;
+    font-size: 11px !important;
+  }
+  .nav-logo {
+    font-size: 13px !important;
+  }
+}
+
+/* Chapter hero: tighten spacing */
+@media (max-width: 640px) {
+  .ch-hero, .realm-hero {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .breadcrumb, .section {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .main-grid {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .ch-meta {
+    gap: 10px !important;
+  }
+  .lesson-pills {
+    gap: 6px !important;
+  }
+  .lesson-pill {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+  }
+  .pdf-card {
+    padding: 16px !important;
+  }
+}
+
+/* Vocab engine: quiz options go single-column below 420px */
+@media (max-width: 420px) {
+  .quiz-options {
+    grid-template-columns: 1fr !important;
+  }
+  .quiz-opt {
+    font-size: 13px !important;
+  }
+  #game-area {
+    padding: 16px !important;
+  }
+  .flashcard {
+    min-height: 200px !important;
+  }
+  .card-term {
+    font-size: 20px !important;
+  }
+}
+
+/* Realm pages: badge banner stacks vertically on small screens */
+@media (max-width: 500px) {
+  .badge-banner {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+  .boss-card {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+  .boss-btn {
+    width: 100% !important;
+    text-align: center !important;
+  }
+  .realm-nav {
+    flex-direction: column !important;
+  }
+  .realm-nav-btn {
+    min-width: unset !important;
+  }
+}
+
+/* Activity grid: single column on phones */
+@media (max-width: 500px) {
+  .activity-grid, .game-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Index page: hero buttons stack on small screens */
+@media (max-width: 480px) {
+  .hero-btns {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .btn-hero {
+    width: 100% !important;
+    max-width: 280px !important;
+    text-align: center !important;
+  }
+}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 7px; }
 ::-webkit-scrollbar-track { background: #05070F; }
