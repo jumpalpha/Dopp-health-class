@@ -324,3 +324,53 @@ body { font-size: 16px; }
 
 /* ── SELECTION COLOR ── */
 ::selection { background: rgba(56,191,255,0.3); color: #fff; }
+
+/* ── PRINT STYLES ── */
+@media print {
+  /* Hide navigation, interactive elements, background effects */
+  nav, footer, #stars, .ch-nav-row, .lesson-pills,
+  .game-grid, .realm-nav, .boss-btn, .filter-bar,
+  .breadcrumb, .badge-req, .score-hud, .fc-controls,
+  .game-tab, .chapter-info, .progress-track { display: none !important; }
+
+  /* Clean white background, black text */
+  body, .main-grid, .sidebar, .section, .ch-hero,
+  .realm-hero, #game-area {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  /* Reset card backgrounds for print */
+  .activity-item, .pdf-card, .vocab-card, .act-card,
+  .badge-banner, .side-card, .ch-card, .boss-card {
+    background: #f9f9f9 !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Full width layout — no sidebar split */
+  .main-grid { grid-template-columns: 1fr !important; }
+  .sidebar { display: none !important; }
+
+  /* Readable text colors */
+  .ch-sub, .act-desc, .pdf-meta, .step-text,
+  .realm-theme, .badge-desc, .boss-desc {
+    color: #333 !important;
+  }
+  .ch-title, .act-title, .pdf-title, .realm-title,
+  .badge-name, .boss-title, .sec-label {
+    color: #000 !important;
+    -webkit-text-fill-color: #000 !important;
+  }
+
+  /* Keep page breaks clean */
+  .activity-item, .pdf-card { page-break-inside: avoid; }
+  h1, h2, h3 { page-break-after: avoid; }
+
+  /* Remove animations */
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
