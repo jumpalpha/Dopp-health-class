@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Put – Shot Put</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+header{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.back-btn{color:#FFD700;font-family:'Cinzel',serif;font-size:13px;text-decoration:none;letter-spacing:1px}
+.back-btn:hover{color:#00E5A0}
+h1{font-family:'Cinzel Decorative',serif;font-size:clamp(14px,3.5vw,22px);color:#FFD700;text-align:center;flex:1}
+.score-box{font-family:'Cinzel',serif;font-size:12px;color:#38BFFF;text-align:right;min-width:80px}
+canvas{border:2px solid #FFD700;border-radius:8px;display:block;max-width:100%}
+#ui{width:100%;max-width:660px;padding:10px 16px;display:flex;flex-direction:column;gap:8px}
+.meters{display:flex;gap:16px;align-items:center}
+.meter-label{font-family:'Cinzel',serif;font-size:11px;color:#FFD700;width:60px}
+.meter-bar{flex:1;height:18px;background:#1a1f30;border-radius:9px;overflow:hidden;border:1px solid #38BFFF}
+.meter-fill{height:100%;border-radius:9px;transition:width 0.05s}
+.tip{font-family:'Nunito',sans-serif;font-size:12px;color:#00E5A0;font-style:italic;text-align:center;padding:4px}
+.status{font-family:'Cinzel',serif;font-size:13px;color:#fff;text-align:center}
+.throws-row{display:flex;gap:8px;justify-content:center}
+.throw-dot{width:14px;height:14px;border-radius:50%;background:#1a1f30;border:2px solid #FFD700}
+.throw-dot.done{background:#FFD700}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <h1>Dopp Put</h1>
+  <div class="score-box" id="scoreBox">Best: 0.0m</div>
+</header>
+<canvas id="c" width="660" height="400"></canvas>
+<div id="ui">
+  <div class="meters">
+    <span class="meter-label">POWER</span>
+    <div class="meter-bar"><div class="meter-fill" id="powerFill" style="width:0%;background:#FF3B5C"></div></div>
+    <span id="powerVal" style="font-family:'Cinzel',serif;font-size:11px;color:#FF3B5C;width:35px">0%</span>
+  </div>
+  <div class="meters">
+    <span class="meter-label">ANGLE</span>
+    <div class="meter-bar"><div class="meter-fill" id="angleFill" style="width:50%;background:#00E5A0"></div></div>
+    <span id="angleVal" style="font-family:'Cinzel',serif;font-size:11px;color:#00E5A0;width:35px">45°</span>
+  </div>
+  <div class="status" id="status">Hold mouse/touch to charge POWER, release to throw</div>
+  <div class="throws-row" id="throwsRow"></div>
+  <div class="tip">💪 Explosive power training builds fast-twitch muscle fibers.</div>
+</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// Responsive
+function resize(){
+  const scale = Math.min(1, window.innerWidth / 660);
+  canvas.style.width = (660*scale)+'px';
+  canvas.style.height = (400*scale)+'px';
+}
+resize(); window.addEventListener('resize', resize);
+
+// State
+let state = 'charge'; // charge, angle, flying, result
+let power = 0, charging = false;
+let angle = 45;
+let throwCount = 0, maxThrows = 5;
+let bestDist = 0;
+let distances = [];
+let ball = null;
+let animFrame = 0;
+let resultTimer = 0;
+let groundY = H - 60;
+
+const WORLD_RECORD = 23.0;
+const MAX_DIST = 26;
+
+function initBall(){
+  ball = null;
+  state = 'charge';
+  power = 0;
+  angle = 45;
+  updateMeters();
+  updateStatus('Hold mouse/touch to charge POWER, release to set angle');
+}
+
+function updateMeters(){
+  document.getElementById('powerFill').style.width = power+'%';
+  document.getElementById('powerVal').textContent = Math.round(power)+'%';
+  document.getElementById('angleFill').style.width = (angle/90*100)+'%';
+  document.getElementById('angleVal').textContent = Math.round(angle)+'°';
+}
+
+function updateStatus(msg){ document.getElementById('status').textContent = msg; }
+function updateScore(){
+  document.getElementById('scoreBox').textContent = 'Best: '+bestDist.toFixed(1)+'m';
+}
+
+function buildThrowsRow(){
+  const row = document.getElementById('throwsRow');
+  row.innerHTML = '';
+  for(let i=0;i<maxThrows;i++){
+    const d = document.createElement('div');
+    d.className = 'throw-dot'+(i<throwCount?' done':'');
+    row.appendChild(d);
+  }
+}
+buildThrowsRow();
+
+// Drawing helpers
+function drawDopp(x, y, throwing=false){
+  ctx.save();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.fillStyle = '#fff';
+  // head
+  ctx.beginPath();
+  ctx.arc(x, y-36, 8, 0, Math.PI*2);
+  ctx.stroke();
+  // body
+  ctx.beginPath(); ctx.moveTo(x, y-28); ctx.lineTo(x, y-8); ctx.stroke();
+  // legs
+  ctx.beginPath(); ctx.moveTo(x, y-8); ctx.lineTo(x-8, y+8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y-8); ctx.lineTo(x+8, y+8); ctx.stroke();
+  // arms
+  if(throwing){
+    ctx.beginPath(); ctx.moveTo(x, y-22); ctx.lineTo(x+18, y-30); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y-22); ctx.lineTo(x-10, y-14); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(x, y-22); ctx.lineTo(x-12, y-14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y-22); ctx.lineTo(x+12, y-14); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawField(){
+  // Sky gradient
+  let grad = ctx.createLinearGradient(0,0,0,groundY);
+  grad.addColorStop(0,'#05070F');
+  grad.addColorStop(1,'#0a1a2e');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,groundY);
+
+  // Ground
+  ctx.fillStyle = '#2d5a1b';
+  ctx.fillRect(0, groundY, W, H-groundY);
+  ctx.fillStyle = '#3a7a25';
+  ctx.fillRect(0, groundY, W, 6);
+
+  // Distance markers
+  ctx.strokeStyle = '#ffffff33';
+  ctx.setLineDash([4,8]);
+  ctx.lineWidth = 1;
+  for(let d=5; d<=MAX_DIST; d+=5){
+    const x = distToX(d);
+    if(x > 0 && x < W){
+      ctx.beginPath(); ctx.moveTo(x, groundY-40); ctx.lineTo(x, groundY+4); ctx.stroke();
+      ctx.fillStyle = '#ffffff66';
+      ctx.font = '10px Nunito';
+      ctx.fillText(d+'m', x-8, groundY+18);
+    }
+  }
+  ctx.setLineDash([]);
+
+  // World record marker
+  const wrX = distToX(WORLD_RECORD);
+  if(wrX > 0 && wrX < W){
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(wrX, groundY-60); ctx.lineTo(wrX, groundY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#FFD700';
+    ctx.font = 'bold 10px Nunito';
+    ctx.fillText('WR', wrX-8, groundY-64);
+  }
+}
+
+function distToX(d){
+  // Map 0-MAX_DIST to canvas x 120 -> W-20
+  return 120 + (d/MAX_DIST)*(W-150);
+}
+
+function throwBall(){
+  const rad = (angle * Math.PI/180);
+  const spd = (power/100) * 22;
+  ball = {
+    x: 120,
+    y: groundY - 10,
+    vx: spd * Math.cos(rad),
+    vy: -spd * Math.sin(rad),
+    landed: false,
+    dist: 0
+  };
+  state = 'flying';
+}
+
+function landBall(){
+  // Convert ball.x to meters
+  const dist = ((ball.x - 120) / (W-150)) * MAX_DIST;
+  ball.dist = Math.max(0, dist);
+  distances.push(ball.dist);
+  if(ball.dist > bestDist){ bestDist = ball.dist; updateScore(); }
+  throwCount++;
+  buildThrowsRow();
+  resultTimer = 120;
+  state = 'result';
+  updateStatus('Distance: '+ball.dist.toFixed(2)+'m');
+}
+
+let prevMouseY = null;
+let anglePhase = false;
+
+// Controls
+canvas.addEventListener('mousedown', startCharge);
+canvas.addEventListener('mouseup', releaseCharge);
+canvas.addEventListener('touchstart', e=>{e.preventDefault(); startCharge(e.touches[0]);},{passive:false});
+canvas.addEventListener('touchend', e=>{e.preventDefault(); releaseCharge();},{passive:false});
+canvas.addEventListener('mousemove', onMouseMove);
+canvas.addEventListener('touchmove', e=>{e.preventDefault(); onMouseMove(e.touches[0]);},{passive:false});
+
+function startCharge(e){
+  if(state==='charge'){ charging=true; }
+  else if(state==='result' && resultTimer<=0){ nextThrow(); }
+}
+
+function releaseCharge(){
+  if(state==='charge' && charging){
+    charging = false;
+    state = 'angle';
+    updateStatus('Move mouse UP/DOWN to set angle (optimal = 45°), then click to throw');
+    prevMouseY = null;
+  }
+}
+
+function onMouseMove(e){
+  if(state==='angle'){
+    const rect = canvas.getBoundingClientRect();
+    const scale = W / rect.width;
+    const my = (e.clientY - rect.top) * scale;
+    // Map y to angle: top of canvas = 90°, bottom = 0°
+    angle = Math.max(0, Math.min(90, (1 - my/H)*90*1.5));
+    angle = Math.min(90, Math.max(5, angle));
+    updateMeters();
+  }
+}
+
+canvas.addEventListener('click', onClick);
+canvas.addEventListener('touchend', e2=>{
+  if(state==='angle'){ launchFromAngle(); }
+});
+
+function onClick(){
+  if(state==='angle'){ launchFromAngle(); }
+  else if(state==='result' && resultTimer<=0){ nextThrow(); }
+}
+
+function launchFromAngle(){
+  throwBall();
+  updateStatus('Flying...');
+}
+
+function nextThrow(){
+  if(throwCount >= maxThrows){
+    state = 'done';
+    updateStatus('Round over! Best: '+bestDist.toFixed(2)+'m — Click to play again');
+    return;
+  }
+  initBall();
+}
+
+canvas.addEventListener('click', ()=>{
+  if(state==='done'){
+    throwCount=0; distances=[]; ball=null; buildThrowsRow(); initBall();
+  }
+});
+
+// Arc guide
+function drawArcGuide(ox, oy, ang, pow){
+  ctx.strokeStyle = '#FFD70044';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,6]);
+  ctx.beginPath();
+  const spd = (pow/100)*22;
+  const rad = ang*Math.PI/180;
+  let sx=ox, sy=oy, vx=spd*Math.cos(rad), vy=-spd*Math.sin(rad);
+  ctx.moveTo(sx,sy);
+  for(let t=0;t<60;t++){
+    sx+=vx*0.5; vy+=0.2; sy+=vy*0.5;
+    if(sy>=groundY-10) break;
+    ctx.lineTo(sx,sy);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// Distance markers on ground for thrown balls
+let landedMarkers = [];
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  drawField();
+
+  // Dopp
+  const dopX = 80;
+  const dopY = groundY;
+  drawDopp(dopX, dopY, state==='flying');
+
+  // Show arc guide when in angle mode
+  if(state==='angle'){
+    drawArcGuide(dopX+20, groundY-10, angle, power);
+    // Angle label
+    ctx.fillStyle='#00E5A0';
+    ctx.font='bold 14px Cinzel, serif';
+    ctx.fillText('ANGLE: '+Math.round(angle)+'°', W/2-40, 30);
+    if(Math.abs(angle-45)<5){
+      ctx.fillStyle='#FFD700';
+      ctx.font='12px Nunito';
+      ctx.fillText('★ Optimal angle!', W/2-45, 50);
+    }
+  }
+
+  // Power meter visual on canvas
+  if(state==='charge'){
+    ctx.fillStyle='#1a1f30';
+    ctx.fillRect(20, H-90, 20, 60);
+    ctx.fillStyle = power>75?'#FF3B5C': power>40?'#FFD700':'#00E5A0';
+    const ph = (power/100)*60;
+    ctx.fillRect(20, H-90+(60-ph), 20, ph);
+    ctx.strokeStyle='#FFD700'; ctx.lineWidth=1;
+    ctx.strokeRect(20, H-90, 20, 60);
+    ctx.fillStyle='#fff'; ctx.font='10px Nunito';
+    ctx.fillText('PWR', 14, H-95);
+
+    // Charging animation
+    if(charging) power = Math.min(100, power+1.2);
+    updateMeters();
+  }
+
+  // Flying ball
+  if(state==='flying' && ball){
+    ball.vy += 0.25; // gravity
+    ball.x += ball.vx * 0.8;
+    ball.y += ball.vy * 0.8;
+    if(ball.y >= groundY-8){
+      ball.y = groundY-8;
+      ball.landed = true;
+      landedMarkers.push({x: ball.x, dist: ((ball.x-120)/(W-150))*MAX_DIST});
+      landBall();
+    }
+    // Draw ball
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, 8, 0, Math.PI*2);
+    ctx.fillStyle='#aaa';
+    ctx.fill();
+    ctx.strokeStyle='#555'; ctx.lineWidth=1;
+    ctx.stroke();
+    // Shadow
+    ctx.beginPath(); ctx.ellipse(ball.x, groundY-2, 8, 3, 0, 0, Math.PI*2);
+    ctx.fillStyle='#00000033'; ctx.fill();
+  }
+
+  // Landed markers
+  landedMarkers.forEach((m,i)=>{
+    ctx.fillStyle='#FF3B5C';
+    ctx.beginPath(); ctx.arc(m.x, groundY-6, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='10px Nunito';
+    ctx.fillText(Math.max(0,m.dist).toFixed(1)+'m', m.x-12, groundY-12);
+  });
+
+  // Result display
+  if(state==='result'){
+    resultTimer--;
+    if(resultTimer<=0){
+      updateStatus('Click / tap to throw again ('+(maxThrows-throwCount)+' left)');
+    }
+    ctx.fillStyle='#FFD700';
+    ctx.font='bold 18px Cinzel, serif';
+    const d = distances[distances.length-1];
+    ctx.fillText(d.toFixed(2)+'m', W/2-30, H/2-20);
+    if(d>=WORLD_RECORD){ ctx.fillStyle='#00E5A0'; ctx.font='14px Nunito'; ctx.fillText('WORLD RECORD!', W/2-50, H/2+4); }
+  }
+
+  if(state==='done'){
+    ctx.fillStyle='rgba(5,7,15,0.75)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#FFD700';
+    ctx.font='bold 22px Cinzel Decorative, serif';
+    ctx.textAlign='center';
+    ctx.fillText('Round Complete!', W/2, H/2-40);
+    ctx.font='16px Cinzel, serif';
+    ctx.fillStyle='#fff';
+    ctx.fillText('Best: '+bestDist.toFixed(2)+'m', W/2, H/2-10);
+    const pct = (bestDist/WORLD_RECORD*100).toFixed(0);
+    ctx.font='13px Nunito';
+    ctx.fillStyle='#00E5A0';
+    ctx.fillText(pct+'% of World Record ('+WORLD_RECORD+'m)', W/2, H/2+15);
+    ctx.fillStyle='#38BFFF';
+    ctx.font='13px Nunito';
+    ctx.fillText('Click to play again', W/2, H/2+45);
+    ctx.textAlign='left';
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

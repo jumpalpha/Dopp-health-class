@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Javelin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+header{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.back-btn{color:#FFD700;font-family:'Cinzel',serif;font-size:13px;text-decoration:none;letter-spacing:1px}
+.back-btn:hover{color:#00E5A0}
+h1{font-family:'Cinzel Decorative',serif;font-size:clamp(14px,3.5vw,22px);color:#FFD700;text-align:center;flex:1}
+.score-box{font-family:'Cinzel',serif;font-size:12px;color:#38BFFF;text-align:right;min-width:80px}
+canvas{border:2px solid #FFD700;border-radius:8px;display:block;max-width:100%}
+#ui{width:100%;max-width:660px;padding:10px 16px;display:flex;flex-direction:column;gap:6px}
+.meters{display:flex;gap:12px;align-items:center}
+.meter-label{font-family:'Cinzel',serif;font-size:11px;color:#FFD700;width:70px}
+.meter-bar{flex:1;height:16px;background:#1a1f30;border-radius:8px;overflow:hidden;border:1px solid #38BFFF}
+.meter-fill{height:100%;border-radius:8px}
+.tip{font-family:'Nunito',sans-serif;font-size:12px;color:#00E5A0;font-style:italic;text-align:center;padding:4px}
+.status{font-family:'Cinzel',serif;font-size:13px;color:#fff;text-align:center;min-height:20px}
+.attempts-row{display:flex;gap:8px;justify-content:center}
+.attempt-dot{width:14px;height:14px;border-radius:50%;background:#1a1f30;border:2px solid #FFD700}
+.attempt-dot.done{background:#FFD700}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <h1>Dopp Javelin</h1>
+  <div class="score-box" id="scoreBox">Best: 0.0m</div>
+</header>
+<canvas id="c" width="660" height="400"></canvas>
+<div id="ui">
+  <div class="meters">
+    <span class="meter-label">RUN SPEED</span>
+    <div class="meter-bar"><div class="meter-fill" id="speedFill" style="width:0%;background:#38BFFF"></div></div>
+    <span id="speedVal" style="font-family:'Cinzel',serif;font-size:11px;color:#38BFFF;width:30px">0%</span>
+  </div>
+  <div class="status" id="status">Mash SPACE rapidly to build run speed!</div>
+  <div class="attempts-row" id="attemptsRow"></div>
+  <div class="tip">🏃 Running improves cardiovascular endurance and lung capacity.</div>
+</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+function resize(){
+  const scale = Math.min(1, window.innerWidth/660);
+  canvas.style.width=(660*scale)+'px'; canvas.style.height=(400*scale)+'px';
+}
+resize(); window.addEventListener('resize',resize);
+
+const GROUND_Y = H-60;
+const MAX_DIST = 100; // meters (WR ~98m)
+const WORLD_RECORD = 98.48;
+
+let state = 'run'; // run, window, flying, result, done
+let runSpeed = 0;
+let angle = 35;
+let jav = null;
+let attemptCount = 0, maxAttempts = 3;
+let bestDist = 0;
+let distances = [];
+let dopX = 60;
+let windowOpen = false;
+let windowTimer = 0;
+let flashTimer = 0;
+let spaceCount = 0;
+let lastKey = '';
+let runDecay = 0;
+let landedMarkers = [];
+
+function buildAttempts(){
+  const row = document.getElementById('attemptsRow');
+  row.innerHTML='';
+  for(let i=0;i<maxAttempts;i++){
+    const d=document.createElement('div');
+    d.className='attempt-dot'+(i<attemptCount?' done':'');
+    row.appendChild(d);
+  }
+}
+buildAttempts();
+
+function updateScore(){ document.getElementById('scoreBox').textContent='Best: '+bestDist.toFixed(1)+'m'; }
+function updateStatus(m){ document.getElementById('status').textContent=m; }
+function setSpeed(v){
+  runSpeed=Math.max(0,Math.min(100,v));
+  document.getElementById('speedFill').style.width=runSpeed+'%';
+  document.getElementById('speedVal').textContent=Math.round(runSpeed)+'%';
+}
+
+function initThrow(){
+  dopX=60; jav=null; state='run'; runSpeed=0; setSpeed(0); windowOpen=false; windowTimer=0; spaceCount=0;
+  updateStatus('Mash SPACE rapidly to build run speed!');
+}
+
+document.addEventListener('keydown', onKey);
+canvas.addEventListener('click', onClick);
+canvas.addEventListener('touchstart', e=>{e.preventDefault(); onClick(e.touches[0]);},{passive:false});
+
+let lastSpaceTime = 0;
+function onKey(e){
+  if(e.code==='Space'){ e.preventDefault(); handleSpaceTap(); }
+}
+function onClick(){
+  if(state==='run'||state==='window'){ handleSpaceTap(); }
+  else if(state==='result'){ nextAttempt(); }
+  else if(state==='done'){ resetAll(); }
+}
+
+function handleSpaceTap(){
+  if(state==='run'){
+    const now=Date.now();
+    const dt=now-lastSpaceTime;
+    lastSpaceTime=now;
+    const boost = dt<200?3:dt<400?1.5:0.5;
+    setSpeed(Math.min(100, runSpeed+boost));
+    flashTimer=8;
+  } else if(state==='window'){
+    // Launch with current angle from mouse, or a random good angle
+    const launchAngle = angle;
+    launchJavelin(launchAngle);
+  }
+}
+
+let mouseY = H/2;
+canvas.addEventListener('mousemove', e=>{
+  const r=canvas.getBoundingClientRect();
+  mouseY=(e.clientY-r.top)*(H/r.height);
+  if(state==='window'){
+    angle = Math.max(15, Math.min(50, (1-mouseY/H)*60+10));
+  }
+});
+
+function launchJavelin(ang){
+  const spd = 8 + (runSpeed/100)*24;
+  const rad = ang*Math.PI/180;
+  jav = {
+    x: dopX+20,
+    y: GROUND_Y-50,
+    vx: spd*Math.cos(rad),
+    vy: -spd*Math.sin(rad),
+    ang: ang,
+    landed: false
+  };
+  state='flying';
+  updateStatus('Javelin in flight!');
+}
+
+function landJavelin(){
+  const rawDist = ((jav.x - 100)/(W-150))*MAX_DIST;
+  const dist = Math.max(0, rawDist);
+  distances.push(dist);
+  if(dist>bestDist){ bestDist=dist; updateScore(); }
+  landedMarkers.push({x:jav.x, dist});
+  attemptCount++;
+  buildAttempts();
+  state='result';
+  updateStatus('Distance: '+dist.toFixed(2)+'m — Click to continue');
+}
+
+function nextAttempt(){
+  if(attemptCount>=maxAttempts){ state='done'; return; }
+  initThrow();
+}
+
+function resetAll(){
+  attemptCount=0; distances=[]; bestDist=bestDist; landedMarkers=[]; buildAttempts(); initThrow();
+}
+
+function drawDopp(x, y, running=false, throwing=false){
+  ctx.save();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2.5; ctx.fillStyle='#fff';
+  // head
+  ctx.beginPath(); ctx.arc(x,y-36,8,0,Math.PI*2); ctx.stroke();
+  const legOff = running ? Math.sin(Date.now()/80)*10 : 0;
+  // body
+  ctx.beginPath(); ctx.moveTo(x,y-28); ctx.lineTo(x,y-8); ctx.stroke();
+  // legs
+  ctx.beginPath(); ctx.moveTo(x,y-8); ctx.lineTo(x-8+legOff,y+8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x,y-8); ctx.lineTo(x+8-legOff,y+8); ctx.stroke();
+  // arms
+  if(throwing){
+    ctx.beginPath(); ctx.moveTo(x,y-22); ctx.lineTo(x+24,y-34); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,y-22); ctx.lineTo(x-10,y-14); ctx.stroke();
+  } else {
+    const armOff = running ? Math.cos(Date.now()/80)*8 : 0;
+    ctx.beginPath(); ctx.moveTo(x,y-22); ctx.lineTo(x-14+armOff,y-10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,y-22); ctx.lineTo(x+14-armOff,y-10); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawField(){
+  let g=ctx.createLinearGradient(0,0,0,GROUND_Y);
+  g.addColorStop(0,'#05070F'); g.addColorStop(1,'#0a1a2e');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,GROUND_Y);
+  ctx.fillStyle='#2d5a1b'; ctx.fillRect(0,GROUND_Y,W,H-GROUND_Y);
+  ctx.fillStyle='#3a7a25'; ctx.fillRect(0,GROUND_Y,W,5);
+  // runway
+  ctx.fillStyle='#c8a040'; ctx.fillRect(40,GROUND_Y-4,120,4);
+  // throw line
+  ctx.strokeStyle='#FF3B5C'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(160,GROUND_Y-40); ctx.lineTo(160,GROUND_Y); ctx.stroke();
+  ctx.fillStyle='#FF3B5C'; ctx.font='10px Nunito'; ctx.fillText('FOUL',148,GROUND_Y-42);
+
+  // distance markers
+  ctx.strokeStyle='#ffffff33'; ctx.setLineDash([4,8]); ctx.lineWidth=1;
+  for(let d=20;d<=MAX_DIST;d+=20){
+    const x=distToX(d);
+    if(x>0&&x<W){
+      ctx.beginPath(); ctx.moveTo(x,GROUND_Y-40); ctx.lineTo(x,GROUND_Y+4); ctx.stroke();
+      ctx.fillStyle='#ffffff66'; ctx.font='10px Nunito'; ctx.fillText(d+'m',x-10,GROUND_Y+16);
+    }
+  }
+  ctx.setLineDash([]);
+
+  // WR marker
+  const wrX=distToX(WORLD_RECORD);
+  if(wrX>0&&wrX<W){
+    ctx.strokeStyle='#FFD700'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(wrX,GROUND_Y-55); ctx.lineTo(wrX,GROUND_Y); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='#FFD700'; ctx.font='bold 10px Nunito';
+    ctx.fillText('WR',wrX-8,GROUND_Y-58);
+  }
+}
+
+function distToX(d){ return 100+(d/MAX_DIST)*(W-140); }
+
+let t=0;
+function draw(){
+  t++;
+  ctx.clearRect(0,0,W,H);
+  drawField();
+
+  // Phase logic
+  if(state==='run'){
+    // Move Dopp to foul line
+    if(runSpeed>30){ dopX=Math.min(150, dopX+(runSpeed/100)*3); }
+    if(dopX>=145){
+      state='window';
+      windowTimer=90;
+      updateStatus('NOW! Click/Space to throw — angle set by mouse position!');
+    }
+    setSpeed(Math.max(0, runSpeed-0.15));
+    drawDopp(dopX, GROUND_Y, runSpeed>20);
+    // Speed boost flash
+    if(flashTimer>0){ flashTimer--; ctx.fillStyle='rgba(56,191,255,0.15)'; ctx.fillRect(0,0,W,H); }
+  }
+
+  if(state==='window'){
+    windowTimer--;
+    drawDopp(dopX, GROUND_Y, false, true);
+    // Throw window flash
+    const p = windowTimer/90;
+    ctx.fillStyle=`rgba(0,229,160,${(1-p)*0.15})`;
+    ctx.fillRect(0,0,W,H);
+    // Angle guide arc
+    ctx.strokeStyle='rgba(255,215,0,0.4)'; ctx.lineWidth=1.5; ctx.setLineDash([4,6]);
+    ctx.beginPath();
+    let sx=dopX+20, sy=GROUND_Y-50;
+    const rad=angle*Math.PI/180;
+    const spd=8+(runSpeed/100)*24;
+    let vx=spd*Math.cos(rad), vy=-spd*Math.sin(rad);
+    ctx.moveTo(sx,sy);
+    for(let i=0;i<80;i++){
+      sx+=vx*0.5; vy+=0.2; sy+=vy*0.5;
+      if(sy>=GROUND_Y) break;
+      ctx.lineTo(sx,sy);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#00E5A0'; ctx.font='13px Cinzel, serif';
+    ctx.fillText('Angle: '+Math.round(angle)+'°', 180, 30);
+    if(windowTimer<=0){ state='run'; dopX=60; setSpeed(0); updateStatus('Missed throw window! Try again — mash SPACE!'); }
+  }
+
+  if(state==='flying'&&jav){
+    drawDopp(dopX, GROUND_Y, false, false);
+    jav.vy+=0.22; jav.x+=jav.vx*0.75; jav.y+=jav.vy*0.75;
+    // Javelin angle
+    const ang2=Math.atan2(jav.vy, jav.vx);
+    ctx.save();
+    ctx.translate(jav.x, jav.y);
+    ctx.rotate(ang2);
+    ctx.strokeStyle='#aaa'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(-20,0); ctx.lineTo(20,0); ctx.stroke();
+    ctx.fillStyle='#FFD700';
+    ctx.beginPath(); ctx.moveTo(20,0); ctx.lineTo(14,-3); ctx.lineTo(14,3); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    if(jav.y>=GROUND_Y-4){ jav.y=GROUND_Y-4; landJavelin(); }
+  }
+
+  if(state==='result'||state==='flying'){
+    drawDopp(dopX, GROUND_Y);
+  }
+
+  // Landed markers
+  landedMarkers.forEach(m=>{
+    ctx.strokeStyle='#aaa'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(m.x,GROUND_Y-20); ctx.lineTo(m.x+5,GROUND_Y-2); ctx.stroke();
+    ctx.fillStyle='#FFD700'; ctx.font='10px Nunito';
+    ctx.fillText(m.dist.toFixed(1)+'m', m.x-10, GROUND_Y-24);
+  });
+
+  if(state==='result'){
+    const d=distances[distances.length-1];
+    ctx.fillStyle='rgba(5,7,15,0.6)'; ctx.fillRect(W/2-80,H/2-40,160,55);
+    ctx.strokeStyle='#FFD700'; ctx.lineWidth=1; ctx.strokeRect(W/2-80,H/2-40,160,55);
+    ctx.fillStyle='#FFD700'; ctx.font='bold 18px Cinzel,serif'; ctx.textAlign='center';
+    ctx.fillText(d.toFixed(2)+'m', W/2, H/2-15);
+    if(d>=WORLD_RECORD){ ctx.fillStyle='#00E5A0'; ctx.font='12px Nunito'; ctx.fillText('WORLD RECORD!',W/2,H/2+5); }
+    ctx.fillStyle='#aaa'; ctx.font='11px Nunito'; ctx.fillText('Click to continue',W/2,H/2+22);
+    ctx.textAlign='left';
+  }
+
+  if(state==='done'){
+    ctx.fillStyle='rgba(5,7,15,0.8)'; ctx.fillRect(0,0,W,H);
+    ctx.textAlign='center';
+    ctx.fillStyle='#FFD700'; ctx.font='bold 22px Cinzel Decorative,serif';
+    ctx.fillText('Round Complete!', W/2, H/2-50);
+    ctx.fillStyle='#fff'; ctx.font='16px Cinzel,serif';
+    ctx.fillText('Best: '+bestDist.toFixed(2)+'m', W/2, H/2-20);
+    ctx.fillStyle='#00E5A0'; ctx.font='13px Nunito';
+    ctx.fillText((bestDist/WORLD_RECORD*100).toFixed(0)+'% of WR ('+WORLD_RECORD+'m)', W/2, H/2+5);
+    ctx.fillStyle='#38BFFF'; ctx.font='13px Nunito';
+    ctx.fillText('Click to play again', W/2, H/2+40);
+    ctx.textAlign='left';
+    // listen for click -> resetAll
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Dopp 100m Sprint — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 24px;background:rgba(5,7,15,0.97);border-bottom:1px solid rgba(255,215,0,0.2);flex-shrink:0}
+.back{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
+.title{font-family:'Cinzel Decorative',serif;font-size:17px;color:#FFD700}
+.info{font-family:'Cinzel',serif;font-size:13px;color:#F0F4FF;text-align:right;min-width:150px}
+#wrap{width:100%;max-width:660px;flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 12px 6px}
+canvas{display:block;border-radius:10px;border:1px solid rgba(255,215,0,0.15)}
+#msg{height:32px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(255,215,0,0.85);margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="javascript:history.back()">← Back</a>
+  <div class="title">⚡ Dopp 100m Sprint</div>
+  <div class="info" id="info">Best: --</div>
+</header>
+<div id="wrap">
+  <canvas id="c" width="660" height="340"></canvas>
+  <div id="msg">Alternate ← → arrow keys (or tap L/R) as fast as possible!</div>
+</div>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const W=660,H=340,GOLD='#FFD700',EMERALD='#00E5A0',CRIMSON='#FF3B5C',SKY='#38BFFF';
+
+const TRACK_Y=H-70,LANE_H=38,NUM_LANES=4,FINISH_M=100;
+const SCALE=5.5; // pixels per meter
+let phase='title'; // title|ready|set|go|running|done
+let startTime,elapsed,bestTime=null;
+let playerPos=0,playerSpeed=0;
+let lastKey='',keyAlternate=0; // track alternating L/R
+let frameCount=0;
+let opponents,cameraX=0;
+let phaseTimer=0,reactionTime=null,startSignal=false;
+
+// Mobile tap zones
+let tapLeft=false,tapRight=false,lastTap='';
+
+function initRace(){
+  phase='ready';phaseTimer=0;playerPos=0;playerSpeed=0;
+  lastKey='';keyAlternate=0;elapsed=0;startSignal=false;reactionTime=null;
+  cameraX=0;
+  opponents=[
+    {pos:0,speed:0,maxSpeed:9.8+Math.random()*0.6,accel:0.18,lane:1,color:SKY,name:'AI 1'},
+    {pos:0,speed:0,maxSpeed:9.5+Math.random()*0.5,accel:0.16,lane:2,color:'#a855f7',name:'AI 2'},
+    {pos:0,speed:0,maxSpeed:10.2+Math.random()*0.4,accel:0.2,lane:3,color:CRIMSON,name:'AI 3'},
+  ];
+  document.getElementById('msg').textContent='Get ready at the blocks…';
+}
+
+document.addEventListener('keydown',e=>{
+  if(phase==='title'||(phase==='done')){
+    if(e.code==='Space'||e.code==='Enter'){e.preventDefault();initRace();}
+    return;
+  }
+  if(phase==='ready'||phase==='set'){
+    e.preventDefault(); return;
+  }
+  if(e.code==='ArrowLeft'||e.code==='KeyA'){
+    e.preventDefault();
+    if(lastKey!=='L'){lastKey='L';keyAlternate++; addStep();}
+  }
+  if(e.code==='ArrowRight'||e.code==='KeyD'){
+    e.preventDefault();
+    if(lastKey!=='R'){lastKey='R';keyAlternate++; addStep();}
+  }
+});
+
+// Mobile tap buttons
+const btnL=document.createElement('button'),btnR=document.createElement('button');
+btnL.textContent='◀ LEFT';btnR.textContent='RIGHT ▶';
+[btnL,btnR].forEach(b=>{
+  b.style.cssText='padding:10px 24px;font-size:14px;font-weight:700;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#F0F4FF;border-radius:8px;cursor:pointer;margin:4px';
+});
+const btnRow=document.createElement('div');btnRow.style.cssText='display:flex;gap:8px;margin-top:4px';
+btnRow.appendChild(btnL);btnRow.appendChild(btnR);
+document.getElementById('wrap').appendChild(btnRow);
+
+btnL.addEventListener('touchstart',e=>{e.preventDefault();if(lastKey!=='L'){lastKey='L';keyAlternate++;addStep();}},{passive:false});
+btnR.addEventListener('touchstart',e=>{e.preventDefault();if(lastKey!=='R'){lastKey='R';keyAlternate++;addStep();}},{passive:false});
+
+function addStep(){
+  if(phase!=='running') return;
+  playerSpeed=Math.min(12,playerSpeed+0.6);
+}
+
+function drawTrack(){
+  // Track surface
+  const tg=cx.createLinearGradient(0,TRACK_Y-LANE_H*NUM_LANES,0,TRACK_Y+10);
+  tg.addColorStop(0,'#6B3A1A');tg.addColorStop(1,'#8B4513');
+  cx.fillStyle=tg;cx.fillRect(0,TRACK_Y-LANE_H*NUM_LANES,W,LANE_H*NUM_LANES+10);
+  // Lane lines
+  cx.setLineDash([20,12]);
+  for(let l=0;l<=NUM_LANES;l++){
+    cx.strokeStyle=l===0||l===NUM_LANES?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.2)';
+    cx.lineWidth=l===0||l===NUM_LANES?2:1;
+    cx.beginPath();cx.moveTo(0,TRACK_Y-l*LANE_H);cx.lineTo(W,TRACK_Y-l*LANE_H);cx.stroke();
+  }
+  cx.setLineDash([]);
+  // Distance markers
+  for(let m=10;m<=100;m+=10){
+    const sx=m*SCALE-cameraX;
+    if(sx<-10||sx>W+10) continue;
+    cx.strokeStyle='rgba(255,255,255,0.3)';cx.lineWidth=1;
+    cx.beginPath();cx.moveTo(sx,TRACK_Y-LANE_H*NUM_LANES);cx.lineTo(sx,TRACK_Y);cx.stroke();
+    cx.font='9px Nunito';cx.fillStyle='rgba(255,255,255,0.3)';cx.textAlign='center';
+    cx.fillText(m+'m',sx,TRACK_Y+14);
+  }
+  // Finish tape
+  const finX=FINISH_M*SCALE-cameraX;
+  if(finX>-5&&finX<W+5){
+    cx.fillStyle=GOLD;cx.fillRect(finX-2,TRACK_Y-LANE_H*NUM_LANES,4,LANE_H*NUM_LANES);
+    cx.font='bold 11px Nunito';cx.fillStyle=GOLD;cx.textAlign='center';
+    cx.fillText('FINISH',finX,TRACK_Y-LANE_H*NUM_LANES-6);
+  }
+}
+
+function drawRunner(posM,lane,color,name,isPlayer){
+  const sx=posM*SCALE-cameraX;
+  const y=TRACK_Y-lane*LANE_H-LANE_H/2;
+  if(sx<-30||sx>W+30) return;
+  const run=Math.sin(frameCount*(isPlayer?0.35:0.3))*0.6;
+  // Shadow
+  cx.fillStyle='rgba(0,0,0,0.2)';cx.beginPath();cx.ellipse(sx,y+18,10,4,0,0,Math.PI*2);cx.fill();
+  // Legs
+  cx.strokeStyle=color;cx.lineWidth=4;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(sx,y+8);cx.lineTo(sx-8+Math.sin(run)*8,y+20);cx.stroke();
+  cx.beginPath();cx.moveTo(sx,y+8);cx.lineTo(sx+8-Math.sin(run)*8,y+20);cx.stroke();
+  // Body
+  cx.fillStyle=isPlayer?'#e74c3c':color;
+  cx.beginPath();cx.ellipse(sx,y,7,11,0,0,Math.PI*2);cx.fill();
+  // Arms
+  cx.strokeStyle='#e8b89a';cx.lineWidth=3;
+  cx.beginPath();cx.moveTo(sx-6,y-2);cx.lineTo(sx-12,y+6+Math.sin(run)*4);cx.stroke();
+  cx.beginPath();cx.moveTo(sx+6,y-2);cx.lineTo(sx+12,y+6-Math.sin(run)*4);cx.stroke();
+  // Head
+  cx.fillStyle='#e8b89a';cx.beginPath();cx.arc(sx,y-12,7,0,Math.PI*2);cx.fill();
+  if(isPlayer){cx.fillStyle='#e74c3c';cx.beginPath();cx.ellipse(sx,y-15,8,4,0,0,-Math.PI);cx.fill();}
+  // Name
+  cx.font='bold 9px Nunito';cx.fillStyle=isPlayer?GOLD:'rgba(255,255,255,0.5)';cx.textAlign='center';
+  cx.fillText(isPlayer?'YOU':name,sx,y-22);
+}
+
+function drawHUD(){
+  if(phase==='running'||phase==='done'){
+    const t=(elapsed/1000).toFixed(2);
+    cx.font='bold 28px Nunito';cx.fillStyle=GOLD;cx.textAlign='left';
+    cx.fillText(t+'s',14,30);
+    const pct=Math.min(1,playerPos/FINISH_M);
+    cx.fillStyle='rgba(255,255,255,0.1)';roundRect(14,38,200,8,4);cx.fill();
+    cx.fillStyle=GOLD;roundRect(14,38,200*pct,8,4);cx.fill();
+    cx.font='9px Nunito';cx.fillStyle='rgba(255,255,255,0.3)';cx.fillText('YOU',14,55);
+    opponents.forEach((o,i)=>{
+      const op=Math.min(1,o.pos/FINISH_M);
+      cx.fillStyle='rgba(255,255,255,0.07)';roundRect(14,60+i*14,200,7,3);cx.fill();
+      cx.fillStyle=o.color;roundRect(14,60+i*14,200*op,7,3);cx.fill();
+      cx.font='9px Nunito';cx.fillStyle='rgba(255,255,255,0.25)';cx.fillText(o.name,14,60+i*14+16);
+    });
+  }
+  // Speed bar
+  if(phase==='running'){
+    const sh=80,sx2=W-28;
+    cx.fillStyle='rgba(0,0,0,0.3)';roundRect(sx2,H/2-sh/2,14,sh,5);cx.fill();
+    const sf=playerSpeed/12;
+    const sc=sf>0.8?CRIMSON:sf>0.5?GOLD:EMERALD;
+    cx.fillStyle=sc;roundRect(sx2,H/2+sh/2-sf*sh,14,sf*sh,5);cx.fill();
+    cx.font='8px Nunito';cx.textAlign='center';cx.fillStyle='rgba(255,255,255,0.3)';
+    cx.fillText('SPD',sx2+7,H/2-sh/2-5);
+  }
+}
+
+function roundRect(x,y,w,h,r){
+  cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);cx.quadraticCurveTo(x+w,y,x+w,y+r);
+  cx.lineTo(x+w,y+h-r);cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  cx.lineTo(x+r,y+h);cx.quadraticCurveTo(x,y+h,x,y+h-r);
+  cx.lineTo(x,y+r);cx.quadraticCurveTo(x,y,x+r,y);cx.closePath();
+}
+
+function drawStartSequence(){
+  if(phase==='ready'||phase==='set'){
+    const label=phase==='ready'?'ON YOUR MARKS':'SET';
+    const col=phase==='ready'?'rgba(240,244,255,0.8)':GOLD;
+    cx.font='bold 36px Nunito';cx.fillStyle=col;cx.textAlign='center';
+    cx.fillText(label,W/2,H/2-20);
+  }
+}
+
+function drawOverlay(){
+  if(phase==='title'){
+    cx.fillStyle='rgba(5,7,15,0.85)';cx.fillRect(0,0,W,H);
+    cx.textAlign='center';
+    cx.font='bold 34px Nunito';cx.fillStyle=GOLD;cx.fillText('⚡ Dopp 100m Sprint',W/2,H/2-50);
+    cx.font='15px Nunito';cx.fillStyle='rgba(240,244,255,0.7)';
+    cx.fillText('Alternate ◀ ▶ keys as fast as you can',W/2,H/2-10);
+    cx.fillText('Race 3 opponents to the finish line',W/2,H/2+18);
+    cx.font='12px Nunito';cx.fillStyle=EMERALD;
+    cx.fillText('💡 Sprinting raises heart rate and burns fat fast.',W/2,H/2+50);
+    cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Space / Enter to Race',W/2,H/2+82);
+  }
+  if(phase==='done'){
+    cx.fillStyle='rgba(5,7,15,0.8)';cx.fillRect(0,0,W,H);
+    cx.textAlign='center';
+    // Sort finishers
+    const t=(elapsed/1000).toFixed(2);
+    const best=bestTime?(bestTime/1000).toFixed(2)+'s':'--';
+    cx.font='bold 30px Nunito';cx.fillStyle=GOLD;cx.fillText('🏁 Finish!',W/2,H/2-50);
+    cx.font='20px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Your time: ${t}s`,W/2,H/2-14);
+    cx.font='13px Nunito';cx.fillStyle='rgba(240,244,255,0.5)';cx.fillText(`Personal Best: ${best}`,W/2,H/2+14);
+    cx.font='11px Nunito';cx.fillStyle='rgba(240,244,255,0.35)';cx.fillText('World Record: 9.58s (Usain Bolt)',W/2,H/2+36);
+    cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Space / Enter to Race Again',W/2,H/2+72);
+  }
+}
+
+let readyTimer=0;
+function update(){
+  frameCount++;
+  if(phase==='ready'){
+    readyTimer++;
+    if(readyTimer>90){phase='set';readyTimer=0;document.getElementById('msg').textContent='SET…';}
+  } else if(phase==='set'){
+    readyTimer++;
+    if(readyTimer>60){
+      phase='running';startTime=Date.now();
+      document.getElementById('msg').textContent='GO! Alternate ◀ ▶ as fast as you can!';
+    }
+  } else if(phase==='running'){
+    elapsed=Date.now()-startTime;
+    // Decay speed
+    playerSpeed=Math.max(0,playerSpeed-0.12);
+    playerPos+=playerSpeed*0.016;
+    // AI
+    opponents.forEach(o=>{
+      o.speed=Math.min(o.maxSpeed,o.speed+o.accel);
+      o.pos+=o.speed*0.016;
+    });
+    // Camera tracks player
+    cameraX=Math.max(0,playerPos*SCALE-W*0.35);
+    // Check finish
+    if(playerPos>=FINISH_M){
+      phase='done';
+      const t=Date.now()-startTime;
+      if(!bestTime||t<bestTime) bestTime=t;
+      document.getElementById('info').textContent=`Best: ${(bestTime/1000).toFixed(2)}s`;
+      document.getElementById('msg').textContent=`🏁 ${(t/1000).toFixed(2)}s! Space to race again.`;
+    }
+    opponents.forEach(o=>{ if(o.pos>=FINISH_M&&phase==='running') phase='done'; });
+  }
+}
+
+function drawBg(){
+  cx.fillStyle='#05070F';cx.fillRect(0,0,W,H);
+  cx.fillStyle='rgba(255,215,0,0.02)';cx.fillRect(0,0,W,H);
+}
+
+function loop(){
+  drawBg();drawTrack();
+  if(phase!=='title'){
+    drawRunner(playerPos,0,GOLD,'YOU',true);
+    opponents.forEach(o=>drawRunner(o.pos,o.lane,o.color,o.name,false));
+  }
+  drawHUD();drawStartSequence();drawOverlay();
+  update();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

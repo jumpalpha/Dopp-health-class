@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Sheaf Toss — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(13px,3vw,20px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:13px;color:var(--emerald);font-weight:600;min-width:90px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px;gap:14px}
+canvas{border-radius:16px;max-width:100%;touch-action:none;cursor:pointer;display:block}
+.instructions{font-size:13px;color:var(--dim);text-align:center}
+.tip-box{width:100%;max-width:660px;background:rgba(56,191,255,0.07);border:1px solid rgba(56,191,255,0.2);border-radius:14px;padding:14px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tip-label{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--sky)}
+.tip-text{font-size:13px;color:var(--text);line-height:1.55}
+.result-screen{display:none;flex-direction:column;align-items:center;gap:18px;text-align:center;width:100%;max-width:440px}
+.result-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--gold)}
+.big-score{font-family:'Cinzel',serif;font-size:clamp(44px,10vw,72px);font-weight:700;color:var(--emerald)}
+.result-sub{font-size:14px;color:var(--dim);line-height:1.6}
+.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-again-btn:hover{transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp Sheaf Toss</div>
+  <div class="score-display" id="scoreDisplay">Best: 0 ft</div>
+</header>
+<main>
+  <canvas id="gc" width="660" height="450"></canvas>
+  <div class="instructions" id="instrLabel">Hold SPACE or hold mouse to charge power — release to toss!</div>
+  <div class="tip-box">
+    <div class="tip-label">HEALTH TIP</div>
+    <div class="tip-text">Explosive overhead movements build shoulder and core stability.</div>
+  </div>
+  <div class="result-screen" id="resultScreen">
+    <div class="result-title">Games Over!</div>
+    <div class="big-score" id="bigScore">0 ft</div>
+    <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--gold)">Max Height Cleared</div>
+    <div class="result-sub" id="resultSub"></div>
+    <button class="play-again-btn" onclick="restartGame()">Toss Again</button>
+  </div>
+</main>
+
+<script>
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// Game constants
+const RECORD = 56;
+const GROUND_Y = H - 60;
+const DOPP_X = 110;
+const BAR_X_LEFT = 460;
+const BAR_X_RIGHT = 620;
+const FORK_TIP_X = 155;
+const FORK_TIP_Y = GROUND_Y - 50;
+const MAX_ATTEMPTS = 5;
+const MISSES_PER_HEIGHT = 2;
+
+// Heights in feet
+const HEIGHTS_FT = [20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60];
+
+// Game state
+let state = 'idle'; // idle, charging, flying, result_success, result_miss, gameover
+let power = 0;
+let charging = false;
+let chargeInterval = null;
+let heightIndex = 0;
+let missesAtHeight = 0;
+let attemptsLeft = MAX_ATTEMPTS;
+let bestHeight = 0;
+let baleX, baleY, baleVX, baleVY;
+let animFrame = null;
+let resultTimer = null;
+let successMsg = '';
+let missMsg = '';
+
+function heightToY(ft) {
+  // Map feet to canvas Y. Ground = GROUND_Y. 60ft = ~top area.
+  const minY = 60;
+  const maxFt = 65;
+  return GROUND_Y - (ft / maxFt) * (GROUND_Y - minY);
+}
+
+function currentBarY() {
+  return heightToY(HEIGHTS_FT[heightIndex]);
+}
+
+function drawSky() {
+  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  grad.addColorStop(0, '#05070F');
+  grad.addColorStop(1, '#0a1628');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function drawGround() {
+  // Ground
+  ctx.fillStyle = '#1a3a1a';
+  ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+  // Grass highlight
+  ctx.fillStyle = '#256325';
+  ctx.fillRect(0, GROUND_Y, W, 6);
+  // Tartan stripe details on ground
+  ctx.strokeStyle = 'rgba(0,229,160,0.12)';
+  ctx.lineWidth = 2;
+  for (let x = 0; x < W; x += 30) {
+    ctx.beginPath();
+    ctx.moveTo(x, GROUND_Y);
+    ctx.lineTo(x, H);
+    ctx.stroke();
+  }
+}
+
+function drawBar() {
+  const barY = currentBarY();
+  // Left post
+  ctx.fillStyle = '#8B6914';
+  ctx.fillRect(BAR_X_LEFT - 5, barY - 10, 10, GROUND_Y - barY + 10);
+  // Right post
+  ctx.fillRect(BAR_X_RIGHT - 5, barY - 10, 10, GROUND_Y - barY + 10);
+  // Post tops
+  ctx.fillStyle = '#FFD700';
+  ctx.fillRect(BAR_X_LEFT - 7, barY - 18, 14, 10);
+  ctx.fillRect(BAR_X_RIGHT - 7, barY - 18, 14, 10);
+  // Crossbar
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(BAR_X_LEFT, barY);
+  ctx.lineTo(BAR_X_RIGHT, barY);
+  ctx.stroke();
+  // Height label
+  ctx.font = "bold 13px 'Cinzel', serif";
+  ctx.fillStyle = '#FFD700';
+  ctx.textAlign = 'center';
+  ctx.fillText(HEIGHTS_FT[heightIndex] + ' ft', (BAR_X_LEFT + BAR_X_RIGHT) / 2, barY - 22);
+  // Record line
+  const recY = heightToY(RECORD);
+  ctx.strokeStyle = 'rgba(255,59,92,0.4)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(BAR_X_LEFT - 30, recY);
+  ctx.lineTo(BAR_X_RIGHT + 20, recY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font = "11px 'Cinzel', serif";
+  ctx.fillStyle = 'rgba(255,59,92,0.7)';
+  ctx.textAlign = 'right';
+  ctx.fillText('Record: ' + RECORD + ' ft', BAR_X_RIGHT + 18, recY - 4);
+}
+
+function drawDopp(swingAngle) {
+  const bx = DOPP_X;
+  const groundY = GROUND_Y;
+  ctx.save();
+  ctx.translate(bx, groundY);
+
+  // Legs
+  ctx.fillStyle = '#2244AA'; // tartan blue
+  ctx.fillRect(-18, -60, 16, 60); // left leg
+  ctx.fillRect(2, -60, 16, 60);   // right leg
+  // Kilt (tartan)
+  drawKilt(ctx, 0, -60);
+  // Torso
+  ctx.fillStyle = '#1a4a2a';
+  ctx.fillRect(-20, -130, 40, 70);
+  // Tartan sash
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-20, -120);
+  ctx.lineTo(20, -90);
+  ctx.stroke();
+  ctx.strokeStyle = '#FF3B5C';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-20, -110);
+  ctx.lineTo(20, -80);
+  ctx.stroke();
+
+  // Neck
+  ctx.fillStyle = '#c8845a';
+  ctx.fillRect(-8, -145, 16, 20);
+  // Head
+  ctx.beginPath();
+  ctx.arc(0, -165, 24, 0, Math.PI * 2);
+  ctx.fillStyle = '#c8845a';
+  ctx.fill();
+  // Red hair/beard
+  ctx.fillStyle = '#CC2200';
+  // hair
+  ctx.beginPath();
+  ctx.ellipse(0, -180, 20, 14, 0, Math.PI, 0);
+  ctx.fill();
+  // beard
+  ctx.beginPath();
+  ctx.ellipse(2, -150, 14, 12, 0, 0, Math.PI);
+  ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(-10, -172, 7, 7);
+  ctx.fillRect(3, -172, 7, 7);
+  ctx.fillStyle = '#222';
+  ctx.fillRect(-8, -170, 4, 4);
+  ctx.fillRect(5, -170, 4, 4);
+  // Eyebrows (fierce)
+  ctx.strokeStyle = '#CC2200';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(-12, -175);
+  ctx.lineTo(-3, -178);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(12, -175);
+  ctx.lineTo(3, -178);
+  ctx.stroke();
+
+  // Arms - pitchfork holding pose
+  ctx.save();
+  ctx.rotate(swingAngle);
+  // Right arm up holding pitchfork
+  ctx.fillStyle = '#c8845a';
+  // Upper arm
+  ctx.save();
+  ctx.translate(20, -120);
+  ctx.rotate(-Math.PI * 0.25 - swingAngle * 0.5);
+  ctx.fillRect(-5, -35, 10, 35);
+  // Forearm
+  ctx.translate(0, -35);
+  ctx.rotate(-0.4);
+  ctx.fillRect(-5, -30, 10, 30);
+  ctx.restore();
+  // Left arm bracing
+  ctx.fillStyle = '#c8845a';
+  ctx.save();
+  ctx.translate(-20, -115);
+  ctx.rotate(0.3);
+  ctx.fillRect(-5, -30, 10, 30);
+  ctx.restore();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function drawKilt(ctx, x, y) {
+  // Tartan kilt
+  const colors = ['#1a4a2a', '#2244AA', '#1a4a2a'];
+  const stripeW = 12;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x - 22, y, 44, 40);
+  ctx.clip();
+  for (let i = 0; i < 4; i++) {
+    ctx.fillStyle = colors[i % 3];
+    ctx.fillRect(x - 22 + i * stripeW, y, stripeW, 40);
+  }
+  // Grid overlay for tartan
+  ctx.strokeStyle = 'rgba(255,215,0,0.35)';
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x - 22 + i * stripeW, y);
+    ctx.lineTo(x - 22 + i * stripeW, y + 40);
+    ctx.stroke();
+  }
+  for (let j = 0; j < 4; j++) {
+    ctx.beginPath();
+    ctx.moveTo(x - 22, y + j * 10);
+    ctx.lineTo(x + 22, y + j * 10);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawPitchfork(angle) {
+  // Pitchfork handle + tines, angled
+  const ox = FORK_TIP_X;
+  const oy = FORK_TIP_Y;
+  ctx.save();
+  ctx.translate(ox, oy);
+  ctx.rotate(angle);
+  // Handle
+  ctx.strokeStyle = '#8B5E3C';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, 70);
+  ctx.stroke();
+  // Tines
+  ctx.strokeStyle = '#aaa';
+  ctx.lineWidth = 3;
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * 8, 0);
+    ctx.lineTo(i * 8, -20);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBale(x, y, rotation) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  // Bale body
+  ctx.fillStyle = '#8B6914';
+  ctx.beginPath();
+  ctx.roundRect(-22, -14, 44, 28, 4);
+  ctx.fill();
+  // Hay texture lines
+  ctx.strokeStyle = 'rgba(255,230,100,0.5)';
+  ctx.lineWidth = 1.5;
+  for (let i = -18; i <= 18; i += 7) {
+    ctx.beginPath();
+    ctx.moveTo(i, -14);
+    ctx.lineTo(i - 4, 14);
+    ctx.stroke();
+  }
+  // Bale wrap
+  ctx.strokeStyle = '#5a3a08';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.roundRect(-22, -14, 44, 28, 4);
+  ctx.stroke();
+  // Twine bands
+  ctx.strokeStyle = '#2a1a00';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-8, -14);
+  ctx.lineTo(-8, 14);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(8, -14);
+  ctx.lineTo(8, 14);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPowerBar() {
+  if (state !== 'charging') return;
+  const bx = 30, by = H - 40, bw = 180, bh = 18;
+  // Background
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.beginPath();
+  ctx.roundRect(bx - 4, by - 22, bw + 8, bh + 28, 8);
+  ctx.fill();
+  // Label
+  ctx.font = "bold 11px 'Cinzel', serif";
+  ctx.fillStyle = '#FFD700';
+  ctx.textAlign = 'left';
+  ctx.fillText('POWER', bx, by - 6);
+  // Bar bg
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw, bh, 4);
+  ctx.fill();
+  // Bar fill
+  const pct = power / 100;
+  const barColor = pct < 0.4 ? '#38BFFF' : pct < 0.75 ? '#00E5A0' : pct < 0.9 ? '#FFD700' : '#FF3B5C';
+  ctx.fillStyle = barColor;
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw * pct, bh, 4);
+  ctx.fill();
+  // Percent
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.font = "bold 11px 'Nunito', sans-serif";
+  ctx.fillText(Math.round(power) + '%', bx + bw / 2, by + 13);
+}
+
+function drawStatus() {
+  const barY = currentBarY();
+  // Attempts left dots
+  ctx.font = "13px 'Cinzel', serif";
+  ctx.fillStyle = '#FFD700';
+  ctx.textAlign = 'left';
+  ctx.fillText('Attempts: ', 20, 30);
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    ctx.beginPath();
+    ctx.arc(105 + i * 22, 25, 7, 0, Math.PI * 2);
+    ctx.fillStyle = i < attemptsLeft ? '#FFD700' : 'rgba(255,255,255,0.12)';
+    ctx.fill();
+  }
+  // Misses at height
+  ctx.fillStyle = '#FF3B5C';
+  ctx.textAlign = 'left';
+  ctx.font = "12px 'Cinzel', serif";
+  ctx.fillText('Misses: ' + missesAtHeight + '/' + MISSES_PER_HEIGHT, 20, 52);
+  // Best height
+  ctx.fillStyle = '#00E5A0';
+  ctx.textAlign = 'right';
+  ctx.font = "bold 13px 'Cinzel', serif";
+  ctx.fillText('Best: ' + bestHeight + ' ft', W - 20, 30);
+  // Record note
+  ctx.fillStyle = 'rgba(255,59,92,0.6)';
+  ctx.font = "11px 'Cinzel', serif";
+  ctx.fillText('Record: ' + RECORD + ' ft', W - 20, 48);
+}
+
+function drawResultMsg() {
+  if (state === 'result_success') {
+    ctx.font = "bold 28px 'Cinzel Decorative', serif";
+    ctx.fillStyle = '#00E5A0';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#00E5A0';
+    ctx.shadowBlur = 20;
+    ctx.fillText('CLEARED! ' + HEIGHTS_FT[heightIndex - 1] + ' ft!', W / 2, H / 2 - 10);
+    ctx.shadowBlur = 0;
+    if (HEIGHTS_FT[heightIndex - 1] >= RECORD) {
+      ctx.font = "bold 18px 'Cinzel Decorative', serif";
+      ctx.fillStyle = '#FFD700';
+      ctx.fillText('NEW RECORD!', W / 2, H / 2 + 24);
+    }
+  } else if (state === 'result_miss') {
+    ctx.font = "bold 26px 'Cinzel Decorative', serif";
+    ctx.fillStyle = '#FF3B5C';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#FF3B5C';
+    ctx.shadowBlur = 16;
+    ctx.fillText(missMsg, W / 2, H / 2 - 10);
+    ctx.shadowBlur = 0;
+  }
+}
+
+function drawIdle() {
+  ctx.font = "16px 'Cinzel', serif";
+  ctx.fillStyle = 'rgba(255,215,0,0.85)';
+  ctx.textAlign = 'center';
+  ctx.fillText('Hold SPACE or hold mouse to charge — release to toss!', W / 2, H - 20);
+}
+
+let baleRotation = 0;
+let flyTime = 0;
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  drawSky();
+  drawGround();
+  drawBar();
+
+  // Swing angle based on charge
+  const swingAngle = charging ? -power * 0.008 : 0;
+  drawDopp(swingAngle);
+
+  if (state !== 'flying') {
+    // Draw pitchfork + bale on ground near Dopp
+    drawPitchfork(swingAngle - 0.3);
+    drawBale(FORK_TIP_X + 15, FORK_TIP_Y - 10, swingAngle * 0.5);
+  } else {
+    // Draw flying bale
+    drawBale(baleX, baleY, baleRotation);
+    // Pitchfork still in hand, raised
+    drawPitchfork(-1.2);
+  }
+
+  drawPowerBar();
+  drawStatus();
+  if (state === 'result_success' || state === 'result_miss') drawResultMsg();
+  if (state === 'idle') drawIdle();
+}
+
+function launchBale() {
+  if (state !== 'idle' && state !== 'charging') return;
+  state = 'flying';
+  charging = false;
+  clearInterval(chargeInterval);
+  chargeInterval = null;
+
+  // Physics: power maps to velocity
+  const pct = power / 100;
+  // angle varies: low power = steeper, high power = flatter
+  const angle = -Math.PI * (0.55 + pct * 0.3); // between -99deg and -153deg from horizontal
+  const speed = 4 + pct * 14;
+  baleX = FORK_TIP_X + 15;
+  baleY = FORK_TIP_Y - 10;
+  baleVX = Math.cos(angle) * speed;
+  baleVY = Math.sin(angle) * speed;
+  flyTime = 0;
+  baleRotation = 0;
+  power = 0;
+  attemptsLeft--;
+
+  animateFly();
+}
+
+function animateFly() {
+  const barY = currentBarY();
+  const barMidX = (BAR_X_LEFT + BAR_X_RIGHT) / 2;
+
+  function step() {
+    baleVY += 0.28; // gravity
+    baleX += baleVX;
+    baleY += baleVY;
+    baleRotation += 0.12;
+    flyTime++;
+
+    draw();
+
+    // Check if bale has reached bar zone
+    if (baleX >= BAR_X_LEFT - 22 && baleX <= BAR_X_RIGHT + 22) {
+      // Check if it clears
+      if (baleY < barY - 14) {
+        // Still flying, continue
+      } else if (baleY >= barY - 14) {
+        // Hit bar level in the zone — miss
+        cancelAnimationFrame(animFrame);
+        handleMiss();
+        return;
+      }
+    }
+
+    // Past the bar, check if it cleared
+    if (baleX > BAR_X_RIGHT + 22) {
+      cancelAnimationFrame(animFrame);
+      // Check apex: did bale ever get above bar while in zone?
+      // Re-evaluate: did the arc take it over?
+      // Recalculate: were any frames above bar in zone? Track via flyMin
+      handleSuccess();
+      return;
+    }
+
+    // Bale hit ground
+    if (baleY > GROUND_Y) {
+      cancelAnimationFrame(animFrame);
+      handleMiss();
+      return;
+    }
+
+    animFrame = requestAnimationFrame(step);
+  }
+
+  animFrame = requestAnimationFrame(step);
+}
+
+// We need to track whether the bale went over the bar.
+// Rework: track minimum Y while in bar zone.
+let baleMinYInZone = 9999;
+let baleInZone = false;
+
+function animateFlyV2() {
+  const barY = currentBarY();
+  baleMinYInZone = 9999;
+  baleInZone = false;
+
+  function step() {
+    baleVY += 0.28;
+    baleX += baleVX;
+    baleY += baleVY;
+    baleRotation += 0.12;
+    flyTime++;
+
+    if (baleX >= BAR_X_LEFT - 22 && baleX <= BAR_X_RIGHT + 22) {
+      baleInZone = true;
+      if (baleY < baleMinYInZone) baleMinYInZone = baleY;
+    }
+
+    draw();
+
+    if (baleX > BAR_X_RIGHT + 22) {
+      cancelAnimationFrame(animFrame);
+      // Success if minimum Y above bar (bale apex was above bar)
+      if (baleMinYInZone < barY - 28) {
+        handleSuccess();
+      } else {
+        handleMiss();
+      }
+      return;
+    }
+
+    if (baleY > GROUND_Y) {
+      cancelAnimationFrame(animFrame);
+      handleMiss();
+      return;
+    }
+
+    // If bale is moving left or stalled, count as miss
+    if (flyTime > 20 && baleVX <= 0) {
+      cancelAnimationFrame(animFrame);
+      handleMiss();
+      return;
+    }
+
+    animFrame = requestAnimationFrame(step);
+  }
+  animFrame = requestAnimationFrame(step);
+}
+
+function handleSuccess() {
+  const clearedFt = HEIGHTS_FT[heightIndex];
+  if (clearedFt > bestHeight) bestHeight = clearedFt;
+  document.getElementById('scoreDisplay').textContent = 'Best: ' + bestHeight + ' ft';
+  heightIndex = Math.min(heightIndex + 1, HEIGHTS_FT.length - 1);
+  missesAtHeight = 0;
+  state = 'result_success';
+  draw();
+  resultTimer = setTimeout(() => {
+    if (attemptsLeft <= 0) {
+      endGame();
+    } else {
+      state = 'idle';
+      draw();
+    }
+  }, 2000);
+}
+
+function handleMiss() {
+  missesAtHeight++;
+  if (missesAtHeight >= MISSES_PER_HEIGHT) {
+    missMsg = 'OUT!';
+    state = 'result_miss';
+    draw();
+    resultTimer = setTimeout(() => {
+      endGame();
+    }, 1800);
+  } else {
+    missMsg = 'NO CLEAR!';
+    state = 'result_miss';
+    draw();
+    resultTimer = setTimeout(() => {
+      if (attemptsLeft <= 0) {
+        endGame();
+      } else {
+        state = 'idle';
+        draw();
+      }
+    }, 1600);
+  }
+}
+
+function endGame() {
+  state = 'gameover';
+  canvas.style.display = 'none';
+  document.getElementById('instrLabel').style.display = 'none';
+  const rs = document.getElementById('resultScreen');
+  rs.style.display = 'flex';
+  document.getElementById('bigScore').textContent = bestHeight + ' ft';
+  let sub = '';
+  if (bestHeight >= RECORD) sub = '🏆 New Record! You\'ve matched the world best!';
+  else if (bestHeight >= 48) sub = 'Incredible throw! You\'re in elite company.';
+  else if (bestHeight >= 36) sub = 'Strong effort! Keep training those explosive lifts.';
+  else if (bestHeight >= 24) sub = 'Good form! Shoulder and core strength will get you higher.';
+  else sub = 'Keep working on that technique — every rep builds power!';
+  document.getElementById('resultSub').textContent = sub;
+}
+
+function restartGame() {
+  heightIndex = 0;
+  missesAtHeight = 0;
+  attemptsLeft = MAX_ATTEMPTS;
+  bestHeight = 0;
+  power = 0;
+  charging = false;
+  state = 'idle';
+  baleX = FORK_TIP_X + 15;
+  baleY = FORK_TIP_Y - 10;
+  document.getElementById('scoreDisplay').textContent = 'Best: 0 ft';
+  document.getElementById('resultScreen').style.display = 'none';
+  canvas.style.display = 'block';
+  document.getElementById('instrLabel').style.display = 'block';
+  draw();
+}
+
+// Input handling
+let mouseDown = false;
+
+function startCharge() {
+  if (state !== 'idle') return;
+  state = 'charging';
+  charging = true;
+  power = 0;
+  chargeInterval = setInterval(() => {
+    power = Math.min(power + 1.4, 100);
+    draw();
+  }, 16);
+}
+
+function releaseCharge() {
+  if (state !== 'charging') return;
+  clearInterval(chargeInterval);
+  chargeInterval = null;
+  charging = false;
+  animateFlyV2();
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  mouseDown = true;
+  startCharge();
+});
+
+canvas.addEventListener('mouseup', (e) => {
+  e.preventDefault();
+  if (mouseDown) {
+    mouseDown = false;
+    releaseCharge();
+  }
+});
+
+canvas.addEventListener('mouseleave', (e) => {
+  if (mouseDown && state === 'charging') {
+    mouseDown = false;
+    releaseCharge();
+  }
+});
+
+// Touch
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  startCharge();
+}, {passive: false});
+canvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  releaseCharge();
+}, {passive: false});
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (state === 'idle') startCharge();
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (state === 'charging') releaseCharge();
+  }
+});
+
+// Init
+draw();
+</script>
+</body>
+</html>

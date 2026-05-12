@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏃 Dopp Hurdles — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 24px;background:rgba(5,7,15,0.97);border-bottom:1px solid rgba(255,215,0,0.2);flex-shrink:0}
+.back{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
+.title{font-family:'Cinzel Decorative',serif;font-size:17px;color:#FFD700}
+.info{font-family:'Cinzel',serif;font-size:13px;color:#F0F4FF;text-align:right;min-width:140px}
+#wrap{width:100%;max-width:660px;flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 12px 6px}
+canvas{display:block;border-radius:10px;border:1px solid rgba(255,215,0,0.15)}
+#msg{height:32px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(0,229,160,0.85);margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="javascript:history.back()">← Back</a>
+  <div class="title">🏃 Dopp Hurdles</div>
+  <div class="info" id="info">Press Space to Start</div>
+</header>
+<div id="wrap">
+  <canvas id="c" width="660" height="340"></canvas>
+  <div id="msg">Press SPACE or tap to jump each hurdle · Hit = +0.3s penalty</div>
+</div>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const W=660,H=340,GOLD='#FFD700',EMERALD='#00E5A0',CRIMSON='#FF3B5C',SKY='#38BFFF';
+const GROUND=H-55,NUM_HURDLES=8,HURDLE_GAP=420,HURDLE_H=52,HURDLE_W=14;
+const GRAVITY=0.7,JUMP_V=-16,RUN_SPEED=4.5;
+
+let phase='title',startTime,elapsed,bestTime=null;
+let player,hurdles,cameraX,jumpPressed=false,prevSpace=false;
+let frameCount=0,penalties=0;
+
+function init(){
+  phase='running';
+  startTime=Date.now();
+  elapsed=0; penalties=0; cameraX=0;
+  player={x:80,y:GROUND,vy:0,onGround:true,frame:0,walkT:0,hitFlash:0};
+  hurdles=[];
+  for(let i=0;i<NUM_HURDLES;i++){
+    hurdles.push({x:380+i*HURDLE_GAP,hit:false,down:false,downT:0});
+  }
+}
+
+function updateInfo(){
+  const t=(elapsed/1000).toFixed(2);
+  const best=bestTime?(bestTime/1000).toFixed(2):'--';
+  document.getElementById('info').textContent=`${t}s · Best: ${best}s`;
+}
+
+// Input
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();jumpPressed=true;}
+  if((e.code==='Space'||e.code==='Enter')&&(phase==='title'||phase==='done')){startRun();}
+});
+document.addEventListener('keyup',e=>{ if(e.code==='Space') jumpPressed=false; });
+cv.addEventListener('click',()=>{
+  if(phase==='title'||phase==='done'){startRun();}
+  else{jumpPressed=true;setTimeout(()=>jumpPressed=false,100);}
+});
+cv.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  if(phase==='title'||phase==='done'){startRun();}
+  else{jumpPressed=true;}
+},{passive:false});
+cv.addEventListener('touchend',e=>{e.preventDefault();jumpPressed=false;},{passive:false});
+
+function startRun(){init();}
+
+function drawBg(){
+  // Sky gradient
+  const sky=cx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#05070F');sky.addColorStop(1,'#0d1a2e');
+  cx.fillStyle=sky;cx.fillRect(0,0,W,H);
+  // Stadium lights
+  [100,330,570].forEach(lx=>{
+    cx.fillStyle='rgba(255,215,0,0.06)';
+    cx.beginPath();cx.arc(lx-cameraX%W,30,60,0,Math.PI*2);cx.fill();
+  });
+}
+
+function drawTrack(){
+  // Track surface
+  cx.fillStyle='#8B4513';
+  cx.fillRect(0,GROUND,W,H-GROUND);
+  cx.fillStyle='#A0522D';
+  cx.fillRect(0,GROUND,W,6);
+  // Lane lines
+  cx.strokeStyle='rgba(255,255,255,0.15)';cx.lineWidth=2;cx.setLineDash([20,15]);
+  for(let lane=1;lane<3;lane++){
+    cx.beginPath();cx.moveTo(0,GROUND-lane*28);cx.lineTo(W,GROUND-lane*28);cx.stroke();
+  }
+  cx.setLineDash([]);
+  // Distance markers
+  for(let d=100;d<=1000;d+=100){
+    const sx=d*2.2-cameraX;
+    if(sx<-20||sx>W+20) continue;
+    cx.strokeStyle='rgba(255,255,255,0.3)';cx.lineWidth=1.5;
+    cx.beginPath();cx.moveTo(sx,GROUND-2);cx.lineTo(sx,GROUND+8);cx.stroke();
+    cx.font='9px Nunito';cx.fillStyle='rgba(255,255,255,0.4)';cx.textAlign='center';
+    cx.fillText(d+'m',sx,GROUND+18);
+  }
+  // Finish line
+  const finX=NUM_HURDLES*HURDLE_GAP+600-cameraX;
+  if(finX>0&&finX<W){
+    cx.fillStyle='white';
+    for(let i=0;i<6;i++){cx.fillRect(finX,GROUND+i*6,18,3);cx.fillRect(finX+18,GROUND+i*6+3,18,3);}
+    cx.font='bold 11px Nunito';cx.fillStyle=GOLD;cx.textAlign='center';
+    cx.fillText('FINISH',finX,GROUND-8);
+  }
+}
+
+function drawHurdles(){
+  hurdles.forEach(h=>{
+    const sx=h.x-cameraX;
+    if(sx<-30||sx>W+30) return;
+    if(h.down){
+      // Fallen hurdle
+      cx.save();cx.translate(sx,GROUND);cx.rotate(-Math.PI/2);
+      cx.fillStyle='#e74c3c';cx.fillRect(-2,-HURDLE_W/2,HURDLE_H,HURDLE_W);
+      cx.restore();
+    } else {
+      // Upright hurdle
+      cx.fillStyle='#e74c3c';
+      cx.fillRect(sx-HURDLE_W/2,GROUND-HURDLE_H,HURDLE_W,HURDLE_H);
+      // Cross bar
+      cx.fillStyle='white';
+      cx.fillRect(sx-22,GROUND-HURDLE_H,44,6);
+      // Feet
+      cx.fillStyle='#c0392b';
+      cx.fillRect(sx-18,GROUND-6,12,6);
+      cx.fillRect(sx+6,GROUND-6,12,6);
+    }
+  });
+}
+
+function drawPlayer(){
+  const p=player;
+  const px=p.x-cameraX;
+  const onG=p.onGround;
+  // Shadow
+  cx.fillStyle='rgba(0,0,0,0.3)';
+  cx.beginPath();cx.ellipse(px,GROUND+3,12,4,0,0,Math.PI*2);cx.fill();
+  // Legs
+  const legAngle=onG?(Math.sin(frameCount*0.25)*0.7):0.3;
+  cx.strokeStyle='#2980b9';cx.lineWidth=5;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(px,p.y+16);cx.lineTo(px-10+Math.sin(legAngle)*8,p.y+32);cx.stroke();
+  cx.beginPath();cx.moveTo(px,p.y+16);cx.lineTo(px+10-Math.sin(legAngle)*8,p.y+32);cx.stroke();
+  // Body
+  cx.fillStyle=p.hitFlash>0?CRIMSON:'#e74c3c';
+  cx.beginPath();cx.ellipse(px,p.y+8,8,12,0,0,Math.PI*2);cx.fill();
+  // Arms pumping
+  cx.strokeStyle='#e8b89a';cx.lineWidth=4;
+  cx.beginPath();cx.moveTo(px-7,p.y+4);cx.lineTo(px-14,p.y+12-Math.sin(legAngle)*6);cx.stroke();
+  cx.beginPath();cx.moveTo(px+7,p.y+4);cx.lineTo(px+14,p.y+12+Math.sin(legAngle)*6);cx.stroke();
+  // Head
+  cx.fillStyle='#e8b89a';cx.beginPath();cx.arc(px,p.y-4,9,0,Math.PI*2);cx.fill();
+  // Cap
+  cx.fillStyle='#e74c3c';cx.beginPath();cx.ellipse(px,p.y-7,10,5,0,0,-Math.PI);cx.fill();
+}
+
+function update(){
+  if(phase!=='running') return;
+  frameCount++;
+  elapsed=Date.now()-startTime;
+  updateInfo();
+
+  // Jump
+  const jnow=jumpPressed;
+  if(player.onGround&&jnow&&!prevSpace){
+    player.vy=JUMP_V;player.onGround=false;
+  }
+  prevSpace=jnow;
+
+  // Physics
+  if(!player.onGround) player.vy+=GRAVITY;
+  player.y+=player.vy;
+  if(player.y>=GROUND){player.y=GROUND;player.vy=0;player.onGround=true;}
+
+  // Move camera
+  cameraX+=RUN_SPEED;
+  player.x=cameraX+80;
+
+  // Hurdle collision
+  hurdles.forEach(h=>{
+    if(h.down) return;
+    const dx=Math.abs(player.x-h.x);
+    const playerBottom=player.y+32;
+    const playerTop=player.y-14;
+    if(dx<18){
+      const hurtleTop=GROUND-HURDLE_H;
+      if(playerBottom>hurtleTop+4&&playerTop<GROUND){
+        // Hit!
+        if(!h.hit){
+          h.hit=true;h.down=true;
+          penalties+=0.3;
+          player.hitFlash=20;
+          startTime-=300; // add penalty to time
+        }
+      }
+    }
+  });
+  if(player.hitFlash>0) player.hitFlash--;
+
+  // Finish
+  const finishX=NUM_HURDLES*HURDLE_GAP+600;
+  if(player.x>=finishX){
+    phase='done';
+    const finalTime=elapsed+Math.round(penalties*1000);
+    if(!bestTime||finalTime<bestTime) bestTime=finalTime;
+    document.getElementById('info').textContent=`Time: ${(finalTime/1000).toFixed(2)}s`;
+    document.getElementById('msg').textContent=`🏁 Finished in ${(finalTime/1000).toFixed(2)}s (${Math.round(penalties*10)/10}s penalties) · Space to retry`;
+  }
+}
+
+function drawOverlay(){
+  if(phase==='title'){
+    cx.fillStyle='rgba(5,7,15,0.82)';cx.fillRect(0,0,W,H);
+    cx.textAlign='center';
+    cx.font='bold 36px Nunito';cx.fillStyle=GOLD;cx.fillText('🏃 Dopp Hurdles',W/2,H/2-40);
+    cx.font='15px Nunito';cx.fillStyle='rgba(240,244,255,0.7)';
+    cx.fillText('Press SPACE or tap to jump over hurdles',W/2,H/2);
+    cx.fillText('Hit a hurdle = +0.3s penalty',W/2,H/2+26);
+    cx.font='13px Nunito';cx.fillStyle=EMERALD;
+    cx.fillText('💡 Agility training improves coordination and reaction time.',W/2,H/2+60);
+    cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Space / Click to Start',W/2,H/2+95);
+  } else if(phase==='done'){
+    cx.fillStyle='rgba(5,7,15,0.75)';cx.fillRect(0,0,W,H);
+    cx.textAlign='center';
+    cx.font='bold 32px Nunito';cx.fillStyle=GOLD;cx.fillText('🏁 Race Complete!',W/2,H/2-30);
+    const best=bestTime?(bestTime/1000).toFixed(2)+'s':'--';
+    cx.font='14px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Best: ${best}`,W/2,H/2+10);
+    cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Space / Click to Run Again',W/2,H/2+50);
+  }
+}
+
+function loop(){
+  drawBg();drawTrack();
+  if(phase!=='title'){drawHurdles();drawPlayer();}
+  drawOverlay();
+  update();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

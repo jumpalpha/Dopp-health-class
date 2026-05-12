@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔨 Dopp Hammer Throw — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 24px;background:rgba(5,7,15,0.97);border-bottom:1px solid rgba(255,215,0,0.2);flex-shrink:0}
+.back{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
+.title{font-family:'Cinzel Decorative',serif;font-size:17px;color:#FFD700}
+.info{font-family:'Cinzel',serif;font-size:13px;color:#F0F4FF;text-align:right;min-width:160px}
+#wrap{width:100%;max-width:660px;flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 12px 6px}
+canvas{display:block;border-radius:10px;border:1px solid rgba(255,215,0,0.15)}
+#msg{height:32px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(0,229,160,0.85);margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="javascript:history.back()">← Back</a>
+  <div class="title">🔨 Dopp Hammer Throw</div>
+  <div class="info" id="info">Throw 1 of 3</div>
+</header>
+<div id="wrap">
+  <canvas id="c" width="660" height="380"></canvas>
+  <div id="msg">Click rapidly to spin · Release at the right moment!</div>
+</div>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const W=660,H=380,GOLD='#FFD700',EMERALD='#00E5A0',CRIMSON='#FF3B5C',SKY='#38BFFF';
+
+// Top-down view. Dopp at center-left. Field extends right.
+const DOPP_X=120,DOPP_Y=H/2;
+const CIRCLE_R=30; // throwing circle
+const MAX_SPIN=12; // max rotations/s feeling
+const OPTIMAL_RELEASE_WINDOW=0.15; // fraction of rotation that gives best throw
+
+let phase='idle'; // idle|spinning|flying|landed|done
+let spinSpeed=0,spinAngle=0,throwPower=0;
+let throws=[],currentThrow=0;
+let hammerX,hammerY,hammerVX,hammerVY,hammerT;
+let landX,landY,distance;
+let bestDist=0;
+let frameCount=0;
+let spinDecay=false;
+let releaseAngle=0;
+
+const MAX_THROWS=3;
+
+function init(){
+  phase='idle';spinSpeed=0;spinAngle=0;throws=[];currentThrow=0;bestDist=0;
+  updateInfo();
+}
+
+function updateInfo(){
+  const best=bestDist>0?bestDist.toFixed(1)+'m':'--';
+  document.getElementById('info').textContent=`Throw ${currentThrow+1} of ${MAX_THROWS} · Best: ${best}`;
+}
+
+function startSpin(){
+  if(phase!=='idle') return;
+  phase='spinning';spinSpeed=0;spinDecay=false;
+  document.getElementById('msg').textContent='Keep clicking to add spin! Release (stop clicking) to throw.';
+}
+
+function addSpin(){
+  if(phase!=='spinning') return;
+  spinSpeed=Math.min(MAX_SPIN,spinSpeed+1.2);
+  spinDecay=false;
+}
+
+function release(){
+  if(phase!=='spinning') return;
+  releaseAngle=spinAngle%(Math.PI*2);
+  // Best angle: throwing toward the field (right) = angle near 0 or 2PI
+  // Field is to the right of Dopp, so release angle ~= -PI/4 to PI/4 gives farthest throw
+  let angleFactor=Math.cos(releaseAngle); // 1=perfect right, -1=left
+  angleFactor=Math.max(0,angleFactor); // no negative throws
+  const distM=Math.round((spinSpeed/MAX_SPIN)*angleFactor*78+Math.random()*3);
+  distance=Math.max(5,distM);
+  throwPower=spinSpeed/MAX_SPIN;
+
+  // Projectile setup
+  const throwAngle=releaseAngle;
+  hammerX=DOPP_X; hammerY=DOPP_Y;
+  hammerVX=Math.cos(throwAngle)*6*throwPower;
+  hammerVY=Math.sin(throwAngle)*6*throwPower;
+  hammerT=0;
+  phase='flying';
+  document.getElementById('msg').textContent=`Released at ${(releaseAngle*180/Math.PI).toFixed(0)}° — flying!`;
+}
+
+// Input
+cv.addEventListener('mousedown',e=>{
+  if(phase==='idle'){ startSpin(); return; }
+  if(phase==='spinning') addSpin();
+  if(phase==='done'){ init(); }
+});
+cv.addEventListener('mouseup',e=>{
+  if(phase==='spinning') spinDecay=true;
+});
+cv.addEventListener('click',e=>{
+  if(phase==='landed'){
+    currentThrow++;
+    if(currentThrow>=MAX_THROWS){ phase='done'; updateInfo(); return; }
+    phase='idle'; updateInfo();
+  }
+});
+cv.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  if(phase==='idle'){startSpin();}
+  else if(phase==='spinning'){addSpin();}
+  else if(phase==='landed'){
+    currentThrow++;
+    if(currentThrow>=MAX_THROWS){phase='done';updateInfo();}
+    else{phase='idle';updateInfo();}
+  }
+  else if(phase==='done'){init();}
+},{passive:false});
+cv.addEventListener('touchend',e=>{
+  e.preventDefault();
+  if(phase==='spinning') spinDecay=true;
+},{passive:false});
+
+// Draw field (top-down)
+function drawField(){
+  // Grass
+  const grd=cx.createLinearGradient(0,0,W,0);
+  grd.addColorStop(0,'#0d2b0d');grd.addColorStop(1,'#1a4a1a');
+  cx.fillStyle=grd;cx.fillRect(0,0,W,H);
+  // Distance rings
+  const scale=5; // pixels per meter
+  for(let d=20;d<=80;d+=10){
+    const r=d*scale;
+    cx.strokeStyle='rgba(255,255,255,0.08)';cx.lineWidth=1;cx.setLineDash([4,6]);
+    cx.beginPath();cx.arc(DOPP_X,DOPP_Y,r,0,Math.PI*2);cx.stroke();
+    cx.setLineDash([]);
+    if(DOPP_X+r<W-5){
+      cx.font='9px Nunito';cx.fillStyle='rgba(255,255,255,0.25)';cx.textAlign='left';
+      cx.fillText(d+'m',DOPP_X+r+3,DOPP_Y+4);
+    }
+  }
+  // Sector lines (valid throw sector ~35° spread)
+  cx.strokeStyle='rgba(255,255,255,0.15)';cx.lineWidth=1.5;cx.setLineDash([]);
+  const a1=-Math.PI/5,a2=Math.PI/5;
+  [a1,a2].forEach(a=>{
+    cx.beginPath();cx.moveTo(DOPP_X,DOPP_Y);
+    cx.lineTo(DOPP_X+Math.cos(a)*320,DOPP_Y+Math.sin(a)*320);cx.stroke();
+  });
+  cx.fillStyle='rgba(0,229,160,0.04)';
+  cx.beginPath();cx.moveTo(DOPP_X,DOPP_Y);
+  cx.arc(DOPP_X,DOPP_Y,320,a1,a2);cx.closePath();cx.fill();
+  // Throwing circle
+  cx.strokeStyle=GOLD;cx.lineWidth=2.5;
+  cx.beginPath();cx.arc(DOPP_X,DOPP_Y,CIRCLE_R,0,Math.PI*2);cx.stroke();
+  cx.fillStyle='rgba(255,215,0,0.06)';
+  cx.beginPath();cx.arc(DOPP_X,DOPP_Y,CIRCLE_R,0,Math.PI*2);cx.fill();
+}
+
+function drawLandMarkers(){
+  throws.forEach((t,i)=>{
+    const sx=DOPP_X+t.x*5,sy=DOPP_Y+t.y*5;
+    cx.fillStyle=CRIMSON;
+    cx.beginPath();cx.arc(sx,sy,5,0,Math.PI*2);cx.fill();
+    cx.font='bold 10px Nunito';cx.fillStyle=GOLD;cx.textAlign='center';
+    cx.fillText(t.dist+'m',sx,sy-8);
+  });
+}
+
+function drawDopp(){
+  const x=DOPP_X,y=DOPP_Y;
+  if(phase==='idle'||phase==='spinning'){
+    // Spinning athlete top-down — just a circle with direction indicator
+    cx.fillStyle='#e74c3c';
+    cx.beginPath();cx.arc(x,y,16,0,Math.PI*2);cx.fill();
+    cx.fillStyle='#e8b89a';
+    cx.beginPath();cx.arc(x,y-5,9,0,Math.PI*2);cx.fill();
+    // Arm with hammer rotating
+    const arm=spinAngle;
+    const hx=x+Math.cos(arm)*28,hy=y+Math.sin(arm)*28;
+    cx.strokeStyle='#e8b89a';cx.lineWidth=4;cx.lineCap='round';
+    cx.beginPath();cx.moveTo(x,y);cx.lineTo(hx,hy);cx.stroke();
+    // Hammer ball
+    cx.fillStyle='#888';
+    cx.beginPath();cx.arc(hx,hy,9,0,Math.PI*2);cx.fill();
+    cx.fillStyle='rgba(255,255,255,0.2)';
+    cx.beginPath();cx.arc(hx-3,hy-3,3,0,Math.PI*2);cx.fill();
+    // Spin speed ring
+    const speedFrac=spinSpeed/MAX_SPIN;
+    cx.strokeStyle=speedFrac>0.8?CRIMSON:speedFrac>0.5?GOLD:EMERALD;
+    cx.lineWidth=3;
+    cx.beginPath();cx.arc(x,y,CIRCLE_R-4,0,Math.PI*2*speedFrac);cx.stroke();
+  } else {
+    cx.fillStyle='#e74c3c';cx.beginPath();cx.arc(x,y,16,0,Math.PI*2);cx.fill();
+    cx.fillStyle='#e8b89a';cx.beginPath();cx.arc(x,y-5,9,0,Math.PI*2);cx.fill();
+  }
+}
+
+function drawHammer(){
+  if(phase!=='flying') return;
+  cx.fillStyle='#aaa';cx.beginPath();cx.arc(hammerX,hammerY,8,0,Math.PI*2);cx.fill();
+  // trail
+  cx.strokeStyle='rgba(255,215,0,0.3)';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(DOPP_X,DOPP_Y);cx.lineTo(hammerX,hammerY);cx.stroke();
+}
+
+function drawSpinMeter(){
+  if(phase!=='spinning') return;
+  const mx=W-30,my=H/2,mh=140;
+  cx.fillStyle='rgba(0,0,0,0.4)';
+  roundRect(mx-10,my-mh/2,20,mh,5);cx.fill();
+  const fh=(spinSpeed/MAX_SPIN)*mh;
+  const col=spinSpeed/MAX_SPIN>0.8?CRIMSON:spinSpeed/MAX_SPIN>0.5?GOLD:EMERALD;
+  cx.fillStyle=col;
+  roundRect(mx-10,my+mh/2-fh,20,fh,5);cx.fill();
+  cx.font='bold 9px Nunito';cx.textAlign='center';cx.fillStyle='rgba(240,244,255,0.5)';
+  cx.fillText('SPIN',mx,my-mh/2-6);
+  cx.fillText('RELEASE',mx,my+mh/2+14);
+  cx.fillText('NOW',mx,my+mh/2+24);
+}
+
+function roundRect(x,y,w,h,r){
+  cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);cx.quadraticCurveTo(x+w,y,x+w,y+r);
+  cx.lineTo(x+w,y+h-r);cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  cx.lineTo(x+r,y+h);cx.quadraticCurveTo(x,y+h,x,y+h-r);
+  cx.lineTo(x,y+r);cx.quadraticCurveTo(x,y,x+r,y);cx.closePath();
+}
+
+function update(){
+  frameCount++;
+  if(phase==='spinning'){
+    if(!spinDecay){
+      spinAngle+=spinSpeed*0.08;
+    } else {
+      spinSpeed=Math.max(0,spinSpeed-0.15);
+      spinAngle+=spinSpeed*0.08;
+      if(spinSpeed<=0.2) release();
+    }
+  }
+  if(phase==='flying'){
+    hammerX+=hammerVX;
+    hammerY+=hammerVY;
+    hammerT++;
+    if(hammerX<0||hammerX>W||hammerY<0||hammerY>H||hammerT>120){
+      // Landed
+      const rx=(hammerX-DOPP_X)/5,ry=(hammerY-DOPP_Y)/5;
+      const d=Math.round(Math.sqrt(rx*rx+ry*ry));
+      throws.push({x:rx,y:ry,dist:d});
+      if(d>bestDist) bestDist=d;
+      phase='landed';
+      document.getElementById('msg').textContent=`🔨 ${d}m! Click to continue.`;
+      updateInfo();
+    }
+  }
+}
+
+function drawOverlay(){
+  if(phase==='idle'&&currentThrow===0&&throws.length===0){
+    cx.fillStyle='rgba(5,7,15,0.6)';cx.fillRect(0,0,W,H);
+    cx.textAlign='center';
+    cx.font='bold 26px Nunito';cx.fillStyle=GOLD;cx.fillText('🔨 Hammer Throw',W/2,H/2-40);
+    cx.font='14px Nunito';cx.fillStyle='rgba(240,244,255,0.7)';
+    cx.fillText('Click/tap to spin · Stop clicking to release',W/2,H/2-8);
+    cx.fillText('Faster spin + right release angle = farther throw',W/2,H/2+18);
+    cx.font='12px Nunito';cx.fillStyle=EMERALD;
+    cx.fillText('💡 Rotational power training builds core strength.',W/2,H/2+50);
+    cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Click to Begin',W/2,H/2+80);
+  }
+  if(phase==='done'){
+    cx.fillStyle='rgba(5,7,15,0.82)';cx.fillRect(0,0,W,H);
+    cx.textAlign='center';
+    cx.font='bold 32px Nunito';cx.fillStyle=GOLD;cx.fillText('🏆 All Throws Done!',W/2,H/2-50);
+    cx.font='18px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Best: ${bestDist.toFixed(0)}m`,W/2,H/2-10);
+    const record=86;
+    cx.font='12px Nunito';cx.fillStyle='rgba(240,244,255,0.4)';
+    cx.fillText(`World Record: ${record}m`,W/2,H/2+18);
+    cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Click to Throw Again',W/2,H/2+58);
+  }
+}
+
+function loop(){
+  drawField();drawLandMarkers();drawHammer();drawDopp();drawSpinMeter();
+  drawOverlay();update();
+  requestAnimationFrame(loop);
+}
+init();loop();
+</script>
+</body>
+</html>

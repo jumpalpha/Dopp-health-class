@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Caber Toss — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(12px,2.8vw,19px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:13px;color:var(--emerald);font-weight:600;min-width:80px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px;gap:14px}
+canvas{border-radius:16px;max-width:100%;touch-action:none;display:block}
+.instructions{font-size:13px;color:var(--dim);text-align:center;max-width:600px}
+.tip-box{width:100%;max-width:660px;background:rgba(56,191,255,0.07);border:1px solid rgba(56,191,255,0.2);border-radius:14px;padding:14px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tip-label{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--sky)}
+.tip-text{font-size:13px;color:var(--text);line-height:1.55}
+.result-screen{display:none;flex-direction:column;align-items:center;gap:18px;text-align:center;width:100%;max-width:440px}
+.result-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--gold)}
+.big-score{font-family:'Cinzel',serif;font-size:clamp(44px,10vw,72px);font-weight:700;color:var(--emerald)}
+.result-sub{font-size:14px;color:var(--dim);line-height:1.6}
+.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-again-btn:hover{transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp Caber Toss</div>
+  <div class="score-display" id="scoreDisplay">Best: 0 pts</div>
+</header>
+<main>
+  <canvas id="gc" width="660" height="450"></canvas>
+  <div class="instructions" id="instrLabel">Phase 1: Mash SPACE rapidly to build speed! Phase 2: Hit SPACE at the right moment to toss!</div>
+  <div class="tip-box">
+    <div class="tip-label">HEALTH TIP</div>
+    <div class="tip-text">Whole-body power movements strengthen muscles from feet to fingertips.</div>
+  </div>
+  <div class="result-screen" id="resultScreen">
+    <div class="result-title">Final Score</div>
+    <div class="big-score" id="bigScore">0</div>
+    <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--gold)">points (3 attempts)</div>
+    <div class="result-sub" id="resultSub"></div>
+    <button class="play-again-btn" onclick="restartGame()">Toss Again</button>
+  </div>
+</main>
+
+<script>
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const GROUND_Y = H - 60;
+
+// Game state machine
+// phases: 'ready', 'run', 'plant_window', 'flying', 'result', 'gameover'
+let phase = 'ready';
+let attempt = 0;
+let maxAttempts = 3;
+let scores = [];
+let bestScore = 0;
+let totalScore = 0;
+
+// Run phase
+let doppX = 80;
+let momentum = 0; // 0–100
+let lastSpaceTime = 0;
+let spaceCount = 0;
+let runSpeed = 0;
+let leftRight = 0; // alternating for left/right keys
+
+// Plant window phase
+let plantWindowStart = 0;
+let plantWindowDuration = 1400; // ms
+let plantWindowProgress = 0; // 0-1
+let plantMomentum = 0; // captured momentum at plant
+let plantPressed = false;
+let plantTimingScore = 0; // 0-1 how good the timing
+
+// Flying phase
+let caberX, caberY;       // pivot/base of caber
+let caberAngle;           // 0 = vertical up, PI = pointing down
+let caberVAngular;
+let flyFrame = 0;
+let landingAngle = 0;     // final angle deviation from 12 o'clock (radians)
+let landed = false;
+let roundScore = 0;
+
+// Clock indicator
+let showClock = false;
+let clockAngle = 0; // deviation angle for clock display
+
+// Attempt display
+let attemptFlashTimer = 0;
+let phaseMsg = '';
+let phaseMsgTimer = 0;
+
+// Dopp animation
+let runFrame = 0;
+let runAnimTimer = 0;
+
+// Caber properties
+const CABER_LEN = 140;
+const CABER_W_BOT = 10;
+const CABER_W_TOP = 5;
+
+// Timing window good zone: center 60% of window
+const GOOD_ZONE_START = 0.2;
+const GOOD_ZONE_END = 0.8;
+const PERFECT_ZONE_START = 0.42;
+const PERFECT_ZONE_END = 0.58;
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// ---- Drawing helpers ----
+
+function drawSky() {
+  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  grad.addColorStop(0, '#05070F');
+  grad.addColorStop(1, '#0a1628');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function drawGround() {
+  ctx.fillStyle = '#1a3a1a';
+  ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+  ctx.fillStyle = '#256325';
+  ctx.fillRect(0, GROUND_Y, W, 6);
+  ctx.strokeStyle = 'rgba(0,229,160,0.1)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([12, 18]);
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND_Y + 20);
+  ctx.lineTo(W, GROUND_Y + 20);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Direction markers
+  ctx.strokeStyle = 'rgba(255,215,0,0.15)';
+  ctx.lineWidth = 1;
+  for (let x = 100; x < W; x += 80) {
+    ctx.beginPath();
+    ctx.moveTo(x, GROUND_Y);
+    ctx.lineTo(x, GROUND_Y + 6);
+    ctx.stroke();
+  }
+}
+
+function drawDopp(x, carrying, frame) {
+  ctx.save();
+  ctx.translate(x, GROUND_Y);
+  const legSwing = carrying ? 0 : Math.sin(frame * 0.35) * 12;
+
+  // Legs
+  ctx.fillStyle = '#2244AA';
+  // Left leg
+  ctx.save();
+  ctx.rotate((legSwing * Math.PI) / 180);
+  ctx.fillRect(-16, -55, 13, 55);
+  ctx.restore();
+  // Right leg
+  ctx.save();
+  ctx.rotate((-legSwing * Math.PI) / 180);
+  ctx.fillRect(3, -55, 13, 55);
+  ctx.restore();
+
+  // Kilt
+  drawKilt(ctx, 0, -55);
+
+  // Torso
+  ctx.fillStyle = '#1a4a2a';
+  ctx.fillRect(-20, -125, 40, 70);
+  // Tartan sash
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-20, -115); ctx.lineTo(20, -85);
+  ctx.stroke();
+  ctx.strokeStyle = '#FF3B5C';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-20, -105); ctx.lineTo(20, -75);
+  ctx.stroke();
+
+  // Neck
+  ctx.fillStyle = '#c8845a';
+  ctx.fillRect(-8, -140, 16, 18);
+
+  // Head
+  ctx.beginPath();
+  ctx.arc(0, -158, 23, 0, Math.PI * 2);
+  ctx.fillStyle = '#c8845a';
+  ctx.fill();
+  // Hair
+  ctx.fillStyle = '#CC2200';
+  ctx.beginPath();
+  ctx.ellipse(0, -172, 19, 12, 0, Math.PI, 0);
+  ctx.fill();
+  // Beard
+  ctx.beginPath();
+  ctx.ellipse(2, -144, 13, 11, 0, 0, Math.PI);
+  ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(-9, -165, 6, 6);
+  ctx.fillRect(3, -165, 6, 6);
+  ctx.fillStyle = '#222';
+  ctx.fillRect(-7, -163, 3, 3);
+  ctx.fillRect(5, -163, 3, 3);
+  // Eyebrows fierce
+  ctx.strokeStyle = '#CC2200';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(-11, -168); ctx.lineTo(-3, -171); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(11, -168); ctx.lineTo(3, -171); ctx.stroke();
+
+  // Arms
+  if (carrying) {
+    // Both arms up holding caber
+    // Left arm up
+    ctx.fillStyle = '#c8845a';
+    ctx.save();
+    ctx.translate(-20, -118);
+    ctx.rotate(-0.7);
+    ctx.fillRect(-5, -32, 10, 32);
+    ctx.restore();
+    // Right arm up
+    ctx.save();
+    ctx.translate(20, -118);
+    ctx.rotate(0.4);
+    ctx.fillRect(-5, -32, 10, 32);
+    ctx.restore();
+  } else {
+    // Running arms swing
+    ctx.fillStyle = '#c8845a';
+    ctx.save();
+    ctx.translate(-20, -115);
+    ctx.rotate(legSwing * 0.015);
+    ctx.fillRect(-5, -30, 10, 30);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(20, -115);
+    ctx.rotate(-legSwing * 0.015);
+    ctx.fillRect(-5, -30, 10, 30);
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function drawKilt(ctx, x, y) {
+  const colors = ['#1a4a2a', '#2244AA', '#1a4a2a', '#2244AA'];
+  const sw = 11;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x - 22, y, 44, 38);
+  ctx.clip();
+  for (let i = 0; i < 4; i++) {
+    ctx.fillStyle = colors[i % 2];
+    ctx.fillRect(x - 22 + i * sw, y, sw, 38);
+  }
+  ctx.strokeStyle = 'rgba(255,215,0,0.3)';
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i <= 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x - 22 + i * sw, y); ctx.lineTo(x - 22 + i * sw, y + 38);
+    ctx.stroke();
+  }
+  for (let j = 0; j <= 4; j++) {
+    ctx.beginPath();
+    ctx.moveTo(x - 22, y + j * 9); ctx.lineTo(x + 22, y + j * 9);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawCaber(baseX, baseY, angle) {
+  // angle = 0 means pointing straight up, PI = pointing down
+  ctx.save();
+  ctx.translate(baseX, baseY);
+  ctx.rotate(angle);
+  // Draw from base (thick) to top (thin)
+  const grad = ctx.createLinearGradient(0, 0, 0, -CABER_LEN);
+  grad.addColorStop(0, '#6B3A1F');
+  grad.addColorStop(0.5, '#8B5E3C');
+  grad.addColorStop(1, '#A07040');
+  ctx.strokeStyle = grad;
+
+  // Tapered pole
+  ctx.beginPath();
+  ctx.moveTo(-CABER_W_BOT / 2, 0);
+  ctx.lineTo(-CABER_W_TOP / 2, -CABER_LEN);
+  ctx.lineTo(CABER_W_TOP / 2, -CABER_LEN);
+  ctx.lineTo(CABER_W_BOT / 2, 0);
+  ctx.closePath();
+  ctx.fillStyle = '#7B4B25';
+  ctx.fill();
+  // Wood grain
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 6; i++) {
+    const t = i / 6;
+    const w = lerp(CABER_W_BOT / 2, CABER_W_TOP / 2, t);
+    const y = -CABER_LEN * t;
+    ctx.beginPath();
+    ctx.moveTo(-w, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+  // Top knob
+  ctx.beginPath();
+  ctx.arc(0, -CABER_LEN, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#5a3010';
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawMomentumBar() {
+  const bx = 30, by = GROUND_Y - 42, bw = 200, bh = 16;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.beginPath();
+  ctx.roundRect(bx - 4, by - 20, bw + 8, bh + 26, 8);
+  ctx.fill();
+  ctx.font = "bold 11px 'Cinzel', serif";
+  ctx.fillStyle = '#FFD700';
+  ctx.textAlign = 'left';
+  ctx.fillText('MOMENTUM', bx, by - 5);
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw, bh, 4);
+  ctx.fill();
+  const pct = momentum / 100;
+  const col = pct < 0.4 ? '#38BFFF' : pct < 0.7 ? '#00E5A0' : pct < 0.9 ? '#FFD700' : '#FF3B5C';
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw * pct, bh, 4);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.font = "bold 10px 'Nunito', sans-serif";
+  ctx.fillText(Math.round(momentum) + '%', bx + bw / 2, by + 12);
+  // Mash prompt
+  ctx.fillStyle = 'rgba(255,215,0,0.8)';
+  ctx.textAlign = 'left';
+  ctx.font = "12px 'Cinzel', serif";
+  ctx.fillText('MASH SPACE!', bx, by + bh + 18);
+}
+
+function drawPlantWindow() {
+  // Timing window bar
+  const bx = 30, by = GROUND_Y - 42, bw = 280, bh = 22;
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.beginPath();
+  ctx.roundRect(bx - 4, by - 22, bw + 8, bh + 30, 8);
+  ctx.fill();
+  ctx.font = "bold 11px 'Cinzel', serif";
+  ctx.fillStyle = '#FFD700';
+  ctx.textAlign = 'left';
+  ctx.fillText('TOSS TIMING — Hit SPACE!', bx, by - 6);
+  // Background bar
+  ctx.fillStyle = 'rgba(255,59,92,0.25)';
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw, bh, 6);
+  ctx.fill();
+  // Good zone
+  ctx.fillStyle = 'rgba(0,229,160,0.35)';
+  ctx.beginPath();
+  ctx.roundRect(bx + bw * GOOD_ZONE_START, by, bw * (GOOD_ZONE_END - GOOD_ZONE_START), bh, 4);
+  ctx.fill();
+  // Perfect zone
+  ctx.fillStyle = 'rgba(255,215,0,0.5)';
+  ctx.beginPath();
+  ctx.roundRect(bx + bw * PERFECT_ZONE_START, by, bw * (PERFECT_ZONE_END - PERFECT_ZONE_START), bh, 4);
+  ctx.fill();
+  // Sliding indicator
+  const now = Date.now();
+  const elapsed = now - plantWindowStart;
+  const prog = clamp(elapsed / plantWindowDuration, 0, 1);
+  plantWindowProgress = prog;
+  const indX = bx + bw * prog;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.moveTo(indX, by - 4);
+  ctx.lineTo(indX - 5, by);
+  ctx.lineTo(indX + 5, by);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(indX - 2, by, 4, bh);
+  // Labels
+  ctx.fillStyle = '#00E5A0';
+  ctx.font = "10px 'Nunito', sans-serif";
+  ctx.textAlign = 'center';
+  ctx.fillText('GOOD', bx + bw * ((GOOD_ZONE_START + GOOD_ZONE_END) / 2), by + 14);
+  ctx.fillStyle = '#FFD700';
+  ctx.fillText('PERFECT', bx + bw * ((PERFECT_ZONE_START + PERFECT_ZONE_END) / 2), by + 14);
+  // If window expired, auto-toss
+  if (prog >= 1 && !plantPressed) {
+    plantPressed = true;
+    plantTimingScore = 0.05;
+    executeToss();
+  }
+}
+
+function drawClockFace(cx, cy, r, deviationAngle) {
+  // Clock face
+  ctx.save();
+  ctx.translate(cx, cy);
+  // Face
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fill();
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Hour marks
+  for (let h = 0; h < 12; h++) {
+    const a = (h / 12) * Math.PI * 2 - Math.PI / 2;
+    const inner = h % 3 === 0 ? r - 10 : r - 6;
+    ctx.strokeStyle = h === 0 ? '#FFD700' : 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = h % 3 === 0 ? 2 : 1;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * inner, Math.sin(a) * inner);
+    ctx.lineTo(Math.cos(a) * (r - 2), Math.sin(a) * (r - 2));
+    ctx.stroke();
+  }
+  // 12 o'clock label
+  ctx.fillStyle = '#FFD700';
+  ctx.font = "bold 10px 'Cinzel', serif";
+  ctx.textAlign = 'center';
+  ctx.fillText('12', 0, -r + 16);
+  // Caber indicator line
+  const caberClockAngle = -Math.PI / 2 + deviationAngle;
+  ctx.strokeStyle = '#00E5A0';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(Math.cos(caberClockAngle) * (r - 8), Math.sin(caberClockAngle) * (r - 8));
+  ctx.stroke();
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(0, 0, 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFD700';
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawAttemptDots() {
+  ctx.font = "12px 'Cinzel', serif";
+  ctx.fillStyle = '#FFD700';
+  ctx.textAlign = 'left';
+  ctx.fillText('Attempts: ', 20, 30);
+  for (let i = 0; i < maxAttempts; i++) {
+    ctx.beginPath();
+    ctx.arc(106 + i * 24, 25, 7, 0, Math.PI * 2);
+    if (i < scores.length) {
+      // Completed
+      ctx.fillStyle = scores[i] > 0 ? '#00E5A0' : '#FF3B5C';
+    } else if (i === attempt) {
+      ctx.fillStyle = '#FFD700';
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    }
+    ctx.fill();
+    if (i < scores.length && scores[i] > 0) {
+      ctx.fillStyle = '#05070F';
+      ctx.font = "bold 7px 'Nunito', sans-serif";
+      ctx.textAlign = 'center';
+      ctx.fillText(scores[i], 106 + i * 24, 28);
+      ctx.font = "12px 'Cinzel', serif";
+      ctx.textAlign = 'left';
+    }
+  }
+  ctx.font = "bold 13px 'Cinzel', serif";
+  ctx.fillStyle = '#00E5A0';
+  ctx.textAlign = 'right';
+  ctx.fillText('Best: ' + bestScore + ' pts', W - 20, 30);
+}
+
+function drawPhaseMsg() {
+  if (phaseMsgTimer > 0 && phaseMsg) {
+    const alpha = Math.min(1, phaseMsgTimer / 30);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = "bold 28px 'Cinzel Decorative', serif";
+    ctx.fillStyle = phaseMsg.includes('PERFECT') ? '#FFD700' : phaseMsg.includes('GOOD') ? '#00E5A0' : phaseMsg.includes('12') ? '#FFD700' : '#FF3B5C';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 20;
+    ctx.fillText(phaseMsg, W / 2, H / 2 - 20);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+    phaseMsgTimer--;
+  }
+}
+
+// ---- Phase logic ----
+
+let animFrame = null;
+let lastTime = 0;
+let momentumDecay = false;
+
+function startRun() {
+  phase = 'run';
+  momentum = 0;
+  spaceCount = 0;
+  doppX = 80;
+  runFrame = 0;
+  momentumDecay = false;
+  document.getElementById('instrLabel').textContent = 'Mash SPACE rapidly! Build momentum to at least 60% then it auto-advances!';
+  requestAnimationFrame(gameLoop);
+}
+
+function doMash() {
+  if (phase !== 'run') return;
+  const now = Date.now();
+  const delta = now - lastSpaceTime;
+  lastSpaceTime = now;
+  // Faster mashing = more momentum per press
+  const gain = clamp(20 - delta * 0.04, 2, 20);
+  momentum = clamp(momentum + gain, 0, 100);
+  spaceCount++;
+  runFrame += 3;
+}
+
+function startPlantWindow() {
+  phase = 'plant_window';
+  plantWindowStart = Date.now();
+  plantPressed = false;
+  plantMomentum = momentum;
+  document.getElementById('instrLabel').textContent = 'Hit SPACE in the gold zone for a PERFECT toss!';
+}
+
+function pressToss() {
+  if (phase !== 'plant_window' || plantPressed) return;
+  plantPressed = true;
+  const prog = plantWindowProgress;
+  if (prog >= PERFECT_ZONE_START && prog <= PERFECT_ZONE_END) {
+    plantTimingScore = 1.0;
+    phaseMsg = 'PERFECT TIMING!';
+  } else if (prog >= GOOD_ZONE_START && prog <= GOOD_ZONE_END) {
+    plantTimingScore = 0.65;
+    phaseMsg = 'GOOD TIMING!';
+  } else {
+    plantTimingScore = 0.2;
+    phaseMsg = 'EARLY!';
+  }
+  phaseMsgTimer = 50;
+  executeToss();
+}
+
+function executeToss() {
+  phase = 'flying';
+  // Caber starts at Dopp's hands, pointing up
+  caberX = doppX + 5;
+  caberY = GROUND_Y - 130; // hands position
+  flyFrame = 0;
+  landed = false;
+
+  // Angular velocity based on momentum + timing
+  const momFactor = plantMomentum / 100;
+  const timeFactor = plantTimingScore;
+  // Good toss: enough angular velocity to flip fully (need ~PI of rotation)
+  // caberVAngular: how fast caber rotates
+  caberVAngular = 0.022 + momFactor * 0.028 + timeFactor * 0.015;
+
+  // caberAngle starts pointing up (caber top is above hand)
+  // In our convention: angle is rotation from "pointing up" so 0 = up, PI = down
+  caberAngle = 0;
+
+  // Horizontal velocity
+  runSpeed = 2 + momFactor * 3;
+
+  document.getElementById('instrLabel').textContent = 'Watch the caber flip! Land it at 12 o\'clock for maximum points.';
+}
+
+function gameLoop(ts) {
+  ctx.clearRect(0, 0, W, H);
+  drawSky();
+  drawGround();
+  drawAttemptDots();
+
+  if (phase === 'run') {
+    // Dopp runs with caber
+    doppX = Math.min(doppX + momentum * 0.015, 340);
+    momentum = Math.max(0, momentum - 0.3); // decay
+    runFrame++;
+
+    drawDopp(doppX, true, runFrame);
+    // Draw caber on Dopp
+    drawCaber(doppX + 5, GROUND_Y - 130, 0.08);
+    drawMomentumBar();
+    drawPhaseMsg();
+
+    // Auto-advance when Dopp reaches run zone
+    if (doppX >= 300 || momentum >= 95) {
+      startPlantWindow();
+    } else {
+      animFrame = requestAnimationFrame(gameLoop);
+    }
+
+  } else if (phase === 'plant_window') {
+    doppX = Math.min(doppX + plantMomentum * 0.02, 380);
+    runFrame++;
+    drawDopp(doppX, true, runFrame);
+    drawCaber(doppX + 5, GROUND_Y - 130, 0.08);
+    drawPlantWindow();
+    drawPhaseMsg();
+
+    if (!plantPressed) {
+      animFrame = requestAnimationFrame(gameLoop);
+    }
+
+  } else if (phase === 'flying') {
+    // Caber in air
+    caberX += runSpeed * 0.5;
+    runSpeed *= 0.995;
+    // Gravity effect on Y
+    const liftPhase = flyFrame < 30;
+    if (liftPhase) {
+      caberY -= 2.5 - flyFrame * 0.06;
+    } else {
+      caberY += (flyFrame - 30) * 0.04;
+    }
+    caberY = clamp(caberY, 60, GROUND_Y - 10);
+    caberAngle += caberVAngular * (1 - flyFrame * 0.001);
+    flyFrame++;
+
+    // Dopp follows for a bit then stops
+    if (flyFrame < 25) {
+      doppX = Math.min(doppX + 2, 430);
+      runFrame++;
+    }
+    drawDopp(doppX, false, runFrame);
+
+    // Draw caber
+    // When angle passes PI, caber is "down" = landed
+    if (!landed && caberAngle >= Math.PI) {
+      // Caber lands
+      landed = true;
+      // Landing deviation: ideal = caber pointing straight down (angle = PI exactly)
+      // But caber flips over so top goes down first - 12 o'clock = top pointing away
+      // Deviation from PI
+      const targetAngle = Math.PI;
+      const deviation = Math.abs(caberAngle - targetAngle);
+      landingAngle = caberAngle - targetAngle; // can be negative (short) or positive (over)
+      clockAngle = clamp(landingAngle, -Math.PI / 2, Math.PI / 2);
+      showClock = true;
+
+      // Score
+      const devDeg = Math.abs(landingAngle) * 180 / Math.PI;
+      if (devDeg <= 8) {
+        roundScore = 10;
+        phaseMsg = '12 O\'CLOCK! PERFECT!';
+      } else if (devDeg <= 20) {
+        roundScore = 8;
+        phaseMsg = 'GREAT TOSS!';
+      } else if (devDeg <= 40) {
+        roundScore = 5;
+        phaseMsg = 'GOOD!';
+      } else if (devDeg <= 70) {
+        roundScore = 2;
+        phaseMsg = 'NEEDS WORK';
+      } else {
+        roundScore = 0;
+        phaseMsg = 'SIDEWAYS!';
+      }
+      phaseMsgTimer = 90;
+
+      // Freeze caber at landing
+      caberVAngular = 0;
+    }
+
+    // Draw caber at its current angle
+    // Base of caber is at caberX, caberY
+    drawCaber(caberX, caberY, caberAngle);
+
+    if (showClock) {
+      drawClockFace(W - 80, 80, 50, clockAngle);
+      ctx.font = "12px 'Cinzel', serif";
+      ctx.fillStyle = '#FFD700';
+      ctx.textAlign = 'center';
+      ctx.fillText('12 o\'clock', W - 80, 142);
+    }
+
+    drawPhaseMsg();
+
+    if (landed && flyFrame > 60 && phaseMsgTimer <= 0) {
+      // Advance to result
+      scores.push(roundScore);
+      if (roundScore > bestScore) bestScore = roundScore;
+      totalScore += roundScore;
+      document.getElementById('scoreDisplay').textContent = 'Best: ' + bestScore + ' pts';
+      phase = 'result';
+      setTimeout(() => {
+        attempt++;
+        showClock = false;
+        if (attempt >= maxAttempts) {
+          endGame();
+        } else {
+          phase = 'ready';
+          momentum = 0;
+          doppX = 80;
+          runFrame = 0;
+          document.getElementById('instrLabel').textContent = 'Press SPACE to begin next attempt!';
+          requestAnimationFrame(gameLoop);
+        }
+      }, 1800);
+    } else if (!landed || phaseMsgTimer > 0 || flyFrame <= 60) {
+      animFrame = requestAnimationFrame(gameLoop);
+    }
+
+  } else if (phase === 'ready') {
+    drawDopp(doppX, true, 0);
+    drawCaber(doppX + 5, GROUND_Y - 130, 0.08);
+    // Ready prompt
+    ctx.font = "18px 'Cinzel', serif";
+    ctx.fillStyle = 'rgba(255,215,0,0.9)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Press SPACE to start your run!', W / 2, H / 2 + 30);
+    ctx.font = "13px 'Nunito', sans-serif";
+    ctx.fillStyle = 'rgba(240,244,255,0.6)';
+    ctx.fillText('Attempt ' + (attempt + 1) + ' of ' + maxAttempts, W / 2, H / 2 + 55);
+  } else if (phase === 'result') {
+    drawDopp(doppX, false, runFrame);
+    if (showClock) {
+      drawClockFace(W - 80, 80, 50, clockAngle);
+      ctx.font = "12px 'Cinzel', serif";
+      ctx.fillStyle = '#FFD700';
+      ctx.textAlign = 'center';
+      ctx.fillText('12 o\'clock', W - 80, 142);
+    }
+    drawPhaseMsg();
+  }
+
+  draw();
+}
+
+function draw() {
+  // Extra HUD always on top (called at end of each gameLoop branch above actually)
+}
+
+function endGame() {
+  phase = 'gameover';
+  canvas.style.display = 'none';
+  document.getElementById('instrLabel').style.display = 'none';
+  const rs = document.getElementById('resultScreen');
+  rs.style.display = 'flex';
+  document.getElementById('bigScore').textContent = totalScore;
+  let sub = '';
+  if (totalScore >= 28) sub = 'Perfect tosses across the board! True Highland champion!';
+  else if (totalScore >= 20) sub = 'Excellent form! The crowd goes wild for your caber work!';
+  else if (totalScore >= 12) sub = 'Good effort! Keep working on that 12 o\'clock angle.';
+  else if (totalScore >= 6) sub = 'The caber demands practice — but your body is getting stronger!';
+  else sub = 'Every great Highland athlete started here. Keep at it!';
+  document.getElementById('resultSub').textContent = sub;
+}
+
+function restartGame() {
+  phase = 'ready';
+  attempt = 0;
+  scores = [];
+  bestScore = 0;
+  totalScore = 0;
+  momentum = 0;
+  doppX = 80;
+  runFrame = 0;
+  showClock = false;
+  plantPressed = false;
+  phaseMsg = '';
+  phaseMsgTimer = 0;
+  document.getElementById('scoreDisplay').textContent = 'Best: 0 pts';
+  document.getElementById('resultScreen').style.display = 'none';
+  canvas.style.display = 'block';
+  document.getElementById('instrLabel').style.display = 'block';
+  document.getElementById('instrLabel').textContent = 'Press SPACE to begin your run!';
+  requestAnimationFrame(gameLoop);
+}
+
+// Input
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (phase === 'run') {
+      doMash();
+    } else if (phase === 'plant_window') {
+      pressToss();
+    } else if (phase === 'ready') {
+      startRun();
+    }
+  }
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') {
+    if (phase === 'run') doMash();
+  }
+});
+
+canvas.addEventListener('click', (e) => {
+  if (phase === 'run') {
+    doMash();
+  } else if (phase === 'plant_window') {
+    pressToss();
+  } else if (phase === 'ready') {
+    startRun();
+  }
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (phase === 'run') doMash();
+  else if (phase === 'plant_window') pressToss();
+  else if (phase === 'ready') startRun();
+}, {passive: false});
+
+// Initial draw
+ctx.clearRect(0, 0, W, H);
+drawSky();
+drawGround();
+drawDopp(80, true, 0);
+drawCaber(85, GROUND_Y - 130, 0.08);
+// Attempt dots empty
+ctx.font = "12px 'Cinzel', serif";
+ctx.fillStyle = '#FFD700';
+ctx.textAlign = 'left';
+ctx.fillText('Attempts: ', 20, 30);
+for (let i = 0; i < 3; i++) {
+  ctx.beginPath();
+  ctx.arc(106 + i * 24, 25, 7, 0, Math.PI * 2);
+  ctx.fillStyle = i === 0 ? '#FFD700' : 'rgba(255,255,255,0.15)';
+  ctx.fill();
+}
+ctx.font = "18px 'Cinzel', serif";
+ctx.fillStyle = 'rgba(255,215,0,0.9)';
+ctx.textAlign = 'center';
+ctx.fillText('Press SPACE or Tap to begin!', W / 2, H / 2 + 30);
+ctx.font = "13px 'Nunito', sans-serif";
+ctx.fillStyle = 'rgba(240,244,255,0.6)';
+ctx.fillText('3 attempts — aim for 12 o\'clock!', W / 2, H / 2 + 55);
+</script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏟️ Dopp 400m — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 24px;background:rgba(5,7,15,0.97);border-bottom:1px solid rgba(255,215,0,0.2);flex-shrink:0}
+.back{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
+.title{font-family:'Cinzel Decorative',serif;font-size:17px;color:#FFD700}
+.info{font-family:'Cinzel',serif;font-size:13px;color:#F0F4FF;text-align:right;min-width:150px}
+#wrap{width:100%;max-width:660px;flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 12px 4px}
+canvas{display:block;border-radius:10px;border:1px solid rgba(255,215,0,0.15)}
+#btns{display:flex;gap:8px;margin-top:6px}
+.sbtn{padding:10px 20px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#F0F4FF;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;min-width:80px;text-align:center}
+.sbtn:active,.sbtn.active{background:rgba(255,215,0,0.2);border-color:rgba(255,215,0,0.4)}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="javascript:history.back()">← Back</a>
+  <div class="title">🏟️ Dopp 400m</div>
+  <div class="info" id="info">Best: --</div>
+</header>
+<div id="wrap">
+  <canvas id="c" width="660" height="340"></canvas>
+  <div id="btns">
+    <button class="sbtn" id="btn-jog">🚶 JOG</button>
+    <button class="sbtn" id="btn-run">🏃 RUN</button>
+    <button class="sbtn" id="btn-sprint">⚡ SPRINT</button>
+  </div>
+</div>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const W=660,H=340,GOLD='#FFD700',EMERALD='#00E5A0',CRIMSON='#FF3B5C',SKY='#38BFFF';
+
+// Oval track top-down view
+const TRACK_CX=W/2,TRACK_CY=H/2+10;
+const TRACK_RX=220,TRACK_RY=110;
+const TRACK_WIDTH=28;
+const TOTAL_DIST=400; // meters
+
+let phase='title';
+let playerAngle=Math.PI,playerDist=0,playerSpeed=0,stamina=100;
+let elapsed=0,startTime=0,bestTime=null;
+let speedMode=0; // 0=jog,1=run,2=sprint
+let opponents,frameCount=0;
+
+const SPEEDS=[2.2,4.8,9.5];      // m/s
+const STAM_DRAIN=[0,0.8,3.5];    // stamina/s
+const STAM_REGEN=1.2;            // stamina/s when jogging
+
+function initRace(){
+  phase='running';playerAngle=Math.PI;playerDist=0;playerSpeed=0;stamina=100;
+  elapsed=0;startTime=Date.now();speedMode=1;
+  opponents=[
+    {angle:Math.PI,dist:0,speed:5.2+Math.random()*0.8,color:SKY,name:'AI 1',finished:false},
+    {angle:Math.PI,dist:0,speed:4.8+Math.random()*0.6,color:'#a855f7',name:'AI 2',finished:false},
+  ];
+  document.getElementById('info').textContent='Best: '+(bestTime?(bestTime/1000).toFixed(2)+'s':'--');
+}
+
+// Track outline as ellipse — compute angle from distance
+function distToAngle(d){
+  // Perimeter approx: 2*PI * sqrt((rx^2+ry^2)/2)
+  const perim=2*Math.PI*Math.sqrt((TRACK_RX*TRACK_RX+TRACK_RY*TRACK_RY)/2);
+  return Math.PI + (d/TOTAL_DIST)*2*Math.PI;
+}
+function angleToCenterXY(a){
+  return{x:TRACK_CX+Math.cos(a)*TRACK_RX, y:TRACK_CY+Math.sin(a)*TRACK_RY};
+}
+
+function drawTrack(){
+  // Outer grass
+  cx.fillStyle='#0d2b0d';cx.fillRect(0,0,W,H);
+  // Track surface
+  cx.fillStyle='#8B4513';
+  cx.beginPath();cx.ellipse(TRACK_CX,TRACK_CY,TRACK_RX+TRACK_WIDTH,TRACK_RY+TRACK_WIDTH,0,0,Math.PI*2);cx.fill();
+  // Inner grass
+  cx.fillStyle='#1a4a1a';
+  cx.beginPath();cx.ellipse(TRACK_CX,TRACK_CY,TRACK_RX-TRACK_WIDTH,TRACK_RY-TRACK_WIDTH,0,0,Math.PI*2);cx.fill();
+  // Lane lines
+  for(let i=-1;i<=1;i+=2){
+    cx.strokeStyle='rgba(255,255,255,0.15)';cx.lineWidth=1;cx.setLineDash([8,10]);
+    cx.beginPath();cx.ellipse(TRACK_CX,TRACK_CY,TRACK_RX+i*TRACK_WIDTH/2,TRACK_RY+i*TRACK_WIDTH/2,0,0,Math.PI*2);cx.stroke();
+  }
+  cx.strokeStyle='rgba(255,255,255,0.35)';cx.lineWidth=2;cx.setLineDash([]);
+  cx.beginPath();cx.ellipse(TRACK_CX,TRACK_CY,TRACK_RX,TRACK_RY,0,0,Math.PI*2);cx.stroke();
+  // Start/finish line
+  const startA=Math.PI;
+  const sx=TRACK_CX+Math.cos(startA)*TRACK_RX,sy=TRACK_CY+Math.sin(startA)*TRACK_RY;
+  const perp=startA+Math.PI/2;
+  cx.strokeStyle=GOLD;cx.lineWidth=3;
+  cx.beginPath();
+  cx.moveTo(sx+Math.cos(perp)*TRACK_WIDTH,sy+Math.sin(perp)*TRACK_WIDTH);
+  cx.lineTo(sx-Math.cos(perp)*TRACK_WIDTH,sy-Math.sin(perp)*TRACK_WIDTH);
+  cx.stroke();
+  // Distance markers
+  for(let m=0;m<TOTAL_DIST;m+=50){
+    const a=distToAngle(m);
+    const p=angleToCenterXY(a);
+    cx.fillStyle='rgba(255,255,255,0.2)';cx.font='8px Nunito';cx.textAlign='center';
+    cx.fillText(m+'m',p.x,p.y+3);
+  }
+}
+
+function drawRunner(dist,color,isPlayer,name){
+  const a=distToAngle(dist);
+  const p=angleToCenterXY(a);
+  const off=isPlayer?0:TRACK_WIDTH*0.4;
+  const nx=-Math.sin(a)*off,ny=Math.cos(a)*off;
+  const rx=p.x+nx,ry=p.y+ny;
+  const run=Math.sin(frameCount*(isPlayer?0.35:0.28))*0.5;
+  // Shadow
+  cx.fillStyle='rgba(0,0,0,0.2)';cx.beginPath();cx.ellipse(rx,ry+9,7,3,0,0,Math.PI*2);cx.fill();
+  // Legs
+  cx.strokeStyle=color;cx.lineWidth=3;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(rx,ry+4);cx.lineTo(rx-5+run*5,ry+12);cx.stroke();
+  cx.beginPath();cx.moveTo(rx,ry+4);cx.lineTo(rx+5-run*5,ry+12);cx.stroke();
+  // Body
+  cx.fillStyle=isPlayer?'#e74c3c':color;cx.beginPath();cx.ellipse(rx,ry,5,8,0,0,Math.PI*2);cx.fill();
+  // Head
+  cx.fillStyle='#e8b89a';cx.beginPath();cx.arc(rx,ry-9,5,0,Math.PI*2);cx.fill();
+  // Name
+  cx.font='bold 8px Nunito';cx.fillStyle=isPlayer?GOLD:'rgba(255,255,255,0.4)';cx.textAlign='center';
+  cx.fillText(isPlayer?'YOU':name,rx,ry-17);
+}
+
+function drawHUD(){
+  if(phase!=='running'&&phase!=='done') return;
+  const t=(elapsed/1000).toFixed(2);
+  // Time
+  cx.font='bold 24px Nunito';cx.fillStyle=GOLD;cx.textAlign='left';cx.fillText(t+'s',12,30);
+  // Distance
+  const pct=Math.min(1,playerDist/TOTAL_DIST);
+  cx.font='12px Nunito';cx.fillStyle='rgba(240,244,255,0.5)';
+  cx.fillText(Math.round(playerDist)+'m / 400m',12,50);
+  // Stamina bar
+  cx.fillStyle='rgba(0,0,0,0.35)';roundRect(12,58,160,10,4);cx.fill();
+  const sc=stamina>50?EMERALD:stamina>20?GOLD:CRIMSON;
+  cx.fillStyle=sc;roundRect(12,58,160*(stamina/100),10,4);cx.fill();
+  cx.font='9px Nunito';cx.fillStyle='rgba(255,255,255,0.35)';cx.fillText('STAMINA',12,82);
+  // Speed mode indicator
+  const modes=['🚶 JOG','🏃 RUN','⚡ SPRINT'];
+  const cols=['rgba(255,255,255,0.5)',GOLD,CRIMSON];
+  cx.font='bold 11px Nunito';cx.fillStyle=cols[speedMode];cx.fillText(modes[speedMode],12,96);
+  // Stagger progress ring on track
+  opponents.forEach(o=>{
+    const oa=distToAngle(o.dist);
+    const op=angleToCenterXY(oa);
+    cx.fillStyle=o.color;cx.beginPath();cx.arc(op.x,op.y,3,0,Math.PI*2);cx.fill();
+  });
+}
+
+function roundRect(x,y,w,h,r){
+  if(w<=0) return;
+  cx.beginPath();cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);cx.quadraticCurveTo(x+w,y,x+w,y+r);
+  cx.lineTo(x+w,y+h-r);cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  cx.lineTo(x+r,y+h);cx.quadraticCurveTo(x,y+h,x,y+h-r);
+  cx.lineTo(x,y+r);cx.quadraticCurveTo(x,y,x+r,y);cx.closePath();
+}
+
+function drawOverlay(){
+  if(phase==='title'){
+    cx.fillStyle='rgba(5,7,15,0.88)';cx.fillRect(0,0,W,H);
+    cx.textAlign='center';
+    cx.font='bold 32px Nunito';cx.fillStyle=GOLD;cx.fillText('🏟️ Dopp 400m',W/2,H/2-50);
+    cx.font='14px Nunito';cx.fillStyle='rgba(240,244,255,0.7)';
+    cx.fillText('Manage your stamina over 400 meters.',W/2,H/2-14);
+    cx.fillText('Sprint too early and you\'ll burn out! Pace yourself.',W/2,H/2+12);
+    cx.font='12px Nunito';cx.fillStyle=EMERALD;
+    cx.fillText('💡 Aerobic training strengthens the heart and improves oxygen efficiency.',W/2,H/2+44);
+    cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Click / Space to Race',W/2,H/2+78);
+  }
+  if(phase==='done'){
+    cx.fillStyle='rgba(5,7,15,0.82)';cx.fillRect(0,0,W,H);
+    cx.textAlign='center';
+    const t=(elapsed/1000).toFixed(2);
+    const best=bestTime?(bestTime/1000).toFixed(2)+'s':'--';
+    cx.font='bold 30px Nunito';cx.fillStyle=GOLD;cx.fillText('🏁 Finished!',W/2,H/2-45);
+    cx.font='20px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Your time: ${t}s`,W/2,H/2-8);
+    cx.font='13px Nunito';cx.fillStyle='rgba(240,244,255,0.5)';cx.fillText(`Best: ${best}`,W/2,H/2+18);
+    cx.font='11px Nunito';cx.fillStyle='rgba(240,244,255,0.3)';cx.fillText('World Record: 43.03s (Wayde van Niekerk)',W/2,H/2+38);
+    cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Space / Click to Race Again',W/2,H/2+74);
+  }
+}
+
+// Speed buttons
+document.getElementById('btn-jog').addEventListener('click',()=>{speedMode=0;updateBtns();});
+document.getElementById('btn-run').addEventListener('click',()=>{speedMode=1;updateBtns();});
+document.getElementById('btn-sprint').addEventListener('click',()=>{speedMode=2;updateBtns();});
+document.addEventListener('keydown',e=>{
+  if(e.code==='Digit1'||e.code==='KeyQ'){speedMode=0;updateBtns();}
+  if(e.code==='Digit2'||e.code==='KeyW'){speedMode=1;updateBtns();}
+  if(e.code==='Digit3'||e.code==='KeyE'||e.code==='Space'){
+    e.preventDefault();
+    if(phase==='title'||phase==='done'){if(phase==='title')initRace();else initRace();return;}
+    speedMode=2;updateBtns();
+  }
+  if(e.code==='Space'&&(phase==='title'||phase==='done')){e.preventDefault();initRace();}
+});
+cv.addEventListener('click',()=>{if(phase==='title'||phase==='done')initRace();});
+
+function updateBtns(){
+  ['btn-jog','btn-run','btn-sprint'].forEach((id,i)=>{
+    document.getElementById(id).classList.toggle('active',i===speedMode);
+  });
+}
+updateBtns();
+
+function update(){
+  frameCount++;
+  if(phase!=='running') return;
+  elapsed=Date.now()-startTime;
+  const dt=1/60;
+  // Stamina
+  if(speedMode===0){
+    stamina=Math.min(100,stamina+STAM_REGEN*dt*60/60);
+  } else {
+    stamina=Math.max(0,stamina-STAM_DRAIN[speedMode]*dt*60/60);
+  }
+  // If out of stamina, forced jog
+  const actualMode=stamina<=0?0:speedMode;
+  if(stamina<=0&&speedMode>0){speedMode=0;updateBtns();}
+
+  playerSpeed=SPEEDS[actualMode];
+  // Distance per frame (400m total)
+  const perim=2*Math.PI*Math.sqrt((TRACK_RX*TRACK_RX+TRACK_RY*TRACK_RY)/2);
+  playerDist+=playerSpeed*dt;
+  playerAngle=distToAngle(playerDist);
+
+  // AI
+  opponents.forEach(o=>{
+    if(!o.finished) o.dist+=o.speed*dt;
+    if(o.dist>=TOTAL_DIST) o.finished=true;
+  });
+
+  if(playerDist>=TOTAL_DIST){
+    phase='done';
+    const t=Date.now()-startTime;
+    if(!bestTime||t<bestTime) bestTime=t;
+    document.getElementById('info').textContent='Best: '+(bestTime/1000).toFixed(2)+'s';
+  }
+}
+
+function loop(){
+  drawTrack();
+  if(phase!=='title'){
+    opponents.forEach(o=>drawRunner(o.dist,o.color,false,o.name));
+    drawRunner(playerDist,GOLD,true,'YOU');
+  }
+  drawHUD();drawOverlay();update();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
