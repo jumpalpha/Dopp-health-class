@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Snake – Health Class</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
+#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
+#back-btn:hover{opacity:1}
+#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(16px,3vw,22px);text-align:center}
+#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:90px}
+#main{display:flex;flex-direction:column;align-items:center;padding:12px 10px 30px;width:100%;max-width:820px}
+#tip-bar{width:560px;max-width:100%;min-height:28px;font-family:'Nunito',sans-serif;font-size:13px;color:#38BFFF;text-align:center;padding:4px 8px;margin-bottom:8px;opacity:0;transition:opacity .4s}
+#tip-bar.show{opacity:1}
+canvas{display:block;background:#05070F;border:2px solid rgba(255,215,0,0.25);border-radius:8px;max-width:100%}
+#overlay{position:fixed;inset:0;background:rgba(5,7,15,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+#overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(24px,5vw,36px);margin-bottom:16px}
+#overlay p{font-family:'Nunito',sans-serif;font-size:18px;color:#fff;margin-bottom:8px}
+#overlay .best{font-size:14px;color:#00E5A0;margin-bottom:28px}
+#play-btn{background:#FFD700;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 0 18px rgba(255,215,0,.4)}
+#play-btn:hover{transform:scale(1.05);box-shadow:0 0 28px rgba(255,215,0,.7)}
+#start-overlay{position:fixed;inset:0;background:rgba(5,7,15,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+#start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,32px);margin-bottom:12px}
+#start-overlay p{font-family:'Nunito',sans-serif;color:#ccc;font-size:15px;margin-bottom:6px;max-width:380px;text-align:center}
+#start-btn{margin-top:20px;background:#00E5A0;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(0,229,160,.4)}
+#start-btn:hover{transform:scale(1.05)}
+</style>
+</head>
+<body>
+<div id="header">
+  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <div id="game-title">Dopp Snake</div>
+  <div id="score-display">Score: <span id="score-val">0</span></div>
+</div>
+<div id="main">
+  <div id="tip-bar"></div>
+  <canvas id="gameCanvas" width="560" height="560"></canvas>
+</div>
+
+<div id="start-overlay">
+  <h2>Dopp Snake</h2>
+  <p>Eat healthy foods to grow and score points!</p>
+  <p style="color:#FF3B5C">Avoid junk food — it shrinks you!</p>
+  <p style="color:#aaa;font-size:13px;margin-top:8px">Arrow keys / WASD to move</p>
+  <button id="start-btn">Start Game</button>
+</div>
+
+<div id="overlay" style="display:none">
+  <h2>Game Over</h2>
+  <p id="final-score">Score: 0</p>
+  <p class="best" id="best-score">Best: 0</p>
+  <button id="play-btn">Play Again</button>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const CELL = 28, COLS = 20, ROWS = 20;
+const W = COLS * CELL, H = ROWS * CELL;
+
+const TIPS = [
+  "💧 Drink 8 glasses of water daily!",
+  "🥦 Vegetables provide essential vitamins & minerals.",
+  "🍎 An apple a day keeps the doctor away!",
+  "🥕 Carrots are rich in beta-carotene for eye health.",
+  "🍌 Bananas are a great source of potassium.",
+  "🏃 Exercise for at least 60 minutes every day.",
+  "😴 Teens need 8–10 hours of sleep each night.",
+  "🥗 Half your plate should be fruits & vegetables!"
+];
+
+const FOODS = [
+  {emoji:'🍎', label:'Apple +10',    pts:10,  good:true},
+  {emoji:'🥦', label:'Broccoli +15', pts:15,  good:true},
+  {emoji:'💧', label:'Water +12',    pts:12,  good:true},
+  {emoji:'🍌', label:'Banana +10',   pts:10,  good:true},
+  {emoji:'🥕', label:'Carrot +12',   pts:12,  good:true},
+  {emoji:'🍔', label:'Burger -10',   pts:-10, good:false},
+  {emoji:'🥤', label:'Soda -10',     pts:-10, good:false},
+];
+
+let snake, dir, nextDir, foods, score, speed, foodCount, tipIndex, gameOver, flashRed, flashTimer, animId;
+
+function initGame() {
+  snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  dir = {x:1, y:0};
+  nextDir = {x:1, y:0};
+  foods = [];
+  score = 0;
+  speed = 150;
+  foodCount = 0;
+  tipIndex = 0;
+  gameOver = false;
+  flashRed = false;
+  flashTimer = 0;
+  spawnFood();
+  spawnFood();
+  document.getElementById('score-val').textContent = '0';
+}
+
+function rnd(n){return Math.floor(Math.random()*n)}
+
+function cellFree(x,y){
+  if(snake.some(s=>s.x===x&&s.y===y)) return false;
+  if(foods.some(f=>f.x===x&&f.y===y)) return false;
+  return true;
+}
+
+function spawnFood(){
+  if(foods.length >= 4) return;
+  let x,y,tries=0;
+  do{x=rnd(COLS);y=rnd(ROWS);tries++;}while(!cellFree(x,y)&&tries<200);
+  // 30% chance junk food
+  let pool = Math.random()<0.3 ? FOODS.filter(f=>!f.good) : FOODS.filter(f=>f.good);
+  let fd = pool[rnd(pool.length)];
+  foods.push({x,y,...fd});
+}
+
+function showTip(){
+  const bar = document.getElementById('tip-bar');
+  bar.textContent = TIPS[tipIndex % TIPS.length];
+  tipIndex++;
+  bar.classList.remove('show');
+  void bar.offsetWidth;
+  bar.classList.add('show');
+  clearTimeout(bar._t);
+  bar._t = setTimeout(()=>bar.classList.remove('show'), 3500);
+}
+
+let lastTime = 0;
+function gameLoop(ts){
+  if(gameOver) return;
+  animId = requestAnimationFrame(gameLoop);
+  if(ts - lastTime < speed) return;
+  lastTime = ts;
+  update();
+  draw();
+}
+
+function update(){
+  dir = nextDir;
+  const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+  // wall collision
+  if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS){endGame();return;}
+  // self collision
+  if(snake.some(s=>s.x===head.x&&s.y===head.y)){endGame();return;}
+
+  snake.unshift(head);
+  let ate = false;
+  for(let i=0;i<foods.length;i++){
+    const f = foods[i];
+    if(f.x===head.x&&f.y===head.y){
+      score = Math.max(0, score + f.pts);
+      document.getElementById('score-val').textContent = score;
+      foods.splice(i,1);
+      ate = true;
+      foodCount++;
+      showTip();
+      if(!f.good){
+        // remove tail segments (shrink)
+        if(snake.length > 2){ snake.pop(); snake.pop(); }
+        flashRed = true; flashTimer = 6;
+      } else {
+        // don't pop — snake grows
+      }
+      // speed up every 5 good foods
+      if(foodCount % 5 === 0 && speed > 70) speed -= 12;
+      spawnFood();
+      break;
+    }
+  }
+  if(!ate) snake.pop();
+  if(snake.length <= 0){endGame();return;}
+
+  if(flashTimer > 0) flashTimer--;
+  else flashRed = false;
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.03)';
+  ctx.lineWidth=1;
+  for(let x=0;x<=W;x+=CELL){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=CELL){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // red flash
+  if(flashRed){
+    ctx.fillStyle='rgba(255,59,92,0.18)';
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // food
+  foods.forEach(f=>{
+    const px = f.x*CELL, py = f.y*CELL;
+    // background bubble
+    ctx.fillStyle = f.good ? 'rgba(0,229,160,0.12)' : 'rgba(255,59,92,0.15)';
+    ctx.beginPath();ctx.roundRect(px+1,py+1,CELL-2,CELL-2,6);ctx.fill();
+    ctx.font=`${CELL-6}px serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(f.emoji, px+CELL/2, py+CELL/2);
+    // label
+    ctx.font=`bold 8px Nunito`;
+    ctx.fillStyle = f.good ? '#00E5A0' : '#FF3B5C';
+    ctx.fillText(f.label, px+CELL/2, py+CELL-3);
+  });
+
+  // snake body
+  for(let i=snake.length-1;i>=1;i--){
+    const s=snake[i];
+    const t = i/snake.length;
+    ctx.fillStyle=`rgba(${Math.round(60+t*40)},${Math.round(180+t*30)},${Math.round(100+t*20)},0.9)`;
+    ctx.beginPath();ctx.roundRect(s.x*CELL+2,s.y*CELL+2,CELL-4,CELL-4,4);ctx.fill();
+  }
+  // snake head
+  const h=snake[0];
+  ctx.fillStyle='#00E5A0';
+  ctx.beginPath();ctx.roundRect(h.x*CELL+1,h.y*CELL+1,CELL-2,CELL-2,7);ctx.fill();
+  // eyes
+  const ex = h.x*CELL+CELL/2, ey = h.y*CELL+CELL/2;
+  ctx.fillStyle='#05070F';
+  if(dir.y===0){
+    ctx.beginPath();ctx.arc(ex+dir.x*3, ey-4, 2.5, 0, Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(ex+dir.x*3, ey+4, 2.5, 0, Math.PI*2);ctx.fill();
+  } else {
+    ctx.beginPath();ctx.arc(ex-4, ey+dir.y*3, 2.5, 0, Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(ex+4, ey+dir.y*3, 2.5, 0, Math.PI*2);ctx.fill();
+  }
+}
+
+function endGame(){
+  gameOver = true;
+  cancelAnimationFrame(animId);
+  const best = Math.max(score, parseInt(localStorage.getItem('snakeBest')||'0'));
+  localStorage.setItem('snakeBest', best);
+  document.getElementById('final-score').textContent = 'Score: ' + score;
+  document.getElementById('best-score').textContent = 'Best: ' + best;
+  document.getElementById('overlay').style.display='flex';
+}
+
+// Controls
+document.addEventListener('keydown', e=>{
+  const map={'ArrowUp':{x:0,y:-1},'ArrowDown':{x:0,y:1},'ArrowLeft':{x:-1,y:0},'ArrowRight':{x:1,y:0},
+             'w':{x:0,y:-1},'s':{x:0,y:1},'a':{x:-1,y:0},'d':{x:1,y:0},
+             'W':{x:0,y:-1},'S':{x:0,y:1},'A':{x:-1,y:0},'D':{x:1,y:0}};
+  if(map[e.key]){
+    e.preventDefault();
+    const nd=map[e.key];
+    if(nd.x!==-dir.x||nd.y!==-dir.y) nextDir=nd;
+  }
+});
+
+// Touch swipe
+let tx0,ty0;
+canvas.addEventListener('touchstart',e=>{tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;},{passive:true});
+canvas.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
+  if(Math.abs(dx)>Math.abs(dy)){nextDir=dx>0?{x:1,y:0}:{x:-1,y:0};}
+  else{nextDir=dy>0?{x:0,y:1}:{x:0,y:-1};}
+},{passive:true});
+
+document.getElementById('start-btn').addEventListener('click',()=>{
+  document.getElementById('start-overlay').style.display='none';
+  initGame(); draw();
+  requestAnimationFrame(gameLoop);
+});
+
+document.getElementById('play-btn').addEventListener('click',()=>{
+  document.getElementById('overlay').style.display='none';
+  initGame(); draw();
+  requestAnimationFrame(gameLoop);
+});
+
+// initial draw
+initGame(); draw();
+</script>
+</body>
+</html>

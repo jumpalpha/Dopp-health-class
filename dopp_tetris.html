@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Tetris – Health Class</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
+#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
+#back-btn:hover{opacity:1}
+#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(16px,3vw,22px);text-align:center}
+#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:90px}
+#main{display:flex;flex-direction:column;align-items:center;padding:12px 10px 30px;width:100%;max-width:820px}
+#game-wrap{display:flex;gap:12px;align-items:flex-start;justify-content:center;width:100%}
+#playCanvas{display:block;border:2px solid rgba(255,215,0,0.25);border-radius:8px}
+#sideCanvas{display:block;border:2px solid rgba(255,215,0,0.15);border-radius:8px;background:#0a0c18}
+#tip-bar{width:460px;max-width:100%;min-height:26px;font-family:'Nunito',sans-serif;font-size:13px;color:#38BFFF;text-align:center;padding:4px 8px;margin-bottom:8px;opacity:0;transition:opacity .4s}
+#tip-bar.show{opacity:1}
+#controls-hint{font-family:'Nunito',sans-serif;font-size:12px;color:#666;margin-top:10px;text-align:center}
+#overlay{position:fixed;inset:0;background:rgba(5,7,15,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;display:none}
+#overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,34px);margin-bottom:16px}
+#overlay p{font-family:'Nunito',sans-serif;font-size:18px;color:#fff;margin-bottom:6px}
+.best{font-size:14px;color:#00E5A0;margin-bottom:28px}
+#play-btn{background:#FFD700;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4)}
+#play-btn:hover{transform:scale(1.05)}
+#start-overlay{position:fixed;inset:0;background:rgba(5,7,15,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+#start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,5vw,30px);margin-bottom:14px}
+.key-hint{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0 20px}
+.key{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:5px;padding:4px 10px;font-family:'Nunito',sans-serif;font-size:13px;color:#ccc}
+#start-btn{background:#00E5A0;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(0,229,160,.4)}
+#start-btn:hover{transform:scale(1.05)}
+</style>
+</head>
+<body>
+<div id="header">
+  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <div id="game-title">Dopp Tetris</div>
+  <div id="score-display">Score: <span id="score-val">0</span></div>
+</div>
+<div id="main">
+  <div id="tip-bar"></div>
+  <div id="game-wrap">
+    <canvas id="playCanvas" width="300" height="600"></canvas>
+    <canvas id="sideCanvas" width="160" height="300"></canvas>
+  </div>
+  <div id="controls-hint">← → move &nbsp;|&nbsp; ↑ rotate &nbsp;|&nbsp; ↓ soft drop &nbsp;|&nbsp; Space hard drop</div>
+</div>
+
+<div id="start-overlay">
+  <h2>Dopp Tetris</h2>
+  <p style="font-family:'Nunito';color:#aaa;margin-bottom:8px;text-align:center;max-width:340px">Stack food groups to clear lines and learn nutrition!</p>
+  <div class="key-hint">
+    <span class="key">← → Move</span><span class="key">↑ Rotate</span><span class="key">↓ Drop</span><span class="key">Space Hard Drop</span>
+  </div>
+  <button id="start-btn">Start Game</button>
+</div>
+<div id="overlay">
+  <h2>Game Over</h2>
+  <p id="final-score">Score: 0</p>
+  <p class="best" id="best-score">Best: 0</p>
+  <button id="play-btn">Play Again</button>
+</div>
+
+<script>
+const play = document.getElementById('playCanvas');
+const pCtx = play.getContext('2d');
+const side = document.getElementById('sideCanvas');
+const sCtx = side.getContext('2d');
+
+const COLS=10, ROWS=20, BS=30; // block size
+const W=COLS*BS, H=ROWS*BS;
+
+const PIECES = {
+  I:{shape:[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],color:'#38BFFF',name:'Water',glow:'rgba(56,191,255,0.4)',tip:'Water keeps every cell in your body hydrated!'},
+  O:{shape:[[1,1],[1,1]],color:'#FFD700',name:'Grains',glow:'rgba(255,215,0,0.4)',tip:'Whole grains give you lasting energy!'},
+  T:{shape:[[0,1,0],[1,1,1],[0,0,0]],color:'#FF3B5C',name:'Protein',glow:'rgba(255,59,92,0.4)',tip:'Protein builds and repairs your muscles!'},
+  S:{shape:[[0,1,1],[1,1,0],[0,0,0]],color:'#ff69b4',name:'Fruits',glow:'rgba(255,105,180,0.4)',tip:'Fruits are packed with vitamins & antioxidants!'},
+  Z:{shape:[[1,1,0],[0,1,1],[0,0,0]],color:'#00E5A0',name:'Vegetables',glow:'rgba(0,229,160,0.4)',tip:'Vegetables provide fiber and essential nutrients!'},
+  J:{shape:[[1,0,0],[1,1,1],[0,0,0]],color:'#87ceeb',name:'Dairy',glow:'rgba(135,206,235,0.4)',tip:'Dairy builds strong bones with calcium!'},
+  L:{shape:[[0,0,1],[1,1,1],[0,0,0]],color:'#a855f7',name:'Healthy Fats',glow:'rgba(168,85,247,0.4)',tip:'Healthy fats support brain function!'},
+};
+const PIECE_KEYS = Object.keys(PIECES);
+const SCORES_PER_LINE = [0,100,300,500,800];
+
+let board, current, next, score, lines, level, gameOver, dropTimer, dropInterval, animId;
+
+function newBoard(){return Array.from({length:ROWS},()=>Array(COLS).fill(null));}
+
+function rndPiece(){
+  const k=PIECE_KEYS[Math.floor(Math.random()*PIECE_KEYS.length)];
+  const p=PIECES[k];
+  return {key:k,shape:p.shape.map(r=>[...r]),color:p.color,name:p.name,glow:p.glow,tip:p.tip,x:Math.floor(COLS/2)-Math.floor(p.shape[0].length/2),y:0};
+}
+
+function rotate(shape){
+  const N=shape.length;
+  return shape[0].map((_,i)=>shape.map(r=>r[i]).reverse());
+}
+
+function valid(shape,px,py){
+  for(let r=0;r<shape.length;r++)
+    for(let c=0;c<shape[r].length;c++)
+      if(shape[r][c]){
+        const nx=px+c,ny=py+r;
+        if(nx<0||nx>=COLS||ny>=ROWS) return false;
+        if(ny>=0&&board[ny][nx]) return false;
+      }
+  return true;
+}
+
+function place(){
+  current.shape.forEach((r,ri)=>r.forEach((v,ci)=>{
+    if(v&&current.y+ri>=0) board[current.y+ri][current.x+ci]={color:current.color,glow:current.glow,name:current.name};
+  }));
+  clearLines();
+  current=next; next=rndPiece();
+  if(!valid(current.shape,current.x,current.y)){endGame();}
+}
+
+function clearLines(){
+  let cleared=0;
+  const names={};
+  for(let r=ROWS-1;r>=0;r--){
+    if(board[r].every(c=>c)){
+      board[r].forEach(c=>{if(c)names[c.name]=(names[c.name]||0)+1;});
+      board.splice(r,1);
+      board.unshift(Array(COLS).fill(null));
+      cleared++; r++;
+    }
+  }
+  if(cleared>0){
+    const pts=SCORES_PER_LINE[cleared]*(level+1);
+    score+=pts;
+    lines+=cleared;
+    level=Math.floor(lines/10);
+    dropInterval=Math.max(100,800-level*70);
+    document.getElementById('score-val').textContent=score;
+    // show tip for most cleared piece
+    const top=Object.entries(names).sort((a,b)=>b[1]-a[1])[0];
+    if(top){
+      const pKey=PIECE_KEYS.find(k=>PIECES[k].name===top[0]);
+      if(pKey) showTip(PIECES[pKey].tip);
+    }
+    drawSidebar();
+  }
+}
+
+function showTip(msg){
+  const bar=document.getElementById('tip-bar');
+  bar.textContent=msg;
+  bar.classList.remove('show');
+  void bar.offsetWidth;
+  bar.classList.add('show');
+  clearTimeout(bar._t);
+  bar._t=setTimeout(()=>bar.classList.remove('show'),3800);
+}
+
+function initGame(){
+  board=newBoard();
+  current=rndPiece(); next=rndPiece();
+  score=0; lines=0; level=0; gameOver=false;
+  dropInterval=800; dropTimer=0;
+  document.getElementById('score-val').textContent='0';
+}
+
+let last=0;
+function gameLoop(ts){
+  if(gameOver) return;
+  animId=requestAnimationFrame(gameLoop);
+  const dt=ts-last; last=ts;
+  dropTimer+=dt;
+  if(dropTimer>=dropInterval){dropTimer=0;moveDown();}
+  drawBoard(); drawSidebar();
+}
+
+function moveDown(){
+  if(valid(current.shape,current.x,current.y+1)) current.y++;
+  else place();
+}
+
+function drawBlock(ctx,x,y,color,glow,size=BS){
+  const g=ctx.createLinearGradient(x,y,x+size,y+size);
+  g.addColorStop(0,color);
+  g.addColorStop(1,color+'99');
+  ctx.fillStyle=g;
+  ctx.shadowColor=glow||color;
+  ctx.shadowBlur=12;
+  ctx.fillRect(x+1,y+1,size-2,size-2);
+  ctx.shadowBlur=0;
+  // border
+  ctx.strokeStyle=color+'cc';
+  ctx.lineWidth=1;
+  ctx.strokeRect(x+1.5,y+1.5,size-3,size-3);
+}
+
+function drawBoard(){
+  pCtx.fillStyle='#05070F';
+  pCtx.fillRect(0,0,W,H);
+  // grid
+  pCtx.strokeStyle='rgba(255,255,255,0.04)';
+  pCtx.lineWidth=1;
+  for(let x=0;x<=W;x+=BS){pCtx.beginPath();pCtx.moveTo(x,0);pCtx.lineTo(x,H);pCtx.stroke();}
+  for(let y=0;y<=H;y+=BS){pCtx.beginPath();pCtx.moveTo(0,y);pCtx.lineTo(W,y);pCtx.stroke();}
+  // placed blocks
+  board.forEach((row,ri)=>row.forEach((cell,ci)=>{
+    if(cell) drawBlock(pCtx,ci*BS,ri*BS,cell.color,cell.glow);
+  }));
+  // ghost piece
+  let gy=current.y;
+  while(valid(current.shape,current.x,gy+1)) gy++;
+  current.shape.forEach((r,ri)=>r.forEach((v,ci)=>{
+    if(v){
+      pCtx.fillStyle='rgba(255,255,255,0.07)';
+      pCtx.fillRect((current.x+ci)*BS+2,(gy+ri)*BS+2,BS-4,BS-4);
+    }
+  }));
+  // current piece
+  current.shape.forEach((r,ri)=>r.forEach((v,ci)=>{
+    if(v&&current.y+ri>=0) drawBlock(pCtx,(current.x+ci)*BS,(current.y+ri)*BS,current.color,current.glow);
+  }));
+}
+
+function drawSidebar(){
+  sCtx.fillStyle='#0a0c18';
+  sCtx.fillRect(0,0,160,300);
+
+  sCtx.font='bold 12px Cinzel';
+  sCtx.fillStyle='#FFD700';
+  sCtx.textAlign='center';
+  sCtx.fillText('NEXT',80,22);
+
+  // next piece
+  const ns=next.shape;
+  const ow=ns[0].length*20, oh=ns.length*20;
+  const ox=(160-ow)/2, oy=36;
+  ns.forEach((r,ri)=>r.forEach((v,ci)=>{
+    if(v) drawBlock(sCtx,ox+ci*20,oy+ri*20,next.color,next.glow,20);
+  }));
+
+  sCtx.fillStyle='rgba(255,255,255,0.06)';
+  sCtx.fillRect(10,120,140,1);
+
+  sCtx.textAlign='left';
+  sCtx.font='bold 11px Cinzel';
+  sCtx.fillStyle='#aaa';
+  sCtx.fillText('SCORE',14,140);
+  sCtx.font='bold 20px Nunito';
+  sCtx.fillStyle='#fff';
+  sCtx.fillText(score,14,162);
+
+  sCtx.font='bold 11px Cinzel';
+  sCtx.fillStyle='#aaa';
+  sCtx.fillText('LINES',14,188);
+  sCtx.font='bold 18px Nunito';
+  sCtx.fillStyle='#00E5A0';
+  sCtx.fillText(lines,14,208);
+
+  sCtx.font='bold 11px Cinzel';
+  sCtx.fillStyle='#aaa';
+  sCtx.fillText('LEVEL',14,234);
+  sCtx.font='bold 18px Nunito';
+  sCtx.fillStyle='#FFD700';
+  sCtx.fillText(level+1,14,254);
+
+  // piece name
+  sCtx.font='bold 10px Nunito';
+  sCtx.fillStyle=next.color;
+  sCtx.textAlign='center';
+  sCtx.fillText(next.name,80,280);
+}
+
+function endGame(){
+  gameOver=true;
+  cancelAnimationFrame(animId);
+  const best=Math.max(score,parseInt(localStorage.getItem('tetrisBest')||'0'));
+  localStorage.setItem('tetrisBest',best);
+  document.getElementById('final-score').textContent='Score: '+score;
+  document.getElementById('best-score').textContent='Best: '+best;
+  document.getElementById('overlay').style.display='flex';
+}
+
+document.addEventListener('keydown',e=>{
+  if(gameOver) return;
+  switch(e.key){
+    case 'ArrowLeft': e.preventDefault(); if(valid(current.shape,current.x-1,current.y)) current.x--; break;
+    case 'ArrowRight': e.preventDefault(); if(valid(current.shape,current.x+1,current.y)) current.x++; break;
+    case 'ArrowDown': e.preventDefault(); moveDown(); dropTimer=0; break;
+    case 'ArrowUp': e.preventDefault();
+      const rot=rotate(current.shape);
+      if(valid(rot,current.x,current.y)) current.shape=rot;
+      else if(valid(rot,current.x-1,current.y)){current.shape=rot;current.x--;}
+      else if(valid(rot,current.x+1,current.y)){current.shape=rot;current.x++;}
+      break;
+    case ' ': e.preventDefault();
+      while(valid(current.shape,current.x,current.y+1)) current.y++;
+      place(); dropTimer=0; break;
+  }
+  drawBoard(); drawSidebar();
+});
+
+// Touch controls
+let tx0,ty0;
+play.addEventListener('touchstart',e=>{tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;},{passive:true});
+play.addEventListener('touchend',e=>{
+  if(gameOver) return;
+  const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
+  const adx=Math.abs(dx), ady=Math.abs(dy);
+  if(adx<15&&ady<15){const rot=rotate(current.shape);if(valid(rot,current.x,current.y))current.shape=rot;}
+  else if(adx>ady){if(dx>0){if(valid(current.shape,current.x+1,current.y))current.x++;}else{if(valid(current.shape,current.x-1,current.y))current.x--;}}
+  else if(dy>0){while(valid(current.shape,current.x,current.y+1))current.y++;place();}
+  drawBoard();drawSidebar();
+},{passive:true});
+
+document.getElementById('start-btn').addEventListener('click',()=>{
+  document.getElementById('start-overlay').style.display='none';
+  initGame(); drawBoard(); drawSidebar();
+  last=performance.now();
+  requestAnimationFrame(gameLoop);
+});
+document.getElementById('play-btn').addEventListener('click',()=>{
+  document.getElementById('overlay').style.display='none';
+  initGame(); drawBoard(); drawSidebar();
+  last=performance.now();
+  requestAnimationFrame(gameLoop);
+});
+
+initGame(); drawBoard(); drawSidebar();
+</script>
+</body>
+</html>
