@@ -9,8 +9,8 @@
 :root {
   --gold:#FFD700; --gold-dim:#8a6d00; --emerald:#00E5A0; --sky:#38BFFF;
   --crimson:#FF3B5C; --purple:#a855f7; --orange:#FF8C00;
-  --bg:#07090F; --surface:#0d1018; --card:rgba(255,255,255,0.04);
-  --border:rgba(255,255,255,0.08); --text:#F0F4FF; --dim:rgba(240,244,255,0.50);
+  --bg:#07090F; --surface:#0d1018; --card:rgba(28,26,46,0.05);
+  --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.5);
 }
 * { box-sizing:border-box; margin:0; padding:0; }
 body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
@@ -200,7 +200,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
   <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:#FFD700">Teacher Dashboard</div>
   <div style="font-size:14px;color:rgba(240,244,255,0.5);margin-bottom:8px">Enter your access PIN to continue</div>
   <input type="password" id="pin-input" maxlength="30" placeholder="Enter PIN"
-    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#F0F4FF;font-size:18px;padding:12px 24px;text-align:center;font-family:'Nunito',sans-serif;width:260px;letter-spacing:4px;outline:none"
+    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#1C1A2E;font-size:18px;padding:12px 24px;text-align:center;font-family:'Nunito',sans-serif;width:260px;letter-spacing:4px;outline:none"
     onkeydown="if(event.key==='Enter')checkPin()">
   <button onclick="checkPin()"
     style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);color:#FFD700;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:10px 32px;border-radius:10px;cursor:pointer">
