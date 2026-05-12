@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp's Health Horoscope — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(12px,3vw,19px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:12px;color:var(--emerald);font-weight:600;min-width:70px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 20px;gap:24px;max-width:580px;margin:0 auto;width:100%}
+.section-title{font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--gold);opacity:.8}
+.signs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
+.sign-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s;text-align:center}
+.sign-card:hover{border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.05);transform:translateY(-2px)}
+.sign-card.selected{border-color:var(--gold);background:rgba(255,215,0,0.1);box-shadow:0 0 20px rgba(255,215,0,0.15)}
+.sign-emoji{font-size:28px}
+.sign-name{font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.5px;color:var(--dim);line-height:1.3}
+.read-btn{background:linear-gradient(135deg,#9B59B6,#6C3483);color:#fff;border:none;padding:14px 40px;border-radius:12px;font-family:'Cinzel Decorative',serif;font-size:14px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;letter-spacing:.5px;opacity:.4;pointer-events:none}
+.read-btn.active{opacity:1;pointer-events:auto;box-shadow:0 0 24px rgba(155,89,182,0.4)}
+.read-btn.active:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(155,89,182,0.5)}
+.horoscope-card{width:100%;background:linear-gradient(145deg,rgba(155,89,182,0.12),rgba(100,50,180,0.06));border:1px solid rgba(155,89,182,0.3);border-radius:18px;padding:24px 22px;display:none;flex-direction:column;gap:14px;text-align:center;position:relative;overflow:hidden}
+.horoscope-card::before{content:'✨';position:absolute;font-size:80px;opacity:.04;top:-10px;right:-10px}
+.horo-sign{font-size:40px}
+.horo-sign-name{font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:3px;color:#a855f7}
+.horo-text{font-size:14px;line-height:1.75;color:var(--text)}
+.horo-fact{font-size:12px;color:var(--emerald);background:rgba(0,229,160,0.08);border-radius:8px;padding:10px 14px;line-height:1.6}
+.regen-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:11px 28px;border-radius:10px;font-family:'Cinzel',serif;font-size:13px;font-weight:700;cursor:pointer;transition:transform .2s;align-self:center}
+.regen-btn:hover{transform:scale(1.04)}
+.reads-count{font-size:11px;color:var(--dim)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fadeIn{animation:fadeIn .4s ease forwards}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp's Health Horoscope</div>
+  <div class="score-display" id="scoreDisplay">Reads: 0</div>
+</header>
+<main>
+  <div class="section-title">CHOOSE YOUR HEALTH SIGN</div>
+  <div class="signs-grid" id="signsGrid"></div>
+  <button class="read-btn" id="readBtn" onclick="readHoroscope()">🔮 Read My Horoscope</button>
+  <div class="horoscope-card" id="horoCard">
+    <div class="horo-sign" id="horoEmoji"></div>
+    <div class="horo-sign-name" id="horoSignName"></div>
+    <div class="horo-text" id="horoText"></div>
+    <div class="horo-fact" id="horoFact"></div>
+    <button class="regen-btn" onclick="readHoroscope()">✨ New Reading</button>
+    <div class="reads-count" id="readsCount"></div>
+  </div>
+</main>
+
+<script>
+const signs = [
+  {emoji:'🦉', name:'Night Owl'},
+  {emoji:'🐦', name:'Early Bird'},
+  {emoji:'💪', name:'Gym Rat'},
+  {emoji:'🛋️', name:'Couch Champion'},
+  {emoji:'🥗', name:'Veggie Devotee'},
+  {emoji:'🍕', name:'Junk Food Jedi'},
+  {emoji:'🧘', name:'Zen Master'},
+  {emoji:'☕', name:'Caffeine Crusader'}
+];
+
+const horoscopes = {
+  'Night Owl':[
+    {text:"The stars see you squinting at your phone at 2am, wondering why you're tired. Mercury is in retrograde — which is ancient astrology for 'your sleep debt is catching up with you.' The universe advises: try one earlier bedtime this week. Your future self will literally thank you.",fact:"Fact: Chronic sleep deprivation (less than 7 hrs) is linked to 89% higher obesity risk and weakens immune response significantly."},
+    {text:"Your cosmic chart shows tremendous potential buried under sixteen browser tabs and a YouTube spiral. The alignment of Saturn suggests your best ideas actually come after proper rest — not at 3am when you're surviving on spite and energy drinks.",fact:"Fact: The brain consolidates learning during sleep. Studying then sleeping improves retention by up to 40% compared to staying up late."},
+    {text:"Venus whispers to you tonight from across the galaxy: 'The Netflix episode will still be there tomorrow.' Your health horoscope demands you practice the ancient ritual of 'not starting a new show after 10pm.' Revolutionary? Yes. Necessary? Also yes.",fact:"Fact: Teens who get adequate sleep report better emotional regulation, lower anxiety, and better academic performance."},
+    {text:"The moon — your fellow night creature — sends a message: even SHE takes breaks and waxes into darkness sometimes. Your body needs a regular sleep schedule more than you need to scroll through another person's entire Instagram history.",fact:"Fact: Irregular sleep schedules disrupt circadian rhythms, affecting metabolism, mood, and immune function even if total sleep hours are adequate."},
+    {text:"Cosmic insight: your ancestors went to bed when the sun went down. Your current schedule involves blue light, existential dread, and a 4am 'I should really sleep' realization. The stars align for one change: phones out of the bedroom tonight.",fact:"Fact: Blue light from screens blocks melatonin production for up to 3 hours, making it harder to fall asleep and reducing sleep quality."},
+    {text:"Jupiter blesses those who sleep before midnight. This is not an official astronomical fact — but your body's circadian rhythm absolutely agrees. Your horoscope for today: treat sleep like it's an important meeting you cannot skip. Because it is.",fact:"Fact: Deep sleep between 10pm–2am is when growth hormone peaks in teens, supporting muscle repair, immune function, and brain development."}
+  ],
+  'Early Bird':[
+    {text:"The morning stars applaud your discipline! You rise with the sun and your cortisol peaks naturally, like evolution intended. Your horoscope celebrates this excellence while gently noting: don't forget rest is equally sacred. Even early birds need a full 8 hours.",fact:"Fact: Morning people tend to have lower rates of depression and anxiety — but only if they're also getting 7–9 hours of total sleep."},
+    {text:"Mercury smiles upon your 6am risings! Your productivity is aligned with the universe's energy. The cosmos advises: maintain this superpower by protecting your bedtime. Your alarm time only works if your sleep time supports it.",fact:"Fact: A consistent wake time — even on weekends — is the single most powerful way to stabilize your circadian rhythm."},
+    {text:"The rising sun sends you its best energy because you actually show up for it. Your health horoscope suggests channeling this discipline into one more healthy habit — perhaps morning movement or a nutritious breakfast to pair with your stellar sleep.",fact:"Fact: Eating breakfast within 2 hours of waking is associated with better concentration, stable blood sugar, and healthier body weight."},
+    {text:"Your early-rising sign is auspiciously aligned with Saturn's discipline energy. The stars warn though: if you're rising early by staying up late, you are absolutely not fooling the cosmos. Sleep quantity matters as much as wake time.",fact:"Fact: Sleep deprivation impairs cognitive performance as severely as being legally drunk — reaction time, judgment, and memory all suffer."},
+    {text:"The universe has noted your enrollment in the 'functional human' club — a rare achievement. Your horoscope today: since you've mastered sleep, consider adding mindfulness to your morning. Even 5 minutes of quiet before screens sharpens focus all day.",fact:"Fact: Morning mindfulness practice for just 10 minutes reduces cortisol, improves focus, and builds emotional resilience throughout the day."},
+    {text:"Your health sign is strong, Early Bird. The celestial charts show you are resisting the modern chaos of overstimulation. Your single cosmic challenge: share this wisdom. Encourage one friend toward better sleep this week. Wellness is contagious.",fact:"Fact: Social connections that support healthy behaviors are one of the strongest predictors of long-term health outcomes in teens and adults."}
+  ],
+  'Gym Rat':[
+    {text:"Mars — your ruling planet, obviously — is EXTREMELY proud. Your dedication to the iron is written in the stars. However, the cosmos sees you skipping leg day and your horoscope gently judges this. Also: are you eating enough protein AND vegetables? Both matter.",fact:"Fact: Muscle building requires adequate protein (0.7–1g per pound of body weight) AND sufficient carbohydrates for energy and recovery."},
+    {text:"The celestial weights are perfectly balanced — unlike your workout split. The universe sees you hitting chest three times a week and wonders about your posterior chain. Your health horoscope demands balance: in workouts AND in life.",fact:"Fact: Overtraining without adequate rest actually decreases performance and can lead to hormonal imbalances, injury, and immune suppression."},
+    {text:"Jupiter expands what you work for — including muscle, yes, but also stress if you skip recovery. The stars align to remind you: rest days are not optional. Muscles grow during recovery, not during the workout itself.",fact:"Fact: Muscle protein synthesis peaks 24–48 hours after exercise. Without adequate sleep and rest, adaptation is significantly reduced."},
+    {text:"Your sign burns bright in the fitness galaxy! The cosmos applauds the discipline. One cosmic nudge: are you hydrating as hard as you're lifting? Dehydration reduces performance by up to 10% and increases injury risk substantially.",fact:"Fact: Even 2% dehydration during exercise decreases strength, endurance, and concentration. Drink water before, during, and after workouts."},
+    {text:"The stars see your gains and they are impressed. Your horoscope today involves a challenge: add one mindfulness practice alongside your physical training. Mental fitness and physical fitness together create the complete health picture.",fact:"Fact: Athletes who combine physical training with mindfulness show improved performance, faster recovery, and lower injury rates."},
+    {text:"Your celestial fitness trajectory is strong, but the universe whispers: mobility and flexibility training is not weakness — it's wisdom. Your body will thank you for what you do for your joints in your teens and twenties when you reach your forties.",fact:"Fact: Regular stretching and mobility work reduces injury risk by 30%, improves posture, and maintains function as the body ages."}
+  ],
+  'Couch Champion':[
+    {text:"The cosmos sees you — horizontal, comfortable, deeply committed to your position. The stars have a loving message: even 10 minutes of walking today counts. Seriously. The science says even small amounts of movement dramatically reduce health risks.",fact:"Fact: Sitting for more than 8 hours daily increases risk of heart disease and type 2 diabetes — even if you exercise regularly. Break it up!"},
+    {text:"Neptune, the planet of comfort and illusion, understands your attachment to that cushion. But your health horoscope demands action: stand up right now. Walk to another room. That's it. That's the whole challenge. You have begun.",fact:"Fact: Standing up once every 30 minutes during prolonged sitting reduces blood sugar spikes by 34% and lowers cardiovascular risk markers."},
+    {text:"The stars predict your couch will outlast you if you let it. The universe doesn't say this cruelly — it says this with concern. One walk. One flight of stairs. One stretching session on the floor during your next show. The cosmos asks this much.",fact:"Fact: Regular physical inactivity kills more people worldwide than smoking. Even small increases in daily movement significantly reduce mortality risk."},
+    {text:"Your celestial energy is conserved — perhaps a bit too conserved. The horoscope reveals: your body was designed to move. Not because society judges you, but because movement lubricates joints, pumps lymph, improves mood, and literally extends life.",fact:"Fact: People who exercise for just 15 minutes daily live an average of 3 years longer than sedentary people — with significantly better quality of life."},
+    {text:"Mercury speaks in a language you understand: remote control distance workouts. Walk to get the remote instead of asking someone. Walk during commercial breaks. The universe has lowered the bar dramatically because the bar still has value.",fact:"Fact: Lifestyle movement — not formal exercise — accounts for a significant portion of daily calorie burn and can prevent weight gain over time."},
+    {text:"The stars align to remind you: rest is important AND so is movement. You are perhaps the greatest champion of rest — now add movement as your second great championship. They are not opposites. They are partners in a healthy life.",fact:"Fact: The ideal health formula includes both adequate rest AND adequate movement. Neither alone is sufficient — balance is the key."}
+  ],
+  'Veggie Devotee':[
+    {text:"The earth itself celebrates your leafy choices! Your fiber intake is the stuff of nutritional legend. The cosmos commends you while gently noting: are you getting enough protein, iron, and B12 alongside your magnificent vegetables?",fact:"Fact: Plant-based eaters should pay attention to vitamin B12, iron, zinc, omega-3s, and calcium — all manageable with planning but important to monitor."},
+    {text:"Chlorophyll courses through your veins — metaphorically. Your antioxidant levels are astronomical. Your horoscope celebrates this while adding one cosmic challenge: share a vegetable with someone who usually avoids them. Wellness is social.",fact:"Fact: Antioxidants in colorful vegetables (especially orange, red, and purple ones) reduce oxidative stress and protect against cellular aging."},
+    {text:"The green planets align in your favor! Your dietary choices reduce chronic disease risk significantly. The stars note: variety matters. Are you eating a RAINBOW of vegetables or just the same three every week? Diversity = more nutrients.",fact:"Fact: Each vegetable color represents different phytonutrients. Eating a variety of colors ensures broader micronutrient coverage and better gut microbiome diversity."},
+    {text:"Saturn blesses the disciplined, and your discipline at the grocery store is truly cosmic. The universe asks: are your vegetables getting the credit they deserve? Don't hide them — celebrate them. Your gut microbiome is doing a standing ovation.",fact:"Fact: A diverse gut microbiome — fed by fiber-rich vegetables — is linked to better immune function, mood regulation, and metabolic health."},
+    {text:"Your health sign radiates with the energy of someone who eats broccoli voluntarily. The horoscope today concerns joy: are you enjoying your food? Eating healthily AND joyfully is the goal. Neither guilt nor restriction is the path to wellness.",fact:"Fact: A positive relationship with food is as important to health as nutrient content. Orthorexia — obsessing over 'perfect' eating — is a real health concern."},
+    {text:"The cosmos applauds your devotion to the plant kingdom! One celestial upgrade: add movement to your already stellar nutrition. Even great food works better in a body that moves regularly. Your vegetables deserve a cardiovascular system that uses them well.",fact:"Fact: Nutrition and physical activity work synergistically — each amplifies the benefits of the other for heart health, energy, and longevity."}
+  ],
+  'Junk Food Jedi':[
+    {text:"The dark side of nutrition is strong with you. The cosmos does not judge — it merely observes your sodium levels from space. Your health horoscope asks one question: if you ate one vegetable today alongside whatever else you want, would the universe be a better place? Yes. Yes it would.",fact:"Fact: Adding a serving of vegetables to any meal increases fiber, vitamins, and minerals — you don't have to eliminate anything to improve your diet."},
+    {text:"Darth Nutritionist sees your meal choices and sighs from across the galaxy. But your horoscope is not about shame — it's about small wins. Choose water instead of soda once today. That's it. One swap. The force of hydration is calling.",fact:"Fact: Replacing just one sugary drink per day with water reduces calorie intake, improves dental health, and lowers diabetes risk significantly."},
+    {text:"The junk food is strong with this one. The stars have seen your late-night food decisions and they remain committed to your growth. Today's celestial mission: read the nutrition label on one item you eat. Just look. Awareness is the first step.",fact:"Fact: The average American consumes 3,400mg of sodium daily — nearly 50% above the recommended 2,300mg limit. Most of it comes from processed foods."},
+    {text:"Mercury is retrograde, which feels like an excuse, but it is not. Your horoscope today is honest: ultra-processed foods are scientifically linked to depression, inflammation, and chronic disease. This is not moral judgment — it is cellular reality.",fact:"Fact: A 2022 study found that each 10% increase in ultra-processed food consumption raises depression risk by 22% and cardiovascular disease risk by 12%."},
+    {text:"The universe has calculated your average meal and sent you this horoscope as a gentle intervention. The good news: your body is remarkably forgiving. Start adding — don't just subtract. Add a fruit. Add a walk. Add a glass of water. Build from there.",fact:"Fact: Dietary patterns matter more than individual foods. Studies consistently show that adding nutrient-dense foods is more sustainable and effective than restriction."},
+    {text:"The stars shine on you regardless of your snack choices — but they shine BRIGHTER when you show your body some nutritional love. Your challenge today: one genuinely nutritious meal. Not forever — just today. See how you feel. The cosmos is curious.",fact:"Fact: Even a single nutritious meal improves energy, mood, and concentration for the hours that follow. The benefits of good nutrition are felt quickly."}
+  ],
+  'Zen Master':[
+    {text:"Om. The universe bows to your inner peace. Your cortisol levels are the envy of the entire stress response system. Your horoscope today: share this calm with others. Teach one person a breathing technique. Wellness ripples outward.",fact:"Fact: Teaching others a skill you've learned reinforces your own practice and creates social health benefits for both teacher and student."},
+    {text:"The cosmos reflects your stillness back to you like a mountain lake. You have mastered the internal. Your celestial challenge: bring mindfulness to your physical health. Does your calm inner life come with adequate sleep, nutrition, and movement?",fact:"Fact: Mindfulness without physical self-care creates imbalance — mental wellness and physical wellness must be cultivated together for optimal health."},
+    {text:"Saturn witnesses your breath work and nods approvingly. Your nervous system regulation is astral. The horoscope today asks: when was the last time you moved your body joyfully? Not as exercise — as play? The body needs both peace and movement.",fact:"Fact: Joyful movement — dancing, playing sports for fun, swimming — provides mental health benefits beyond structured exercise due to its positive emotional context."},
+    {text:"Your chakras are aligned. The stars confirm this. Your horoscope suggests deepening your practice: mindful eating. Can you eat one meal this week without screens, in complete presence? Your digestion and satisfaction levels will improve significantly.",fact:"Fact: Mindful eating reduces calorie intake by up to 20%, improves digestion, enhances food satisfaction, and reduces emotional eating episodes."},
+    {text:"The universe sees your meditation cushion and your herbal tea and whispers: 'You are doing well.' But even the Zen master needs connection. Social health is a pillar of wellness. When did you last share your peace with a person who needs it?",fact:"Fact: Social isolation is linked to increased inflammation, weakened immunity, and higher mortality risk — even in people who feel comfortable alone."},
+    {text:"Your inner universe is vast and beautiful. The stars are briefly jealous. Today's horoscope: sleep. Even the most zen mind needs 8 hours of sleep to process, restore, and consolidate the wisdom you've gathered. Rest is not the absence of mindfulness.",fact:"Fact: During sleep, the brain's glymphatic system clears toxic metabolic waste — including proteins linked to Alzheimer's disease. Sleep is literally brain cleaning."}
+  ],
+  'Caffeine Crusader':[
+    {text:"The stars observe your dedication to the bean with equal parts admiration and concern. Caffeine is the most widely consumed psychoactive substance on Earth, and you are its champion. The cosmos asks: are you sleeping despite it, or because of it?",fact:"Fact: Caffeine has a half-life of 5–7 hours. A 3pm coffee still has significant effects at 10pm, disrupting sleep quality even if you fall asleep normally."},
+    {text:"Mercury is in your mug. The cosmos sees your morning ritual as a sacred one — and it need not be abandoned. But your horoscope warns: caffeine dependence means withdrawal headaches, fatigue, and irritability. That's not energy — that's chemistry.",fact:"Fact: Regular caffeine consumers who miss their morning dose experience measurable cognitive decline — not below baseline, but back to their uncaffeinated normal."},
+    {text:"The energy drink galaxy awaits your arrival. But your health horoscope intervenes: high-caffeine energy drinks can cause heart palpitations, elevated blood pressure, and anxiety — especially in teens whose cardiovascular systems are still developing.",fact:"Fact: Energy drinks have been linked to cardiac events in teens, especially when combined with exercise. The FDA recommends limiting caffeine to 400mg per day maximum."},
+    {text:"The cosmic latte art in your stars shows great creativity but elevated heart rate. Your horoscope today: try replacing one caffeinated beverage with water or herbal tea and notice — truly notice — whether you actually needed the caffeine or the ritual.",fact:"Fact: Often it's the warmth, taste, and routine of coffee/tea that provides comfort — not just the caffeine. Herbal alternatives can satisfy the ritual without stimulant effects."},
+    {text:"You are strong, Caffeine Crusader. Strong enough to face your afternoon without a second cup. The universe challenges you: one caffeine-free day per week. Observe your energy patterns. Learn when your real energy peaks occur naturally. This is data.",fact:"Fact: Natural circadian energy peaks occur around 9–11am and 1–3pm in most people — often missed or masked by constant caffeine consumption."},
+    {text:"The stars see your productivity and your jitteriness in equal measure. Your horoscope celebrates the wins while noting: adequate sleep would provide the same alertness as caffeine — plus improved mood, better decisions, and actual restoration.",fact:"Fact: Caffeine works by blocking adenosine receptors — it doesn't eliminate tiredness, it delays the feeling. You still accumulate sleep debt while caffeinated."}
+  ]
+};
+
+let selectedSign = null, reads = 0;
+const readCounts = {};
+
+function init(){
+  const grid = document.getElementById('signsGrid');
+  signs.forEach(s=>{
+    const card = document.createElement('div');
+    card.className='sign-card';
+    card.innerHTML=`<div class="sign-emoji">${s.emoji}</div><div class="sign-name">${s.name}</div>`;
+    card.onclick=()=>selectSign(s.name, card);
+    grid.appendChild(card);
+    readCounts[s.name]=0;
+  });
+}
+
+function selectSign(name, el){
+  document.querySelectorAll('.sign-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSign = name;
+  document.getElementById('readBtn').classList.add('active');
+}
+
+function readHoroscope(){
+  if(!selectedSign) return;
+  const list = horoscopes[selectedSign];
+  if(!readCounts[selectedSign]) readCounts[selectedSign]=0;
+  const idx = Math.floor(Math.random()*list.length);
+  const h = list[idx];
+  reads++;
+  readCounts[selectedSign]++;
+  document.getElementById('scoreDisplay').textContent='Reads: '+reads;
+
+  const sign = signs.find(s=>s.name===selectedSign);
+  document.getElementById('horoEmoji').textContent=sign.emoji;
+  document.getElementById('horoSignName').textContent=selectedSign.toUpperCase();
+  document.getElementById('horoText').textContent=h.text;
+  document.getElementById('horoFact').textContent=h.fact;
+  document.getElementById('readsCount').textContent=`You've read ${readCounts[selectedSign]} reading${readCounts[selectedSign]===1?'':'s'} for ${selectedSign}`;
+
+  const card = document.getElementById('horoCard');
+  card.style.display='flex';
+  card.classList.remove('fadeIn');
+  void card.offsetWidth;
+  card.classList.add('fadeIn');
+}
+
+init();
+</script>
+</body>
+</html>

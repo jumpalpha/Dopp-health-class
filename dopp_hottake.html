@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp's Hot Take Stand — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(11px,2.8vw,17px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:12px;color:var(--emerald);font-weight:600;min-width:70px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 20px;gap:20px;max-width:580px;margin:0 auto;width:100%}
+.progress-wrap{width:100%;display:flex;align-items:center;gap:10px}
+.prog-bar{flex:1;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--crimson),#FF8C00);border-radius:3px;transition:width .4s}
+.prog-label{font-family:'Cinzel',serif;font-size:11px;color:var(--dim);white-space:nowrap}
+.take-card{width:100%;background:linear-gradient(145deg,rgba(255,59,92,0.12),rgba(255,140,0,0.06));border:1px solid rgba(255,59,92,0.3);border-radius:20px;padding:28px 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;min-height:140px;justify-content:center}
+.take-badge{font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:3px;color:var(--crimson);background:rgba(255,59,92,0.1);border:1px solid rgba(255,59,92,0.3);padding:4px 14px;border-radius:20px}
+.take-emoji{font-size:36px}
+.take-text{font-family:'Cinzel',serif;font-size:clamp(14px,3.5vw,19px);font-weight:700;color:var(--text);line-height:1.4}
+.vote-row{display:flex;gap:14px;width:100%}
+.vote-btn{flex:1;padding:15px 10px;border-radius:12px;border:none;cursor:pointer;font-family:'Cinzel',serif;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s,box-shadow .15s;letter-spacing:.5px}
+.vote-btn:hover{transform:translateY(-2px)}
+.vote-btn:active{transform:scale(0.96)}
+.agree-btn{background:linear-gradient(135deg,var(--emerald),#00b880);color:#05070F}
+.agree-btn:hover{box-shadow:0 6px 20px rgba(0,229,160,0.3)}
+.disagree-btn{background:linear-gradient(135deg,var(--crimson),#cc1a33);color:#fff}
+.disagree-btn:hover{box-shadow:0 6px 20px rgba(255,59,92,0.3)}
+.verdict-box{width:100%;background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.25);border-radius:16px;padding:18px 20px;display:none;flex-direction:column;gap:10px;text-align:center}
+.verdict-badge{font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:3px;color:var(--gold)}
+.verdict-reaction{font-size:28px}
+.verdict-title{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);line-height:1.3}
+.verdict-text{font-size:13px;color:var(--text);line-height:1.6}
+.verdict-fact{font-size:12px;color:var(--emerald);background:rgba(0,229,160,0.07);border-radius:8px;padding:8px 12px;line-height:1.6}
+.next-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:12px 30px;border-radius:10px;font-family:'Cinzel',serif;font-size:13px;font-weight:700;cursor:pointer;transition:transform .15s;align-self:center}
+.next-btn:hover{transform:scale(1.04)}
+.tally-row{display:flex;gap:12px;width:100%}
+.tally-item{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center}
+.tally-num{font-family:'Cinzel',serif;font-size:22px;font-weight:700}
+.tally-lbl{font-size:10px;color:var(--dim);letter-spacing:.5px}
+.result-screen{display:none;flex-direction:column;align-items:center;gap:18px;text-align:center;width:100%}
+.result-title{font-family:'Cinzel Decorative',serif;font-size:clamp(20px,5vw,32px);font-weight:900;color:var(--gold)}
+.result-sub{font-size:14px;color:var(--dim);line-height:1.6;max-width:380px}
+.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-again-btn:hover{transform:translateY(-2px)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fadeIn{animation:fadeIn .35s ease forwards}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp's Hot Take Stand</div>
+  <div class="score-display" id="scoreDisplay">1 / 10</div>
+</header>
+<main>
+  <div class="progress-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-label" id="progLabel">0 / 10</div>
+  </div>
+
+  <div class="tally-row">
+    <div class="tally-item"><div class="tally-num" id="agreeCount" style="color:var(--emerald)">0</div><div class="tally-lbl">AGREE</div></div>
+    <div class="tally-item"><div class="tally-num" id="disagreeCount" style="color:var(--crimson)">0</div><div class="tally-lbl">DISAGREE</div></div>
+  </div>
+
+  <div class="take-card" id="takeCard">
+    <div class="take-badge">🔥 HOT TAKE</div>
+    <div class="take-emoji" id="takeEmoji">🔥</div>
+    <div class="take-text" id="takeText">Loading hot take...</div>
+  </div>
+
+  <div class="vote-row" id="voteRow">
+    <button class="vote-btn agree-btn" onclick="vote('agree')">✅ AGREE</button>
+    <button class="vote-btn disagree-btn" onclick="vote('disagree')">❌ DISAGREE</button>
+  </div>
+
+  <div class="verdict-box fadeIn" id="verdictBox">
+    <div class="verdict-badge">DOPP'S VERDICT</div>
+    <div class="verdict-reaction" id="verdictReaction"></div>
+    <div class="verdict-title" id="verdictTitle"></div>
+    <div class="verdict-text" id="verdictText"></div>
+    <div class="verdict-fact" id="verdictFact"></div>
+    <button class="next-btn" onclick="nextTake()">Next Hot Take →</button>
+  </div>
+
+  <div class="result-screen" id="resultScreen">
+    <div class="result-title">Hot Takes: Survived!</div>
+    <div class="tally-row">
+      <div class="tally-item"><div class="tally-num" style="color:var(--emerald);font-size:38px" id="finalAgree">0</div><div class="tally-lbl">AGREED</div></div>
+      <div class="tally-item"><div class="tally-num" style="color:var(--crimson);font-size:38px" id="finalDisagree">0</div><div class="tally-lbl">DISAGREED</div></div>
+    </div>
+    <div class="result-sub" id="finalMsg"></div>
+    <button class="play-again-btn" onclick="restartGame()">Another Round</button>
+  </div>
+</main>
+
+<script>
+const takes = [
+  {emoji:'😴',text:'Sleep is more important than exercise for your health.',
+   agreeVerdict:{reaction:'🔥',title:'Spicy AND defensible!',text:'You\'re not wrong. Sleep deprivation undermines exercise gains, immune function, and mental health. Most experts say if forced to choose, prioritize sleep.',fact:'Fact: Insufficient sleep negates many benefits of exercise. Athletes who sleep 10 hours vs 8 perform measurably better across all metrics.'},
+   disagreeVerdict:{reaction:'🤔',title:'Worth reconsidering...',text:'Exercise is powerful, but sleep is when your body rebuilds, processes, and restores. Without sleep, exercise actually becomes harmful over time.',fact:'Fact: Chronic sleep deprivation raises cortisol, breaks down muscle, suppresses immunity, and counteracts most exercise benefits.'}},
+  {emoji:'🧠',text:'Mental health days should be excused absences from school.',
+   agreeVerdict:{reaction:'💯',title:'The science agrees with you!',text:'Mental health is health. Forcing students to attend while mentally unwell is counterproductive and physically harmful. The stigma is the problem.',fact:'Fact: Chronic stress and untreated anxiety physically damage the hippocampus and suppress immune function. Mental health IS physical health.'},
+   disagreeVerdict:{reaction:'😬',title:'Think on this one...',text:'The concern is valid, but consider: mental health struggles often manifest as physical symptoms. We wouldn\'t question a "headache day." Why a mental health day?',fact:'Fact: Teen mental health conditions have risen 50% since 2012. Early intervention and recognition are proven to reduce long-term outcomes.'}},
+  {emoji:'📱',text:'Social media is just as addictive as cigarettes and should be treated that way.',
+   agreeVerdict:{reaction:'🔥',title:'Hot AND scientifically warm!',text:'Social media platforms are designed by behavioral scientists to maximize engagement using the same dopamine loops as addictive substances. The comparison is not hyperbole.',fact:'Fact: Variable reward systems (likes, comments) trigger dopamine release identical to slot machines. Teen social media overuse is linked to depression and anxiety.'},
+   disagreeVerdict:{reaction:'🤏',title:'Partially disagree-able...',text:'While social media isn\'t a chemical substance, its behavioral addiction patterns are real and documented. The comparison has more merit than most people admit.',fact:'Fact: Screen time over 3 hours daily in teens is correlated with doubled rates of depression and anxiety compared to under 1 hour daily.'}},
+  {emoji:'🏃',text:'You don\'t need to exercise if you eat well enough.',
+   agreeVerdict:{reaction:'😬',title:'This one is wrong, actually.',text:'Nutrition and exercise serve completely different functions in your body. Exercise builds cardiovascular capacity, muscle mass, bone density, and mental health in ways food simply cannot replicate.',fact:'Fact: A sedentary person with excellent nutrition still has 2-3x higher mortality risk than an active person with average nutrition.'},
+   disagreeVerdict:{reaction:'💪',title:'Correct! Exercise is non-negotiable.',text:'Nutrition and movement work together. Exercise improves insulin sensitivity, builds strength, supports mood via endorphins, and maintains cardiovascular health — none of which food alone can do.',fact:'Fact: The WHO recommends 150 minutes of moderate exercise weekly regardless of dietary status. Exercise and nutrition have non-overlapping health benefits.'}},
+  {emoji:'💊',text:'Vitamins and supplements are mostly a waste of money for healthy people.',
+   agreeVerdict:{reaction:'🔬',title:'The research largely supports this!',text:'For most healthy people eating a varied diet, supplements provide little to no benefit. The supplement industry is $50 billion/year — largely unregulated and over-marketed.',fact:'Fact: Multiple large trials show most common supplements (multivitamins, antioxidants) don\'t reduce disease risk in healthy populations with adequate nutrition.'},
+   disagreeVerdict:{reaction:'🤔',title:'Nuanced disagreement accepted...',text:'Some people — especially teens — genuinely benefit from specific supplements: vitamin D (many are deficient), iron (especially female athletes), and omega-3s have solid evidence.',fact:'Fact: Vitamin D deficiency affects ~42% of Americans and is linked to depression, weakened immunity, and bone loss. Testing before supplementing is wise.'}},
+  {emoji:'🥩',text:'Eating meat is inherently unhealthy and everyone should go vegan.',
+   agreeVerdict:{reaction:'🌱',title:'Valid, with nuance!',text:'Diets heavy in processed red meat ARE linked to increased cancer and cardiovascular disease risk. However, lean meat in moderation fits within healthy dietary patterns.',fact:'Fact: Processed red meat (hot dogs, deli meat) is classified as a Group 1 carcinogen. Unprocessed red meat in moderation has weaker but present risk associations.'},
+   disagreeVerdict:{reaction:'🤝',title:'Reasonable! Nuance matters here.',text:'Whole, unprocessed meat contains valuable iron, zinc, B12, and complete protein. The quality and quantity of meat matters far more than its mere presence in the diet.',fact:'Fact: Blue Zone populations with longest lifespans eat minimal to moderate animal products — not none. Extreme restriction can lead to nutrient deficiencies if not carefully managed.'}},
+  {emoji:'☀️',text:'Getting a tan is actually healthy because of the vitamin D.',
+   agreeVerdict:{reaction:'😬',title:'This one\'s a popular myth!',text:'UV radiation causes DNA damage to skin cells every time. The vitamin D benefit is minimal compared to the cancer risk — and vitamin D supplements are far safer.',fact:'Fact: Melanoma rates have tripled since the 1970s. There is no such thing as a "healthy" tan — tanning IS skin damage by definition.'},
+   disagreeVerdict:{reaction:'✅',title:'Correct — the "healthy tan" is a myth!',text:'Sunburn, tanning, and even casual UV exposure all cause cumulative DNA damage. Vitamin D can be obtained through food and supplements without the skin cancer risk.',fact:'Fact: A tan is your skin\'s SOS response to DNA damage. Melanin production increases as a shield against further UV harm — it\'s not a health sign.'}},
+  {emoji:'🥱',text:'Boredom is actually good for your mental health.',
+   agreeVerdict:{reaction:'💡',title:'Underrated take — and correct!',text:'Unstructured boredom allows the default mode network to activate, supporting creativity, self-reflection, and emotional processing. We\'ve eliminated boredom with screens — to our detriment.',fact:'Fact: The "default mode network" — active during mind-wandering — is linked to creativity, empathy, self-reflection, and future planning. Screens suppress it constantly.'},
+   disagreeVerdict:{reaction:'🤔',title:'Think twice on this one...',text:'Chronic boredom associated with lack of purpose differs from idle, unstructured time. Brief boredom actually supports creativity and helps the brain consolidate information.',fact:'Fact: Studies show that people who experienced boredom before creative tasks significantly outperformed those who were engaged with entertainment media beforehand.'}},
+  {emoji:'🍫',text:'Dark chocolate is genuinely healthy and should be eaten daily.',
+   agreeVerdict:{reaction:'🎉',title:'Science has your back!',text:'Dark chocolate (70%+ cacao) contains flavanols that improve blood flow, reduce inflammation, and have modest cardiovascular benefits. In small amounts, the evidence is real.',fact:'Fact: Flavanols in dark chocolate improve endothelial function, reduce LDL oxidation, and have been shown to modestly lower blood pressure in clinical trials.'},
+   disagreeVerdict:{reaction:'🤏',title:'Partially disagree-able...',text:'The benefits of dark chocolate are real but modest — and heavily marketed. It\'s not a health food in the traditional sense, but small amounts have genuine evidence behind them.',fact:'Fact: The effective doses in studies (200–900mg flavanols) often require more chocolate than commonly recommended serving sizes. Quality and quantity both matter.'}},
+  {emoji:'💪',text:'Rest days are just as important as workout days.',
+   agreeVerdict:{reaction:'🏆',title:'THIS is the hot take that\'s totally right!',text:'Muscles don\'t grow during exercise — they grow during recovery. Overtraining without rest leads to decreased performance, hormonal disruption, and increased injury risk.',fact:'Fact: Muscle protein synthesis peaks 24–48 hours AFTER exercise. Without rest, your body cannot adapt. Elite athletes prioritize recovery as much as training.'},
+   disagreeVerdict:{reaction:'😬',title:'Rethink this one!',text:'Rest IS the adaptation phase. Without recovery, exercise causes chronic stress responses, elevated cortisol, muscle breakdown, and reduced performance over time.',fact:'Fact: Overtraining syndrome — caused by insufficient recovery — reduces immune function, causes mood disturbance, and can set fitness progress back by weeks or months.'}}
+];
+
+let deck=[], idx=0, agrees=0, disagrees=0;
+
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+
+function startGame(){
+  deck=shuffle(takes).slice(0,10);
+  idx=0; agrees=0; disagrees=0;
+  updateTally();
+  document.getElementById('resultScreen').style.display='none';
+  document.getElementById('verdictBox').style.display='none';
+  document.getElementById('voteRow').style.display='flex';
+  document.getElementById('takeCard').style.display='flex';
+  document.getElementById('progFill').style.width='0%';
+  showTake();
+}
+
+function showTake(){
+  if(idx>=deck.length){endGame();return;}
+  const t=deck[idx];
+  document.getElementById('takeEmoji').textContent=t.emoji;
+  document.getElementById('takeText').textContent=t.text;
+  document.getElementById('scoreDisplay').textContent=(idx+1)+' / '+deck.length;
+  document.getElementById('progLabel').textContent=(idx+1)+' / '+deck.length;
+  document.getElementById('progFill').style.width=((idx+1)/deck.length*100)+'%';
+  document.getElementById('voteRow').style.display='flex';
+  document.getElementById('verdictBox').style.display='none';
+  document.getElementById('takeCard').classList.remove('fadeIn');
+  void document.getElementById('takeCard').offsetWidth;
+  document.getElementById('takeCard').classList.add('fadeIn');
+}
+
+function vote(choice){
+  const t=deck[idx];
+  const v=choice==='agree'?t.agreeVerdict:t.disagreeVerdict;
+  if(choice==='agree') agrees++; else disagrees++;
+  updateTally();
+  document.getElementById('verdictReaction').textContent=v.reaction;
+  document.getElementById('verdictTitle').textContent=v.title;
+  document.getElementById('verdictText').textContent=v.text;
+  document.getElementById('verdictFact').textContent=v.fact;
+  document.getElementById('voteRow').style.display='none';
+  const vb=document.getElementById('verdictBox');
+  vb.classList.remove('fadeIn');
+  vb.style.display='flex';
+  void vb.offsetWidth;
+  vb.classList.add('fadeIn');
+}
+
+function updateTally(){
+  document.getElementById('agreeCount').textContent=agrees;
+  document.getElementById('disagreeCount').textContent=disagrees;
+}
+
+function nextTake(){
+  idx++;
+  showTake();
+}
+
+function endGame(){
+  document.getElementById('verdictBox').style.display='none';
+  document.getElementById('takeCard').style.display='none';
+  document.getElementById('voteRow').style.display='none';
+  document.getElementById('finalAgree').textContent=agrees;
+  document.getElementById('finalDisagree').textContent=disagrees;
+  const pct=agrees/deck.length;
+  const msg=pct>=0.7?'Your instincts lean toward the health consensus! Nice alignment with the science.' : pct<=0.3?'Mostly disagreeing keeps you thinking critically! The verdicts had nuance for all views.' : 'Balanced thinker! You saw both sides — which is exactly how health science works.';
+  document.getElementById('finalMsg').textContent=msg;
+  document.getElementById('resultScreen').style.display='flex';
+}
+
+function restartGame(){
+  document.getElementById('takeCard').style.display='flex';
+  startGame();
+}
+
+startGame();
+</script>
+</body>
+</html>

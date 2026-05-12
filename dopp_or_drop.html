@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp or Drop — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(13px,3vw,19px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:12px;color:var(--emerald);font-weight:600;min-width:70px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px 20px;gap:18px;max-width:560px;margin:0 auto;width:100%}
+.progress-bar{width:100%;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--emerald));border-radius:3px;transition:width .4s}
+.round-label{font-family:'Cinzel',serif;font-size:12px;color:var(--dim);letter-spacing:1px}
+.vs-label{font-family:'Cinzel Decorative',serif;font-size:22px;font-weight:900;color:var(--gold);text-align:center;text-shadow:0 0 20px rgba(255,215,0,0.3)}
+.choices{display:flex;gap:12px;width:100%}
+.choice-btn{flex:1;background:var(--card);border:2px solid var(--border);border-radius:16px;padding:22px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:all .25s;text-align:center;position:relative;overflow:hidden}
+.choice-btn:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);transform:translateY(-3px)}
+.choice-btn:active{transform:scale(0.97)}
+.choice-emoji{font-size:40px}
+.choice-text{font-family:'Cinzel',serif;font-size:clamp(12px,3vw,16px);font-weight:700;color:var(--text);line-height:1.3}
+.choice-sub{font-size:11px;color:var(--dim);line-height:1.4}
+.choice-btn.winner{border-color:var(--emerald);background:rgba(0,229,160,0.12);transform:scale(1.05);box-shadow:0 0 24px rgba(0,229,160,0.25);animation:winPulse .4s ease}
+.choice-btn.loser{border-color:rgba(255,59,92,0.3);background:rgba(255,59,92,0.04);transform:scale(0.92);opacity:.6}
+.choice-btn.correct-pick{border-color:var(--gold);background:rgba(255,215,0,0.1)}
+@keyframes winPulse{0%{box-shadow:0 0 0 rgba(0,229,160,0)}50%{box-shadow:0 0 30px rgba(0,229,160,0.4)}100%{box-shadow:0 0 24px rgba(0,229,160,0.25)}}
+.result-badge{position:absolute;top:10px;right:10px;font-size:18px}
+.feedback-box{width:100%;background:rgba(56,191,255,0.07);border:1px solid rgba(56,191,255,0.22);border-radius:14px;padding:16px 18px;display:none;flex-direction:column;gap:8px;text-align:center}
+.feedback-label{font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:3px;color:var(--sky)}
+.feedback-result{font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:var(--text)}
+.feedback-text{font-size:13px;color:var(--dim);line-height:1.6}
+.next-btn{background:linear-gradient(135deg,var(--sky),#2080cc);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-family:'Cinzel',serif;font-size:13px;font-weight:700;cursor:pointer;transition:transform .15s;align-self:center}
+.next-btn:hover{transform:scale(1.04)}
+.result-screen{display:none;flex-direction:column;align-items:center;gap:18px;text-align:center;width:100%}
+.result-title{font-family:'Cinzel Decorative',serif;font-size:clamp(20px,5vw,32px);font-weight:900;color:var(--gold)}
+.big-score{font-family:'Cinzel',serif;font-size:clamp(50px,12vw,78px);font-weight:700;color:var(--emerald)}
+.result-sub{font-size:14px;color:var(--dim);line-height:1.6;max-width:380px}
+.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-again-btn:hover{transform:translateY(-2px)}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.slideIn{animation:slideIn .35s ease forwards}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp or Drop</div>
+  <div class="score-display" id="scoreDisplay">0 / 0</div>
+</header>
+<main>
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="round-label" id="roundLabel">Round 1 of 15</div>
+
+  <div class="vs-label">VS</div>
+
+  <div class="choices" id="choices">
+    <button class="choice-btn" id="choiceA" onclick="pick(0)">
+      <div class="result-badge" id="badgeA"></div>
+      <div class="choice-emoji" id="emojiA">🍎</div>
+      <div class="choice-text" id="textA">Option A</div>
+      <div class="choice-sub" id="subA"></div>
+    </button>
+    <button class="choice-btn" id="choiceB" onclick="pick(1)">
+      <div class="result-badge" id="badgeB"></div>
+      <div class="choice-emoji" id="emojiB">🍔</div>
+      <div class="choice-text" id="textB">Option B</div>
+      <div class="choice-sub" id="subB"></div>
+    </button>
+  </div>
+
+  <div class="feedback-box" id="feedbackBox">
+    <div class="feedback-label">DOPP'S VERDICT</div>
+    <div class="feedback-result" id="feedbackResult"></div>
+    <div class="feedback-text" id="feedbackText"></div>
+    <button class="next-btn" onclick="nextRound()">Next Round →</button>
+  </div>
+
+  <div class="result-screen" id="resultScreen">
+    <div class="result-title">Round Complete!</div>
+    <div class="big-score" id="bigScore">0/15</div>
+    <div class="result-sub" id="resultSub"></div>
+    <button class="play-again-btn" onclick="restartGame()">Play Again</button>
+  </div>
+</main>
+
+<script>
+const allPairs = [
+  {a:{emoji:'😴',text:'5 Hours Sleep',sub:'Powering through on minimal rest'},b:{emoji:'💤',text:'8 Hours Sleep',sub:'Full recommended rest for teens'},winner:1,why:'Teens need 8–10 hours of sleep. 5 hours impairs memory, mood, immune function, and growth hormone release.'},
+  {a:{emoji:'💧',text:'Water',sub:'Zero calories, pure hydration'},b:{emoji:'🥤',text:'Soda',sub:'Sugar, caffeine, no nutrition'},winner:0,why:'Soda delivers empty calories and 10+ teaspoons of sugar per can. Water supports every function in your body at zero cost.'},
+  {a:{emoji:'🛋️',text:'Sit All Day',sub:'Barely moving from your chair'},b:{emoji:'🚶',text:'Walk 20 Minutes',sub:'A short daily movement break'},winner:1,why:'Daily walking lowers cardiovascular risk, improves mood, reduces blood sugar spikes, and burns meaningful calories over time.'},
+  {a:{emoji:'🥗',text:'Eat More Vegetables',sub:'Colorful, fiber-rich plant foods'},b:{emoji:'🍟',text:'Daily Fast Food',sub:'High sodium, fat, and calories'},winner:0,why:'Vegetable-rich diets reduce heart disease risk by 35%, cancer risk, and support gut microbiome diversity. Daily fast food causes chronic inflammation.'},
+  {a:{emoji:'📵',text:'Phone-Free Bedroom',sub:'No screens an hour before bed'},b:{emoji:'📱',text:'Scroll Until Sleep',sub:'Phone right up to lights out'},winner:0,why:'Blue light from screens suppresses melatonin for hours, delaying sleep onset and reducing REM sleep quality significantly.'},
+  {a:{emoji:'🚬',text:'Smoke Sometimes',sub:'"Just occasionally, no big deal"'},b:{emoji:'🏃',text:'Exercise Regularly',sub:'150 min/week of activity'},winner:1,why:'There is no safe level of smoking — even occasional use causes DNA damage. Exercise actively repairs and protects the cardiovascular system.'},
+  {a:{emoji:'🧘',text:'Manage Stress',sub:'Mindfulness and coping strategies'},b:{emoji:'😤',text:'Bottle It Up',sub:'Never deal with stress at all'},winner:0,why:'Chronic unmanaged stress shrinks the hippocampus, damages immune function, and raises blood pressure. Coping skills are literally health skills.'},
+  {a:{emoji:'🦷',text:'Floss Daily',sub:'Clean between teeth every day'},b:{emoji:'🙅',text:'Never Floss',sub:'Brushing is enough, right?'},winner:0,why:'Flossing removes bacteria a brush cannot reach. Gum disease bacteria enter the bloodstream and are linked to heart disease and diabetes.'},
+  {a:{emoji:'☀️',text:'SPF Every Day',sub:'Sunscreen even on cloudy days'},b:{emoji:'🏖️',text:'Tan Without SPF',sub:'UV rays = "healthy glow"'},winner:0,why:'UV radiation causes cumulative DNA damage with every exposure. A tan is a damage response — not a health sign. SPF reduces melanoma risk by 50%.'},
+  {a:{emoji:'🥛',text:'Drink Milk or Fortified Alt',sub:'Calcium and vitamin D source'},b:{emoji:'🍺',text:'Drink Alcohol Instead',sub:'It\'s just a social thing'},winner:0,why:'Alcohol damages the developing teen brain, liver, and heart. Calcium-rich beverages support bone density during the critical teen growth years.'},
+  {a:{emoji:'🤝',text:'Talk to Someone',sub:'Share mental health struggles'},b:{emoji:'🤐',text:'Keep It All Inside',sub:'Suffer alone, ask no one'},winner:0,why:'Social support is one of the strongest predictors of mental health recovery. Isolation amplifies depression and anxiety significantly.'},
+  {a:{emoji:'🍎',text:'Fruit for Snacks',sub:'Fiber, vitamins, natural sugar'},b:{emoji:'🍬',text:'Candy for Snacks',sub:'Added sugar, no nutrients'},winner:0,why:'Fruit contains fiber that slows sugar absorption and provides vitamins. Candy causes blood sugar spikes and crashes with zero nutritional benefit.'},
+  {a:{emoji:'💊',text:'Prescription Meds Properly',sub:'As directed by your doctor'},b:{emoji:'🧪',text:'Misuse Others\' Prescriptions',sub:'Borrowing meds "just this once"'},winner:0,why:'Prescription drugs are dosed for specific people. Misuse of medications — especially opioids and stimulants — causes addiction and overdose risk.'},
+  {a:{emoji:'🌿',text:'Spend Time in Nature',sub:'Parks, walks, green spaces'},b:{emoji:'🏠',text:'Never Go Outside',sub:'All screens, all the time'},winner:0,why:'20–30 minutes in green spaces reduces cortisol, lowers blood pressure, and improves mood. Nature exposure is a legitimate health intervention.'},
+  {a:{emoji:'🧠',text:'Seek Professional Help',sub:'Therapist or counselor when needed'},b:{emoji:'💪',text:'"Just Push Through It"',sub:'Mental health? Handle it yourself.'},winner:0,why:'Therapy is evidence-based medicine for mental health. Telling people to "push through" anxiety or depression worsens outcomes and delays recovery.'}
+];
+
+let deck=[], roundIdx=0, score=0, answered=false;
+
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+
+function startGame(){
+  deck=shuffle(allPairs).slice(0,15);
+  roundIdx=0; score=0; answered=false;
+  document.getElementById('resultScreen').style.display='none';
+  document.getElementById('feedbackBox').style.display='none';
+  document.getElementById('bigScore').textContent='0/15';
+  document.getElementById('scoreDisplay').textContent='0 / 0';
+  showRound();
+}
+
+function showRound(){
+  if(roundIdx>=deck.length){endGame();return;}
+  answered=false;
+  const p=deck[roundIdx];
+  // randomize left/right
+  const flipped=Math.random()>0.5;
+  const left=flipped?p.b:p.a, right=flipped?p.a:p.b;
+  const leftWins = flipped ? (p.winner===1) : (p.winner===0);
+  deck[roundIdx]._flipped=flipped;
+
+  document.getElementById('emojiA').textContent=left.emoji;
+  document.getElementById('textA').textContent=left.text;
+  document.getElementById('subA').textContent=left.sub;
+  document.getElementById('emojiB').textContent=right.emoji;
+  document.getElementById('textB').textContent=right.text;
+  document.getElementById('subB').textContent=right.sub;
+  document.getElementById('badgeA').textContent='';
+  document.getElementById('badgeB').textContent='';
+
+  ['choiceA','choiceB'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.classList.remove('winner','loser','correct-pick');
+    el.disabled=false;
+  });
+
+  document.getElementById('feedbackBox').style.display='none';
+  document.getElementById('roundLabel').textContent='Round '+(roundIdx+1)+' of '+deck.length;
+  document.getElementById('progFill').style.width=((roundIdx)/deck.length*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+roundIdx;
+
+  const choices=document.getElementById('choices');
+  choices.classList.remove('slideIn');
+  void choices.offsetWidth;
+  choices.classList.add('slideIn');
+}
+
+function pick(side){
+  if(answered) return;
+  answered=true;
+  const p=deck[roundIdx];
+  const flipped=p._flipped;
+  // side 0=left(A), 1=right(B)
+  // winning side in current layout:
+  const winnerSide = flipped ? 1 : 0; // winner=p.winner(0=a,1=b), after flip: original b is now A(left)
+  // re-derive: winner index (0=a,1=b original)
+  // left=flipped?b:a, right=flipped?a:b
+  // if flipped: winner=0(a) is on right(B side=1), winner=1(b) is on left(A side=0)
+  // if not flipped: winner=0(a) is left(A=0), winner=1(b) is right(B=1)
+  const winSide = flipped ? (p.winner===0?1:0) : p.winner;
+  const correct = (side===winSide);
+  if(correct) score++;
+
+  const wId=winSide===0?'choiceA':'choiceB';
+  const lId=winSide===0?'choiceB':'choiceA';
+  document.getElementById(wId).classList.add('winner');
+  document.getElementById(lId).classList.add('loser');
+  document.getElementById('badge'+( winSide===0?'A':'B')).textContent='✅';
+  document.getElementById('badge'+( winSide===0?'B':'A')).textContent='❌';
+  if(correct) document.getElementById('badge'+(side===0?'A':'B')).textContent='⭐';
+
+  document.getElementById('feedbackResult').textContent=correct?'✅ Correct! Well played.':'❌ Not quite — here\'s why:';
+  document.getElementById('feedbackText').textContent=p.why;
+  document.getElementById('feedbackBox').style.display='flex';
+  document.getElementById('scoreDisplay').textContent=score+' / '+(roundIdx+1);
+
+  document.getElementById('choiceA').disabled=true;
+  document.getElementById('choiceB').disabled=true;
+  roundIdx++;
+  document.getElementById('progFill').style.width=(roundIdx/deck.length*100)+'%';
+}
+
+function nextRound(){
+  document.getElementById('feedbackBox').style.display='none';
+  showRound();
+}
+
+function endGame(){
+  document.getElementById('feedbackBox').style.display='none';
+  document.getElementById('bigScore').textContent=score+'/'+deck.length;
+  const pct=score/deck.length;
+  document.getElementById('resultSub').textContent=pct===1?'🏆 Perfect score! You\'re a health decision master!' : pct>=0.8?'🌟 Excellent! You clearly know your healthy choices.' : pct>=0.6?'👍 Good instincts! A few more to learn.' : '📚 Keep studying — health knowledge is life-changing!';
+  document.getElementById('resultScreen').style.display='flex';
+}
+
+function restartGame(){startGame();}
+startGame();
+</script>
+</body>
+</html>

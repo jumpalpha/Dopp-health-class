@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Drop — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(13px,3vw,18px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:12px;color:var(--emerald);font-weight:600;min-width:70px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;position:relative}
+canvas{display:block;max-width:100%;touch-action:none}
+.hud{position:absolute;top:8px;left:0;right:0;display:flex;justify-content:space-between;padding:0 12px;pointer-events:none}
+.hud-item{background:rgba(5,7,15,0.75);border:1px solid var(--border);border-radius:8px;padding:4px 12px;font-family:'Cinzel',serif;font-size:12px;font-weight:700}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,7,15,0.88);gap:18px;text-align:center;padding:20px}
+.overlay-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,6vw,38px);font-weight:900;color:var(--gold)}
+.overlay-score{font-family:'Cinzel',serif;font-size:clamp(50px,13vw,80px);font-weight:700;color:var(--emerald)}
+.overlay-sub{font-size:14px;color:var(--dim);max-width:340px;line-height:1.6}
+.play-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:14px 40px;border-radius:12px;font-family:'Cinzel Decorative',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-btn:hover{transform:scale(1.04)}
+.legend{display:flex;gap:16px;font-size:11px;color:var(--dim)}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp Drop</div>
+  <div class="score-display" id="scoreDisplay">Score: 0</div>
+</header>
+<main>
+  <canvas id="gc"></canvas>
+  <div class="overlay" id="overlay">
+    <div class="overlay-title">Dopp Drop</div>
+    <div style="font-size:32px">🧺</div>
+    <div class="overlay-sub">Catch healthy items! Dodge the junk. Use your mouse or arrow keys to move the basket. 30 seconds on the clock!</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#00E5A0"></div> Healthy = +1</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FF3B5C"></div> Junk = −1</div>
+    </div>
+    <button class="play-btn" onclick="startGame()">▶ Play</button>
+  </div>
+  <div class="overlay" id="resultOverlay" style="display:none">
+    <div class="overlay-title">Time's Up!</div>
+    <div class="overlay-score" id="finalScore">0</div>
+    <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold)">points</div>
+    <div class="overlay-sub" id="finalMsg"></div>
+    <button class="play-btn" onclick="startGame()">Play Again</button>
+  </div>
+</main>
+
+<script>
+const canvas=document.getElementById('gc');
+const ctx=canvas.getContext('2d');
+let W,H;
+function resize(){
+  const main=canvas.parentElement;
+  W=Math.min(480, main.clientWidth);
+  H=Math.min(520, main.clientHeight||520);
+  canvas.width=W; canvas.height=H;
+}
+resize();
+window.addEventListener('resize',()=>{resize();if(running)drawAll();});
+
+const GAME_DURATION=30;
+const goodItems=[
+  {emoji:'🍎',label:'Apple',color:'#FF3B5C'},
+  {emoji:'💧',label:'Water',color:'#38BFFF'},
+  {emoji:'🥦',label:'Broccoli',color:'#00E5A0'},
+  {emoji:'😴',label:'Sleep',color:'#9B59B6'},
+  {emoji:'🍌',label:'Banana',color:'#FFD700'},
+  {emoji:'🏃',label:'Run',color:'#FF8C00'},
+  {emoji:'🥕',label:'Carrot',color:'#FF6B35'},
+  {emoji:'🧘',label:'Mindful',color:'#38BFFF'},
+];
+const badItems=[
+  {emoji:'🍔',label:'Burger',color:'#8B4513'},
+  {emoji:'🚬',label:'Smoke',color:'#666'},
+  {emoji:'🍺',label:'Beer',color:'#DAA520'},
+  {emoji:'📱',label:'Phone',color:'#333'},
+  {emoji:'🍩',label:'Donut',color:'#FF69B4'},
+  {emoji:'🥤',label:'Soda',color:'#8B0000'},
+];
+
+let basket={x:0,y:0,w:70,h:22};
+let items=[], score=0, timeLeft=GAME_DURATION;
+let running=false, animId=null, timerInterval=null;
+let mouseX=null, keys={};
+
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  mouseX=(e.clientX-r.left)*W/r.width;
+});
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const r=canvas.getBoundingClientRect();
+  mouseX=(e.touches[0].clientX-r.left)*W/r.width;
+},{passive:false});
+window.addEventListener('keydown',e=>{keys[e.key]=true;});
+window.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+let lastTime=0, spawnTimer=0, spawnRate=1.8, speed=2;
+
+function startGame(){
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('resultOverlay').style.display='none';
+  items=[]; score=0; timeLeft=GAME_DURATION; running=true;
+  spawnTimer=0; spawnRate=1.8; speed=2;
+  basket.x=W/2-basket.w/2; basket.y=H-40;
+  mouseX=W/2;
+  document.getElementById('scoreDisplay').textContent='Score: 0';
+  if(animId) cancelAnimationFrame(animId);
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    if(timeLeft<=0){timeLeft=0;endGame();}
+    speed=2+(GAME_DURATION-timeLeft)*0.08;
+    spawnRate=Math.max(0.6,1.8-(GAME_DURATION-timeLeft)*0.04);
+  },1000);
+  lastTime=performance.now();
+  requestAnimationFrame(loop);
+}
+
+function loop(ts){
+  if(!running) return;
+  const dt=Math.min((ts-lastTime)/1000,0.1);
+  lastTime=ts;
+  update(dt);
+  drawAll();
+  animId=requestAnimationFrame(loop);
+}
+
+function update(dt){
+  // basket movement
+  if(mouseX!==null){
+    const targetX=mouseX-basket.w/2;
+    basket.x+=(targetX-basket.x)*0.2;
+  }
+  if(keys['ArrowLeft']||keys['a']) basket.x-=5;
+  if(keys['ArrowRight']||keys['d']) basket.x+=5;
+  basket.x=Math.max(0,Math.min(W-basket.w,basket.x));
+
+  // spawn
+  spawnTimer+=dt;
+  if(spawnTimer>=spawnRate){
+    spawnTimer=0;
+    const isGood=Math.random()>0.35;
+    const pool=isGood?goodItems:badItems;
+    const tmpl=pool[Math.floor(Math.random()*pool.length)];
+    items.push({x:10+Math.random()*(W-50),y:-30,good:isGood,...tmpl,size:26,vy:speed+Math.random()*1.5});
+  }
+
+  // move items
+  items.forEach(it=>{it.y+=it.vy*(1+speed*0.1);});
+
+  // collision
+  items.forEach((it,i)=>{
+    const cx=it.x+it.size/2, cy=it.y+it.size;
+    if(cx>basket.x&&cx<basket.x+basket.w&&cy>basket.y&&cy<basket.y+basket.h){
+      const gain=it.good?1:-1;
+      score=Math.max(0,score+gain);
+      document.getElementById('scoreDisplay').textContent='Score: '+score;
+      it.collected=true;
+      // flash
+      it.flash={color:it.good?'#00E5A0':'#FF3B5C',t:0};
+    }
+  });
+  items=items.filter(it=>!it.collected&&it.y<H+40);
+}
+
+function drawAll(){
+  ctx.clearRect(0,0,W,H);
+  // bg gradient
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0a1028'); bg.addColorStop(1,'#05070F');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  // stars
+  ctx.fillStyle='rgba(255,255,255,0.35)';
+  [[40,30],[120,15],[220,45],[330,20],[420,35],[60,90],[290,70]].forEach(([sx,sy])=>{
+    ctx.beginPath(); ctx.arc(sx,sy,1,0,Math.PI*2); ctx.fill();
+  });
+
+  // items
+  items.forEach(it=>{
+    // glow ring
+    ctx.beginPath();
+    ctx.arc(it.x+it.size/2,it.y+it.size/2,it.size/2+4,0,Math.PI*2);
+    ctx.fillStyle=it.good?'rgba(0,229,160,0.15)':'rgba(255,59,92,0.15)';
+    ctx.fill();
+    // emoji
+    ctx.font=it.size+'px serif';
+    ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(it.emoji,it.x,it.y);
+  });
+
+  // basket
+  const bx=basket.x,by=basket.y,bw=basket.w,bh=basket.h;
+  // basket body
+  ctx.fillStyle='rgba(255,215,0,0.15)';
+  ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.fill();
+  ctx.strokeStyle='#FFD700'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.stroke();
+  // weave lines
+  ctx.strokeStyle='rgba(255,215,0,0.3)'; ctx.lineWidth=1;
+  for(let i=1;i<3;i++){
+    ctx.beginPath(); ctx.moveTo(bx,by+bh*i/3); ctx.lineTo(bx+bw,by+bh*i/3); ctx.stroke();
+  }
+  for(let i=1;i<4;i++){
+    ctx.beginPath(); ctx.moveTo(bx+bw*i/4,by); ctx.lineTo(bx+bw*i/4,by+bh); ctx.stroke();
+  }
+
+  // HUD
+  ctx.fillStyle='rgba(5,7,15,0.75)';
+  ctx.beginPath(); ctx.roundRect(8,8,90,30,6); ctx.fill();
+  ctx.fillStyle='#FFD700'; ctx.font='bold 13px Cinzel,serif';
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('⏱ '+timeLeft+'s', 18, 23);
+
+  ctx.fillStyle='rgba(5,7,15,0.75)';
+  ctx.beginPath(); ctx.roundRect(W-100,8,92,30,6); ctx.fill();
+  ctx.fillStyle='#00E5A0'; ctx.font='bold 13px Cinzel,serif';
+  ctx.textAlign='right';
+  ctx.fillText('✦ '+score, W-14, 23);
+}
+
+function endGame(){
+  running=false;
+  if(animId) cancelAnimationFrame(animId);
+  if(timerInterval) clearInterval(timerInterval);
+  drawAll();
+  document.getElementById('finalScore').textContent=score;
+  const msg=score>=20?'🏆 Health legend! You caught everything good and dodged all the junk!' : score>=12?'🌟 Great reflexes! You clearly know your healthy habits.' : score>=5?'👍 Nice start! Keep practicing those healthy choices.' : '📚 The junk food was fast this time! Better luck next round.';
+  document.getElementById('finalMsg').textContent=msg;
+  document.getElementById('resultOverlay').style.display='flex';
+}
+</script>
+</body>
+</html>

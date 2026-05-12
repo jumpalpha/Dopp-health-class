@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp's Fortune Cookie — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(12px,3vw,19px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:12px;color:var(--emerald);font-weight:600;min-width:70px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:24px}
+.cookie-wrap{position:relative;width:220px;height:180px;cursor:pointer;user-select:none;flex-shrink:0}
+canvas{display:block}
+.cookie-hint{font-size:13px;color:var(--dim);text-align:center;font-style:italic;transition:opacity .3s}
+.fortune-scroll{width:100%;max-width:440px;background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,140,0,0.06));border:1px solid rgba(255,215,0,0.3);border-radius:16px;padding:24px 22px;display:none;flex-direction:column;align-items:center;gap:12px;text-align:center;position:relative}
+.fortune-scroll::before{content:'"';font-family:'Cinzel Decorative',serif;font-size:60px;color:rgba(255,215,0,0.08);position:absolute;top:0;left:12px;line-height:1}
+.fortune-num{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);opacity:.7}
+.fortune-text{font-family:'Cinzel',serif;font-size:clamp(14px,3.5vw,17px);font-weight:700;color:var(--gold);line-height:1.6}
+.fortune-sub{font-size:13px;color:var(--text);line-height:1.6;opacity:.85}
+.lucky-numbers{font-size:11px;color:var(--dim);letter-spacing:1px;margin-top:4px}
+.count-display{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--emerald);text-align:center}
+.count-label{font-size:12px;color:var(--dim);text-align:center}
+.all-done{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--gold);text-align:center;display:none}
+@keyframes crumble{0%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.1) rotate(-5deg)}100%{transform:scale(0.95) rotate(3deg)}}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fortune-scroll.show{display:flex;animation:fadeSlide .5s ease forwards}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp's Fortune Cookie</div>
+  <div class="score-display" id="scoreDisplay">Opened: 0</div>
+</header>
+<main>
+  <div class="count-display" id="countDisplay">0</div>
+  <div class="count-label">cookies opened this session</div>
+
+  <canvas id="cookieCanvas" width="220" height="180" style="cursor:pointer;border-radius:12px" onclick="crackCookie()"></canvas>
+  <div class="cookie-hint" id="cookieHint">Click the cookie to reveal your health fortune!</div>
+
+  <div class="fortune-scroll" id="fortuneScroll">
+    <div class="fortune-num" id="fortuneNum">FORTUNE #1</div>
+    <div class="fortune-text" id="fortuneText"></div>
+    <div class="fortune-sub" id="fortuneSub"></div>
+    <div class="lucky-numbers" id="luckyNums"></div>
+  </div>
+</main>
+
+<script>
+const fortunes = [
+  {text:"Sleep is the original superpower — and it\'s free.",sub:"Your body repairs damaged cells, clears brain toxins, and consolidates memories during sleep. 8 hours is not laziness — it is maintenance.",lucky:"Lucky health numbers: 8, 7, 9, 8"},
+  {text:"The best time to drink water was an hour ago. The second best time is NOW.",sub:"Chronic mild dehydration affects mood, concentration, and energy. Most people misidentify thirst as hunger. Drink up, legend.",lucky:"Lucky health numbers: 8, 2, 64, 0"},
+  {text:"Your body is not a machine. It is a garden. Tend it accordingly.",sub:"Plants need sun, water, good soil, and rest. So do you. No garden thrives on stress, junk food, and zero sunlight.",lucky:"Lucky health numbers: 5, 30, 9, 0.5"},
+  {text:"Movement is medicine — and the dosage is surprisingly low.",sub:"Just 22 minutes of moderate exercise daily reduces all-cause mortality by 30%. You don't need a gym. You need to move.",lucky:"Lucky health numbers: 22, 150, 10, 3"},
+  {text:"Breakfast eaten in peace is worth more than a meal eaten in rush.",sub:"Eating mindfully — without screens, slowly, with attention — improves digestion, reduces overeating, and increases meal satisfaction.",lucky:"Lucky health numbers: 7, 20, 1, 30"},
+  {text:"Your mental health is not a luxury item. It is the foundation.",sub:"Anxiety and depression affect 1 in 4 young people. Seeking help is strength. Mental health IS health — not a separate category.",lucky:"Lucky health numbers: 1, 4, 5, 10"},
+  {text:"The phone will survive the night without you. Your sleep cannot.",sub:"Putting your phone in another room at bedtime improves sleep quality, reduces anxiety, and is genuinely one of the highest-ROI health habits.",lucky:"Lucky health numbers: 8, 0, 6, 30"},
+  {text:"An apple a day is real advice wrapped in a cliché.",sub:"Fruits are loaded with fiber, vitamins, and phytonutrients that literally protect your DNA from damage. The cliché earned its status.",lucky:"Lucky health numbers: 5, 2, 1, 400"},
+  {text:"Friendship is a health intervention with zero co-pay.",sub:"Strong social connections reduce mortality risk by 50% — more than quitting smoking. Loneliness is a public health crisis. Text your people.",lucky:"Lucky health numbers: 3, 5, 15, 150"},
+  {text:"Sunscreen today. No melanoma tomorrow. Worth it.",sub:"UV radiation causes 90% of skin cancers, most of which are preventable with SPF. Put it on. Reapply. This is not debatable.",lucky:"Lucky health numbers: 30, 2, 90, 15"},
+  {text:"Vegetables do not taste bad. Your taste buds are just out of practice.",sub:"The palate adapts to healthier foods within weeks of consistent exposure. What you eat shapes what you want to eat. Start the loop.",lucky:"Lucky health numbers: 5, 3, 14, 21"},
+  {text:"Stress is not a badge of honor. Recovery is the real skill.",sub:"Chronic stress elevates cortisol, shrinks the hippocampus, and suppresses immunity. Managing stress is not weakness — it's elite performance.",lucky:"Lucky health numbers: 10, 5, 7, 3"},
+  {text:"Your future self is watching your choices today. They have opinions.",sub:"Health habits compound over decades. The choices you make in your teens and twenties significantly shape your health at 40, 60, and beyond.",lucky:"Lucky health numbers: 20, 40, 1, 0"},
+  {text:"Exercise is not punishment for eating. It is celebration of movement.",sub:"Treating exercise as a reward for your body — not punishment for food — creates sustainable motivation and a healthier relationship with both.",lucky:"Lucky health numbers: 30, 5, 3, 0"},
+  {text:"Your gut is your second brain. Feed it accordingly.",sub:"70% of immune cells live in your gut. A diverse, fiber-rich diet builds a thriving gut microbiome linked to better mood, immunity, and metabolism.",lucky:"Lucky health numbers: 25, 38, 70, 0"},
+  {text:"Flossing is where 90% of people lie on health surveys.",sub:"Gum disease is linked to heart disease, diabetes, and stroke. Flossing once daily removes bacteria that your brush literally cannot reach.",lucky:"Lucky health numbers: 2, 1, 3, 30"},
+  {text:"The deepest breaths cost nothing and fix almost everything.",sub:"Box breathing — 4 seconds in, hold 4, out 4, hold 4 — activates the parasympathetic nervous system and reduces acute stress in minutes.",lucky:"Lucky health numbers: 4, 4, 4, 4"},
+  {text:"A body in motion tends to stay in motion. Start small and trust physics.",sub:"The hardest part of exercise is usually the first 5 minutes. Commit to 5 minutes only. The rest tends to follow naturally once you\'ve started.",lucky:"Lucky health numbers: 5, 10, 30, 1"},
+  {text:"Sleep debt is real. Unlike financial debt, you cannot earn your way out — only sleep your way out.",sub:"You cannot 'catch up' on sleep over weekends effectively. Consistent nightly sleep is the only real solution. Treat it as non-negotiable.",lucky:"Lucky health numbers: 8, 7, 0, 90"},
+  {text:"You are approximately 60% water. Act like it.",sub:"Water makes up the majority of your blood, brain, and organs. Chronic dehydration affects every system in your body. Drink more water today.",lucky:"Lucky health numbers: 60, 8, 2, 0"},
+  {text:"Nature is a prescription that predates medicine.",sub:"Spending 20–30 minutes in green spaces reduces cortisol, lowers blood pressure, and improves mood. Get outside. It is literally therapeutic.",lucky:"Lucky health numbers: 20, 30, 120, 5"},
+  {text:"Your body keeps score. Eventually it shows the results.",sub:"Health behaviors — good and bad — have delayed consequences. The choices you make now are writing the story your body tells at 30, 40, and 50.",lucky:"Lucky health numbers: 10, 20, 1, 0"}
+];
+
+let opened=0, cracking=false, usedIndices=new Set();
+const canvas=document.getElementById('cookieCanvas');
+const ctx=canvas.getContext('2d');
+const W=220,H=180;
+
+function drawCookie(phase=0){
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2, cy=H/2;
+  // glow bg
+  const grd=ctx.createRadialGradient(cx,cy,10,cx,cy,90);
+  grd.addColorStop(0,'rgba(255,200,80,0.15)'); grd.addColorStop(1,'transparent');
+  ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
+
+  if(phase===0){
+    // whole cookie
+    drawWholeCookie(cx,cy);
+  } else if(phase===1){
+    // cracking
+    drawCrackingCookie(cx,cy,phase);
+  } else {
+    // open
+    drawOpenCookie(cx,cy);
+  }
+}
+
+function drawWholeCookie(cx,cy){
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(cx,cy+8,60,15,0,0,Math.PI*2); ctx.fill();
+  // cookie body - fortune cookie shape (two lobes)
+  ctx.fillStyle='#C8860A';
+  ctx.beginPath();
+  ctx.moveTo(cx-50,cy);
+  ctx.bezierCurveTo(cx-60,cy-40,cx-20,cy-50,cx,cy-10);
+  ctx.bezierCurveTo(cx+20,cy-50,cx+60,cy-40,cx+50,cy);
+  ctx.bezierCurveTo(cx+60,cy+40,cx+20,cy+45,cx,cy+20);
+  ctx.bezierCurveTo(cx-20,cy+45,cx-60,cy+40,cx-50,cy);
+  ctx.closePath(); ctx.fill();
+  // highlight
+  ctx.fillStyle='rgba(255,200,100,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(cx-10,cy-20,25,12,Math.PI/4,0,Math.PI*2);
+  ctx.fill();
+  // crease line
+  ctx.strokeStyle='#8B5E0A'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(cx-35,cy-5);
+  ctx.bezierCurveTo(cx-10,cy-25,cx+10,cy-25,cx+35,cy-5);
+  ctx.stroke();
+  // shimmer dots
+  ctx.fillStyle='rgba(255,230,150,0.4)';
+  [[cx-25,cy-30],[cx+20,cy-15],[cx-5,cy+15]].forEach(([x,y])=>{
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+  });
+}
+
+function drawCrackingCookie(cx,cy){
+  ctx.save();
+  // left half
+  ctx.translate(-8,0);
+  ctx.fillStyle='#C8860A';
+  ctx.beginPath();
+  ctx.moveTo(cx,cy-10);
+  ctx.bezierCurveTo(cx-20,cy-50,cx-60,cy-40,cx-50,cy);
+  ctx.bezierCurveTo(cx-60,cy+40,cx-20,cy+45,cx,cy+20);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  // right half
+  ctx.translate(8,0);
+  ctx.fillStyle='#C8860A';
+  ctx.beginPath();
+  ctx.moveTo(cx,cy-10);
+  ctx.bezierCurveTo(cx+20,cy-50,cx+60,cy-40,cx+50,cy);
+  ctx.bezierCurveTo(cx+60,cy+40,cx+20,cy+45,cx,cy+20);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+  // fortune paper
+  ctx.fillStyle='#FFF9E6';
+  ctx.fillRect(cx-30,cy-5,60,22);
+  ctx.strokeStyle='rgba(200,180,100,0.5)'; ctx.lineWidth=1;
+  ctx.strokeRect(cx-30,cy-5,60,22);
+}
+
+function drawOpenCookie(cx,cy){
+  // two halves open wide
+  ctx.save(); ctx.translate(-30,-10);
+  drawHalf(cx,cy,'left'); ctx.restore();
+  ctx.save(); ctx.translate(30,-10);
+  drawHalf(cx,cy,'right'); ctx.restore();
+  // fortune paper strip
+  ctx.fillStyle='#FFFAEC';
+  ctx.beginPath();
+  ctx.roundRect(cx-55,cy+10,110,24,4);
+  ctx.fill();
+  ctx.strokeStyle='rgba(200,180,80,0.6)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(cx-55,cy+10,110,24,4); ctx.stroke();
+  ctx.fillStyle='#8B5E0A';
+  ctx.font='bold 9px Nunito,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('✨ YOUR FORTUNE ✨', cx, cy+22);
+}
+
+function drawHalf(cx,cy,side){
+  const sx=side==='left'?-1:1;
+  ctx.fillStyle='#B8750A';
+  ctx.beginPath();
+  ctx.moveTo(cx,cy);
+  ctx.bezierCurveTo(cx+sx*5,cy-35,cx+sx*45,cy-30,cx+sx*40,cy+5);
+  ctx.bezierCurveTo(cx+sx*45,cy+35,cx+sx*15,cy+38,cx,cy+18);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(255,200,100,0.2)';
+  ctx.beginPath(); ctx.ellipse(cx+sx*15,cy-10,15,8,sx*0.4,0,Math.PI*2); ctx.fill();
+}
+
+let animPhase=0, animTimer=null;
+
+function crackCookie(){
+  if(cracking) return;
+  cracking=true;
+  document.getElementById('cookieHint').style.opacity='0';
+  // phase 1: cracking
+  drawCookie(1);
+  setTimeout(()=>{
+    drawCookie(2);
+    setTimeout(()=>{
+      showFortune();
+      setTimeout(()=>{
+        drawCookie(0);
+        cracking=false;
+        document.getElementById('cookieHint').style.opacity='1';
+        document.getElementById('cookieHint').textContent='Click again for another fortune!';
+      },2000);
+    },600);
+  },350);
+}
+
+function showFortune(){
+  let idx;
+  if(usedIndices.size>=fortunes.length) usedIndices.clear();
+  do{idx=Math.floor(Math.random()*fortunes.length);}while(usedIndices.has(idx));
+  usedIndices.add(idx);
+  opened++;
+  document.getElementById('scoreDisplay').textContent='Opened: '+opened;
+  document.getElementById('countDisplay').textContent=opened;
+  const f=fortunes[idx];
+  document.getElementById('fortuneNum').textContent='FORTUNE #'+opened;
+  document.getElementById('fortuneText').textContent=f.text;
+  document.getElementById('fortuneSub').textContent=f.sub;
+  document.getElementById('luckyNums').textContent=f.lucky;
+  const scroll=document.getElementById('fortuneScroll');
+  scroll.classList.remove('show');
+  void scroll.offsetWidth;
+  scroll.classList.add('show');
+}
+
+drawCookie(0);
+</script>
+</body>
+</html>
