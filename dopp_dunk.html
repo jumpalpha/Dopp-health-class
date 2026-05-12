@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏀 Dopp Dunk — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(5,7,15,0.95);border-bottom:1px solid rgba(255,215,0,0.2)}
+.back-btn{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
+.hdr-title{font-family:'Cinzel Decorative',serif;font-size:20px;color:#FFD700;letter-spacing:1px}
+.hdr-score{font-family:'Cinzel',serif;font-size:14px;color:#F0F4FF;min-width:90px;text-align:right}
+#wrap{position:relative;width:100%;max-width:820px;margin-top:18px;padding:0 12px}
+canvas{display:block;width:100%;cursor:crosshair;border-radius:14px;border:1px solid rgba(255,215,0,0.1)}
+#tip{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(0,229,160,0.15);border:1px solid rgba(0,229,160,0.35);border-radius:10px;padding:10px 22px;font-size:13px;font-weight:700;color:#00E5A0;text-align:center;max-width:560px;white-space:nowrap;opacity:0;transition:opacity .35s;pointer-events:none}
+#tip.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="hdr-title">🏀 Dopp Dunk</div>
+  <div class="hdr-score" id="hdr-score">0 / 0</div>
+</header>
+<div id="wrap">
+  <canvas id="c" width="820" height="510"></canvas>
+  <div id="tip"></div>
+</div>
+<script>
+const cv = document.getElementById('c');
+const cx = cv.getContext('2d');
+const W = 820, H = 510;
+
+const GOLD = '#FFD700', EMERALD = '#00E5A0', CRIMSON = '#FF3B5C', SKY = '#38BFFF';
+
+// Can position
+const CAN = { x: 660, y: 185, w: 96, h: 115 };
+// Ball home
+const HOME = { x: 120, y: 390 };
+const BR = 38; // ball radius
+
+const habits = [
+  { name:"All-Nighter",      emoji:"😴", tip:"Sleep is when your brain locks in memories. Missing it = slower recall tomorrow." },
+  { name:"Energy Drink #4",  emoji:"⚡", tip:"Caffeine spikes crash hard. 4 drinks = ~400mg caffeine. Teen max = 100mg." },
+  { name:"Doomscrolling",    emoji:"📱", tip:"Blue light blocks melatonin. Your brain thinks it's noon at midnight." },
+  { name:"Skipping Breakfast",emoji:"🍳",tip:"Your brain uses 20% of your body's energy. Feed it before school." },
+  { name:"Zero Water Today", emoji:"💧", tip:"Even 2% dehydration cuts focus and memory. Drink up." },
+  { name:"Screen at Bedtime",emoji:"🌙", tip:"Darkness = melatonin release. Light = stay awake. It's chemistry." },
+  { name:"Stress Snacking",  emoji:"🍟", tip:"Cortisol triggers cravings for sugar and fat. It's biological, not weakness." },
+  { name:"No Sunscreen",     emoji:"☀️", tip:"UV damage is cumulative. Every burn adds up over a lifetime." },
+  { name:"Ghosting Friends", emoji:"👻", tip:"Loneliness activates the same brain regions as physical pain. Seriously." },
+  { name:"Vaping",           emoji:"💨", tip:"'Just water vapor' is a marketing lie. It's nicotine + chemicals." },
+  { name:"No Sleep Schedule",emoji:"⏰", tip:"Your circadian rhythm needs consistency more than total hours." },
+  { name:"Zero Vegetables",  emoji:"🥦", tip:"Your gut bacteria literally die without fiber. Feed them." },
+  { name:"Skipping Lunch",   emoji:"😶", tip:"Blood sugar crashes at period 5 and your brain checks out." },
+  { name:"6 Hours = Fine",   emoji:"🛌", tip:"Teens need 8–10 hrs. Running on 6 is like being mildly drunk, cognitively." },
+  { name:"Toxic Positivity",  emoji:"😁", tip:"Suppressing emotions doesn't erase them — it just delays the crash." },
+];
+
+let pool = [], idx = 0, score = 0;
+let ball = { x: HOME.x, y: HOME.y };
+let phase = 'aim'; // aim | fly | result | over
+let arcPts = [];
+let arcT = 0;
+let willHit = false;
+let resultMsg = '', resultClr = GOLD, resultTimer = 0;
+let confetti = [];
+let mouse = { x: 400, y: 260 };
+
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function start(){
+  pool = shuffle(habits).slice(0,10);
+  idx=0; score=0; phase='aim';
+  ball={x:HOME.x,y:HOME.y};
+  confetti=[];
+  updateHdr();
+}
+
+function updateHdr(){
+  document.getElementById('hdr-score').textContent = score+' / '+Math.min(idx,10);
+}
+
+// Arc: from ball to top of can, height controlled by mouseY
+function arcHeight(){ return (1 - mouse.y/H) * 360 + 60; }
+
+function buildArc(ah){
+  const pts=[], sx=HOME.x, sy=HOME.y, ex=CAN.x+CAN.w/2, ey=CAN.y+6;
+  for(let t=0;t<=1.001;t+=0.022){
+    pts.push({ x: sx+(ex-sx)*t, y: sy+(ey-sy)*t - ah*Math.sin(Math.PI*t) });
+  }
+  return pts;
+}
+
+function aimGrade(ah){
+  if(ah>=145 && ah<=295) return 2;
+  if(ah>=95  && ah<=345) return 1;
+  return 0;
+}
+
+function shoot(){
+  if(phase!=='aim') return;
+  const ah = arcHeight();
+  arcPts = buildArc(ah);
+  arcT = 0;
+  phase = 'fly';
+  const g = aimGrade(ah), r = Math.random();
+  willHit = g===2 ? r<0.84 : g===1 ? r<0.46 : r<0.10;
+}
+
+function spawnConfetti(x,y){
+  for(let i=0;i<50;i++){
+    confetti.push({
+      x,y,
+      vx:(Math.random()-.5)*10,
+      vy:(Math.random()-1.6)*9,
+      sz:Math.random()*9+4,
+      color:[GOLD,EMERALD,SKY,CRIMSON,'#a855f7'][Math.floor(Math.random()*5)],
+      life:1, dec:Math.random()*.018+.012, rot:Math.random()*360, vr:(Math.random()-.5)*8
+    });
+  }
+}
+
+function showTip(t){
+  const el=document.getElementById('tip');
+  el.textContent='💡 '+t;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3800);
+}
+
+// ── DRAW HELPERS ──────────────────────────────────
+function drawBg(){
+  cx.fillStyle='#05070F'; cx.fillRect(0,0,W,H);
+  // Court line
+  cx.strokeStyle='rgba(255,255,255,0.05)'; cx.lineWidth=2;
+  cx.beginPath(); cx.moveTo(0,H-55); cx.lineTo(W,H-55); cx.stroke();
+  // Subtle gradient glow left
+  const g=cx.createRadialGradient(HOME.x,HOME.y,10,HOME.x,HOME.y,200);
+  g.addColorStop(0,'rgba(255,215,0,0.06)'); g.addColorStop(1,'transparent');
+  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+}
+
+function drawCan(){
+  const {x,y,w,h}=CAN;
+  // Shadow
+  cx.fillStyle='rgba(0,0,0,0.35)';
+  cx.beginPath(); cx.ellipse(x+w/2,y+h+8,w/2,10,0,0,Math.PI*2); cx.fill();
+  // Body gradient
+  const grad=cx.createLinearGradient(x,y,x+w,y);
+  grad.addColorStop(0,'#2c2c2c'); grad.addColorStop(.5,'#383838'); grad.addColorStop(1,'#222');
+  cx.fillStyle=grad;
+  cx.beginPath();
+  cx.moveTo(x+8,y); cx.lineTo(x+w-8,y);
+  cx.lineTo(x+w+2,y+h); cx.lineTo(x-2,y+h);
+  cx.closePath(); cx.fill();
+  // Stripe lines
+  cx.strokeStyle='rgba(255,255,255,0.07)'; cx.lineWidth=1;
+  for(let i=1;i<4;i++){
+    cx.beginPath(); cx.moveTo(x,y+h/4*i); cx.lineTo(x+w,y+h/4*i); cx.stroke();
+  }
+  // Label
+  cx.font='bold 11px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(255,255,255,0.18)';
+  cx.fillText('BAD HABITS',x+w/2,y+h*.55);
+  // Rim glow
+  cx.save();
+  cx.shadowColor=GOLD; cx.shadowBlur=14;
+  cx.strokeStyle=GOLD; cx.lineWidth=3.5;
+  cx.beginPath(); cx.ellipse(x+w/2,y,w/2,9,0,0,Math.PI*2); cx.stroke();
+  cx.restore();
+  // Rim top
+  cx.strokeStyle='rgba(255,215,0,0.4)'; cx.lineWidth=1.5;
+  cx.beginPath(); cx.ellipse(x+w/2,y,w/2,9,0,0,Math.PI*2); cx.stroke();
+}
+
+let ballRot=0;
+function drawBall(x,y,spinning){
+  const h=pool[idx]; if(!h) return;
+  if(spinning) ballRot+=0.18;
+  cx.save();
+  cx.translate(x,y); cx.rotate(ballRot); cx.translate(-x,-y);
+  // Shadow
+  cx.fillStyle='rgba(0,0,0,0.3)';
+  cx.beginPath(); cx.ellipse(x,y+BR+4,BR*.7,8,0,0,Math.PI*2); cx.fill();
+  // Paper base
+  cx.fillStyle='#e8dfc8';
+  cx.beginPath(); cx.arc(x,y,BR,0,Math.PI*2); cx.fill();
+  // Crumple texture shading
+  cx.fillStyle='#d4c9ac';
+  cx.beginPath(); cx.arc(x-10,y-12,BR*.58,0,Math.PI*2); cx.fill();
+  cx.fillStyle='rgba(255,255,255,0.25)';
+  cx.beginPath(); cx.arc(x+8,y-14,BR*.3,0,Math.PI*2); cx.fill();
+  cx.fillStyle='rgba(0,0,0,0.1)';
+  cx.beginPath(); cx.arc(x+12,y+10,BR*.45,0,Math.PI*2); cx.fill();
+  cx.restore();
+  // Habit text (no rotation)
+  cx.save();
+  cx.font='bold 10px Nunito'; cx.textAlign='center'; cx.fillStyle='#333';
+  const words=h.name.split(' '), lines=[];
+  let cur='';
+  words.forEach(w=>{ const t=cur+(cur?' ':'')+w; cx.measureText(t).width>BR*1.55?(lines.push(cur),cur=w):cur=t; });
+  lines.push(cur);
+  const lh=13, sy2=y-(lines.length-1)*lh/2;
+  lines.forEach((l,i)=>cx.fillText(l,x,sy2+i*lh));
+  cx.restore();
+}
+
+function drawArcPreview(){
+  if(phase!=='aim') return;
+  const ah=arcHeight(), pts=buildArc(ah), grade=aimGrade(ah);
+  const colors=['rgba(255,59,92,0.7)','rgba(255,215,0,0.7)','rgba(0,229,160,0.7)'];
+  const clr=colors[grade];
+  cx.strokeStyle=clr; cx.lineWidth=2.5; cx.setLineDash([7,9]);
+  cx.beginPath(); pts.forEach((p,i)=>i?cx.lineTo(p.x,p.y):cx.moveTo(p.x,p.y)); cx.stroke();
+  cx.setLineDash([]);
+  pts.filter((_,i)=>i%5===0).forEach(p=>{
+    cx.fillStyle=clr; cx.beginPath(); cx.arc(p.x,p.y,3.5,0,Math.PI*2); cx.fill();
+  });
+  // Aim label
+  const labels=['❌ Too Flat — Aim Higher','⚠️ Risky Shot','✅ Sweet Spot!'];
+  cx.font='bold 13px Nunito'; cx.textAlign='left';
+  cx.fillStyle=colors[grade]; cx.fillText(labels[grade],18,32);
+}
+
+function drawHUD(){
+  if(phase==='over') return;
+  const h=pool[idx]; if(!h) return;
+  // Habit name above ball
+  if(phase==='aim'){
+    cx.font='bold 13px Nunito'; cx.textAlign='center';
+    cx.fillStyle='rgba(255,100,100,0.85)';
+    cx.fillText('🚮 '+h.name, HOME.x, HOME.y-BR-14);
+    // Instruction
+    cx.font='13px Nunito'; cx.fillStyle='rgba(255,215,0,0.5)';
+    cx.fillText('Move mouse up/down to aim · Click to dunk!',W/2,H-16);
+  }
+  // Round counter
+  cx.font='13px Nunito'; cx.textAlign='left'; cx.fillStyle='rgba(240,244,255,0.35)';
+  cx.fillText('Habit '+(idx+1)+' of 10',18,H-16);
+}
+
+function drawResult(){
+  if(phase!=='result') return;
+  const alpha=Math.min(1,resultTimer/15);
+  cx.globalAlpha=alpha;
+  cx.font='bold 42px Nunito'; cx.textAlign='center';
+  cx.fillStyle=resultClr;
+  cx.fillText(resultMsg, W/2, H/2-30);
+  cx.globalAlpha=1;
+  resultTimer--;
+  if(resultTimer<=0){
+    idx++;
+    updateHdr();
+    phase = idx>=pool.length ? 'over' : 'aim';
+    ball={x:HOME.x,y:HOME.y};
+    ballRot=0;
+  }
+}
+
+function drawConfetti(){
+  confetti=confetti.filter(c=>c.life>0);
+  confetti.forEach(c=>{
+    cx.globalAlpha=c.life;
+    cx.save(); cx.translate(c.x,c.y); cx.rotate(c.rot*Math.PI/180);
+    cx.fillStyle=c.color; cx.fillRect(-c.sz/2,-c.sz/4,c.sz,c.sz/2); cx.restore();
+    c.x+=c.vx; c.y+=c.vy; c.vy+=0.25; c.life-=c.dec; c.rot+=c.vr;
+  });
+  cx.globalAlpha=1;
+}
+
+function drawGameOver(){
+  cx.fillStyle='rgba(5,7,15,0.88)'; cx.fillRect(0,0,W,H);
+  const pct=Math.round(score/10*100);
+  const [icon,msg] = pct>=80?['🏆','Wellness MVP!']:pct>=60?['⭐','Nice Work!']:pct>=40?['💪','Keep Practicing!']:['📚','Try Again!'];
+  cx.textAlign='center';
+  cx.font='bold 72px Nunito'; cx.fillStyle=GOLD;
+  cx.fillText(score+'/10',W/2,H/2-55);
+  cx.font='bold 28px Nunito'; cx.fillStyle='#F0F4FF';
+  cx.fillText(icon+' '+msg,W/2,H/2-10);
+  cx.font='16px Nunito'; cx.fillStyle='rgba(240,244,255,0.5)';
+  cx.fillText('You dunked '+score+' bad habits out of 10',W/2,H/2+30);
+  // Play again button
+  const bx=W/2-90, by=H/2+65, bw=180, bh=44;
+  cx.fillStyle='rgba(255,215,0,0.15)';
+  roundRect(bx,by,bw,bh,10); cx.fill();
+  cx.strokeStyle='rgba(255,215,0,0.4)'; cx.lineWidth=1.5;
+  roundRect(bx,by,bw,bh,10); cx.stroke();
+  cx.font='bold 15px Nunito'; cx.fillStyle=GOLD;
+  cx.fillText('▶ Play Again',W/2,by+bh/2+5);
+}
+
+function roundRect(x,y,w,h,r){
+  cx.beginPath();
+  cx.moveTo(x+r,y); cx.lineTo(x+w-r,y); cx.quadraticCurveTo(x+w,y,x+w,y+r);
+  cx.lineTo(x+w,y+h-r); cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  cx.lineTo(x+r,y+h); cx.quadraticCurveTo(x,y+h,x,y+h-r);
+  cx.lineTo(x,y+r); cx.quadraticCurveTo(x,y,x+r,y); cx.closePath();
+}
+
+// ── LOOP ──────────────────────────────────────────
+function loop(){
+  cx.clearRect(0,0,W,H);
+  drawBg(); updateConfetti_(); drawConfetti();
+
+  if(phase==='over'){
+    drawGameOver(); requestAnimationFrame(loop); return;
+  }
+  drawCan(); drawArcPreview();
+
+  if(phase==='aim'){
+    drawBall(ball.x,ball.y,false);
+  } else if(phase==='fly'){
+    arcT+=0.026;
+    if(arcT>1) arcT=1;
+    const i=Math.min(Math.floor(arcT*(arcPts.length-1)),arcPts.length-1);
+    ball.x=arcPts[i].x; ball.y=arcPts[i].y;
+    drawBall(ball.x,ball.y,true);
+    if(arcT>=1){
+      if(willHit){
+        score++; updateHdr();
+        resultMsg='🏀 DUNKED!'; resultClr=EMERALD;
+        spawnConfetti(CAN.x+CAN.w/2, CAN.y);
+        showTip(pool[idx].tip);
+      } else {
+        resultMsg='😬 Miss! Try Again'; resultClr=CRIMSON;
+      }
+      resultTimer=85; phase='result';
+    }
+  } else if(phase==='result'){
+    if(willHit && resultTimer>50){
+      // Ball sinking into can
+      const sink=Math.max(0,(85-resultTimer)/35);
+      drawBall(ball.x, ball.y+sink*40, false);
+    } else if(!willHit){
+      // Ball rolled away
+      ball.x-=2; ball.y+=1;
+      drawBall(ball.x,ball.y,true);
+    }
+    drawResult();
+  }
+  drawHUD();
+  requestAnimationFrame(loop);
+}
+
+function updateConfetti_(){
+  confetti=confetti.filter(c=>c.life>0);
+  confetti.forEach(c=>{ c.x+=c.vx; c.y+=c.vy; c.vy+=0.22; c.life-=c.dec; c.rot+=c.vr; });
+}
+
+// ── EVENTS ──────────────────────────────────────
+cv.addEventListener('mousemove',e=>{
+  const r=cv.getBoundingClientRect();
+  mouse.x=(e.clientX-r.left)*(W/r.width);
+  mouse.y=(e.clientY-r.top)*(H/r.height);
+});
+cv.addEventListener('click',e=>{
+  if(phase==='aim') shoot();
+  else if(phase==='over'){
+    const r=cv.getBoundingClientRect();
+    const mx=(e.clientX-r.left)*(W/r.width), my=(e.clientY-r.top)*(H/r.height);
+    const bx=W/2-90, by=H/2+65, bw=180, bh=44;
+    if(mx>=bx&&mx<=bx+bw&&my>=by&&my<=by+bh) start();
+  }
+});
+
+start(); loop();
+</script>
+</body>
+</html>
