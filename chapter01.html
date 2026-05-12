@@ -109,6 +109,14 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
 .footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600}
 .footer-tags{font-size:13px;color:var(--dim)}
 @media(max-width:700px){.ch-hero,.breadcrumb{padding-left:20px;padding-right:20px}.main-grid{padding:0 20px 60px}.vocab-grid{grid-template-columns:1fr}}
+
+    .act-tag.ai-guide{background:rgba(255,215,0,0.12);color:#FFD700;border:1px solid rgba(255,215,0,0.3);cursor:pointer}
+    .activity-item[onclick]{cursor:pointer}
+    .activity-item[onclick]:hover{border-color:rgba(255,215,0,0.35)!important;box-shadow:0 6px 24px rgba(255,215,0,0.1)}
+
+    .act-tag.ai-guide{background:rgba(255,215,0,0.12);color:#FFD700;border:1px solid rgba(255,215,0,0.3)}
+    .activity-item[onclick]{cursor:pointer}
+    .activity-item[onclick]:hover{border-color:rgba(255,215,0,0.35)!important;box-shadow:0 6px 24px rgba(255,215,0,0.1)}
 </style>
 <link rel="stylesheet" href="shared.css">
 </head>
@@ -211,7 +219,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
       </div>
       <div class="activity-list">
 
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0288db42408191a246e22257b95ec4-low-side-quest-guide','_blank')">
           <div class="act-icon">📊</div>
           <div class="act-body">
             <div class="act-title">Side Quest 1 — Health Triangle Self-Assessment</div>
@@ -220,11 +228,11 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
               <span class="act-tag solo">Solo Quest</span>
               <span class="act-tag">~15 min</span>
               <span class="act-tag">Week 1</span>
-            </div>
+            <span class="act-tag ai-guide">🤖 AI Guide</span></div>
           </div>
         </div>
 
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0287fb759c819196d149716a22bc4e-low-exploration-guide','_blank')">
           <div class="act-icon">🗺</div>
           <div class="act-body">
             <div class="act-title">Exploration — 7 Dimensions of Wellness Map</div>
@@ -233,11 +241,11 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
               <span class="act-tag solo">Solo Quest</span>
               <span class="act-tag">~20 min</span>
               <span class="act-tag">Week 1</span>
-            </div>
+            <span class="act-tag ai-guide">🤖 AI Guide</span></div>
           </div>
         </div>
 
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0287fb759c819196d149716a22bc4e-low-exploration-guide','_blank')">
           <div class="act-icon">📰</div>
           <div class="act-body">
             <div class="act-title">Exploration — Health in the News</div>
@@ -246,11 +254,11 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
               <span class="act-tag team">Team Event</span>
               <span class="act-tag">~25 min</span>
               <span class="act-tag">Week 2</span>
-            </div>
+            <span class="act-tag ai-guide">🤖 AI Guide</span></div>
           </div>
         </div>
 
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a02899217f88191ba9a805ab83f466e-low-challenge-coach','_blank')">
           <div class="act-icon">🎯</div>
           <div class="act-body">
             <div class="act-title">Habit Challenge — 2-Week Healthy Habit Tracker</div>
@@ -259,7 +267,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
               <span class="act-tag solo">Solo Quest</span>
               <span class="act-tag">2 Weeks</span>
               <span class="act-tag">Chapter 1–2</span>
-            </div>
+            <span class="act-tag ai-guide">🤖 AI Guide</span></div>
           </div>
         </div>
 

@@ -81,6 +81,14 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
 .footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600}
 .footer-tags{font-size:13px;color:var(--dim)}
 @media(max-width:700px){.ch-hero,.breadcrumb,.main-grid{padding-left:20px;padding-right:20px}.vocab-grid{grid-template-columns:1fr}}
+
+    .act-tag.ai-guide{background:rgba(255,215,0,0.12);color:#FFD700;border:1px solid rgba(255,215,0,0.3);cursor:pointer}
+    .activity-item[onclick]{cursor:pointer}
+    .activity-item[onclick]:hover{border-color:rgba(255,215,0,0.35)!important;box-shadow:0 6px 24px rgba(255,215,0,0.1)}
+
+    .act-tag.ai-guide{background:rgba(255,215,0,0.12);color:#FFD700;border:1px solid rgba(255,215,0,0.3)}
+    .activity-item[onclick]{cursor:pointer}
+    .activity-item[onclick]:hover{border-color:rgba(255,215,0,0.35)!important;box-shadow:0 6px 24px rgba(255,215,0,0.1)}
 </style>
 <link rel="stylesheet" href="shared.css">
 </head>
@@ -150,29 +158,29 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
     <div class="content-section">
       <div class="sec-header"><span class="sec-icon">⚔</span><span class="sec-title">Quest Activities</span></div>
       <div class="activity-list">
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0288db42408191a246e22257b95ec4-low-side-quest-guide','_blank')">
           <div class="act-icon">🗣</div>
           <div class="act-body">
             <div class="act-title">Side Quest — Family Interview</div>
             <div class="act-desc">Interview a family member (parent, grandparent, or guardian) about a challenge their family faced and how they got through it. What did they learn? What made them stronger? Write a one-page reflection on what you discovered.</div>
             <div class="act-meta"><span class="act-tag">Solo</span><span class="act-tag">~25 min</span></div>
-          </div>
+          <span class="act-tag ai-guide">🤖 AI Guide</span></div>
         </div>
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0287fb759c819196d149716a22bc4e-low-exploration-guide','_blank')">
           <div class="act-icon">📰</div>
           <div class="act-body">
             <div class="act-title">Exploration — Families Under Stress</div>
             <div class="act-desc">Find a statistic or news story about a challenge facing families today — financial stress, divorce, caregiving, or blended family dynamics. What community resources exist to help? Are they accessible to families in your area?</div>
             <div class="act-meta"><span class="act-tag team">Team</span><span class="act-tag">20–25 min</span></div>
-          </div>
+          <span class="act-tag ai-guide">🤖 AI Guide</span></div>
         </div>
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a02899217f88191ba9a805ab83f466e-low-challenge-coach','_blank')">
           <div class="act-icon">💭</div>
           <div class="act-body">
             <div class="act-title">Challenge — Communication Audit</div>
             <div class="act-desc">Identify one communication habit in your family that strengthens your relationships and one that creates tension. Based on what you learned in Chapter 9, write a specific plan for how YOU could help improve the tension point.</div>
             <div class="act-meta"><span class="act-tag">Solo</span><span class="act-tag">10–15 min</span></div>
-          </div>
+          <span class="act-tag ai-guide">🤖 AI Guide</span></div>
         </div>
         <div class="activity-item" style="border-color:rgba(255,59,92,0.3)">
           <div class="act-icon">👑</div>

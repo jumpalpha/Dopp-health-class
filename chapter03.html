@@ -81,6 +81,10 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
 .footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600}
 .footer-tags{font-size:13px;color:var(--dim)}
 @media(max-width:700px){.ch-hero,.breadcrumb,.main-grid{padding-left:20px;padding-right:20px}.vocab-grid{grid-template-columns:1fr}}
+
+    .act-tag.ai-guide{background:rgba(255,215,0,0.12);color:#FFD700;border:1px solid rgba(255,215,0,0.3)}
+    .activity-item[onclick]{cursor:pointer}
+    .activity-item[onclick]:hover{border-color:rgba(255,215,0,0.35)!important;box-shadow:0 6px 24px rgba(255,215,0,0.1)}
 </style>
 <link rel="stylesheet" href="shared.css">
 </head>
@@ -150,29 +154,29 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
     <div class="content-section">
       <div class="sec-header"><span class="sec-icon">⚔</span><span class="sec-title">Quest Activities</span></div>
       <div class="activity-list">
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0288db42408191a246e22257b95ec4-low-side-quest-guide','_blank')">
           <div class="act-icon">📖</div>
           <div class="act-body">
             <div class="act-title">Emotional Intelligence Inventory</div>
             <div class="act-desc">Rate yourself honestly on the 5 components of emotional intelligence: self-awareness, self-regulation, motivation, empathy, and social skills. Identify your strongest and weakest areas with evidence.</div>
             <div class="act-meta"><span class="act-tag">Solo</span><span class="act-tag">15–20 min</span></div>
-          </div>
+          <span class="act-tag ai-guide">🤖 AI Guide</span></div>
         </div>
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0287fb759c819196d149716a22bc4e-low-exploration-guide','_blank')">
           <div class="act-icon">🔍</div>
           <div class="act-body">
             <div class="act-title">Teen Mental Health in the News</div>
             <div class="act-desc">Find a recent article or study on teen mental health trends. What does the data show? What factors are driving those trends? What does it mean for your generation specifically?</div>
             <div class="act-meta"><span class="act-tag team">Team</span><span class="act-tag">20–25 min</span></div>
-          </div>
+          <span class="act-tag ai-guide">🤖 AI Guide</span></div>
         </div>
-        <div class="activity-item">
+        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a02899217f88191ba9a805ab83f466e-low-challenge-coach','_blank')">
           <div class="act-icon">📊</div>
           <div class="act-body">
             <div class="act-title">Coping Strategy Experiment</div>
             <div class="act-desc">Try 3 different coping strategies this week — one physical, one cognitive, one social. Write a reflection: what worked, what didn't, and what you would use in a real crisis.</div>
             <div class="act-meta"><span class="act-tag">Solo</span><span class="act-tag">10–15 min</span></div>
-          </div>
+          <span class="act-tag ai-guide">🤖 AI Guide</span></div>
         </div>
         <div class="activity-item" style="border-color:rgba(255,59,92,0.3)">
           <div class="act-icon">👑</div>
