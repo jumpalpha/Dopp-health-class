@@ -552,7 +552,8 @@ const ALL_CHAPTERS = {
 // ENGINE
 // ═══════════════════════════════════════════════════════════
 let chapterNum = parseInt(new URLSearchParams(location.search).get('ch')) || 1;
-let gameMode = 'flashcard';
+const hashMap = { speedquiz:'speedquiz', wordbuild:'wordbuild', conceptmap:'conceptmap' };
+let gameMode = hashMap[location.hash.replace('#','')] || 'flashcard';
 let terms = [];
 let idx = 0, correctCount = 0, wrongCount = 0, streak = 0;
 let timerInt = null;
@@ -563,6 +564,10 @@ function load() {
   document.getElementById('nav-title').textContent = `Ch ${chapterNum} — ${ch.title}`;
   document.getElementById('chapter-info').textContent = `${terms.length} terms`;
   document.title = `Ch ${chapterNum} Vocab — Legend of Wellness`;
+  // Highlight the correct tab based on initial gameMode
+  document.querySelectorAll('.game-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('onclick').includes(gameMode));
+  });
   resetGame();
   renderGame();
 }
