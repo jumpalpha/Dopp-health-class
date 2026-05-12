@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp's Dating Game — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;transition:opacity .2s;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(13px,3vw,20px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:13px;color:var(--emerald);font-weight:600;min-width:70px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:20px}
+.progress-bar{width:100%;max-width:460px;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),#FF8C00);border-radius:3px;transition:width .4s ease}
+.card-arena{width:100%;max-width:400px;height:260px;position:relative;perspective:1000px}
+.habit-card{position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02));border:1px solid var(--border);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;gap:12px;transition:transform 0.45s cubic-bezier(.22,.68,0,1.2),opacity 0.4s;user-select:none;text-align:center;will-change:transform}
+.card-emoji{font-size:52px;line-height:1}
+.card-text{font-family:'Cinzel',serif;font-size:clamp(14px,3.5vw,18px);font-weight:700;color:var(--text);line-height:1.3}
+.card-sub{font-size:12px;color:var(--dim);line-height:1.5}
+.slide-left{transform:translateX(-150%) rotate(-20deg)!important;opacity:0!important}
+.slide-right{transform:translateX(150%) rotate(20deg)!important;opacity:0!important}
+.buttons{display:flex;gap:22px;align-items:center}
+.vote-btn{width:68px;height:68px;border-radius:50%;border:none;cursor:pointer;font-size:26px;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s}
+.vote-btn:hover{transform:scale(1.1)}
+.vote-btn:active{transform:scale(0.9)}
+.heart-btn{background:radial-gradient(circle,#ff6b9d,var(--crimson));box-shadow:0 0 0 4px rgba(255,59,92,0.2)}
+.skull-btn{background:radial-gradient(circle,#666,#333);box-shadow:0 0 0 4px rgba(255,255,255,0.08)}
+.btn-label{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--dim);text-align:center}
+.btn-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.fact-box{width:100%;max-width:460px;background:rgba(0,229,160,0.07);border:1px solid rgba(0,229,160,0.2);border-radius:14px;padding:16px 20px;text-align:center;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.fact-label{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--emerald)}
+.fact-text{font-size:13px;color:var(--text);line-height:1.55}
+.result-screen{display:none;flex-direction:column;align-items:center;gap:20px;text-align:center;max-width:460px;width:100%}
+.result-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,5vw,36px);font-weight:900;color:var(--gold)}
+.result-sub{font-size:15px;color:var(--dim);line-height:1.6}
+.result-score{font-family:'Cinzel',serif;font-size:clamp(40px,10vw,72px);font-weight:700;color:var(--emerald)}
+.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;letter-spacing:.5px}
+.play-again-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,215,0,0.3)}
+.swipe-hint{font-size:12px;color:var(--dim);display:flex;gap:18px;align-items:center}
+.hint-item{display:flex;align-items:center;gap:5px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp's Dating Game</div>
+  <div class="score-display" id="scoreDisplay">0 / 0</div>
+</header>
+<main>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <div class="card-arena" id="cardArena">
+    <div class="habit-card" id="habitCard">
+      <div class="card-emoji" id="cardEmoji">💤</div>
+      <div class="card-text" id="cardText">Loading…</div>
+      <div class="card-sub" id="cardSub">Is this habit good or bad?</div>
+    </div>
+  </div>
+
+  <div class="swipe-hint">
+    <div class="hint-item">❤️ <span>Good Habit</span></div>
+    <div class="hint-item">💀 <span>Bad Habit</span></div>
+  </div>
+
+  <div class="buttons">
+    <div class="btn-wrap">
+      <button class="vote-btn skull-btn" id="skullBtn" onclick="vote(false)">💀</button>
+      <div class="btn-label">BAD</div>
+    </div>
+    <div class="btn-wrap">
+      <button class="vote-btn heart-btn" id="heartBtn" onclick="vote(true)">❤️</button>
+      <div class="btn-label">GOOD</div>
+    </div>
+  </div>
+
+  <div class="fact-box" id="factBox">
+    <div class="fact-label">DOPP'S HEALTH INSIGHT</div>
+    <div class="fact-text" id="factText">Swipe right on good habits, left on bad ones. How many can you identify?</div>
+  </div>
+
+  <div class="result-screen" id="resultScreen">
+    <div class="result-title">Round Complete!</div>
+    <div class="result-score" id="resultScore">0/15</div>
+    <div class="result-sub" id="resultSub">Not bad! Keep learning those health habits.</div>
+    <button class="play-again-btn" onclick="restartGame()">Play Again</button>
+  </div>
+</main>
+
+<script>
+const cards = [
+  {emoji:'😴',text:'8 Hours of Sleep',sub:'Getting a full night\'s rest every night',good:true,fact:'Sleep is when your body repairs muscles, consolidates memories, and regulates hormones. Teens need 8–10 hours!'},
+  {emoji:'🏃',text:'Daily Exercise',sub:'At least 30 minutes of movement each day',good:true,fact:'Regular physical activity reduces the risk of heart disease, diabetes, and depression by up to 35%.'},
+  {emoji:'🥗',text:'Eating Vegetables',sub:'Filling half your plate with veggies',good:true,fact:'Vegetables are loaded with fiber, vitamins, and antioxidants that protect your cells from damage.'},
+  {emoji:'💧',text:'Drinking Water',sub:'8+ glasses of water daily',good:true,fact:'Even mild dehydration (1-2%) impairs memory, mood, and concentration. Water first!'},
+  {emoji:'🚬',text:'Smoking Cigarettes',sub:'Just one or two a day, no big deal',good:false,fact:'There is NO safe level of smoking. Even occasional smoking damages lung tissue and raises cancer risk significantly.'},
+  {emoji:'🛋️',text:'Skipping Breakfast',sub:'I\'m not hungry in the morning anyway',good:false,fact:'Breakfast kickstarts your metabolism and improves focus. Skippers tend to overeat later and have lower energy.'},
+  {emoji:'📱',text:'Scrolling at Bedtime',sub:'Checking your phone right before sleep',good:false,fact:'Blue light from screens suppresses melatonin by up to 3 hours, delaying sleep and reducing sleep quality.'},
+  {emoji:'🧘',text:'Stress Management',sub:'Practicing mindfulness or deep breathing',good:true,fact:'Chronic stress raises cortisol, which damages the immune system, heart, and even brain structure over time.'},
+  {emoji:'🥤',text:'Sugary Drinks Daily',sub:'Soda, energy drinks, and sweet tea every day',good:false,fact:'One can of soda has 10 teaspoons of sugar — far above daily recommended limits. Liquid sugar spikes insulin fast.'},
+  {emoji:'🤝',text:'Strong Social Bonds',sub:'Maintaining close friendships and relationships',good:true,fact:'Loneliness is as harmful to health as smoking 15 cigarettes a day. Social connection literally extends life.'},
+  {emoji:'🧴',text:'Wearing Sunscreen',sub:'SPF every time you go outside',good:true,fact:'UV radiation causes 90% of skin cancers. Sunscreen use reduces melanoma risk by 50% — use it daily!'},
+  {emoji:'🍔',text:'Fast Food Every Day',sub:'It\'s convenient and filling, right?',good:false,fact:'Daily fast food is linked to obesity, high blood pressure, and inflammation. Occasional is fine; daily is harmful.'},
+  {emoji:'🦷',text:'Brushing & Flossing',sub:'Twice daily dental hygiene routine',good:true,fact:'Gum disease is linked to heart disease and diabetes. Your mouth is the gateway to your entire body\'s health.'},
+  {emoji:'🍺',text:'Binge Drinking',sub:'Getting heavily drunk on weekends',good:false,fact:'Binge drinking damages the liver, brain, and heart — and teen brains are especially vulnerable to alcohol.'},
+  {emoji:'🚶',text:'Walking 10,000 Steps',sub:'Getting steps in throughout the day',good:true,fact:'Daily walking lowers blood pressure, improves mood, and reduces risk of type 2 diabetes by up to 30%.'}
+];
+
+let deck = [], currentIndex = 0, score = 0, voting = false;
+
+function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5)}
+
+function startGame(){
+  deck = shuffle(cards);
+  currentIndex = 0; score = 0; voting = false;
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('cardArena').style.display = 'block';
+  document.querySelectorAll('.buttons,.swipe-hint,.fact-box,.progress-bar').forEach(el=>el.style.display='');
+  document.getElementById('factText').textContent = 'Swipe right on good habits, left on bad ones. How many can you identify?';
+  updateScore(); updateProgress(); showCard();
+}
+
+function showCard(){
+  if(currentIndex >= deck.length){endGame();return;}
+  const c = deck[currentIndex];
+  const card = document.getElementById('habitCard');
+  card.classList.remove('slide-left','slide-right');
+  card.style.transition = 'none';
+  card.style.transform = 'translateX(60px)';
+  card.style.opacity = '0';
+  document.getElementById('cardEmoji').textContent = c.emoji;
+  document.getElementById('cardText').textContent = c.text;
+  document.getElementById('cardSub').textContent = c.sub;
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    card.style.transition = 'transform 0.4s cubic-bezier(.22,.68,0,1.2), opacity 0.35s';
+    card.style.transform = 'translateX(0)';
+    card.style.opacity = '1';
+  })});
+}
+
+function vote(isGood){
+  if(voting || currentIndex >= deck.length) return;
+  voting = true;
+  const c = deck[currentIndex];
+  const card = document.getElementById('habitCard');
+  const correct = (isGood === c.good);
+  if(correct) score++;
+  card.classList.add(isGood ? 'slide-right' : 'slide-left');
+  const fb = document.getElementById('factBox');
+  fb.style.borderColor = correct ? 'rgba(0,229,160,0.4)' : 'rgba(255,59,92,0.4)';
+  fb.style.background = correct ? 'rgba(0,229,160,0.08)' : 'rgba(255,59,92,0.06)';
+  document.getElementById('factText').textContent = (correct ? '✅ Correct! ' : '❌ Actually, ') + c.fact;
+  currentIndex++;
+  updateScore(); updateProgress();
+  setTimeout(()=>{voting = false; showCard();}, 900);
+}
+
+function updateScore(){document.getElementById('scoreDisplay').textContent = score+' / '+currentIndex;}
+function updateProgress(){document.getElementById('progressFill').style.width=(currentIndex/deck.length*100)+'%';}
+
+function endGame(){
+  document.getElementById('cardArena').style.display = 'none';
+  document.querySelectorAll('.buttons,.swipe-hint').forEach(el=>el.style.display='none');
+  const pct = score/deck.length;
+  let msg = pct===1 ? '🏆 Perfect! You\'re a health habits master!' : pct>=0.8 ? '🌟 Excellent! You really know your health habits!' : pct>=0.6 ? '👍 Good job! A little more study and you\'ll ace it.' : '📚 Keep learning — health knowledge is a superpower!';
+  document.getElementById('resultScore').textContent = score+'/'+deck.length;
+  document.getElementById('resultSub').textContent = msg;
+  const rs = document.getElementById('resultScreen');
+  rs.style.display = 'flex';
+  document.getElementById('factBox').style.display = 'none';
+}
+
+function restartGame(){
+  document.getElementById('factBox').style.display = '';
+  document.getElementById('factBox').style.borderColor = '';
+  document.getElementById('factBox').style.background = '';
+  startGame();
+}
+
+startGame();
+</script>
+</body>
+</html>

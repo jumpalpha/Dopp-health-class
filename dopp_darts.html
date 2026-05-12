@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Darts — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(13px,3vw,20px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:13px;color:var(--emerald);font-weight:600;min-width:70px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px 16px;gap:16px}
+.throws-display{display:flex;gap:8px}
+.throw-dot{width:14px;height:14px;border-radius:50%;background:var(--gold);transition:background .3s}
+.throw-dot.used{background:rgba(255,255,255,0.12)}
+canvas{border-radius:16px;cursor:crosshair;max-width:100%;touch-action:none}
+.tip-box{width:100%;max-width:460px;background:rgba(56,191,255,0.07);border:1px solid rgba(56,191,255,0.2);border-radius:14px;padding:16px 20px;text-align:center;min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.tip-label{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--sky)}
+.tip-text{font-size:13px;color:var(--text);line-height:1.55}
+.total-score{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--gold)}
+.result-screen{display:none;flex-direction:column;align-items:center;gap:18px;text-align:center;width:100%;max-width:440px}
+.result-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--gold)}
+.big-score{font-family:'Cinzel',serif;font-size:clamp(50px,12vw,80px);font-weight:700;color:var(--emerald)}
+.result-sub{font-size:14px;color:var(--dim);line-height:1.6}
+.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-again-btn:hover{transform:translateY(-2px)}
+.aim-label{font-size:12px;color:var(--dim);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp Darts</div>
+  <div class="score-display" id="scoreDisplay">Score: 0</div>
+</header>
+<main>
+  <div class="throws-display" id="throwsDisplay"></div>
+
+  <canvas id="board" width="360" height="360"></canvas>
+
+  <div class="aim-label" id="aimLabel">Click anywhere on the board to throw!</div>
+
+  <div class="tip-box" id="tipBox">
+    <div class="tip-label">HEALTH TIP</div>
+    <div class="tip-text" id="tipText">Aim for the bullseye — Perfect Health! Click the board to throw your dart.</div>
+  </div>
+
+  <div class="result-screen" id="resultScreen">
+    <div class="result-title">Game Over!</div>
+    <div class="big-score" id="bigScore">0</div>
+    <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--gold)">out of 250 points</div>
+    <div class="result-sub" id="resultSub">Keep practicing those health habits!</div>
+    <button class="play-again-btn" onclick="restartGame()">Play Again</button>
+  </div>
+</main>
+
+<script>
+const canvas = document.getElementById('board');
+const ctx = canvas.getContext('2d');
+const cx = canvas.width/2, cy = canvas.height/2;
+const MAX_THROWS = 5;
+
+const rings = [
+  {r:28,  pts:50, label:'Perfect Health', color:'#FF3B5C', tip:'Bullseye! Perfect health means sleep, exercise, nutrition, and mental wellness all in balance.'},
+  {r:58,  pts:40, label:'Excellent',      color:'#FF8C00', tip:'Excellent! Consistent healthy habits add up to 10+ extra years of quality life.'},
+  {r:90,  pts:30, label:'Great',          color:'#FFD700', tip:'Great zone! Regular exercise alone reduces heart disease risk by up to 35%.'},
+  {r:124, pts:20, label:'Good',           color:'#00E5A0', tip:'Good effort! Drinking 8 glasses of water daily improves energy and brain function.'},
+  {r:158, pts:10, label:'Fair',           color:'#38BFFF', tip:'Fair health! Small changes matter — even a 10-min daily walk improves mood significantly.'},
+  {r:180, pts:5,  label:'Needs Work',     color:'rgba(255,255,255,0.15)', tip:'Keep trying! Most health improvements start with just one small consistent change per week.'}
+];
+
+let throws = 0, totalScore = 0, darts = [], animating = false;
+
+function drawBoard(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // bg
+  ctx.fillStyle='#0d1020';
+  ctx.beginPath(); ctx.arc(cx,cy,180,0,Math.PI*2); ctx.fill();
+  // rings (outer to inner)
+  [...rings].reverse().forEach(ring=>{
+    ctx.fillStyle = ring.color;
+    ctx.beginPath(); ctx.arc(cx,cy,ring.r,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(cx,cy,ring.r,0,Math.PI*2); ctx.stroke();
+  });
+  // crosshairs
+  ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(cx,cy-180); ctx.lineTo(cx,cy+180); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-180,cy); ctx.lineTo(cx+180,cy); ctx.stroke();
+  // ring labels
+  ctx.font = 'bold 9px Nunito,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='rgba(0,0,0,0.7)';
+  rings.forEach(ring=>{
+    if(ring.pts<=40 && ring.pts>=10){
+      ctx.fillText(ring.pts+'pts', cx+ring.r-12, cy-5);
+    }
+  });
+  ctx.fillStyle='#fff'; ctx.font='bold 10px Nunito,sans-serif';
+  ctx.fillText('50', cx, cy);
+  // darts
+  darts.forEach(d=>{
+    const prog = Math.min(1,(Date.now()-d.startTime)/d.duration);
+    if(prog<1) return;
+    drawDart(d.x, d.y);
+  });
+}
+
+function drawDart(x,y){
+  ctx.save();
+  ctx.translate(x,y);
+  // tail
+  ctx.strokeStyle='rgba(255,215,0,0.8)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(-12,-12); ctx.lineTo(0,0); ctx.stroke();
+  // body
+  ctx.fillStyle='#ccc';
+  ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+  // tip
+  ctx.fillStyle='var(--crimson)';
+  ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+  // glow
+  ctx.shadowColor='rgba(255,59,92,0.6)'; ctx.shadowBlur=8;
+  ctx.fillStyle='rgba(255,59,92,0.4)';
+  ctx.beginPath(); ctx.arc(0,0,7,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function animateDart(tx,ty,tip,pts){
+  const startX = -50, startY = -50;
+  const dur = 450, start = Date.now();
+  const dart = {x:startX,y:startY,startTime:start,duration:dur};
+  darts.push(dart);
+  function frame(){
+    const t = Math.min(1,(Date.now()-start)/dur);
+    const ease = 1-Math.pow(1-t,3);
+    dart.x = startX + (tx-startX)*ease;
+    dart.y = startY + (ty-startY)*ease;
+    drawBoard();
+    if(t<1){requestAnimationFrame(frame);}
+    else{
+      dart.x=tx; dart.y=ty;
+      drawBoard();
+      showResult(pts,tip);
+      animating=false;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function showResult(pts,tip){
+  document.getElementById('tipText').textContent = '+'+ pts + ' pts! ' + tip;
+  document.getElementById('tipBox').style.borderColor = pts>=40?'rgba(255,59,92,0.4)':pts>=20?'rgba(255,215,0,0.4)':'rgba(56,191,255,0.3)';
+}
+
+function updateThrows(){
+  const d = document.getElementById('throwsDisplay');
+  d.innerHTML='';
+  for(let i=0;i<MAX_THROWS;i++){
+    const dot=document.createElement('div');
+    dot.className='throw-dot'+(i<throws?' used':'');
+    d.appendChild(dot);
+  }
+}
+
+function getScore(dx,dy){
+  const dist = Math.sqrt(dx*dx+dy*dy);
+  for(const r of rings){if(dist<=r.r) return r;}
+  return null;
+}
+
+canvas.addEventListener('click',function(e){
+  if(animating || throws>=MAX_THROWS) return;
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+  const mx=(e.clientX-rect.left)*scaleX, my=(e.clientY-rect.top)*scaleY;
+  const scatter = 14;
+  const tx = mx+(Math.random()-0.5)*scatter, ty=my+(Math.random()-0.5)*scatter;
+  const dx=tx-cx, dy=ty-cy;
+  const ring=getScore(dx,dy);
+  if(!ring) return;
+  animating=true;
+  throws++;
+  totalScore+=ring.pts;
+  document.getElementById('scoreDisplay').textContent='Score: '+totalScore;
+  updateThrows();
+  if(throws>=MAX_THROWS) document.getElementById('aimLabel').textContent='Game over! See your final score below.';
+  animateDart(tx,ty,ring.tip,ring.pts);
+  if(throws>=MAX_THROWS){setTimeout(showEndScreen,1200);}
+});
+
+function showEndScreen(){
+  document.getElementById('resultScreen').style.display='flex';
+  document.getElementById('bigScore').textContent=totalScore;
+  const pct=totalScore/250;
+  const msg=pct>=0.8?'Incredible aim! You clearly know your health priorities.' : pct>=0.5?'Good throws! Your health knowledge is hitting the target.' : 'Keep practicing! Every small healthy step counts.';
+  document.getElementById('resultSub').textContent=msg;
+}
+
+function restartGame(){
+  throws=0; totalScore=0; darts=[];
+  document.getElementById('scoreDisplay').textContent='Score: 0';
+  document.getElementById('resultScreen').style.display='none';
+  document.getElementById('aimLabel').textContent='Click anywhere on the board to throw!';
+  document.getElementById('tipText').textContent='Aim for the bullseye — Perfect Health! Click the board to throw your dart.';
+  document.getElementById('tipBox').style.borderColor='';
+  updateThrows(); drawBoard();
+}
+
+function loop(){drawBoard(); requestAnimationFrame(loop);}
+updateThrows(); loop();
+</script>
+</body>
+</html>
