@@ -219,7 +219,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
       </div>
       <div class="activity-list">
 
-        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0288db42408191a246e22257b95ec4-low-side-quest-guide','_blank')">
+        <div class="activity-item" onclick="openAI('https://chatgpt.com/g/g-6a0288db42408191a246e22257b95ec4-low-side-quest-guide','Side Quest 1 — Health Triangle Self-Assessment','Rate yourself honestly on all three sides of the health triangle — physical, mental/emotional, and social. Identify one goal for each side.')">
           <div class="act-icon">📊</div>
           <div class="act-body">
             <div class="act-title">Side Quest 1 — Health Triangle Self-Assessment</div>
@@ -232,7 +232,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
           </div>
         </div>
 
-        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0287fb759c819196d149716a22bc4e-low-exploration-guide','_blank')">
+        <div class="activity-item" onclick="openAI('https://chatgpt.com/g/g-6a0287fb759c819196d149716a22bc4e-low-exploration-guide','Exploration — 7 Dimensions of Wellness Map','Create a personal wellness wheel showing where you are on all 7 dimensions — physical, emotional, intellectual, social, spiritual, environmental, and occupational. Color-coded and honest.')">
           <div class="act-icon">🗺</div>
           <div class="act-body">
             <div class="act-title">Exploration — 7 Dimensions of Wellness Map</div>
@@ -245,7 +245,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
           </div>
         </div>
 
-        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a0287fb759c819196d149716a22bc4e-low-exploration-guide','_blank')">
+        <div class="activity-item" onclick="openAI('https://chatgpt.com/g/g-6a0287fb759c819196d149716a22bc4e-low-exploration-guide','Exploration — Health in the News','Find one recent health news story (2023–2025). Identify which dimension of the health triangle it relates to, whether the source is credible, and what the key takeaway is for teens.')">
           <div class="act-icon">📰</div>
           <div class="act-body">
             <div class="act-title">Exploration — Health in the News</div>
@@ -258,7 +258,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
           </div>
         </div>
 
-        <div class="activity-item" onclick="window.open('https://chatgpt.com/g/g-6a02899217f88191ba9a805ab83f466e-low-challenge-coach','_blank')">
+        <div class="activity-item" onclick="openAI('https://chatgpt.com/g/g-6a02899217f88191ba9a805ab83f466e-low-challenge-coach','Habit Challenge — 2-Week Healthy Habit Tracker','Choose ONE health habit to build over 2 weeks: sleep, water intake, screen time, physical activity, or fruit/vegetable servings. Track daily with a simple log. Report at the end of Realm I.')">
           <div class="act-icon">🎯</div>
           <div class="act-body">
             <div class="act-title">Habit Challenge — 2-Week Healthy Habit Tracker</div>
@@ -415,5 +415,6 @@ VOCAB.forEach((v,i)=>{
 setTimeout(()=>{document.getElementById('progress-fill').style.width='0%';},300);
 </script>
 
+  <script src="shared.js"></script>
 </body>
 </html>
