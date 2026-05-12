@@ -6,7 +6,7 @@
 <title>Dopp Drop — Health Arcade</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0B1D51;--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#1C1A2E;--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
 header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);z-index:10}
@@ -21,7 +21,7 @@ canvas{display:block;max-width:100%;touch-action:none}
 .overlay-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,6vw,38px);font-weight:900;color:var(--gold)}
 .overlay-score{font-family:'Cinzel',serif;font-size:clamp(50px,13vw,80px);font-weight:700;color:var(--emerald)}
 .overlay-sub{font-size:14px;color:var(--dim);max-width:340px;line-height:1.6}
-.play-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#0B1D51;border:none;padding:14px 40px;border-radius:12px;font-family:'Cinzel Decorative',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#1C1A2E;border:none;padding:14px 40px;border-radius:12px;font-family:'Cinzel Decorative',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
 .play-btn:hover{transform:scale(1.04)}
 .legend{display:flex;gap:16px;font-size:11px;color:var(--dim)}
 .legend-item{display:flex;align-items:center;gap:5px}
@@ -178,7 +178,7 @@ function drawAll(){
   ctx.clearRect(0,0,W,H);
   // bg gradient
   const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#0a1028'); bg.addColorStop(1,'#0B1D51');
+  bg.addColorStop(0,'#0a1028'); bg.addColorStop(1,'#1C1A2E');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
   // stars
   ctx.fillStyle='rgba(255,255,255,0.35)';

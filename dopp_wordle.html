@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0B1D51;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+body{background:#1C1A2E;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
 #header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
 #back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
 #back-btn:hover{opacity:1}
@@ -28,8 +28,8 @@ body{background:#0B1D51;color:#fff;font-family:'Nunito',sans-serif;display:flex;
   50%{transform:rotateX(90deg)}
   100%{transform:rotateX(0)}
 }
-.tile.correct{background:#FFD700;border-color:#FFD700;color:#0B1D51}
-.tile.present{background:#38BFFF;border-color:#38BFFF;color:#0B1D51}
+.tile.correct{background:#FFD700;border-color:#FFD700;color:#1C1A2E}
+.tile.present{background:#38BFFF;border-color:#38BFFF;color:#1C1A2E}
 .tile.absent{background:#2a2a3a;border-color:#2a2a3a;color:#888}
 .tile.shake{animation:shake .4s ease}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
@@ -38,12 +38,12 @@ body{background:#0B1D51;color:#fff;font-family:'Nunito',sans-serif;display:flex;
 .key{padding:0;width:36px;height:46px;border:none;border-radius:5px;background:#3a3a4a;color:#fff;font-family:'Cinzel',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s,color .2s;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
 .key.wide{width:54px;font-size:11px}
 .key:hover{background:#4a4a5a}
-.key.correct{background:#FFD700;color:#0B1D51}
-.key.present{background:#38BFFF;color:#0B1D51}
+.key.correct{background:#FFD700;color:#1C1A2E}
+.key.present{background:#38BFFF;color:#1C1A2E}
 .key.absent{background:#222230;color:#555}
 #message{min-height:28px;font-family:'Nunito',sans-serif;font-size:15px;color:#FFD700;text-align:center;margin-bottom:8px;font-weight:700}
 #fact-box{max-width:420px;text-align:center;font-size:14px;color:#00E5A0;padding:10px 14px;border:1px solid rgba(0,229,160,0.3);border-radius:8px;margin-bottom:12px;display:none;line-height:1.5}
-#play-again{display:none;background:#FFD700;color:#0B1D51;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:10px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
+#play-again{display:none;background:#FFD700;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:10px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
 #play-again:hover{transform:scale(1.05)}
 @media(max-width:420px){
   .tile{width:48px;height:48px;font-size:20px}

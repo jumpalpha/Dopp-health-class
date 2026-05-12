@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0B1D51;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+body{background:#1C1A2E;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
 header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 24px;background:rgba(5,7,15,0.97);border-bottom:1px solid rgba(255,215,0,0.2);flex-shrink:0}
 .back{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
 .title{font-family:'Cinzel Decorative',serif;font-size:17px;color:#FFD700}
@@ -76,7 +76,7 @@ function startRun(){init();}
 function drawBg(){
   // Sky gradient
   const sky=cx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#0B1D51');sky.addColorStop(1,'#0d1a2e');
+  sky.addColorStop(0,'#1C1A2E');sky.addColorStop(1,'#0d1a2e');
   cx.fillStyle=sky;cx.fillRect(0,0,W,H);
   // Stadium lights
   [100,330,570].forEach(lx=>{

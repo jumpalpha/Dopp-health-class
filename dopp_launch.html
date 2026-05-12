@@ -6,7 +6,7 @@
 <title>Dopp Launch — Health Arcade</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0B1D51;--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#1C1A2E;--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
 header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
@@ -32,7 +32,7 @@ canvas{border-radius:14px;max-width:100%;cursor:pointer;touch-action:none}
 .result-title{font-family:'Cinzel Decorative',serif;font-size:clamp(20px,5vw,32px);font-weight:900;color:var(--gold)}
 .big-score{font-family:'Cinzel',serif;font-size:clamp(48px,12vw,76px);font-weight:700;color:var(--emerald)}
 .result-sub{font-size:14px;color:var(--dim);line-height:1.6}
-.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#0B1D51;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#1C1A2E;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
 .play-again-btn:hover{transform:translateY(-2px)}
 </style>
 </head>
@@ -96,7 +96,7 @@ function drawScene(charPosX, charPosY, flyProgress){
   ctx.clearRect(0,0,W,H);
   // sky bg
   const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#0a1030'); sky.addColorStop(1,'#0B1D51');
+  sky.addColorStop(0,'#0a1030'); sky.addColorStop(1,'#1C1A2E');
   ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
   // ground
   ctx.fillStyle='#1a2240'; ctx.fillRect(0,H-30,W,30);
@@ -144,7 +144,7 @@ function drawCharacter(x,y,isFlying){
   ctx.fillStyle='#FFDAB9';
   ctx.beginPath(); ctx.arc(0,-22,10,0,Math.PI*2); ctx.fill();
   // eyes
-  ctx.fillStyle='#0B1D51';
+  ctx.fillStyle='#1C1A2E';
   ctx.beginPath(); ctx.arc(-3.5,-23,2,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(3.5,-23,2,0,Math.PI*2); ctx.fill();
   // smile
