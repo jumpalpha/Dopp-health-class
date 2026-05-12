@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Motomania — Health Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#FDFAF2;--border:rgba(28,26,46,0.12);--text:#1C1A2E;--dim:rgba(28,26,46,0.5)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(248,244,232,0.97);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.back-btn:hover{opacity:.7}
+.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(12px,2.8vw,19px);font-weight:900;color:var(--gold);text-align:center}
+.score-display{font-family:'Cinzel',serif;font-size:13px;color:var(--emerald);font-weight:600;min-width:80px;text-align:right}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px;gap:14px}
+canvas{border-radius:16px;max-width:100%;touch-action:none;display:block;cursor:pointer}
+.instructions{font-size:13px;color:var(--dim);text-align:center;max-width:700px;line-height:1.7}
+.tip-box{width:100%;max-width:800px;background:rgba(56,191,255,0.07);border:1px solid rgba(56,191,255,0.2);border-radius:14px;padding:14px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tip-label{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--sky)}
+.tip-text{font-size:13px;color:var(--text);line-height:1.55}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="game-title">Dopp Motomania</div>
+  <div class="score-display" id="scoreDisplay">★ 0 / 5</div>
+</header>
+<main>
+  <canvas id="gc" width="800" height="420"></canvas>
+  <div class="instructions">
+    <strong>→ / D</strong> Gas &nbsp;·&nbsp; <strong>← / A</strong> Brake &nbsp;·&nbsp; <strong>↑ / W</strong> Lean Back &nbsp;·&nbsp; <strong>↓ / S</strong> Lean Forward<br>
+    Collect ★ stars · Nail flips · Reach the finish flag — don't crash!
+  </div>
+  <div class="tip-box">
+    <div class="tip-label">HEALTH TIP</div>
+    <div class="tip-text">Balance and coordination are key fitness skills — dynamic sports train both simultaneously!</div>
+  </div>
+</main>
+
+<script>
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// ---- Constants ----
+const GRAVITY    = 0.42;
+const WHEEL_R    = 13;
+const WHEELBASE  = 50;
+const CHASSIS_H  = 24;   // rider above wheel midpoint
+const THROTTLE   = 0.38;
+const BRAKE_F    = 0.28;
+const LEAN_F     = 0.0055;
+const FRICTION   = 0.89;
+const AIR_DRAG   = 0.998;
+const BOUNCE     = 0.13;
+const MAX_SPD    = 12;
+const FINISH_X   = 2450;
+const FLAG_X     = 2470;
+
+// ---- Input ----
+const keys = { left:false, right:false, up:false, down:false };
+document.addEventListener('keydown', e => {
+  if (['ArrowRight','KeyD'].includes(e.code)) { keys.right = true; e.preventDefault(); }
+  if (['ArrowLeft','KeyA'].includes(e.code))  { keys.left  = true; e.preventDefault(); }
+  if (['ArrowUp','KeyW'].includes(e.code))    { keys.up    = true; e.preventDefault(); }
+  if (['ArrowDown','KeyS'].includes(e.code))  { keys.down  = true; e.preventDefault(); }
+  if (e.code === 'Space') { e.preventDefault(); handleAction(); }
+});
+document.addEventListener('keyup', e => {
+  if (['ArrowRight','KeyD'].includes(e.code)) keys.right = false;
+  if (['ArrowLeft','KeyA'].includes(e.code))  keys.left  = false;
+  if (['ArrowUp','KeyW'].includes(e.code))    keys.up    = false;
+  if (['ArrowDown','KeyS'].includes(e.code))  keys.down  = false;
+});
+canvas.addEventListener('click', handleAction);
+
+// Touch zones: left 1/3 = brake, middle 1/3 = gas, right side lean
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    const rx = t.clientX / canvas.getBoundingClientRect().width;
+    if (rx < 0.33) keys.left  = true;
+    else if (rx < 0.66) keys.right = true;
+    else keys.up = true;
+  }
+  handleAction();
+}, {passive:false});
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  keys.left = keys.right = keys.up = keys.down = false;
+}, {passive:false});
+
+function handleAction() {
+  if (phase === 'ready' || phase === 'dead' || phase === 'win') restart();
+}
+
+// ---- Terrain ----
+// Control points [worldX, worldY]. Y increases downward, ground is at these Y values.
+const RAW = [
+  [0,355],[90,355],[160,352],
+  [210,332],[270,295],[325,318],   // first hill
+  [390,358],[460,362],[530,368],   // valley
+  [590,322],[645,258],[690,225],   // big ramp launch
+  [740,215],                        // ramp apex (go airborne)
+  [800,375],[870,378],             // landing
+  [940,370],[1000,388],[1060,398], // dip
+  [1120,372],[1190,360],
+  [1250,338],[1310,308],[1370,282],// long slope up
+  [1420,278],[1475,288],           // plateau
+  [1530,325],[1595,372],           // drop
+  [1660,392],[1720,396],           // deep valley
+  [1780,368],[1840,338],[1900,298],// climb
+  [1960,278],[2010,270],[2060,290],// peak
+  [2120,358],[2180,372],           // drop
+  [2240,368],[2310,364],[2400,364],// final straight
+  [2500,364],[2600,364],
+];
+
+// Catmull-Rom smooth
+function cmr(p0,p1,p2,p3,t){
+  const t2=t*t,t3=t2*t;
+  return 0.5*(2*p1+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t2+(-p0+3*p1-3*p2+p3)*t3);
+}
+
+const TERRAIN = [];
+const STEPS = 18;
+for (let i=0;i<RAW.length-1;i++){
+  const a=RAW[Math.max(0,i-1)], b=RAW[i], c=RAW[Math.min(RAW.length-1,i+1)], d=RAW[Math.min(RAW.length-1,i+2)];
+  for (let s=0;s<STEPS;s++){
+    const t=s/STEPS;
+    TERRAIN.push([cmr(a[0],b[0],c[0],d[0],t), cmr(a[1],b[1],c[1],d[1],t)]);
+  }
+}
+TERRAIN.push(RAW[RAW.length-1]);
+
+function getGroundY(wx){
+  if (wx <= TERRAIN[0][0]) return TERRAIN[0][1];
+  const last = TERRAIN[TERRAIN.length-1];
+  if (wx >= last[0]) return last[1];
+  let lo=0, hi=TERRAIN.length-1;
+  while (lo < hi-1){ const m=(lo+hi)>>1; TERRAIN[m][0]<=wx ? lo=m : hi=m; }
+  const [x0,y0]=TERRAIN[lo],[x1,y1]=TERRAIN[hi];
+  return y0+(y1-y0)*(wx-x0)/(x1-x0);
+}
+
+// ---- Obstacles ----
+// Spinning dumbbells = instant death on touch
+// Bouncing health balls = physics collision
+const OBS_CFG = [
+  { type:'spin', wx:660,  size:32, spd:0.065 },
+  { type:'spin', wx:1370, size:28, spd:0.085 },
+  { type:'spin', wx:2010, size:32, spd:0.07  },
+  { type:'ball', wx:1000 },
+  { type:'ball', wx:1680 },
+];
+
+let obstacles = [];
+
+function initObstacles(){
+  obstacles = OBS_CFG.map(cfg => {
+    const gy = getGroundY(cfg.wx);
+    if (cfg.type==='spin') return { ...cfg, x:cfg.wx, y:gy-cfg.size-6, angle:Math.random()*Math.PI };
+    return { ...cfg, x:cfg.wx, y:gy-18, vx:-0.8, vy:0 };
+  });
+}
+
+// ---- Stars ----
+const STAR_CFG = [
+  { x:648, y:175 },
+  { x:685, y:148 },
+  { x:722, y:178 },
+  { x:1370, y:218 },
+  { x:2010, y:205 },
+];
+let starState = [];
+function initStars(){ starState = STAR_CFG.map(s => ({...s, got:false})); }
+
+// ---- Bike ----
+let rw, fw;                    // rear/front wheel {x,y,vx,vy}
+let camX;
+let totalRot, lastAngle, flipCount, flipMsg;
+let phase;                     // 'ready' | 'playing' | 'dead' | 'win'
+let deathTimer;
+let startMs, endMs, starsGot;
+
+function initBike(){
+  const startX = 80;
+  rw = { x:startX,              y:getGroundY(startX)-WHEEL_R,              vx:0, vy:0 };
+  fw = { x:startX+WHEELBASE,    y:getGroundY(startX+WHEELBASE)-WHEEL_R,    vx:0, vy:0 };
+  totalRot = 0; lastAngle = 0; flipCount = 0; flipMsg = 0;
+  camX = 0;
+}
+
+function restart(){
+  initBike();
+  initObstacles();
+  initStars();
+  starsGot = 0;
+  startMs = Date.now(); endMs = null;
+  phase = 'playing';
+  document.getElementById('scoreDisplay').textContent = `★ 0 / ${STAR_CFG.length}`;
+}
+
+// ---- Physics step ----
+function physicsStep(){
+  // Gravity
+  rw.vy += GRAVITY; fw.vy += GRAVITY;
+
+  // Bike geometry
+  const dx = fw.x-rw.x, dy = fw.y-rw.y;
+  const len = Math.hypot(dx,dy) || 1;
+  const ux = dx/len, uy = dy/len;          // forward unit vector
+  // Perpendicular "up" from bike in screen coords (rotate fwd 90° CW): (uy, -ux)
+  const upX = uy, upY = -ux;
+
+  // Ground test
+  const rwGY = getGroundY(rw.x), fwGY = getGroundY(fw.x);
+  const rwGnd = rw.y + WHEEL_R >= rwGY - 0.5;
+  const fwGnd = fw.y + WHEEL_R >= fwGY - 0.5;
+
+  // Throttle (rear-wheel drive)
+  if (keys.right){
+    const f = rwGnd ? THROTTLE : THROTTLE*0.08;
+    rw.vx += ux*f; rw.vy += uy*f;
+  }
+  // Brake
+  if (keys.left){
+    rw.vx -= ux*BRAKE_F; rw.vy -= uy*BRAKE_F;
+  }
+  // Speed cap
+  const sp = Math.hypot(rw.vx, rw.vy);
+  if (sp > MAX_SPD){ rw.vx *= MAX_SPD/sp; rw.vy *= MAX_SPD/sp; }
+
+  // Lean: apply equal-opposite force to front/rear perpendicular to bike axis
+  // keys.up = lean back (wheelie) = push front up, rear down
+  const lean = (keys.up ? 1 : 0) - (keys.down ? 1 : 0);
+  if (lean !== 0){
+    fw.vx += lean * LEAN_F * upX;
+    fw.vy += lean * LEAN_F * upY;
+    rw.vx -= lean * LEAN_F * upX;
+    rw.vy -= lean * LEAN_F * upY;
+  }
+
+  // Integrate
+  rw.x += rw.vx; rw.y += rw.vy;
+  fw.x += fw.vx; fw.y += fw.vy;
+
+  // Rigid constraint (keep wheelbase)
+  for (let i=0;i<5;i++){
+    const cx=fw.x-rw.x, cy=fw.y-rw.y;
+    const cd=Math.hypot(cx,cy)||1;
+    const corr=(cd-WHEELBASE)/cd*0.5;
+    rw.x += cx*corr; rw.y += cy*corr;
+    fw.x -= cx*corr; fw.y -= cy*corr;
+  }
+
+  // Ground collision per wheel
+  for (const w of [rw,fw]){
+    const gy = getGroundY(w.x);
+    if (w.y+WHEEL_R > gy){
+      w.y = gy-WHEEL_R;
+      if (w.vy > 0) w.vy *= -BOUNCE;
+      w.vx *= FRICTION;
+    } else {
+      w.vx *= AIR_DRAG; w.vy *= AIR_DRAG;
+    }
+  }
+
+  // Rider position
+  const midX = (rw.x+fw.x)/2, midY = (rw.y+fw.y)/2;
+  // Recalculate up after constraint
+  const dx2=fw.x-rw.x, dy2=fw.y-rw.y, len2=Math.hypot(dx2,dy2)||1;
+  const ux2=dx2/len2, uy2=dy2/len2;
+  const upX2=uy2, upY2=-ux2;
+  const riderX = midX + upX2*CHASSIS_H;
+  const riderY = midY + upY2*CHASSIS_H;
+  const headX  = midX + upX2*(CHASSIS_H+22);
+  const headY  = midY + upY2*(CHASSIS_H+22);
+
+  // Death: head/body hits ground
+  if (headY+10 > getGroundY(headX) || riderY+8 > getGroundY(riderX)) { die(); return; }
+  if (rw.y > H+150 || fw.y > H+150) { die(); return; }
+
+  // Obstacle logic
+  for (const obs of obstacles){
+    if (obs.type==='spin'){
+      obs.angle += obs.spd;
+      // Collision: kill radius = size + wheel radius
+      const kr = obs.size + WHEEL_R + 4;
+      if (Math.hypot(rw.x-obs.x, rw.y-obs.y) < kr ||
+          Math.hypot(fw.x-obs.x, fw.y-obs.y) < kr ||
+          Math.hypot(riderX-obs.x, riderY-obs.y) < kr+8) { die(); return; }
+    } else {
+      // Ball physics
+      obs.vy += GRAVITY*0.75;
+      obs.x += obs.vx; obs.y += obs.vy;
+      const bgy = getGroundY(obs.x);
+      if (obs.y+18 > bgy){ obs.y=bgy-18; obs.vy*=-0.55; obs.vx*=0.9; }
+      // Bounce bike wheels
+      for (const w of [rw,fw]){
+        const dd=Math.hypot(w.x-obs.x, w.y-obs.y);
+        const minD=WHEEL_R+18;
+        if (dd < minD && dd > 0.1){
+          const nx=(w.x-obs.x)/dd, ny=(w.y-obs.y)/dd;
+          const ov=minD-dd;
+          w.x+=nx*ov*0.5; w.y+=ny*ov*0.5;
+          obs.x-=nx*ov*0.5; obs.y-=ny*ov*0.5;
+          const relV=(w.vx-obs.vx)*nx+(w.vy-obs.vy)*ny;
+          if (relV < 0){
+            w.vx-=relV*nx*0.9; w.vy-=relV*ny*0.9;
+            obs.vx+=relV*nx*0.4; obs.vy+=relV*ny*0.4;
+          }
+        }
+      }
+    }
+  }
+
+  // Star collection
+  for (const s of starState){
+    if (!s.got && Math.hypot(riderX-s.x, riderY-s.y) < 26){
+      s.got = true; starsGot++;
+      document.getElementById('scoreDisplay').textContent = `★ ${starsGot} / ${STAR_CFG.length}`;
+    }
+  }
+
+  // Flip tracking
+  const curAngle = Math.atan2(fw.y-rw.y, fw.x-rw.x);
+  let dA = curAngle - lastAngle;
+  while (dA >  Math.PI) dA -= 2*Math.PI;
+  while (dA < -Math.PI) dA += 2*Math.PI;
+  totalRot += dA; lastAngle = curAngle;
+  const newFlips = Math.floor(Math.abs(totalRot)/(2*Math.PI));
+  if (newFlips > flipCount){ flipCount=newFlips; flipMsg=75; }
+  if (flipMsg > 0) flipMsg--;
+
+  // Win
+  if (rw.x > FINISH_X) { phase='win'; endMs=Date.now(); }
+}
+
+function die(){ if (phase==='playing'){ phase='dead'; deathTimer=130; } }
+
+// ---- Camera ----
+function updateCam(){
+  const target = (rw.x+fw.x)/2 - W*0.33;
+  camX += (target-camX)*0.09;
+  if (camX < 0) camX=0;
+}
+
+// ---- Drawing ----
+function drawSky(){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#0d0b1f'); g.addColorStop(1,'#091525');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // Stars in sky
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  for (const [sx,sy] of [[50,30],[180,18],[370,45],[560,12],[690,35],[770,22]]){
+    ctx.beginPath(); ctx.arc(sx,sy,1,0,Math.PI*2); ctx.fill();
+  }
+}
+
+function drawBg(camX){
+  // Distant mountains
+  ctx.fillStyle='rgba(30,20,60,0.7)';
+  ctx.beginPath();
+  const mpts=[[0,320],[150,250],[300,290],[450,220],[600,270],[750,210],[900,260],[1050,200],[1200,250]];
+  ctx.moveTo(0-camX*0.1,320);
+  for (const [mx,my] of mpts) ctx.lineTo(mx-camX*0.1,my);
+  ctx.lineTo(1200-camX*0.1,H); ctx.lineTo(-camX*0.1,H); ctx.closePath();
+  ctx.fill();
+}
+
+function drawTerrain(camX){
+  ctx.beginPath();
+  ctx.moveTo(TERRAIN[0][0]-camX, TERRAIN[0][1]);
+  for (const [tx,ty] of TERRAIN) ctx.lineTo(tx-camX, ty);
+  const last=TERRAIN[TERRAIN.length-1];
+  ctx.lineTo(last[0]-camX, H+10); ctx.lineTo(TERRAIN[0][0]-camX, H+10);
+  ctx.closePath();
+  const g=ctx.createLinearGradient(0,350,0,H);
+  g.addColorStop(0,'#1f4a1f'); g.addColorStop(1,'#0e2a0e');
+  ctx.fillStyle=g; ctx.fill();
+  // Surface line
+  ctx.beginPath();
+  ctx.moveTo(TERRAIN[0][0]-camX, TERRAIN[0][1]);
+  for (const [tx,ty] of TERRAIN) ctx.lineTo(tx-camX, ty);
+  ctx.strokeStyle='#3a8a3a'; ctx.lineWidth=3; ctx.stroke();
+  // Grass tufts
+  ctx.strokeStyle='#4aaa4a'; ctx.lineWidth=1.5;
+  for (let i=0;i<TERRAIN.length;i+=4){
+    const [tx,ty]=TERRAIN[i]; const sx=tx-camX;
+    if (sx<-10||sx>W+10) continue;
+    ctx.beginPath(); ctx.moveTo(sx-2,ty); ctx.lineTo(sx,ty-6); ctx.lineTo(sx+2,ty); ctx.stroke();
+  }
+}
+
+function drawWheel(sx,sy,r){
+  ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2);
+  ctx.fillStyle='#1a1a1a'; ctx.fill();
+  ctx.strokeStyle='#444'; ctx.lineWidth=2.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(sx,sy,r*0.38,0,Math.PI*2);
+  ctx.fillStyle='#FFD700'; ctx.fill();
+}
+
+function drawBikeFrame(rwsx,rwsy,fwsx,fwsy){
+  const angle=Math.atan2(fwsy-rwsy,fwsx-rwsx);
+  const midSX=(rwsx+fwsx)/2, midSY=(rwsy+fwsy)/2;
+  ctx.save(); ctx.translate(midSX,midSY); ctx.rotate(angle);
+  const hb=WHEELBASE/2;
+  // Main lower frame
+  ctx.strokeStyle='#888'; ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(-hb,0); ctx.lineTo(hb,0);
+  // Seat stay
+  ctx.moveTo(-hb*0.4,0); ctx.lineTo(-hb*0.3,-CHASSIS_H);
+  // Top tube
+  ctx.moveTo(-hb*0.3,-CHASSIS_H); ctx.lineTo(hb*0.35,-CHASSIS_H+4);
+  // Down tube
+  ctx.moveTo(hb*0.35,-CHASSIS_H+4); ctx.lineTo(hb,0);
+  ctx.stroke();
+  // Engine
+  ctx.fillStyle='#333'; ctx.fillRect(-6,-13,13,13);
+  ctx.fillStyle='#FFD700'; ctx.fillRect(-3,-10,7,7);
+  // Exhaust pipe
+  ctx.strokeStyle='#777'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(-hb,2); ctx.lineTo(-hb-4,8); ctx.stroke();
+  // Fender
+  ctx.strokeStyle='#FF3B5C'; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(hb, 0, WHEEL_R+4, -Math.PI*0.75, -Math.PI*0.1);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawDopp(rwsx,rwsy,fwsx,fwsy){
+  const angle=Math.atan2(fwsy-rwsy,fwsx-rwsx);
+  const midSX=(rwsx+fwsx)/2, midSY=(rwsy+fwsy)/2;
+  const upX=Math.sin(angle), upY=-Math.cos(angle);
+  const bx=midSX+upX*CHASSIS_H, by=midSY+upY*CHASSIS_H;
+  ctx.save(); ctx.translate(bx,by); ctx.rotate(angle);
+
+  // Legs
+  ctx.fillStyle='#2244AA';
+  ctx.fillRect(-7,0,5,14); ctx.fillRect(2,0,5,14);
+  // Kilt
+  ctx.save();
+  ctx.beginPath(); ctx.rect(-10,-16,20,16); ctx.clip();
+  const kColors=['#1a4a2a','#2244AA'];
+  for (let i=0;i<4;i++){ ctx.fillStyle=kColors[i%2]; ctx.fillRect(-10+i*5,-16,5,16); }
+  ctx.strokeStyle='rgba(255,215,0,0.35)'; ctx.lineWidth=1;
+  for (let i=0;i<=4;i++){ ctx.beginPath(); ctx.moveTo(-10+i*5,-16); ctx.lineTo(-10+i*5,0); ctx.stroke(); }
+  ctx.restore();
+  // Torso
+  ctx.fillStyle='#1a4a2a'; ctx.fillRect(-8,-32,16,16);
+  ctx.strokeStyle='#FFD700'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(-8,-30); ctx.lineTo(8,-18); ctx.stroke();
+  // Helmet
+  ctx.fillStyle='#CC2200';
+  ctx.beginPath(); ctx.arc(0,-40,10,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(100,200,255,0.7)';
+  ctx.beginPath(); ctx.arc(3,-40,6,Math.PI*1.1,Math.PI*1.9); ctx.fill();
+  // Eye through visor
+  ctx.fillStyle='#fff'; ctx.fillRect(1,-43,4,3);
+  // Arms to handlebars
+  ctx.fillStyle='#c8845a';
+  ctx.fillRect(5,-28,4,12); ctx.fillRect(5,-28,14,4);
+  ctx.restore();
+}
+
+function drawObstacles(camX){
+  for (const obs of obstacles){
+    const sx=obs.x-camX;
+    if (sx<-100||sx>W+100) continue;
+    if (obs.type==='spin'){
+      // Post from ground
+      const postY=getGroundY(obs.x);
+      ctx.strokeStyle='#666'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(sx,obs.y); ctx.lineTo(sx,postY); ctx.stroke();
+      // Spinning dumbbell
+      ctx.save(); ctx.translate(sx,obs.y); ctx.rotate(obs.angle);
+      ctx.fillStyle='#FF3B5C';
+      ctx.fillRect(-obs.size,-4,obs.size*2,8);
+      for (const wx of [-obs.size, obs.size]){
+        ctx.beginPath(); ctx.arc(wx,0,11,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='rgba(255,59,92,0.4)'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.arc(wx,0,14,0,Math.PI*2); ctx.stroke();
+      }
+      // Center grip
+      ctx.fillStyle='#333'; ctx.fillRect(-6,-3,12,6);
+      ctx.restore();
+    } else {
+      // Bouncing exercise ball
+      ctx.save(); ctx.translate(sx,obs.y);
+      ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2);
+      ctx.fillStyle='#38BFFF'; ctx.fill();
+      ctx.strokeStyle='rgba(0,229,160,0.6)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.ellipse(0,0,18,6,0,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0,0,6,18,0,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+function drawStars(camX){
+  const t=Date.now()/350;
+  for (const s of starState){
+    if (s.got) continue;
+    const sx=s.x-camX, sy=s.y+Math.sin(t+s.x*0.012)*5;
+    if (sx<-40||sx>W+40) continue;
+    // Glow
+    ctx.save();
+    const glow=ctx.createRadialGradient(sx,sy,0,sx,sy,20);
+    glow.addColorStop(0,'rgba(255,215,0,0.3)'); glow.addColorStop(1,'rgba(255,215,0,0)');
+    ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(sx,sy,20,0,Math.PI*2); ctx.fill();
+    // Star shape
+    ctx.translate(sx,sy); ctx.rotate(t*0.4+s.x);
+    ctx.beginPath();
+    for (let i=0;i<10;i++){
+      const a=i*Math.PI/5 - Math.PI/2;
+      const r=i%2===0?13:6;
+      i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+    }
+    ctx.closePath();
+    ctx.fillStyle='#FFD700'; ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawFlag(camX){
+  const sx=FLAG_X-camX, gy=getGroundY(FLAG_X);
+  ctx.strokeStyle='#aaa'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(sx,gy); ctx.lineTo(sx,gy-90); ctx.stroke();
+  const wave=Math.sin(Date.now()/300)*4;
+  ctx.fillStyle='#00E5A0';
+  ctx.beginPath();
+  ctx.moveTo(sx,gy-90);
+  ctx.quadraticCurveTo(sx+20,gy-75+wave,sx+40,gy-75);
+  ctx.quadraticCurveTo(sx+20,gy-60+wave,sx,gy-60);
+  ctx.closePath(); ctx.fill();
+  ctx.font="bold 10px 'Cinzel',serif"; ctx.fillStyle='#1C1A2E';
+  ctx.textAlign='center'; ctx.fillText('FIN',sx+20,gy-72);
+}
+
+function drawHUD(){
+  const elapsed = endMs ? endMs-startMs : Date.now()-startMs;
+  const s=(elapsed/1000).toFixed(2);
+  ctx.font="bold 15px 'Cinzel',serif";
+  ctx.fillStyle='#FFD700'; ctx.textAlign='left';
+  ctx.fillText(`⏱ ${s}s`,14,28);
+  if (flipMsg>0 && flipCount>0){
+    const alpha=Math.min(1,flipMsg/25);
+    ctx.save(); ctx.globalAlpha=alpha;
+    ctx.font="bold 28px 'Cinzel Decorative',serif";
+    ctx.fillStyle='#00E5A0'; ctx.textAlign='center';
+    ctx.shadowColor='#00E5A0'; ctx.shadowBlur=18;
+    ctx.fillText(`${flipCount}x FLIP!`,W/2,H/2-55);
+    ctx.shadowBlur=0; ctx.restore();
+  }
+}
+
+function drawReady(){
+  ctx.fillStyle='rgba(0,0,10,0.65)'; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';
+  ctx.font="bold 36px 'Cinzel Decorative',serif";
+  ctx.fillStyle='#FFD700'; ctx.shadowColor='#FFD700'; ctx.shadowBlur=24;
+  ctx.fillText('DOPP MOTOMANIA',W/2,H/2-55);
+  ctx.shadowBlur=0;
+  ctx.font="14px 'Cinzel',serif"; ctx.fillStyle='rgba(255,255,255,0.9)';
+  ctx.fillText('→ Gas  ·  ← Brake  ·  ↑ Lean Back  ·  ↓ Lean Forward',W/2,H/2-5);
+  ctx.font="12px 'Nunito',sans-serif"; ctx.fillStyle='rgba(255,215,0,0.75)';
+  ctx.fillText('Collect ★ stars · Nail flips · Reach the flag without crashing!',W/2,H/2+22);
+  ctx.font="bold 14px 'Cinzel',serif"; ctx.fillStyle='#00E5A0';
+  const pulse=0.7+Math.sin(Date.now()/400)*0.3;
+  ctx.globalAlpha=pulse;
+  ctx.fillText('PRESS SPACE or CLICK to ride!',W/2,H/2+60);
+  ctx.globalAlpha=1;
+}
+
+function drawDead(){
+  const prog=Math.min(1,(130-deathTimer)/60);
+  ctx.fillStyle=`rgba(0,0,5,${prog*0.65})`; ctx.fillRect(0,0,W,H);
+  if (prog>0.7){
+    const a=(prog-0.7)/0.3;
+    ctx.save(); ctx.globalAlpha=a;
+    ctx.textAlign='center';
+    ctx.font="bold 42px 'Cinzel Decorative',serif";
+    ctx.fillStyle='#FF3B5C'; ctx.shadowColor='#FF3B5C'; ctx.shadowBlur=22;
+    ctx.fillText('BAILED!',W/2,H/2-18);
+    ctx.shadowBlur=0;
+    ctx.font="15px 'Cinzel',serif"; ctx.fillStyle='#fff';
+    ctx.fillText('Press SPACE or click to try again',W/2,H/2+22);
+    ctx.restore();
+  }
+}
+
+function drawWin(){
+  ctx.fillStyle='rgba(0,0,15,0.78)'; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center';
+  ctx.font="bold 38px 'Cinzel Decorative',serif";
+  ctx.fillStyle='#FFD700'; ctx.shadowColor='#FFD700'; ctx.shadowBlur=26;
+  ctx.fillText('LEVEL COMPLETE!',W/2,H/2-70);
+  ctx.shadowBlur=0;
+  const s=((endMs-startMs)/1000).toFixed(2);
+  ctx.font="18px 'Cinzel',serif";
+  ctx.fillStyle='#00E5A0'; ctx.fillText(`Time: ${s}s`,W/2,H/2-22);
+  ctx.fillStyle='#FFD700'; ctx.fillText(`Stars: ${starsGot} / ${STAR_CFG.length}`,W/2,H/2+14);
+  ctx.fillStyle='#38BFFF'; ctx.fillText(`Flips: ${flipCount}`,W/2,H/2+48);
+  // Star rating
+  const pct=starsGot/STAR_CFG.length;
+  const rating=pct===1?'⭐⭐⭐':pct>=0.6?'⭐⭐':pct>0?'⭐':'';
+  ctx.font="28px 'Nunito',serif"; ctx.fillStyle='#FFD700';
+  ctx.fillText(rating,W/2,H/2+82);
+  ctx.font="bold 13px 'Cinzel',serif"; ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.fillText('SPACE or click to ride again!',W/2,H/2+115);
+}
+
+// ---- Main loop ----
+phase = 'ready';
+initBike(); initObstacles(); initStars();
+starsGot=0; startMs=Date.now();
+
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  drawSky();
+  drawBg(camX);
+  drawTerrain(camX);
+
+  if (phase==='ready'){
+    drawFlag(0);
+    drawBikeFrame(rw.x,rw.y,fw.x,fw.y);
+    drawWheel(rw.x,rw.y,WHEEL_R); drawWheel(fw.x,fw.y,WHEEL_R);
+    drawDopp(rw.x,rw.y,fw.x,fw.y);
+    drawReady();
+  } else if (phase==='playing'){
+    physicsStep(); updateCam();
+    drawFlag(camX);
+    drawObstacles(camX);
+    drawStars(camX);
+    drawBikeFrame(rw.x-camX,rw.y,fw.x-camX,fw.y);
+    drawWheel(rw.x-camX,rw.y,WHEEL_R); drawWheel(fw.x-camX,fw.y,WHEEL_R);
+    drawDopp(rw.x-camX,rw.y,fw.x-camX,fw.y);
+    drawHUD();
+  } else if (phase==='dead'){
+    updateCam();
+    drawFlag(camX);
+    drawObstacles(camX);
+    drawStars(camX);
+    drawBikeFrame(rw.x-camX,rw.y,fw.x-camX,fw.y);
+    drawWheel(rw.x-camX,rw.y,WHEEL_R); drawWheel(fw.x-camX,fw.y,WHEEL_R);
+    drawDopp(rw.x-camX,rw.y,fw.x-camX,fw.y);
+    drawHUD();
+    deathTimer--;
+    drawDead();
+  } else if (phase==='win'){
+    drawFlag(camX);
+    drawStars(camX);
+    drawBikeFrame(rw.x-camX,rw.y,fw.x-camX,fw.y);
+    drawWheel(rw.x-camX,rw.y,WHEEL_R); drawWheel(fw.x-camX,fw.y,WHEEL_R);
+    drawDopp(rw.x-camX,rw.y,fw.x-camX,fw.y);
+    drawHUD();
+    drawWin();
+  }
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
