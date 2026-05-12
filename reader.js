@@ -104,7 +104,9 @@
   // ── DETECT PDF ON PAGE ─────────────────────────────────
   function detectPdfUrl() {
     const card = document.querySelector('a.pdf-card[href$=".pdf"]');
-    return card ? card.getAttribute('href') : null;
+    if (!card) return null;
+    // Use absolute URL so PDF.js worker resolves it correctly
+    return new URL(card.getAttribute('href'), window.location.href).href;
   }
 
   const pdfUrl = detectPdfUrl();
@@ -125,8 +127,8 @@
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
     s.onload = () => {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-        'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      // disableWorker avoids worker URL issues across browsers
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = '';
       cb();
     };
     s.onerror = () => {
@@ -139,7 +141,7 @@
 
   // ── EXTRACT TEXT FROM PDF ──────────────────────────────
   async function extractPdfText(url) {
-    const pdf = await window.pdfjsLib.getDocument(url).promise;
+    const pdf = await window.pdfjsLib.getDocument({ url, disableWorker: true }).promise;
     const parts = [];
     for (let p = 1; p <= pdf.numPages; p++) {
       const page = await pdf.getPage(p);
@@ -229,11 +231,11 @@
           speakSentence(0);
         } catch (e) {
           pdfLoading = false;
-          document.getElementById('rb-progress').textContent = 'Could not read PDF. Switching to page mode.';
+          document.getElementById('rb-progress').textContent = 'PDF error: ' + (e && e.message ? e.message : String(e)) + ' — switching to page mode.';
           pdfMode = false;
           srcBtn.classList.remove('pdf-mode');
           srcBtn.textContent = '📝 Page';
-          setTimeout(startReading, 1200);
+          setTimeout(startReading, 2500);
         }
       });
     } else {
