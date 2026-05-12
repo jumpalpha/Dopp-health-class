@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦍 Donkey Dopp — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(5,7,15,0.97);border-bottom:1px solid rgba(255,215,0,0.2);flex-shrink:0}
+.back-btn{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
+.hdr-title{font-family:'Cinzel Decorative',serif;font-size:17px;color:#FFD700}
+.hdr-right{font-family:'Cinzel',serif;font-size:13px;color:#F0F4FF;text-align:right;min-width:150px}
+#wrap{position:relative;width:100%;max-width:560px;flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 12px 4px}
+canvas{display:block;border-radius:10px;border:2px solid rgba(255,215,0,0.15);background:#05070F}
+#controls{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;justify-content:center}
+.ctrl-btn{padding:8px 16px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#F0F4FF;font-size:13px;font-weight:700;cursor:pointer;min-width:48px;text-align:center;transition:background .15s}
+.ctrl-btn:active{background:rgba(255,215,0,0.2)}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="hdr-title">🦍 Donkey Dopp</div>
+  <div class="hdr-right" id="hdr-right">Score: 0 &nbsp;❤️❤️❤️</div>
+</header>
+<div id="wrap">
+  <canvas id="c" width="560" height="500"></canvas>
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-left">◀</button>
+    <button class="ctrl-btn" id="btn-up">▲</button>
+    <button class="ctrl-btn" id="btn-jump">JUMP</button>
+    <button class="ctrl-btn" id="btn-down">▼</button>
+    <button class="ctrl-btn" id="btn-right">▶</button>
+  </div>
+</div>
+<script>
+const cv=document.getElementById('c'), cx=cv.getContext('2d');
+const W=560, H=500;
+const GOLD='#FFD700',EMERALD='#00E5A0',CRIMSON='#FF3B5C',SKY='#38BFFF',ORANGE='#FF8C00';
+
+// ── PLATFORM DEFINITIONS ─────────────────────────
+// Each platform: {x, w, yL, yR} — yL=y at left edge, yR=y at right edge
+// Player's foot Y on platform at given x: yL + (x-plat.x)/plat.w*(yR-yL)
+const PLATFORMS = [
+  { id:0, x:0,   w:560, yL:480, yR:480 },  // ground (flat)
+  { id:1, x:20,  w:520, yL:400, yR:378 },  // floor 1 — tilts up right
+  { id:2, x:20,  w:520, yL:308, yR:330 },  // floor 2 — tilts down right
+  { id:3, x:20,  w:520, yL:228, yR:206 },  // floor 3 — tilts up right
+  { id:4, x:60,  w:430, yL:136, yR:136 },  // floor 4 — flat (top)
+];
+
+function platY(p, x){
+  const t=(x-p.x)/p.w;
+  return p.yL+(p.yR-p.yL)*t;
+}
+function onPlatform(p, x){
+  return x>=p.x && x<=p.x+p.w;
+}
+
+// ── LADDERS ─────────────────────────────────────
+// {x, pBot(platform index bottom), pTop(platform index top)}
+const LADDERS = [
+  { x:490, pBot:0, pTop:1 },
+  { x:70,  pBot:1, pTop:2 },
+  { x:480, pBot:2, pTop:3 },
+  { x:80,  pBot:3, pTop:4 },
+  { x:300, pBot:2, pTop:3 }, // extra ladder mid-level
+];
+
+function ladderY1(l){ const p=PLATFORMS[l.pBot]; return platY(p,l.x); }
+function ladderY2(l){ const p=PLATFORMS[l.pTop]; return platY(p,l.x); }
+
+// ── CONSTANTS ────────────────────────────────────
+const GRAVITY=0.55, JUMP_V=-13, WALK_SPEED=2.8, CLIMB_SPEED=2.2;
+const PLAYER_W=14, PLAYER_H=24;
+const BARREL_R=11;
+
+// ── STATE ────────────────────────────────────────
+let score, lives, level, phase; // phase: title|play|dying|levelwin|gameover
+let player, barrels, bonusItems, particles, doppAnim;
+let frameCount=0, barrelTimer=0, barrelInterval=180;
+let keys={};
+
+// Mobile button state
+const mobileKeys={left:false,right:false,up:false,down:false,jump:false};
+
+function initGame(){
+  score=0; lives=3; level=1; phase='title';
+  barrels=[]; bonusItems=[]; particles=[];
+  doppAnim={frame:0,timer:0,throwing:false,throwTimer:0};
+  initLevel();
+}
+
+function initLevel(){
+  barrels=[]; bonusItems=[]; particles=[];
+  barrelTimer=0;
+  barrelInterval=Math.max(80, 180-level*20);
+  player={
+    x:60, y:0,
+    vx:0, vy:0,
+    dir:1, // 1=right, -1=left
+    platIdx:0,
+    onGround:true,
+    onLadder:false,
+    climbDir:0,
+    frame:0, walkTimer:0,
+    dead:false, deadTimer:0,
+    invincible:0,
+    hasHammer:false, hammerTimer:0
+  };
+  // Snap player to ground
+  player.y = platY(PLATFORMS[0], player.x) - PLAYER_H;
+  // Spawn bonus hammer mid-field occasionally
+  if(level>=2){
+    bonusItems.push({x:280, platIdx:2, type:'hammer', collected:false});
+  }
+  if(phase!=='title') phase='play';
+}
+
+function updateHdr(){
+  const hearts=['❤️','❤️','❤️'].slice(0,lives).join('')||'💀';
+  document.getElementById('hdr-right').textContent=`Score: ${score}  ${hearts}`;
+}
+
+// ── INPUT ─────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  keys[e.code]=true;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+  if(phase==='title'||phase==='gameover'||phase==='levelwin'){
+    if(['Space','Enter'].includes(e.code)){ handleStart(); }
+  }
+});
+document.addEventListener('keyup',e=>{ keys[e.code]=false; });
+
+// Mobile buttons
+document.getElementById('btn-left').addEventListener('touchstart',e=>{e.preventDefault();mobileKeys.left=true;},{passive:false});
+document.getElementById('btn-left').addEventListener('touchend',e=>{e.preventDefault();mobileKeys.left=false;},{passive:false});
+document.getElementById('btn-right').addEventListener('touchstart',e=>{e.preventDefault();mobileKeys.right=true;},{passive:false});
+document.getElementById('btn-right').addEventListener('touchend',e=>{e.preventDefault();mobileKeys.right=false;},{passive:false});
+document.getElementById('btn-up').addEventListener('touchstart',e=>{e.preventDefault();mobileKeys.up=true;},{passive:false});
+document.getElementById('btn-up').addEventListener('touchend',e=>{e.preventDefault();mobileKeys.up=false;},{passive:false});
+document.getElementById('btn-down').addEventListener('touchstart',e=>{e.preventDefault();mobileKeys.down=true;},{passive:false});
+document.getElementById('btn-down').addEventListener('touchend',e=>{e.preventDefault();mobileKeys.down=false;},{passive:false});
+document.getElementById('btn-jump').addEventListener('touchstart',e=>{e.preventDefault();mobileKeys.jump=true;},{passive:false});
+document.getElementById('btn-jump').addEventListener('touchend',e=>{e.preventDefault();mobileKeys.jump=false;},{passive:false});
+
+function isKey(code){ return keys[code]||false; }
+function leftHeld(){ return isKey('ArrowLeft')||isKey('KeyA')||mobileKeys.left; }
+function rightHeld(){ return isKey('ArrowRight')||isKey('KeyD')||mobileKeys.right; }
+function upHeld(){ return isKey('ArrowUp')||isKey('KeyW')||mobileKeys.up; }
+function downHeld(){ return isKey('ArrowDown')||isKey('KeyS')||mobileKeys.down; }
+function jumpPressed(){ return isKey('Space')||isKey('ArrowUp')||mobileKeys.jump; }
+
+let prevJump=false;
+function handleStart(){
+  if(phase==='title'){ phase='play'; }
+  else if(phase==='gameover'){ initGame(); phase='play'; }
+  else if(phase==='levelwin'){ level++; initLevel(); phase='play'; }
+}
+
+// ── PLAYER UPDATE ─────────────────────────────────
+function updatePlayer(){
+  if(player.dead){
+    player.deadTimer--;
+    if(player.deadTimer<=0){
+      lives--;
+      updateHdr();
+      if(lives<=0){ phase='gameover'; }
+      else { initLevel(); phase='play'; }
+    }
+    return;
+  }
+  if(player.invincible>0) player.invincible--;
+  if(player.hasHammer){
+    player.hammerTimer--;
+    if(player.hammerTimer<=0) player.hasHammer=false;
+  }
+
+  // Check if on a ladder
+  let nearLadder=null;
+  for(const l of LADDERS){
+    if(Math.abs(player.x-l.x)<16){
+      const y1=ladderY2(l), y2=ladderY1(l);
+      if(player.y+PLAYER_H>y1-10 && player.y<y2+10){
+        nearLadder=l; break;
+      }
+    }
+  }
+
+  if(player.onLadder && nearLadder){
+    // Climbing
+    player.vx=0;
+    if(upHeld()){
+      player.vy=-CLIMB_SPEED;
+      player.climbDir=-1;
+    } else if(downHeld()){
+      player.vy=CLIMB_SPEED;
+      player.climbDir=1;
+    } else {
+      player.vy=0;
+    }
+    player.x=nearLadder.x;
+    player.y+=player.vy;
+    // Exit ladder at top
+    const topY=ladderY2(nearLadder)-PLAYER_H;
+    if(player.y<=topY){
+      player.y=topY;
+      player.onLadder=false;
+      player.platIdx=nearLadder.pTop;
+      player.onGround=true;
+      player.vy=0;
+    }
+    // Exit ladder at bottom
+    const botY=ladderY1(nearLadder)-PLAYER_H;
+    if(player.y>=botY){
+      player.y=botY;
+      player.onLadder=false;
+      player.platIdx=nearLadder.pBot;
+      player.onGround=true;
+      player.vy=0;
+    }
+    player.frame=(frameCount>>3)&1;
+  } else {
+    player.onLadder=false;
+    // Horizontal movement
+    player.vx=0;
+    if(leftHeld()){ player.vx=-WALK_SPEED; player.dir=-1; }
+    if(rightHeld()){ player.vx=WALK_SPEED; player.dir=1; }
+
+    // Jump
+    const jumpNow=jumpPressed();
+    if(player.onGround && jumpNow && !prevJump){
+      player.vy=JUMP_V;
+      player.onGround=false;
+    }
+
+    // Gravity
+    if(!player.onGround) player.vy+=GRAVITY;
+    player.x+=player.vx;
+    player.y+=player.vy;
+
+    // Platform collision
+    player.onGround=false;
+    for(let i=PLATFORMS.length-1;i>=0;i--){
+      const p=PLATFORMS[i];
+      if(!onPlatform(p,player.x)) continue;
+      const py=platY(p,player.x);
+      const footY=player.y+PLAYER_H;
+      if(footY>=py-4 && footY<=py+18 && player.vy>=0){
+        player.y=py-PLAYER_H;
+        player.vy=0;
+        player.onGround=true;
+        player.platIdx=i;
+        break;
+      }
+    }
+
+    // Wall bounds
+    if(player.x<10) player.x=10;
+    if(player.x>W-10) player.x=W-10;
+
+    // Fell off bottom
+    if(player.y>H+40){ killPlayer(); return; }
+
+    // Grab ladder — start climbing if up/down pressed near ladder
+    if(nearLadder && player.onGround && (upHeld()||downHeld())){
+      player.onLadder=true;
+      player.x=nearLadder.x;
+    }
+    if(nearLadder && !player.onGround && (upHeld()||downHeld())){
+      player.onLadder=true;
+      player.x=nearLadder.x;
+    }
+
+    // Walk animation
+    if(player.onGround && Math.abs(player.vx)>0.1){
+      player.walkTimer++;
+      if(player.walkTimer>6){ player.frame^=1; player.walkTimer=0; }
+    }
+  }
+  prevJump=jumpPressed();
+
+  // Check win — reached goal (top platform near left)
+  if(player.platIdx===4 && player.x<130){
+    score+=1000+level*500;
+    updateHdr();
+    spawnParticles(player.x,player.y,GOLD,40);
+    phase='levelwin';
+  }
+
+  // Collect bonus items
+  bonusItems.forEach(b=>{
+    if(!b.collected){
+      const py=platY(PLATFORMS[b.platIdx],b.x);
+      b.y=py-18;
+      if(Math.abs(player.x-b.x)<22&&Math.abs(player.y-b.y)<22){
+        b.collected=true;
+        if(b.type==='hammer'){
+          player.hasHammer=true;
+          player.hammerTimer=300;
+          score+=300; updateHdr();
+          spawnParticles(b.x,b.y,GOLD,15);
+        }
+      }
+    }
+  });
+}
+
+function killPlayer(){
+  if(player.invincible>0) return;
+  player.dead=true;
+  player.deadTimer=80;
+  player.vy=-8; player.vx=0;
+  spawnParticles(player.x,player.y,CRIMSON,20);
+}
+
+// ── BARRELS ───────────────────────────────────────
+const BARREL_TYPES=[
+  {emoji:'🍔',label:'Burger',  color:'#c0392b'},
+  {emoji:'🥤',label:'Soda',    color:'#8e44ad'},
+  {emoji:'🍟',label:'Fries',   color:'#f39c12'},
+  {emoji:'🚬',label:'Stress',  color:'#7f8c8d'},
+  {emoji:'📱',label:'Screen',  color:'#2980b9'},
+];
+
+function updateBarrels(){
+  barrelTimer++;
+  if(barrelTimer>=barrelInterval){
+    barrelTimer=0;
+    const t=BARREL_TYPES[Math.floor(Math.random()*BARREL_TYPES.length)];
+    barrels.push({
+      x:490, y:platY(PLATFORMS[4],490)-BARREL_R,
+      vx:-2.2-level*0.3, vy:0,
+      platIdx:4,
+      rolling:true, rollFrame:0, rollTimer:0,
+      type:t, bouncing:false
+    });
+    doppAnim.throwing=true; doppAnim.throwTimer=30;
+  }
+
+  barrels=barrels.filter(b=>{
+    // Gravity
+    if(!b.rolling) b.vy+=GRAVITY*0.8;
+    b.x+=b.vx; b.y+=b.vy;
+
+    // Platform collision
+    b.rolling=false;
+    for(let i=PLATFORMS.length-1;i>=0;i--){
+      const p=PLATFORMS[i];
+      if(!onPlatform(p,b.x)) continue;
+      const py=platY(p,b.x);
+      if(b.y+BARREL_R>=py-2 && b.y+BARREL_R<=py+20 && b.vy>=0){
+        b.y=py-BARREL_R;
+        b.vy=0;
+        b.rolling=true;
+        b.platIdx=i;
+        // Follow tilt
+        const p2=PLATFORMS[i];
+        const tilt=(p2.yR-p2.yL)/p2.w;
+        b.vy=b.vx*tilt;
+        break;
+      }
+    }
+
+    // Roll animation
+    b.rollTimer++;
+    if(b.rollTimer>4){ b.rollFrame++; b.rollTimer=0; }
+
+    // Fall off platform edge
+    if(b.rolling){
+      const p=PLATFORMS[b.platIdx];
+      if(b.x<p.x+BARREL_R||b.x>p.x+p.w-BARREL_R){
+        b.rolling=false;
+        b.vy=2;
+      }
+    }
+
+    // Check if player hit
+    if(!player.dead && player.invincible<=0){
+      const dx=player.x-b.x, dy=(player.y+PLAYER_H/2)-b.y;
+      if(Math.hypot(dx,dy)<BARREL_R+10){
+        if(player.hasHammer){
+          // Destroy barrel
+          score+=100; updateHdr();
+          spawnParticles(b.x,b.y,b.type.color,12);
+          return false;
+        } else {
+          killPlayer();
+        }
+      }
+    }
+
+    // Remove if off screen
+    return b.x>-30 && b.x<W+30 && b.y<H+60;
+  });
+}
+
+// ── DONKEY DOPP ───────────────────────────────────
+function updateDoppAnim(){
+  doppAnim.timer++;
+  if(doppAnim.throwing){
+    doppAnim.throwTimer--;
+    if(doppAnim.throwTimer<=0) doppAnim.throwing=false;
+  }
+}
+
+// ── PARTICLES ─────────────────────────────────────
+function spawnParticles(x,y,color,n=16){
+  for(let i=0;i<n;i++){
+    particles.push({
+      x,y,vx:(Math.random()-.5)*10,vy:(Math.random()-1)*9,
+      size:Math.random()*5+2,color,life:1,dec:0.025+Math.random()*0.018
+    });
+  }
+}
+
+// ── DRAW ──────────────────────────────────────────
+function drawBg(){
+  cx.fillStyle='#05070F'; cx.fillRect(0,0,W,H);
+  // Girder steel glow
+  cx.fillStyle='rgba(255,215,0,0.02)';
+  cx.fillRect(0,0,W,H);
+}
+
+function drawPlatforms(){
+  PLATFORMS.forEach((p,i)=>{
+    // Steel girder effect
+    const grad=cx.createLinearGradient(p.x,p.yL,p.x,p.yL+14);
+    grad.addColorStop(0,'#8B6914');
+    grad.addColorStop(0.4,'#D4A017');
+    grad.addColorStop(0.6,'#C8960C');
+    grad.addColorStop(1,'#6B4F0A');
+    cx.fillStyle=grad;
+    cx.beginPath();
+    cx.moveTo(p.x,p.yL);
+    cx.lineTo(p.x+p.w,p.yR);
+    cx.lineTo(p.x+p.w,p.yR+13);
+    cx.lineTo(p.x,p.yL+13);
+    cx.closePath(); cx.fill();
+    // Rivet dots
+    cx.fillStyle='rgba(0,0,0,0.35)';
+    for(let rx=p.x+18;rx<p.x+p.w-10;rx+=40){
+      const ry=platY(p,rx)+6;
+      cx.beginPath(); cx.arc(rx,ry,3,0,Math.PI*2); cx.fill();
+    }
+    // Label
+    const labels=['GROUND','FLOOR 1','FLOOR 2','FLOOR 3','TOP'];
+    cx.font='8px Nunito'; cx.textAlign='left';
+    cx.fillStyle='rgba(255,215,0,0.3)';
+    cx.fillText(labels[i],p.x+6,platY(p,p.x+6)+10);
+  });
+}
+
+function drawLadders(){
+  LADDERS.forEach(l=>{
+    const y1=ladderY1(l), y2=ladderY2(l);
+    // Side rails
+    cx.strokeStyle='#8B6914'; cx.lineWidth=3;
+    cx.beginPath(); cx.moveTo(l.x-7,y1); cx.lineTo(l.x-7,y2); cx.stroke();
+    cx.beginPath(); cx.moveTo(l.x+7,y1); cx.lineTo(l.x+7,y2); cx.stroke();
+    // Rungs
+    cx.strokeStyle='#D4A017'; cx.lineWidth=2.5;
+    for(let y=y2;y<y1;y+=16){
+      cx.beginPath(); cx.moveTo(l.x-7,y); cx.lineTo(l.x+7,y); cx.stroke();
+    }
+  });
+}
+
+function drawPlayer(){
+  const p=player;
+  if(p.dead){ return; }
+  const alpha=(p.invincible>0&&(frameCount>>2)&1)?0.4:1;
+  cx.globalAlpha=alpha;
+  const x=p.x, y=p.y;
+
+  // Shadow
+  cx.fillStyle='rgba(0,0,0,0.25)';
+  cx.beginPath(); cx.ellipse(x,y+PLAYER_H+2,10,4,0,0,Math.PI*2); cx.fill();
+
+  // Legs (walking animation)
+  cx.strokeStyle='#3498db'; cx.lineWidth=5; cx.lineCap='round';
+  if(p.onGround&&Math.abs(p.vx)>0.1){
+    const legSwing=p.frame?6:-6;
+    cx.beginPath(); cx.moveTo(x,y+PLAYER_H-6); cx.lineTo(x-legSwing,y+PLAYER_H+2); cx.stroke();
+    cx.beginPath(); cx.moveTo(x,y+PLAYER_H-6); cx.lineTo(x+legSwing,y+PLAYER_H+2); cx.stroke();
+  } else if(p.onLadder){
+    const ls=p.climbDir*((frameCount>>3)&1?4:-4);
+    cx.beginPath(); cx.moveTo(x,y+PLAYER_H-4); cx.lineTo(x-6,y+PLAYER_H+4+ls); cx.stroke();
+    cx.beginPath(); cx.moveTo(x,y+PLAYER_H-4); cx.lineTo(x+6,y+PLAYER_H+4-ls); cx.stroke();
+  } else {
+    cx.beginPath(); cx.moveTo(x,y+PLAYER_H-6); cx.lineTo(x-5,y+PLAYER_H+2); cx.stroke();
+    cx.beginPath(); cx.moveTo(x,y+PLAYER_H-6); cx.lineTo(x+5,y+PLAYER_H+2); cx.stroke();
+  }
+
+  // Body
+  cx.fillStyle='#e74c3c'; // red shirt
+  cx.beginPath(); cx.ellipse(x,y+PLAYER_H/2,8,12,0,0,Math.PI*2); cx.fill();
+
+  // Arms
+  cx.strokeStyle='#e8b89a'; cx.lineWidth=4; cx.lineCap='round';
+  if(p.hasHammer){
+    // Hammer raised
+    const armDir=p.dir;
+    cx.beginPath(); cx.moveTo(x,y+PLAYER_H/2-4); cx.lineTo(x+armDir*16,y+4); cx.stroke();
+    // Hammer
+    cx.fillStyle=ORANGE;
+    cx.fillRect(x+armDir*14-3,y-2,16*armDir>0?14:-14,6);
+    cx.fillRect(x+armDir*14-3,y-6,16*armDir>0?14:-14,14);
+  } else {
+    cx.beginPath(); cx.moveTo(x-7,y+PLAYER_H/2-2); cx.lineTo(x-12,y+PLAYER_H/2+8); cx.stroke();
+    cx.beginPath(); cx.moveTo(x+7,y+PLAYER_H/2-2); cx.lineTo(x+12,y+PLAYER_H/2+8); cx.stroke();
+  }
+
+  // Head
+  cx.fillStyle='#e8b89a';
+  cx.beginPath(); cx.arc(x,y+6,9,0,Math.PI*2); cx.fill();
+  // Cap
+  cx.fillStyle='#e74c3c';
+  cx.beginPath(); cx.ellipse(x,y+3,10,5,0,0,-Math.PI); cx.fill();
+  cx.fillRect(x-10,y+3,20,3);
+  cx.fillStyle='#c0392b'; cx.fillRect(x-10,y+3,4,3); // brim
+  // Eyes (face direction)
+  cx.fillStyle='#333';
+  cx.beginPath(); cx.arc(x+p.dir*4,y+7,2,0,Math.PI*2); cx.fill();
+  // Mustache
+  cx.fillStyle='#333';
+  cx.beginPath(); cx.ellipse(x+p.dir*2,y+10,5,2.5,0,0,Math.PI); cx.fill();
+
+  cx.globalAlpha=1;
+}
+
+function drawBarrel(b){
+  cx.save();
+  cx.translate(b.x,b.y);
+  cx.rotate(b.rollFrame*0.35);
+  // Barrel body
+  const grad=cx.createRadialGradient(-3,-3,1,0,0,BARREL_R);
+  grad.addColorStop(0,lighten(b.type.color));
+  grad.addColorStop(1,b.type.color);
+  cx.fillStyle=grad;
+  cx.beginPath(); cx.arc(0,0,BARREL_R,0,Math.PI*2); cx.fill();
+  // Metal rings
+  cx.strokeStyle='rgba(0,0,0,0.3)'; cx.lineWidth=2;
+  cx.beginPath(); cx.arc(0,0,BARREL_R-2,0,Math.PI*2); cx.stroke();
+  cx.beginPath(); cx.arc(0,0,BARREL_R-6,0,Math.PI*2); cx.stroke();
+  // Emoji label
+  cx.font='11px serif'; cx.textAlign='center';
+  cx.fillText(b.type.emoji,0,4);
+  cx.restore();
+}
+
+function lighten(hex){
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgb(${Math.min(255,r+50)},${Math.min(255,g+50)},${Math.min(255,b+50)})`;
+}
+
+function drawDonkeyDopp(){
+  const p=PLATFORMS[4];
+  const x=p.x+p.w-50, y=platY(p,p.x+p.w-50)-60;
+  const throwing=doppAnim.throwing;
+  const bounce=throwing?Math.sin(doppAnim.throwTimer*0.5)*3:Math.sin(frameCount*0.04)*2;
+
+  // Shadow
+  cx.fillStyle='rgba(0,0,0,0.3)';
+  cx.beginPath(); cx.ellipse(x,platY(p,x)+5,30,8,0,0,Math.PI*2); cx.fill();
+
+  // Body — big brown gorilla shape
+  cx.fillStyle='#5D3A1A';
+  cx.beginPath(); cx.ellipse(x,y+bounce,26,32,0,0,Math.PI*2); cx.fill();
+  // Chest highlight
+  cx.fillStyle='#8B6914';
+  cx.beginPath(); cx.ellipse(x,y+8+bounce,13,16,0,0,Math.PI*2); cx.fill();
+  // Angry teacher outfit
+  cx.fillStyle='rgba(255,59,92,0.5)'; // red anger tint
+  cx.beginPath(); cx.ellipse(x,y+12+bounce,14,14,0,0,Math.PI*2); cx.fill();
+  // "DOPP" badge
+  cx.font='bold 7px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(255,255,255,0.6)';
+  cx.fillText('DOPP',x,y+15+bounce);
+
+  // Arms
+  cx.fillStyle='#5D3A1A';
+  if(throwing){
+    // Throwing arm raised
+    cx.beginPath(); cx.ellipse(x+32,y-8+bounce,10,18,0.6,0,Math.PI*2); cx.fill();
+    cx.beginPath(); cx.ellipse(x-24,y+20+bounce,10,16,0.3,0,Math.PI*2); cx.fill();
+  } else {
+    cx.beginPath(); cx.ellipse(x+30,y+18+bounce,10,20,0.2,0,Math.PI*2); cx.fill();
+    cx.beginPath(); cx.ellipse(x-30,y+18+bounce,10,20,-0.2,0,Math.PI*2); cx.fill();
+  }
+  // Knuckles (gripping platform)
+  cx.fillStyle='#4A2E0E';
+  cx.beginPath(); cx.ellipse(x+40,platY(p,x+40),14,8,0,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.ellipse(x-36,platY(p,x-36),14,8,0,0,Math.PI*2); cx.fill();
+
+  // Head
+  cx.fillStyle='#5D3A1A';
+  cx.beginPath(); cx.arc(x,y-22+bounce,22,0,Math.PI*2); cx.fill();
+  // Face
+  cx.fillStyle='#C68642';
+  cx.beginPath(); cx.ellipse(x,y-18+bounce,13,12,0,0,Math.PI*2); cx.fill();
+  // Angry eyes (thick V-brows)
+  cx.strokeStyle='#333'; cx.lineWidth=3; cx.lineCap='round';
+  cx.beginPath(); cx.moveTo(x-14,y-26+bounce); cx.lineTo(x-6,y-22+bounce); cx.stroke();
+  cx.beginPath(); cx.moveTo(x+14,y-26+bounce); cx.lineTo(x+6,y-22+bounce); cx.stroke();
+  // Eyes
+  cx.fillStyle='#8B0000';
+  cx.beginPath(); cx.arc(x-8,y-20+bounce,3.5,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(x+8,y-20+bounce,3.5,0,Math.PI*2); cx.fill();
+  cx.fillStyle='rgba(255,255,255,0.5)';
+  cx.beginPath(); cx.arc(x-7,y-21+bounce,1.2,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(x+9,y-21+bounce,1.2,0,Math.PI*2); cx.fill();
+  // Nostrils
+  cx.fillStyle='rgba(0,0,0,0.3)';
+  cx.beginPath(); cx.ellipse(x-4,y-14+bounce,3,2,0,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.ellipse(x+4,y-14+bounce,3,2,0,0,Math.PI*2); cx.fill();
+  // Mouth (angry snarl)
+  cx.strokeStyle='#333'; cx.lineWidth=2.5;
+  cx.beginPath(); cx.moveTo(x-8,y-9+bounce); cx.lineTo(x,y-7+bounce); cx.lineTo(x+8,y-9+bounce); cx.stroke();
+  // Teeth
+  cx.fillStyle='white';
+  cx.fillRect(x-5,y-11+bounce,4,4);
+  cx.fillRect(x+2,y-11+bounce,4,4);
+}
+
+function drawGoal(){
+  const p=PLATFORMS[4];
+  const gx=80, gy=platY(p,80)-36;
+  // Diploma / health star
+  const pulse=Math.sin(frameCount*0.08)*4;
+  cx.save();
+  cx.translate(gx, gy+pulse);
+  // Star glow
+  cx.shadowColor=GOLD; cx.shadowBlur=20;
+  cx.fillStyle=GOLD; cx.font='28px serif'; cx.textAlign='center';
+  cx.fillText('🏆',0,10);
+  cx.shadowBlur=0;
+  cx.font='bold 9px Nunito'; cx.fillStyle=GOLD;
+  cx.fillText('REACH ME!',0,28);
+  cx.restore();
+}
+
+function drawBonusItems(){
+  bonusItems.forEach(b=>{
+    if(b.collected) return;
+    const pulse=Math.sin(frameCount*0.1)*3;
+    cx.save();
+    cx.translate(b.x, b.y+pulse);
+    cx.font='20px serif'; cx.textAlign='center';
+    cx.fillText('🔨',0,8);
+    cx.font='bold 8px Nunito'; cx.fillStyle=ORANGE; cx.textAlign='center';
+    cx.fillText('HAMMER',0,20);
+    cx.restore();
+  });
+}
+
+function drawParticles(){
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    cx.globalAlpha=p.life;
+    cx.fillStyle=p.color;
+    cx.beginPath(); cx.arc(p.x,p.y,p.size,0,Math.PI*2); cx.fill();
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.3; p.life-=p.dec;
+  });
+  cx.globalAlpha=1;
+}
+
+function drawHUD(){
+  // Lives
+  cx.font='14px serif'; cx.textAlign='left';
+  for(let i=0;i<lives;i++) cx.fillText('❤️',10+i*22,20);
+  // Score
+  cx.font='bold 13px Cinzel'; cx.fillStyle=GOLD; cx.textAlign='right';
+  cx.fillText(''+score,W-10,20);
+  // Level
+  cx.font='bold 11px Nunito'; cx.fillStyle='rgba(240,244,255,0.4)'; cx.textAlign='center';
+  cx.fillText(`LEVEL ${level}`,W/2,18);
+  // Hammer indicator
+  if(player.hasHammer){
+    cx.font='bold 11px Nunito'; cx.fillStyle=ORANGE; cx.textAlign='left';
+    cx.fillText(`🔨 ${Math.ceil(player.hammerTimer/60)}s`,10,H-8);
+  }
+  // Controls hint (first 5 seconds)
+  if(frameCount<300){
+    cx.font='11px Nunito'; cx.fillStyle='rgba(240,244,255,0.35)'; cx.textAlign='center';
+    cx.fillText('Arrow keys to move · Up/Space to jump · Up at ladder to climb',W/2,H-8);
+  }
+}
+
+function roundRect(x,y,w,h,r){
+  cx.beginPath();
+  cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);cx.quadraticCurveTo(x+w,y,x+w,y+r);
+  cx.lineTo(x+w,y+h-r);cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  cx.lineTo(x+r,y+h);cx.quadraticCurveTo(x,y+h,x,y+h-r);
+  cx.lineTo(x,y+r);cx.quadraticCurveTo(x,y,x+r,y);cx.closePath();
+}
+
+function drawOverlay(title,sub,btn){
+  cx.fillStyle='rgba(5,7,15,0.85)'; cx.fillRect(0,0,W,H);
+  cx.textAlign='center';
+  cx.font='bold 40px Nunito'; cx.fillStyle=GOLD;
+  cx.shadowColor=GOLD; cx.shadowBlur=24;
+  cx.fillText(title,W/2,H/2-55);
+  cx.shadowBlur=0;
+  cx.font='16px Nunito'; cx.fillStyle='rgba(240,244,255,0.75)';
+  cx.fillText(sub,W/2,H/2-15);
+  // Button
+  const bw=200,bh=44;
+  cx.fillStyle='rgba(255,215,0,0.12)';
+  roundRect(W/2-bw/2,H/2+20,bw,bh,10); cx.fill();
+  cx.strokeStyle='rgba(255,215,0,0.4)'; cx.lineWidth=1.5;
+  roundRect(W/2-bw/2,H/2+20,bw,bh,10); cx.stroke();
+  cx.font='bold 15px Nunito'; cx.fillStyle=GOLD;
+  cx.fillText(btn,W/2,H/2+20+bh/2+5);
+}
+
+// ── CLICK HANDLER FOR OVERLAYS ────────────────────
+cv.addEventListener('click',e=>{
+  if(phase==='title'||phase==='gameover'||phase==='levelwin') handleStart();
+});
+
+// ── MAIN LOOP ─────────────────────────────────────
+function loop(){
+  frameCount++;
+  drawBg();
+  drawParticles();
+  drawLadders();
+  drawPlatforms();
+  drawGoal();
+  drawBonusItems();
+
+  if(phase==='play'||phase==='dying'){
+    updateDoppAnim();
+    updateBarrels();
+    updatePlayer();
+  }
+
+  drawDonkeyDopp();
+  barrels.forEach(drawBarrel);
+  drawPlayer();
+  drawHUD();
+
+  if(phase==='title'){
+    drawOverlay('🦍 DONKEY DOPP','Climb to the top and grab the trophy!','▶ Press Space or Click');
+  } else if(phase==='gameover'){
+    drawOverlay('GAME OVER','Dopp wins this time... 😤','▶ Try Again');
+  } else if(phase==='levelwin'){
+    drawOverlay(`🏆 LEVEL ${level} CLEAR!`,`Score: ${score} — Keep climbing!`,'▶ Next Level');
+  }
+
+  requestAnimationFrame(loop);
+}
+
+initGame();
+loop();
+</script>
+</body>
+</html>
