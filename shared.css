@@ -6,34 +6,77 @@
 /* ── FONT SIZE UPGRADES ── */
 body { font-size: 16px; }
 
-.ch-sub       { font-size: 17px !important; line-height: 1.85 !important; }
-.act-title    { font-size: 15px !important; }
-.act-desc     { font-size: 13px !important; line-height: 1.55 !important; }
-.vc-title     { font-size: 15px !important; }
-.vc-desc      { font-size: 13px !important; line-height: 1.5 !important; }
-.vc-count     { font-size: 12px !important; }
-.pdf-title    { font-size: 17px !important; }
-.pdf-meta     { font-size: 14px !important; }
-.pdf-btn      { font-size: 14px !important; font-weight: 800 !important; }
-.step-text    { font-size: 14px !important; line-height: 1.5 !important; }
-.vocab-term   { font-size: 14px !important; }
-.vocab-def    { font-size: 12px !important; }
-.side-title   { font-size: 13px !important; letter-spacing: 1px !important; }
-.meta-item    { font-size: 14px !important; }
-.lesson-pill  { font-size: 14px !important; padding: 8px 16px !important; }
-.act-tag      { font-size: 11px !important; padding: 3px 10px !important; }
-.page-sub     { font-size: 17px !important; line-height: 1.8 !important; }
-.section-sub  { font-size: 17px !important; line-height: 1.8 !important; }
-.game-title   { font-size: 17px !important; }
-.game-desc    { font-size: 13px !important; line-height: 1.55 !important; }
-.realm-name   { font-size: 15px !important; }
-.realm-chapters { font-size: 13px !important; }
-.ch-title     { font-size: 14px !important; }
-.stat-label   { font-size: 14px !important; }
-.filter-btn   { font-size: 13px !important; }
-.badge-sub    { font-size: 13px !important; }
-.realm-name-sm { font-size: 16px !important; }
-.realm-meta-sm { font-size: 13px !important; }
+/* ── NAV ── */
+.nav-logo         { font-size: 17px !important; }
+.nav-link         { font-size: 15px !important; font-weight: 800 !important; }
+
+/* ── SECTION LABELS & HEADERS ── */
+.sec-label        { font-size: 13px !important; letter-spacing: 2px !important; }
+.section-label    { font-size: 13px !important; letter-spacing: 2px !important; }
+.filter-label     { font-size: 13px !important; }
+.badge-label      { font-size: 13px !important; }
+.boss-label       { font-size: 13px !important; }
+.side-title       { font-size: 15px !important; letter-spacing: 1px !important; }
+.sec-title        { font-size: 16px !important; }
+
+/* ── CARD TITLES ── */
+.pdf-title        { font-size: 19px !important; }
+.game-title       { font-size: 18px !important; }
+.act-title        { font-size: 17px !important; }
+.vc-title         { font-size: 16px !important; }
+.ch-title         { font-size: 16px !important; }
+.realm-name       { font-size: 17px !important; }
+.realm-name-sm    { font-size: 18px !important; }
+.badge-name       { font-size: 22px !important; }
+.boss-title       { font-size: 20px !important; }
+.how-title        { font-size: 16px !important; }
+
+/* ── CARD DESCRIPTIONS & BODY TEXT ── */
+.ch-sub           { font-size: 18px !important; line-height: 1.85 !important; }
+.page-sub         { font-size: 18px !important; line-height: 1.8 !important; }
+.section-sub      { font-size: 18px !important; line-height: 1.8 !important; }
+.act-desc         { font-size: 14px !important; line-height: 1.6 !important; }
+.vc-desc          { font-size: 14px !important; line-height: 1.5 !important; }
+.game-desc        { font-size: 14px !important; line-height: 1.55 !important; }
+.realm-desc       { font-size: 14px !important; line-height: 1.5 !important; }
+.realm-meta-sm    { font-size: 14px !important; }
+.realm-chapters   { font-size: 14px !important; }
+.realm-tagline    { font-size: 17px !important; }
+.badge-desc       { font-size: 15px !important; }
+.badge-sub        { font-size: 14px !important; }
+.boss-desc        { font-size: 15px !important; }
+.ch-desc          { font-size: 14px !important; }
+.how-text         { font-size: 14px !important; }
+
+/* ── METADATA ── */
+.pdf-meta         { font-size: 15px !important; }
+.meta-item        { font-size: 15px !important; }
+.step-text        { font-size: 15px !important; line-height: 1.5 !important; }
+.vocab-term       { font-size: 15px !important; }
+.vocab-def        { font-size: 13px !important; }
+.vc-count         { font-size: 13px !important; }
+
+/* ── BUTTONS ── */
+.btn-hero         { font-size: 17px !important; padding: 16px 32px !important; }
+.pdf-btn          { font-size: 16px !important; font-weight: 800 !important; }
+.boss-btn         { font-size: 16px !important; font-weight: 800 !important; }
+.game-play-btn    { font-size: 15px !important; font-weight: 800 !important; }
+.play-btn         { font-size: 15px !important; font-weight: 800 !important; }
+.filter-btn       { font-size: 14px !important; font-weight: 800 !important; }
+.ch-nav-btn       { font-size: 15px !important; font-weight: 800 !important; }
+.realm-nav-btn    { font-size: 15px !important; font-weight: 700 !important; }
+.lesson-pill      { font-size: 15px !important; padding: 8px 18px !important; }
+
+/* ── TAGS & BADGES (small but readable) ── */
+.act-tag          { font-size: 12px !important; padding: 4px 10px !important; }
+.game-type        { font-size: 12px !important; padding: 4px 10px !important; }
+.ch-tag           { font-size: 12px !important; padding: 3px 8px !important; }
+.realm-badge      { font-size: 12px !important; }
+.realm-num        { font-size: 12px !important; letter-spacing: 2px !important; }
+.ch-num           { font-size: 12px !important; letter-spacing: 2px !important; }
+.feature          { font-size: 12px !important; }
+.ch-num-badge     { font-size: 13px !important; font-weight: 800 !important; }
+.game-realm       { font-size: 13px !important; }
 
 /* ── ENHANCED BACKGROUND ── */
 #stars {
