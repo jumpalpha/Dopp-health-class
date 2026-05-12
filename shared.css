@@ -319,8 +319,155 @@ body { font-size: 16px; }
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 7px; }
 ::-webkit-scrollbar-track { background: #F0ECD8; }
-::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.18); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,215,0,0.38); }
+::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.4); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,215,0,0.65); }
+
+/* ═══════════════════════════════════════════════
+   WARM CREAM LIGHT THEME — CONTRAST BOOST
+   Makes cards, icons, and banners stand out
+   against the #FDFAF2 cream background
+   ═══════════════════════════════════════════════ */
+
+/* Override CSS variables for cream theme */
+:root {
+  --card: rgba(255,255,255,0.9);
+  --bg-card: rgba(255,255,255,0.9);
+  --border: rgba(28,26,46,0.18);
+}
+
+/* ── ALL CONTENT CARDS — white with shadow ── */
+.pdf-card,
+.vocab-card,
+.activity-item,
+.side-card,
+.game-card,
+.act-card,
+.chapter-card,
+.ch-card,
+.realm-nav-btn {
+  background: #fff !important;
+  border-color: rgba(28,26,46,0.16) !important;
+  box-shadow: 0 2px 14px rgba(28,26,46,0.09), 0 0 0 1px rgba(28,26,46,0.05) !important;
+}
+.pdf-card:hover, .vocab-card:hover, .chapter-card:hover, .ch-card:hover {
+  box-shadow: 0 6px 28px rgba(28,26,46,0.14) !important;
+}
+
+/* ── REALM & GAME CARDS ── */
+.realm-card, .game-link {
+  background: #fff !important;
+  border-color: rgba(28,26,46,0.16) !important;
+  box-shadow: 0 2px 14px rgba(28,26,46,0.09) !important;
+}
+.realm-card:hover {
+  box-shadow: 0 8px 36px rgba(28,26,46,0.16) !important;
+}
+
+/* ── BOSS BATTLE CARD — strong red accent ── */
+.boss-card {
+  background: linear-gradient(135deg, rgba(255,59,92,0.12), rgba(255,59,92,0.05)) !important;
+  border: 2px solid rgba(255,59,92,0.5) !important;
+  box-shadow: 0 4px 24px rgba(255,59,92,0.12) !important;
+}
+
+/* ── BADGE BANNER — stronger colored accent ── */
+.badge-banner {
+  border-width: 2px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07) !important;
+}
+
+/* ── REALM BADGE CARD ── */
+.realm-badge-card {
+  background: linear-gradient(135deg, rgba(56,191,255,0.14), rgba(0,229,160,0.08)) !important;
+  border: 2px solid rgba(56,191,255,0.4) !important;
+  box-shadow: 0 4px 20px rgba(56,191,255,0.1) !important;
+}
+
+/* ── BADGE REQUIREMENT BOX ── */
+.badge-req {
+  background: rgba(28,26,46,0.05) !important;
+  border: 1px solid rgba(28,26,46,0.18) !important;
+}
+
+/* ── CHAPTER NAV BUTTONS ── */
+.ch-nav-btn {
+  background: #fff !important;
+  border-color: rgba(28,26,46,0.2) !important;
+}
+
+/* ── ICON WRAPPERS — colored pill backgrounds ── */
+.pdf-icon {
+  background: rgba(255,215,0,0.12);
+  border-radius: 14px;
+  padding: 10px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.realm-icon-lg {
+  background: rgba(255,215,0,0.1);
+  border-radius: 20px;
+  padding: 16px;
+  line-height: 1;
+  display: inline-block;
+}
+.badge-icon-wrap {
+  background: rgba(255,215,0,0.12);
+  border-radius: 16px;
+  padding: 12px;
+  line-height: 1;
+  display: inline-block;
+}
+.boss-icon {
+  background: rgba(255,59,92,0.12);
+  border-radius: 14px;
+  padding: 10px;
+  line-height: 1;
+  display: inline-block;
+}
+.vc-icon {
+  background: rgba(56,191,255,0.1);
+  border-radius: 10px;
+  padding: 8px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font-size: 20px !important;
+}
+.act-icon {
+  background: rgba(0,229,160,0.1);
+  border-radius: 10px;
+  padding: 8px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  font-size: 18px !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── SECTION LABEL ICONS — colored pill ── */
+.sec-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  background: rgba(255,215,0,0.14) !important;
+  border-radius: 8px !important;
+  font-size: 15px !important;
+}
+
+/* ── VOCAB SIDEBAR ITEMS ── */
+.vocab-item:hover {
+  background: rgba(28,26,46,0.05) !important;
+}
 
 /* ── SELECTION COLOR ── */
 ::selection { background: rgba(56,191,255,0.3); color: #fff; }
