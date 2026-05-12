@@ -90,6 +90,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .game-card.live-purple:hover{box-shadow:0 8px 40px rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.6)}
 .game-card.live-purple:hover::before{opacity:1}
 
+.game-card.live-orange{border-color:rgba(255,140,0,0.3)}
+.game-card.live-orange::before{background:radial-gradient(ellipse at 50% 0%,rgba(255,140,0,0.12) 0%,transparent 70%)}
+.game-card.live-orange:hover{box-shadow:0 8px 40px rgba(255,140,0,0.2);border-color:rgba(255,140,0,0.6)}
+.game-card.live-orange:hover::before{opacity:1}
+
 /* Locked card */
 .game-card.locked{cursor:default;opacity:.45;filter:grayscale(.4)}
 .game-card.locked:hover{transform:none;box-shadow:none}
@@ -190,7 +195,7 @@ const ORIGINALS = [
   { emoji:'🏀', title:'Dopp Dunk',           desc:'Shoot bad health habits into the trash can.',  file:'dopp_dunk.html',      color:'gold',    status:'live', isNew:true },
   { emoji:'💘', title:"Dopp's Dating Game",  desc:'Swipe left or right on health habits.',        file:'dopp_dating.html',    color:'crimson', status:'live', isNew:true },
   { emoji:'🎯', title:'Dopp Darts',          desc:'Hit the bullseye and earn health points.',      file:'dopp_darts.html',     color:'emerald', status:'live', isNew:true },
-  { emoji:'🚀', title:'Dopp Launch',         desc:'Power up and launch toward your health goals.', file:'dopp_launch.html',    color:'sky',     status:'live', isNew:true },
+  { emoji:'🏹', title:'Dopp Launch',         desc:'Power up and launch toward your health goals.', file:'dopp_launch.html',    color:'sky',     status:'live', isNew:true },
   { emoji:'🔮', title:"Dopp's Health Horoscope", desc:'Discover your health destiny.',            file:'dopp_horoscope.html', color:'purple',  status:'live', isNew:true },
   { emoji:'🥠', title:"Dopp's Fortune Cookie", desc:'Crack open a health fortune.',              file:'dopp_fortune.html',   color:'gold',    status:'live', isNew:true },
   { emoji:'🌀', title:'Dopp Spin',           desc:'Spin the wheel for a health challenge.',        file:'dopp_spin.html',      color:'emerald', status:'live', isNew:true },
@@ -206,7 +211,7 @@ const ORIGINALS = [
   { emoji:'🚀', title:'Dopp Invaders',       desc:'Shoot down viruses, junk food, and stress.',             file:'dopp_invaders.html', color:'crimson', status:'live', isNew:true },
   { emoji:'🤗', title:'Dopp Hugs',           desc:'Collect hugs to make Dopp happy — stop before he cries!', file:'dopp_hugs.html',     color:'purple',  status:'live', isNew:true },
   { emoji:'😤', title:"Dopp's Corner",       desc:'Dodge Dopp\'s sweeps — be the last student standing!',    file:'dopp_corner.html',   color:'crimson', status:'live', isNew:true },
-  { emoji:'🎯', title:'Dopp Breakout',       desc:'Smash bad habits with a bouncing ball.',                   file:'dopp_breakout.html', color:'orange',  status:'live', isNew:true },
+  { emoji:'🧱', title:'Dopp Breakout',       desc:'Smash bad habits with a bouncing ball.',                   file:'dopp_breakout.html', color:'orange',  status:'live', isNew:true },
   { emoji:'🧠', title:'Dopp Memory Match',   desc:'Flip cards and find the health pairs.',                    file:'dopp_match.html',    color:'sky',     status:'live', isNew:true },
   { emoji:'🏃', title:'Dopp Runner',         desc:'Jump over junk food, collect vitamins.',                   file:'dopp_runner.html',   color:'emerald', status:'live', isNew:true },
   { emoji:'🟡', title:'Dopp-Man',            desc:'Eat health dots, dodge the ghosts.',                       file:'dopp_pacman.html',   color:'gold',    status:'live', isNew:true },
