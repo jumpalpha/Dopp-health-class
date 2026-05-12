@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏀 Dopp Bounce — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(5,7,15,0.95);border-bottom:1px solid rgba(255,215,0,0.15);flex-shrink:0}
+.back-btn{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
+.hdr-title{font-family:'Cinzel Decorative',serif;font-size:18px;color:#FFD700}
+.hdr-right{font-family:'Cinzel',serif;font-size:13px;color:#F0F4FF;text-align:right;min-width:100px}
+#wrap{position:relative;width:100%;max-width:600px;flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 12px 8px}
+canvas{display:block;border-radius:14px;border:1px solid rgba(255,215,0,0.1);cursor:none}
+#msg{height:36px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(0,229,160,0.9);text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="hdr-title">🏀 Dopp Bounce</div>
+  <div class="hdr-right" id="hdr-right">Bounces: 0</div>
+</header>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="msg">Move the trampoline with your mouse · Click to launch!</div>
+</div>
+<script>
+const cv = document.getElementById('c');
+const cx = cv.getContext('2d');
+
+// Responsive sizing
+const WRAP = document.getElementById('wrap');
+function resize() {
+  const w = Math.min(WRAP.clientWidth - 24, 600);
+  cv.width = w;
+  cv.height = Math.min(window.innerHeight - 140, 500);
+}
+resize();
+window.addEventListener('resize', () => { resize(); resetPositions(); });
+
+const GOLD='#FFD700', EMERALD='#00E5A0', CRIMSON='#FF3B5C', SKY='#38BFFF';
+
+// ── CONFIG ──────────────────────────────────────
+const TOTAL_BOUNCES = 10; // bounces to reach healthy weight
+const GRAVITY = 0.45;
+const TRAMP_W_BASE = 130;
+
+const TIPS = [
+  "Every step counts — movement burns calories!",
+  "Your metabolism speeds up with regular exercise.",
+  "Muscle weighs more than fat, but takes less space.",
+  "Hydration helps your body burn fat more efficiently.",
+  "Sleep is when your body does most of its repair work.",
+  "Consistency beats intensity every time.",
+  "Your heart gets stronger with every workout.",
+  "Progress isn't always visible — trust the process.",
+  "Healthy weight = better energy, mood, and focus.",
+  "You did it! A healthy weight changes everything. 🏆",
+];
+
+// ── STATE ────────────────────────────────────────
+let mouse = { x: cv.width / 2 };
+let state; // 'wait' | 'play' | 'over' | 'win'
+let bounces, dopp, tramp, confetti, flashTimer, tipText, weightPct;
+
+function W(){ return cv.width; }
+function H(){ return cv.height; }
+
+function resetPositions() {
+  tramp = { x: W()/2, y: H()-42, w: TRAMP_W_BASE, h: 18 };
+  dopp = { x: W()/2, y: 80, vy: 0, landed: false };
+  mouse.x = W()/2;
+}
+
+function startGame() {
+  bounces = 0;
+  confetti = [];
+  flashTimer = 0;
+  tipText = '';
+  weightPct = 1; // 1 = max fat, 0 = healthy
+  resetPositions();
+  state = 'wait';
+  updateHdr();
+}
+
+// Dopp body dimensions based on weightPct (1=fat, 0=healthy)
+function doppW(){ return lerp(34, 74, weightPct); }  // body half-width
+function doppH(){ return lerp(44, 60, weightPct); }  // body half-height
+function headR(){ return lerp(18, 24, weightPct); }  // head radius
+
+function lerp(a, b, t){ return a + (b-a)*t; }
+
+function updateHdr(){
+  const lbs = Math.round(lerp(150, 280, weightPct));
+  document.getElementById('hdr-right').textContent = `Bounces: ${bounces} · ${lbs} lbs`;
+}
+
+// ── DRAW DOPP ────────────────────────────────────
+function drawDopp(x, y, squish) {
+  const bw = doppW() * (squish ? 1.35 : 1);
+  const bh = doppH() * (squish ? 0.65 : 1);
+  const hr = headR();
+
+  // Shadow
+  cx.fillStyle='rgba(0,0,0,0.25)';
+  cx.beginPath();
+  cx.ellipse(x, y + bh + 6, bw * 0.7, 7, 0, 0, Math.PI*2);
+  cx.fill();
+
+  // Determine skin/shirt color based on health
+  const skinR = Math.round(lerp(220, 255, 1-weightPct));
+  const skinG = Math.round(lerp(180, 200, 1-weightPct));
+  const skinB = Math.round(lerp(160, 170, 1-weightPct));
+  const skin = `rgb(${skinR},${skinG},${skinB})`;
+
+  // Shirt color shifts gold → emerald as healthier
+  const shirtR = Math.round(lerp(0, 255, weightPct));
+  const shirtG = Math.round(lerp(229, 215, weightPct));
+  const shirtB = Math.round(lerp(160, 0, weightPct));
+  const shirt = `rgb(${shirtR},${shirtG},${shirtB})`;
+
+  // Body (ellipse)
+  cx.fillStyle = shirt;
+  cx.beginPath();
+  cx.ellipse(x, y, bw, bh, 0, 0, Math.PI*2);
+  cx.fill();
+
+  // Belt line (thinner = more visible waist)
+  if(weightPct < 0.6){
+    cx.strokeStyle='rgba(0,0,0,0.2)';
+    cx.lineWidth=2;
+    cx.beginPath();
+    cx.ellipse(x, y + bh*0.1, bw*0.8, bh*0.15, 0, 0, Math.PI*2);
+    cx.stroke();
+  }
+
+  // Arms
+  cx.strokeStyle=skin; cx.lineWidth=bw*0.28; cx.lineCap='round';
+  cx.beginPath();
+  cx.moveTo(x - bw*0.85, y - bh*0.1);
+  cx.lineTo(x - bw*1.3, y + bh*(squish?0.2:0.35));
+  cx.stroke();
+  cx.beginPath();
+  cx.moveTo(x + bw*0.85, y - bh*0.1);
+  cx.lineTo(x + bw*1.3, y + bh*(squish?0.2:0.35));
+  cx.stroke();
+
+  // Legs
+  cx.lineWidth=bw*0.32;
+  cx.beginPath();
+  cx.moveTo(x - bw*0.35, y + bh*0.88);
+  cx.lineTo(x - bw*0.4, y + bh + (squish?4:14));
+  cx.stroke();
+  cx.beginPath();
+  cx.moveTo(x + bw*0.35, y + bh*0.88);
+  cx.lineTo(x + bw*0.4, y + bh + (squish?4:14));
+  cx.stroke();
+
+  // Head
+  cx.fillStyle=skin;
+  cx.beginPath();
+  cx.arc(x, y - bh - hr*0.55, hr, 0, Math.PI*2);
+  cx.fill();
+
+  // Face — cheeks puffier when fat
+  if(weightPct > 0.4){
+    cx.fillStyle='rgba(255,150,150,0.3)';
+    cx.beginPath(); cx.ellipse(x-hr*0.65, y-bh-hr*0.45, hr*0.35, hr*0.22, 0, 0, Math.PI*2); cx.fill();
+    cx.beginPath(); cx.ellipse(x+hr*0.65, y-bh-hr*0.45, hr*0.35, hr*0.22, 0, 0, Math.PI*2); cx.fill();
+  }
+
+  // Eyes
+  cx.fillStyle='#222';
+  cx.beginPath(); cx.arc(x - hr*0.35, y - bh - hr*0.65, hr*0.12, 0, Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(x + hr*0.35, y - bh - hr*0.65, hr*0.12, 0, Math.PI*2); cx.fill();
+
+  // Smile — gets bigger as healthier
+  const smileW = lerp(hr*0.25, hr*0.55, 1-weightPct);
+  cx.strokeStyle='#333'; cx.lineWidth=2.5; cx.lineCap='round';
+  cx.beginPath();
+  cx.arc(x, y - bh - hr*0.42, smileW, 0.2, Math.PI-0.2);
+  cx.stroke();
+
+  // Sweat drops when fat
+  if(weightPct > 0.5){
+    cx.fillStyle='rgba(56,191,255,0.7)';
+    cx.beginPath(); cx.ellipse(x+hr*0.9, y-bh-hr*0.2, 3, 5, 0.3, 0, Math.PI*2); cx.fill();
+  }
+}
+
+// ── DRAW TRAMPOLINE ──────────────────────────────
+function drawTramp(tx, ty, tw) {
+  // Frame legs
+  cx.strokeStyle='rgba(255,215,0,0.6)'; cx.lineWidth=4; cx.lineCap='round';
+  cx.beginPath(); cx.moveTo(tx-tw/2+8, ty+9); cx.lineTo(tx-tw/2+2, ty+28); cx.stroke();
+  cx.beginPath(); cx.moveTo(tx+tw/2-8, ty+9); cx.lineTo(tx+tw/2-2, ty+28); cx.stroke();
+
+  // Springs
+  const springs=5;
+  cx.strokeStyle='rgba(255,255,255,0.3)'; cx.lineWidth=2;
+  for(let i=0;i<springs;i++){
+    const sx=tx-tw/2+14+(i*(tw-28)/(springs-1));
+    cx.beginPath(); cx.moveTo(sx,ty); cx.lineTo(sx,ty+10); cx.stroke();
+  }
+
+  // Bed glow
+  const grad=cx.createLinearGradient(tx-tw/2,ty-4,tx+tw/2,ty+4);
+  grad.addColorStop(0,'rgba(255,215,0,0.1)');
+  grad.addColorStop(.5,'rgba(255,215,0,0.35)');
+  grad.addColorStop(1,'rgba(255,215,0,0.1)');
+  cx.fillStyle=grad;
+  cx.beginPath(); cx.ellipse(tx,ty,tw/2,7,0,0,Math.PI*2); cx.fill();
+
+  cx.strokeStyle=GOLD; cx.lineWidth=3;
+  cx.beginPath(); cx.ellipse(tx,ty,tw/2,7,0,0,Math.PI*2); cx.stroke();
+}
+
+// ── CONFETTI ─────────────────────────────────────
+function spawnConfetti(x,y,n=35){
+  for(let i=0;i<n;i++){
+    confetti.push({
+      x,y,vx:(Math.random()-.5)*11,vy:(Math.random()-1.5)*9,
+      sz:Math.random()*8+3,
+      color:[GOLD,EMERALD,SKY,CRIMSON,'#a855f7'][Math.floor(Math.random()*5)],
+      life:1,dec:Math.random()*.016+.01,rot:Math.random()*360,vr:(Math.random()-.5)*7
+    });
+  }
+}
+
+// ── BACKGROUND ───────────────────────────────────
+function drawBg(){
+  cx.fillStyle='#05070F'; cx.fillRect(0,0,W(),H());
+  // Subtle gradient floor
+  const g=cx.createLinearGradient(0,H()-60,0,H());
+  g.addColorStop(0,'transparent'); g.addColorStop(1,'rgba(255,215,0,0.04)');
+  cx.fillStyle=g; cx.fillRect(0,H()-60,W(),60);
+  // Floor line
+  cx.strokeStyle='rgba(255,215,0,0.06)'; cx.lineWidth=1;
+  cx.beginPath(); cx.moveTo(0,H()-18); cx.lineTo(W(),H()-18); cx.stroke();
+}
+
+// ── WEIGHT BAR ───────────────────────────────────
+function drawWeightBar(){
+  const bx=14, by=14, bw=12, bh=H()-80;
+  // Track
+  cx.fillStyle='rgba(255,255,255,0.05)';
+  cx.beginPath(); roundRect(bx,by,bw,bh,6); cx.fill();
+  // Fill (top=fat, bottom=healthy)
+  const fillH=bh*weightPct;
+  const grd=cx.createLinearGradient(bx,by,bx,by+bh);
+  grd.addColorStop(0,CRIMSON); grd.addColorStop(0.6,'#FF8C00'); grd.addColorStop(1,EMERALD);
+  cx.fillStyle=grd;
+  cx.beginPath(); roundRect(bx,by+(bh-fillH),bw,fillH,6); cx.fill();
+  // Labels
+  cx.font='9px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(240,244,255,0.4)';
+  cx.fillText('FAT',bx+bw/2,by-4);
+  cx.fillStyle=EMERALD; cx.fillText('✓',bx+bw/2,by+bh+12);
+}
+
+// ── PROGRESS DOTS ────────────────────────────────
+function drawProgress(){
+  const dotR=5, gap=22, total=TOTAL_BOUNCES;
+  const startX=(W()-(total*gap-gap))/2;
+  const y=H()-8;
+  for(let i=0;i<total;i++){
+    const done=i<bounces;
+    cx.fillStyle=done?EMERALD:'rgba(255,255,255,0.1)';
+    cx.beginPath(); cx.arc(startX+i*gap,y,done?dotR:dotR-1,0,Math.PI*2); cx.fill();
+    if(done){
+      cx.fillStyle='rgba(0,0,0,0.3)';
+      cx.beginPath(); cx.arc(startX+i*gap-1,y-1,dotR-2,0,Math.PI*2); cx.fill();
+    }
+  }
+}
+
+function roundRect(x,y,w,h,r){
+  cx.beginPath();
+  cx.moveTo(x+r,y); cx.lineTo(x+w-r,y); cx.quadraticCurveTo(x+w,y,x+w,y+r);
+  cx.lineTo(x+w,y+h-r); cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  cx.lineTo(x+r,y+h); cx.quadraticCurveTo(x,y+h,x,y+h-r);
+  cx.lineTo(x,y+r); cx.quadraticCurveTo(x,y,x+r,y); cx.closePath();
+}
+
+// ── MAIN LOOP ────────────────────────────────────
+let squishTimer=0;
+
+function loop(){
+  drawBg();
+
+  // Update confetti
+  confetti=confetti.filter(c=>c.life>0);
+  confetti.forEach(c=>{
+    cx.globalAlpha=c.life;
+    cx.save(); cx.translate(c.x,c.y); cx.rotate(c.rot*Math.PI/180);
+    cx.fillStyle=c.color; cx.fillRect(-c.sz/2,-c.sz/4,c.sz,c.sz/2); cx.restore();
+    c.x+=c.vx; c.y+=c.vy; c.vy+=0.28; c.life-=c.dec; c.rot+=c.vr;
+  });
+  cx.globalAlpha=1;
+
+  // Flash overlay
+  if(flashTimer>0){
+    cx.fillStyle=`rgba(0,229,160,${flashTimer/20*0.25})`;
+    cx.fillRect(0,0,W(),H());
+    flashTimer--;
+  }
+
+  drawWeightBar();
+
+  // Trampoline follows mouse
+  tramp.x += (mouse.x - tramp.x) * 0.18;
+  tramp.x = Math.max(tramp.w/2+4, Math.min(W()-tramp.w/2-4, tramp.x));
+  drawTramp(tramp.x, tramp.y, tramp.w);
+
+  if(state==='wait'){
+    // Dopp sitting on trampoline
+    const sx=tramp.x, sy=tramp.y-doppH()-7;
+    drawDopp(sx, sy, false);
+    cx.font='bold 13px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(255,215,0,0.65)';
+    cx.fillText('Click to start bouncing!', W()/2, H()/2-10);
+    drawProgress();
+  } else if(state==='play'){
+    // Physics
+    dopp.vy += GRAVITY;
+    dopp.y  += dopp.vy;
+
+    const squishing = squishTimer>0;
+    if(squishTimer>0) squishTimer--;
+    drawDopp(dopp.x, dopp.y, squishing);
+
+    // Check trampoline collision (from above)
+    const dBottom = dopp.y + doppH();
+    if(dopp.vy > 0 && dBottom >= tramp.y-6 && dBottom <= tramp.y+18 &&
+       dopp.x >= tramp.x - tramp.w/2 - 10 && dopp.x <= tramp.x + tramp.w/2 + 10){
+
+      // Bounce!
+      bounces++;
+      weightPct = Math.max(0, 1 - bounces/TOTAL_BOUNCES);
+      const bounceSpeed = -(10 + bounces * 2.2); // gets bouncier as lighter
+      dopp.vy = bounceSpeed;
+      squishTimer = 12;
+      flashTimer = 18;
+      spawnConfetti(dopp.x, tramp.y, 25);
+      tipText = TIPS[Math.min(bounces-1, TIPS.length-1)];
+      document.getElementById('msg').textContent = tipText;
+      updateHdr();
+
+      if(bounces >= TOTAL_BOUNCES){
+        state = 'win';
+        spawnConfetti(W()/2, H()/3, 80);
+      }
+    }
+
+    // Out of bounds — fell off
+    if(dopp.y > H()+100){
+      state = 'over';
+    }
+    // Hit ceiling — bounce back down slightly
+    if(dopp.y - doppH() - headR()*2 < 0){
+      dopp.vy = Math.abs(dopp.vy)*0.5;
+      dopp.y = doppH() + headR()*2 + 2;
+      spawnConfetti(dopp.x, 20, 15);
+    }
+
+    drawProgress();
+
+  } else if(state==='over'){
+    drawDopp(dopp.x, H()+60, false); // off screen
+    drawProgress();
+    // Game over panel
+    cx.fillStyle='rgba(5,7,15,0.82)'; cx.fillRect(0,0,W(),H());
+    cx.textAlign='center';
+    cx.font='bold 48px Nunito'; cx.fillStyle=CRIMSON;
+    cx.fillText('😅 Dopp Fell!', W()/2, H()/2-50);
+    cx.font='18px Nunito'; cx.fillStyle='rgba(240,244,255,0.7)';
+    cx.fillText(`Made it to bounce ${bounces} of ${TOTAL_BOUNCES}`, W()/2, H()/2);
+    const pct=Math.round((1-(bounces/TOTAL_BOUNCES))*100);
+    cx.font='13px Nunito'; cx.fillStyle='rgba(240,244,255,0.4)';
+    cx.fillText(`Dopp still has ${pct}% of the journey ahead!`, W()/2, H()/2+30);
+    drawBtn(W()/2, H()/2+75, '▶ Try Again');
+
+  } else if(state==='win'){
+    drawDopp(W()/2, H()/2 - 60, false);
+    cx.textAlign='center';
+    cx.font='bold 32px Nunito'; cx.fillStyle=GOLD;
+    cx.shadowColor=GOLD; cx.shadowBlur=20;
+    cx.fillText('🏆 Healthy Weight!', W()/2, H()/2+30);
+    cx.shadowBlur=0;
+    cx.font='14px Nunito'; cx.fillStyle=EMERALD;
+    cx.fillText('Dopp bounced his way to wellness!', W()/2, H()/2+58);
+    cx.font='12px Nunito'; cx.fillStyle='rgba(240,244,255,0.45)';
+    cx.fillText('Consistency + movement = real results', W()/2, H()/2+80);
+    drawBtn(W()/2, H()/2+118, '▶ Play Again');
+  }
+
+  requestAnimationFrame(loop);
+}
+
+function drawBtn(x, y, label){
+  const bw=160, bh=42;
+  cx.fillStyle='rgba(255,215,0,0.12)';
+  roundRect(x-bw/2, y-bh/2, bw, bh, 10); cx.fill();
+  cx.strokeStyle='rgba(255,215,0,0.45)'; cx.lineWidth=1.5;
+  roundRect(x-bw/2, y-bh/2, bw, bh, 10); cx.stroke();
+  cx.font='bold 14px Nunito'; cx.fillStyle=GOLD; cx.textAlign='center';
+  cx.fillText(label, x, y+5);
+}
+
+// ── EVENTS ───────────────────────────────────────
+cv.addEventListener('mousemove', e=>{
+  const r=cv.getBoundingClientRect();
+  mouse.x=(e.clientX-r.left)*(W()/r.width);
+});
+cv.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  const r=cv.getBoundingClientRect();
+  mouse.x=(e.touches[0].clientX-r.left)*(W()/r.width);
+},{passive:false});
+
+cv.addEventListener('click', e=>{
+  if(state==='wait'){
+    state='play';
+    dopp.vy=-13;
+    document.getElementById('msg').textContent='Keep Dopp on the trampoline!';
+    return;
+  }
+  const r=cv.getBoundingClientRect();
+  const mx=(e.clientX-r.left)*(W()/r.width);
+  const my=(e.clientY-r.top)*(H()/r.height);
+  // Check play again button
+  if(state==='over'||state==='win'){
+    const bx=W()/2, by=(state==='over'?H()/2+75:H()/2+118);
+    if(Math.abs(mx-bx)<80&&Math.abs(my-by)<22){ startGame(); }
+  }
+});
+cv.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  cv.dispatchEvent(new MouseEvent('click',{clientX:e.touches[0].clientX,clientY:e.touches[0].clientY}));
+},{passive:false});
+
+startGame();
+loop();
+</script>
+</body>
+</html>

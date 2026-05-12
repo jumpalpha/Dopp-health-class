@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Invaders – Health Class</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
+#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
+#back-btn:hover{opacity:1}
+#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(15px,3vw,21px);text-align:center}
+#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:100px}
+#main{display:flex;flex-direction:column;align-items:center;padding:12px 10px 30px;width:100%;max-width:820px}
+#hud{width:640px;max-width:100%;display:flex;justify-content:space-between;align-items:center;padding:6px 4px;margin-bottom:6px}
+#lives-display{font-family:'Cinzel',sans-serif;font-size:15px;color:#FF3B5C}
+#wave-display{font-family:'Cinzel',sans-serif;font-size:13px;color:#a855f7}
+canvas{display:block;border:2px solid rgba(255,215,0,0.2);border-radius:8px;max-width:100%;background:#05070F}
+#overlay{position:fixed;inset:0;background:rgba(5,7,15,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;display:none}
+#overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,34px);margin-bottom:14px}
+#overlay .stat{font-family:'Nunito',sans-serif;font-size:16px;color:#fff;margin-bottom:6px}
+#overlay .best{font-size:13px;color:#00E5A0;margin-bottom:24px}
+.play-btn{background:#FFD700;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:11px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
+.play-btn:hover{transform:scale(1.05)}
+#start-overlay{position:fixed;inset:0;background:rgba(5,7,15,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+#start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,4vw,30px);margin-bottom:12px}
+#start-overlay p{font-family:'Nunito',sans-serif;color:#aaa;font-size:14px;margin-bottom:6px;text-align:center;max-width:380px}
+#mobile-controls{display:none;gap:12px;margin-top:10px}
+.mc-btn{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;font-family:'Nunito',sans-serif;touch-action:manipulation}
+@media(max-width:680px){#mobile-controls{display:flex}}
+</style>
+</head>
+<body>
+<div id="header">
+  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <span id="game-title">Dopp Invaders</span>
+  <span id="score-display">Score: <span id="scoreVal">0</span></span>
+</div>
+<div id="main">
+  <div id="hud">
+    <div id="lives-display">❤️❤️❤️</div>
+    <div id="wave-display">Wave 1</div>
+  </div>
+  <canvas id="c" width="640" height="500"></canvas>
+  <div id="mobile-controls">
+    <button class="mc-btn" id="mcLeft">◀</button>
+    <button class="mc-btn" id="mcFire">FIRE</button>
+    <button class="mc-btn" id="mcRight">▶</button>
+  </div>
+</div>
+<div id="start-overlay">
+  <h2>Dopp Invaders</h2>
+  <p>Defeat viruses, junk food, and stress!</p>
+  <p style="color:#FFD700;font-size:13px;margin-bottom:4px">Arrow Keys / A D = Move &nbsp;|&nbsp; Space = Shoot</p>
+  <p style="color:#00E5A0;font-size:12px;margin-bottom:16px">Gold stars = power-ups!</p>
+  <button class="play-btn" id="startBtn">Start Game</button>
+</div>
+<div id="overlay">
+  <h2 id="ovTitle">Game Over</h2>
+  <div class="stat">Score: <span id="ovScore"></span></div>
+  <div class="stat">Wave Reached: <span id="ovWave"></span></div>
+  <div class="best">Best: <span id="ovBest"></span></div>
+  <button class="play-btn" id="playAgain">Play Again</button>
+</div>
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const W=640,H=500;
+let score,lives,wave,enemies,bullets,enemyBullets,powerUps,particles;
+let playerX,playerW=56,playerH=36;
+let dx=0,gameRunning=false,gameOver=false;
+let enemyDir=1,enemySpeed,enemyDropY=20;
+let lastShot=0,shotCooldown=350;
+let invincible=false,invincibleTimer=0;
+let floatTexts=[];
+let bestScore=parseInt(localStorage.getItem('invadersBest')||'0');
+let animFrame;
+const ENEMY_TYPES=[
+  {emoji:'🦠',label:'Virus',pts:30,color:'#a855f7',row:0},
+  {emoji:'🍔',label:'Junk Food',pts:20,color:'#FF8C00',row:1},
+  {emoji:'💨',label:'Stress',pts:10,color:'#38BFFF',row:2},
+  {emoji:'💨',label:'Stress',pts:10,color:'#38BFFF',row:3},
+];
+const COLS=9,ENEMY_W=52,ENEMY_H=38,ENEMY_PAD_X=10,ENEMY_PAD_Y=12;
+const START_X=30,START_Y=60;
+
+function initGame(){
+  score=0;lives=3;wave=1;
+  playerX=W/2-playerW/2;
+  bullets=[];enemyBullets=[];powerUps=[];particles=[];floatTexts=[];
+  invincible=false;invincibleTimer=0;
+  spawnEnemies();
+  updateHUD();
+  gameOver=false;
+  gameRunning=true;
+  document.getElementById('scoreVal').textContent=0;
+  if(animFrame) cancelAnimationFrame(animFrame);
+  loop();
+}
+
+function spawnEnemies(){
+  enemies=[];
+  enemySpeed=0.6+wave*0.2;
+  enemyDir=1;
+  for(let row=0;row<4;row++){
+    for(let col=0;col<COLS;col++){
+      const t=ENEMY_TYPES[row];
+      enemies.push({
+        x:START_X+col*(ENEMY_W+ENEMY_PAD_X),
+        y:START_Y+row*(ENEMY_H+ENEMY_PAD_Y),
+        type:t,alive:true,
+        shootChance:0.0003+wave*0.0001
+      });
+    }
+  }
+}
+
+function updateHUD(){
+  const h=document.getElementById('lives-display');
+  h.textContent='❤️'.repeat(lives)+' '.repeat(3-lives);
+  document.getElementById('wave-display').textContent='Wave '+wave;
+  document.getElementById('scoreVal').textContent=score;
+}
+
+const keys={};
+document.addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if(e.key===' '){e.preventDefault();tryShoot();}
+});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+let mcLH=false,mcRH=false;
+document.getElementById('mcLeft').addEventListener('pointerdown',()=>mcLH=true);
+document.getElementById('mcLeft').addEventListener('pointerup',()=>mcLH=false);
+document.getElementById('mcRight').addEventListener('pointerdown',()=>mcRH=true);
+document.getElementById('mcRight').addEventListener('pointerup',()=>mcRH=false);
+document.getElementById('mcFire').addEventListener('pointerdown',tryShoot);
+
+function tryShoot(){
+  const now=Date.now();
+  if(now-lastShot<shotCooldown||!gameRunning) return;
+  lastShot=now;
+  bullets.push({x:playerX+playerW/2-3,y:H-playerH-20,w:6,h:16,speed:9});
+}
+
+function loop(){
+  if(!gameRunning){return;}
+  update();
+  draw();
+  animFrame=requestAnimationFrame(loop);
+}
+
+function update(){
+  // player move
+  let speed=4.5;
+  if(keys['ArrowLeft']||keys['a']||keys['A']||mcLH) playerX=Math.max(0,playerX-speed);
+  if(keys['ArrowRight']||keys['d']||keys['D']||mcRH) playerX=Math.min(W-playerW,playerX+speed);
+
+  // bullets
+  bullets=bullets.filter(b=>b.y>0);
+  bullets.forEach(b=>b.y-=b.speed);
+
+  // enemy movement
+  const alive=enemies.filter(e=>e.alive);
+  if(alive.length===0){nextWave();return;}
+  const factor=1+(1-alive.length/(COLS*4))*2;
+  const spd=enemySpeed*factor;
+  let hitEdge=false;
+  alive.forEach(e=>{
+    e.x+=enemyDir*spd;
+    if(e.x<=0||e.x+ENEMY_W>=W) hitEdge=true;
+  });
+  if(hitEdge){
+    enemyDir*=-1;
+    alive.forEach(e=>e.y+=enemyDropY);
+  }
+
+  // enemy shoot
+  alive.forEach(e=>{
+    if(Math.random()<e.shootChance+0.0001){
+      enemyBullets.push({x:e.x+ENEMY_W/2-3,y:e.y+ENEMY_H,w:6,h:14,speed:3.5+wave*0.3,color:'#FF3B5C'});
+    }
+  });
+  enemyBullets=enemyBullets.filter(b=>b.y<H);
+  enemyBullets.forEach(b=>b.y+=b.speed);
+
+  // power-ups
+  powerUps=powerUps.filter(p=>p.y<H);
+  powerUps.forEach(p=>p.y+=1.5);
+
+  // bullets hit enemies
+  bullets.forEach((b,bi)=>{
+    enemies.forEach((e,ei)=>{
+      if(!e.alive) return;
+      if(b.x<e.x+ENEMY_W&&b.x+b.w>e.x&&b.y<e.y+ENEMY_H&&b.y+b.h>e.y){
+        e.alive=false;
+        b.dead=true;
+        score+=e.type.pts;
+        document.getElementById('scoreVal').textContent=score;
+        spawnParticles(e.x+ENEMY_W/2,e.y+ENEMY_H/2,e.type.color,8);
+        floatTexts.push({x:e.x+ENEMY_W/2,y:e.y,text:'+'+e.type.pts,color:'#FFD700',life:60});
+        if(Math.random()<0.12){
+          powerUps.push({x:e.x+ENEMY_W/2-12,y:e.y,w:24,h:24,type:'star'});
+        }
+      }
+    });
+  });
+  bullets=bullets.filter(b=>!b.dead);
+
+  // enemy bullets hit player
+  if(!invincible){
+    enemyBullets.forEach((b,bi)=>{
+      const px=playerX,py=H-playerH-10;
+      if(b.x<px+playerW&&b.x+b.w>px&&b.y<py+playerH&&b.y+b.h>py){
+        b.dead=true;
+        lives=Math.max(0,lives-1);
+        updateHUD();
+        flashInvincible();
+        if(lives<=0){endGame();}
+      }
+    });
+    enemyBullets=enemyBullets.filter(b=>!b.dead);
+  }
+
+  // power-up collect
+  powerUps.forEach((p,pi)=>{
+    const px=playerX,py=H-playerH-10;
+    if(p.x<px+playerW&&p.x+p.w>px&&p.y<py+playerH&&p.y+p.h>py){
+      p.dead=true;
+      score+=50;
+      document.getElementById('scoreVal').textContent=score;
+      flashInvincible(3000);
+      floatTexts.push({x:p.x,y:p.y,text:'+50 ⭐',color:'#FFD700',life:90});
+    }
+  });
+  powerUps=powerUps.filter(p=>!p.dead);
+
+  // particles
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;p.vy+=0.1;});
+  particles=particles.filter(p=>p.life>0);
+  floatTexts.forEach(f=>{f.y-=0.6;f.life--;});
+  floatTexts=floatTexts.filter(f=>f.life>0);
+
+  // invincible timer
+  if(invincible){
+    invincibleTimer--;
+    if(invincibleTimer<=0) invincible=false;
+  }
+
+  // enemy reached bottom
+  alive.forEach(e=>{if(e.y+ENEMY_H>=H-playerH-15){endGame();}});
+}
+
+function flashInvincible(dur=120){invincible=true;invincibleTimer=typeof dur==='number'&&dur>200?dur/16:dur;}
+function spawnParticles(x,y,color,n){
+  for(let i=0;i<n;i++){
+    const ang=Math.random()*Math.PI*2;
+    const spd=1+Math.random()*3;
+    particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,color,life:25+Math.random()*20,size:2+Math.random()*3});
+  }
+}
+
+function nextWave(){
+  wave++;
+  updateHUD();
+  bullets=[];enemyBullets=[];powerUps=[];
+  floatTexts.push({x:W/2,y:H/2,text:'Wave '+wave+'!',color:'#00E5A0',life:120,big:true});
+  setTimeout(()=>spawnEnemies(),1200);
+}
+
+function endGame(){
+  gameRunning=false;
+  if(score>bestScore){bestScore=score;localStorage.setItem('invadersBest',bestScore);}
+  document.getElementById('ovTitle').textContent=lives<=0?'Game Over':'Victory!';
+  document.getElementById('ovScore').textContent=score;
+  document.getElementById('ovWave').textContent=wave;
+  document.getElementById('ovBest').textContent=bestScore;
+  document.getElementById('overlay').style.display='flex';
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // stars bg
+  ctx.fillStyle='rgba(255,255,255,0.03)';
+  for(let i=0;i<40;i++){
+    const sx=(i*137.5)%W;
+    const sy=(i*97.3+(Date.now()*0.01))%H;
+    ctx.fillRect(sx,sy,1,1);
+  }
+  // enemies
+  enemies.forEach(e=>{
+    if(!e.alive) return;
+    ctx.fillStyle=e.type.color+'33';
+    ctx.strokeStyle=e.type.color;
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.roundRect(e.x,e.y,ENEMY_W,ENEMY_H,6);
+    ctx.fill();ctx.stroke();
+    ctx.font='20px serif';
+    ctx.textAlign='center';
+    ctx.fillText(e.type.emoji,e.x+ENEMY_W/2,e.y+ENEMY_H*0.6);
+    ctx.font='bold 8px Cinzel, sans-serif';
+    ctx.fillStyle=e.type.color;
+    ctx.fillText(e.type.pts+'pts',e.x+ENEMY_W/2,e.y+ENEMY_H-4);
+  });
+  // player
+  const py=H-playerH-10;
+  if(!invincible||Math.floor(Date.now()/100)%2===0){
+    ctx.fillStyle='#00E5A0';
+    ctx.beginPath();
+    ctx.roundRect(playerX,py,playerW,playerH,6);
+    ctx.fill();
+    // cross
+    ctx.fillStyle='#05070F';
+    ctx.fillRect(playerX+playerW/2-4,py+6,8,playerH-12);
+    ctx.fillRect(playerX+8,py+playerH/2-4,playerW-16,8);
+  }
+  // bullets
+  bullets.forEach(b=>{
+    ctx.fillStyle='#00E5A0';
+    ctx.shadowColor='#00E5A0';
+    ctx.shadowBlur=8;
+    ctx.fillRect(b.x,b.y,b.w,b.h);
+    ctx.shadowBlur=0;
+  });
+  // enemy bullets
+  enemyBullets.forEach(b=>{
+    ctx.fillStyle='#FF3B5C';
+    ctx.shadowColor='#FF3B5C';
+    ctx.shadowBlur=6;
+    ctx.fillRect(b.x,b.y,b.w,b.h);
+    ctx.shadowBlur=0;
+  });
+  // power-ups
+  powerUps.forEach(p=>{
+    const cx=p.x+p.w/2,cy=p.y+p.h/2;
+    ctx.fillStyle='#FFD700';
+    ctx.shadowColor='#FFD700';
+    ctx.shadowBlur=10;
+    drawStar(ctx,cx,cy,10,5,0.45);
+    ctx.shadowBlur=0;
+  });
+  // particles
+  particles.forEach(p=>{
+    ctx.globalAlpha=p.life/45;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha=1;
+  // float texts
+  floatTexts.forEach(f=>{
+    ctx.globalAlpha=Math.min(1,f.life/30);
+    ctx.font=f.big?'bold 28px Cinzel Decorative, sans-serif':'bold 14px Cinzel, sans-serif';
+    ctx.fillStyle=f.color;
+    ctx.textAlign='center';
+    ctx.fillText(f.text,f.x,f.y);
+  });
+  ctx.globalAlpha=1;
+  // ground line
+  ctx.strokeStyle='rgba(0,229,160,0.3)';
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(0,H-8);ctx.lineTo(W,H-8);
+  ctx.stroke();
+}
+
+function drawStar(ctx,cx,cy,r,points,inner){
+  ctx.beginPath();
+  for(let i=0;i<points*2;i++){
+    const ang=-Math.PI/2+i*Math.PI/points;
+    const radius=i%2===0?r:r*inner;
+    ctx.lineTo(cx+Math.cos(ang)*radius,cy+Math.sin(ang)*radius);
+  }
+  ctx.closePath();ctx.fill();
+}
+
+document.getElementById('startBtn').addEventListener('click',()=>{
+  document.getElementById('start-overlay').style.display='none';
+  initGame();
+});
+document.getElementById('playAgain').addEventListener('click',()=>{
+  document.getElementById('overlay').style.display='none';
+  initGame();
+});
+</script>
+</body>
+</html>

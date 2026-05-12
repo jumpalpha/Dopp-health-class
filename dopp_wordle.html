@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Wordle – Health Class</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
+#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
+#back-btn:hover{opacity:1}
+#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(16px,3vw,22px);text-align:center}
+#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:90px}
+#main{display:flex;flex-direction:column;align-items:center;padding:16px 10px 30px;width:100%;max-width:820px}
+#grid{display:grid;grid-template-rows:repeat(6,1fr);gap:6px;margin-bottom:16px}
+.tile-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.tile{width:58px;height:58px;border:2px solid rgba(255,255,255,0.2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',sans-serif;font-size:26px;font-weight:600;text-transform:uppercase;color:#fff;transition:border-color .1s;user-select:none;transform-style:preserve-3d;position:relative}
+.tile.filled{border-color:rgba(255,255,255,0.5)}
+.tile.flip{animation:flip .5s ease forwards}
+.tile.flip-delay-1{animation-delay:0.1s}
+.tile.flip-delay-2{animation-delay:0.2s}
+.tile.flip-delay-3{animation-delay:0.3s}
+.tile.flip-delay-4{animation-delay:0.4s}
+@keyframes flip{
+  0%{transform:rotateX(0)}
+  50%{transform:rotateX(90deg)}
+  100%{transform:rotateX(0)}
+}
+.tile.correct{background:#FFD700;border-color:#FFD700;color:#05070F}
+.tile.present{background:#38BFFF;border-color:#38BFFF;color:#05070F}
+.tile.absent{background:#2a2a3a;border-color:#2a2a3a;color:#888}
+.tile.shake{animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+#keyboard{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:12px}
+.kb-row{display:flex;gap:5px}
+.key{padding:0;width:36px;height:46px;border:none;border-radius:5px;background:#3a3a4a;color:#fff;font-family:'Cinzel',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s,color .2s;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
+.key.wide{width:54px;font-size:11px}
+.key:hover{background:#4a4a5a}
+.key.correct{background:#FFD700;color:#05070F}
+.key.present{background:#38BFFF;color:#05070F}
+.key.absent{background:#222230;color:#555}
+#message{min-height:28px;font-family:'Nunito',sans-serif;font-size:15px;color:#FFD700;text-align:center;margin-bottom:8px;font-weight:700}
+#fact-box{max-width:420px;text-align:center;font-size:14px;color:#00E5A0;padding:10px 14px;border:1px solid rgba(0,229,160,0.3);border-radius:8px;margin-bottom:12px;display:none;line-height:1.5}
+#play-again{display:none;background:#FFD700;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:10px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
+#play-again:hover{transform:scale(1.05)}
+@media(max-width:420px){
+  .tile{width:48px;height:48px;font-size:20px}
+  .key{width:29px;height:40px;font-size:11px}
+  .key.wide{width:44px}
+}
+</style>
+</head>
+<body>
+<div id="header">
+  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <span id="game-title">Dopp Wordle</span>
+  <span id="score-display">Wins: <span id="wins">0</span></span>
+</div>
+<div id="main">
+  <div id="message"></div>
+  <div id="grid"></div>
+  <div id="fact-box"></div>
+  <button id="play-again">Play Again</button>
+  <div id="keyboard"></div>
+</div>
+<script>
+const WORDS = ["SLEEP","HEART","FIBER","WATER","SUGAR","LUNGS","SWEAT","BRAIN","BONES","CELLS","VIRUS","DETOX","HERBS","BLOOD","NERVE","PULSE","TONIC","VEINS","LIVER","TEETH","COUGH","ACHES","JOINT","TOXIN","GLAND","FLUSH","REPEL","CLEAN","FOCUS","MOVED","CALMS","VIGOR","BURNS","TENSE","RELAX","FOODS","GAINS","RESET","WHOLE","PHASE"];
+const FACTS = {
+  SLEEP:"Deep sleep is when your brain flushes out toxins and consolidates memories.",
+  HEART:"Your heart beats about 100,000 times per day, pumping 2,000 gallons of blood.",
+  FIBER:"Dietary fiber feeds beneficial gut bacteria and helps regulate blood sugar levels.",
+  WATER:"Drinking enough water improves focus, energy, and kidney function.",
+  SUGAR:"Excess sugar consumption is linked to inflammation and increased disease risk.",
+  LUNGS:"Regular aerobic exercise increases your lungs' oxygen capacity over time.",
+  SWEAT:"Sweating helps regulate body temperature and releases trace amounts of toxins.",
+  BRAIN:"The brain uses about 20% of your body's total energy despite being only 2% of body weight.",
+  BONES:"Weight-bearing exercise strengthens bones and reduces osteoporosis risk.",
+  CELLS:"Your body replaces roughly 3.8 million cells every second.",
+  VIRUS:"Washing hands for 20 seconds is one of the most effective ways to prevent viral spread.",
+  DETOX:"Your liver and kidneys naturally detoxify your blood every single day.",
+  HERBS:"Many herbs like turmeric and ginger have documented anti-inflammatory properties.",
+  BLOOD:"Blood carries oxygen, nutrients, and immune cells to every tissue in the body.",
+  NERVE:"Your nervous system can transmit signals at up to 268 miles per hour.",
+  PULSE:"A healthy resting pulse is 60–100 beats per minute; athletes often run lower.",
+  TONIC:"Bitter tonics have been used for centuries to stimulate digestion and liver health.",
+  VEINS:"Veins carry deoxygenated blood back to the heart and contain one-way valves.",
+  LIVER:"The liver performs over 500 vital functions including detoxification and protein synthesis.",
+  TEETH:"Brushing twice daily and flossing reduces risk of heart disease linked to gum bacteria.",
+  COUGH:"A cough can expel air at up to 60 mph, helping clear the airways of irritants.",
+  ACHES:"Muscle aches after exercise (DOMS) are caused by microscopic tears that heal stronger.",
+  JOINT:"Staying hydrated keeps joint cartilage lubricated, reducing wear and pain.",
+  TOXIN:"Your kidneys filter about 200 liters of blood daily to remove waste and toxins.",
+  GLAND:"Endocrine glands like the thyroid regulate metabolism, growth, and mood.",
+  FLUSH:"Flushing your system with water helps kidneys remove waste products efficiently.",
+  REPEL:"Insect repellents help prevent mosquito-borne diseases like malaria and dengue.",
+  CLEAN:"Regular handwashing prevents the spread of 80% of common infectious diseases.",
+  FOCUS:"Mindfulness and meditation measurably improve focus and reduce cortisol levels.",
+  MOVED:"Regular movement, even walking, significantly reduces risk of chronic disease.",
+  CALMS:"Deep breathing activates the parasympathetic system and calms the stress response.",
+  VIGOR:"Physical vigor is maintained by consistent sleep, nutrition, and exercise habits.",
+  BURNS:"Muscle tissue burns more calories at rest than fat tissue, boosting metabolism.",
+  TENSE:"Chronic muscle tension can lead to headaches, back pain, and poor circulation.",
+  RELAX:"Regular relaxation lowers blood pressure and improves immune system function.",
+  FOODS:"Whole foods rich in micronutrients support every system in the human body.",
+  GAINS:"Muscle gains from resistance training improve bone density and metabolic rate.",
+  RESET:"A digital detox and screen break can reset your sleep cycle and reduce eye strain.",
+  WHOLE:"Eating whole grains instead of refined carbs lowers heart disease risk by 20%.",
+  PHASE:"Sleep cycles occur in phases; REM phase is critical for emotional regulation."
+};
+const KEYBOARD_ROWS = [
+  ['Q','W','E','R','T','Y','U','I','O','P'],
+  ['A','S','D','F','G','H','J','K','L'],
+  ['ENTER','Z','X','C','V','B','N','M','⌫']
+];
+let target, guesses, currentGuess, gameOver, wins;
+wins = parseInt(localStorage.getItem('wordleWins')||'0');
+document.getElementById('wins').textContent = wins;
+
+function init(){
+  target = WORDS[Math.floor(Math.random()*WORDS.length)];
+  guesses = [];
+  currentGuess = '';
+  gameOver = false;
+  buildGrid();
+  buildKeyboard();
+  document.getElementById('message').textContent = '';
+  document.getElementById('fact-box').style.display='none';
+  document.getElementById('play-again').style.display='none';
+}
+
+function buildGrid(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML='';
+  for(let r=0;r<6;r++){
+    const row = document.createElement('div');
+    row.className='tile-row';
+    row.id='row-'+r;
+    for(let c=0;c<5;c++){
+      const tile = document.createElement('div');
+      tile.className='tile';
+      tile.id=`t-${r}-${c}`;
+      row.appendChild(tile);
+    }
+    grid.appendChild(row);
+  }
+}
+
+function buildKeyboard(){
+  const kb = document.getElementById('keyboard');
+  kb.innerHTML='';
+  KEYBOARD_ROWS.forEach(row=>{
+    const div = document.createElement('div');
+    div.className='kb-row';
+    row.forEach(k=>{
+      const btn = document.createElement('button');
+      btn.className='key'+(k.length>1?' wide':'');
+      btn.textContent=k;
+      btn.id='key-'+k;
+      btn.addEventListener('click',()=>handleKey(k));
+      div.appendChild(btn);
+    });
+    kb.appendChild(div);
+  });
+}
+
+function updateCurrentRow(){
+  const row = guesses.length;
+  for(let c=0;c<5;c++){
+    const tile = document.getElementById(`t-${row}-${c}`);
+    tile.textContent = currentGuess[c]||'';
+    tile.className = 'tile'+(currentGuess[c]?' filled':'');
+  }
+}
+
+function handleKey(k){
+  if(gameOver) return;
+  if(k==='⌫'||k==='BACKSPACE'){
+    if(currentGuess.length>0) currentGuess=currentGuess.slice(0,-1);
+    updateCurrentRow();
+  } else if(k==='ENTER'){
+    submitGuess();
+  } else if(/^[A-Z]$/.test(k) && currentGuess.length<5){
+    currentGuess+=k;
+    updateCurrentRow();
+  }
+}
+
+function submitGuess(){
+  if(currentGuess.length<5){
+    showMsg('Need 5 letters!');
+    shakeRow(guesses.length);
+    return;
+  }
+  const row = guesses.length;
+  const result = evaluate(currentGuess, target);
+  guesses.push({word:currentGuess, result});
+  animateRow(row, currentGuess, result, ()=>{
+    updateKeyboard(currentGuess, result);
+    if(currentGuess===target){
+      wins++;
+      localStorage.setItem('wordleWins',wins);
+      document.getElementById('wins').textContent=wins;
+      showMsg('🎉 Excellent! You got it!');
+      showFact();
+      endGame();
+    } else if(guesses.length===6){
+      showMsg('The word was: '+target);
+      showFact();
+      endGame();
+    }
+    currentGuess='';
+  });
+}
+
+function evaluate(guess, target){
+  const result = Array(5).fill('absent');
+  const targetArr = target.split('');
+  const guessArr = guess.split('');
+  // first pass: correct
+  for(let i=0;i<5;i++){
+    if(guessArr[i]===targetArr[i]){result[i]='correct';targetArr[i]=null;guessArr[i]=null;}
+  }
+  // second pass: present
+  for(let i=0;i<5;i++){
+    if(guessArr[i]===null) continue;
+    const idx=targetArr.indexOf(guessArr[i]);
+    if(idx>=0){result[i]='present';targetArr[idx]=null;}
+  }
+  return result;
+}
+
+function animateRow(row, word, result, cb){
+  const delays = [0,100,200,300,400];
+  for(let c=0;c<5;c++){
+    const tile = document.getElementById(`t-${row}-${c}`);
+    const delay = delays[c];
+    setTimeout(()=>{
+      tile.style.animation='none';
+      tile.offsetHeight;
+      tile.style.animation='flip .5s ease forwards';
+      setTimeout(()=>{
+        tile.className='tile '+result[c];
+        tile.style.animation='';
+      },250);
+    },delay);
+  }
+  setTimeout(cb, 500+400);
+}
+
+function shakeRow(row){
+  for(let c=0;c<5;c++){
+    const tile=document.getElementById(`t-${row}-${c}`);
+    tile.style.animation='shake .4s ease';
+    setTimeout(()=>tile.style.animation='',400);
+  }
+}
+
+function updateKeyboard(word, result){
+  const priority = {correct:3,present:2,absent:1};
+  for(let i=0;i<5;i++){
+    const k = word[i];
+    const btn = document.getElementById('key-'+k);
+    if(!btn) continue;
+    const cur = btn.dataset.state||'';
+    const curP = priority[cur]||0;
+    if(priority[result[i]]>curP){
+      btn.dataset.state=result[i];
+      btn.className='key'+(k.length>1?' wide':'')+' '+result[i];
+    }
+  }
+}
+
+function showMsg(m){
+  const el=document.getElementById('message');
+  el.textContent=m;
+  setTimeout(()=>{if(el.textContent===m)el.textContent='';},2000);
+}
+
+function showFact(){
+  const fb=document.getElementById('fact-box');
+  fb.textContent = FACTS[target]||'Stay healthy and keep learning!';
+  fb.style.display='block';
+}
+
+function endGame(){
+  gameOver=true;
+  setTimeout(()=>{document.getElementById('play-again').style.display='block';},600);
+}
+
+document.addEventListener('keydown',e=>{
+  const k=e.key.toUpperCase();
+  if(k==='BACKSPACE'||k==='ENTER'||/^[A-Z]$/.test(k)) handleKey(k==='BACKSPACE'?'⌫':k);
+});
+document.getElementById('play-again').addEventListener('click',init);
+init();
+</script>
+</body>
+</html>

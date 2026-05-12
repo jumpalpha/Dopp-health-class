@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Flap – Health Class</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
+#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85}
+#back-btn:hover{opacity:1}
+#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(16px,3vw,22px);text-align:center}
+#score-display{font-family:'Cinzel',sans-serif;font-size:13px;color:#00E5A0;text-align:right;min-width:100px}
+#main{display:flex;flex-direction:column;align-items:center;padding:12px 10px 30px;width:100%;max-width:820px}
+canvas{display:block;border:2px solid rgba(255,215,0,0.2);border-radius:8px;max-width:100%;cursor:pointer}
+#overlay{position:fixed;inset:0;background:rgba(5,7,15,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+#overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,34px);margin-bottom:10px}
+#overlay .cause{font-size:15px;color:#FF3B5C;margin-bottom:14px;font-family:'Nunito'}
+#overlay p{font-family:'Nunito',sans-serif;font-size:17px;color:#fff;margin-bottom:4px}
+.best{font-size:14px!important;color:#00E5A0!important;margin-bottom:28px!important}
+#play-btn{background:#FFD700;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4)}
+#play-btn:hover{transform:scale(1.05)}
+#start-overlay{position:fixed;inset:0;background:rgba(5,7,15,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+#start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,5vw,30px);margin-bottom:12px}
+#start-overlay p{font-family:'Nunito';color:#aaa;font-size:14px;margin-bottom:6px;text-align:center;max-width:340px}
+#start-btn{margin-top:16px;background:#00E5A0;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(0,229,160,.4)}
+#start-btn:hover{transform:scale(1.05)}
+</style>
+</head>
+<body>
+<div id="header">
+  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <div id="game-title">Dopp Flap</div>
+  <div id="score-display">Pipes: <span id="score-val">0</span> | HP: <span id="hp-val">0</span></div>
+</div>
+<div id="main">
+  <canvas id="gameCanvas" width="480" height="580"></canvas>
+</div>
+
+<div id="start-overlay">
+  <h2>Dopp Flap</h2>
+  <p>Help the student navigate through junk food towers!</p>
+  <p style="color:#00E5A0">Collect health items for bonus points!</p>
+  <p style="color:#aaa;margin-top:4px">Click or Space to flap</p>
+  <button id="start-btn">Start Game</button>
+</div>
+<div id="overlay" style="display:none">
+  <h2>Oops!</h2>
+  <p class="cause" id="cause-text">Crashed into a burger tower!</p>
+  <p id="final-score">Pipes: 0</p>
+  <p id="final-hp">Health items: 0</p>
+  <p class="best" id="best-score">Best: 0 pipes</p>
+  <button id="play-btn">Play Again</button>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W=480, H=580;
+const GAP=160, PIPE_W=54, BIRD_R=18;
+const GRAVITY=0.38, JUMP=-7.2, PIPE_SPEED=2.4;
+
+const DEATH_MSGS=['Crashed into a burger tower!','Hit the fries pile!','Smashed into a soda stack!','Flew into a junk food wall!','Donut dodge that one!'];
+const HEALTH_ICONS=['💊','💧','🏃'];
+const HEALTH_LABELS=['Vitamin','Water','Exercise'];
+
+let px,py,vy,pipes,healthItems,score,hp,speed,animId,gameStarted,dead;
+let trail=[], flapAngle=0, armAngle=0, frameCount=0;
+let bgStars=[], buildings=[];
+
+function initStars(){
+  bgStars=[];
+  for(let i=0;i<60;i++) bgStars.push({x:Math.random()*W,y:Math.random()*H*0.7,r:Math.random()*1.5+0.3,a:Math.random()});
+}
+function initBuildings(){
+  buildings=[];
+  for(let i=0;i<14;i++) buildings.push({x:i*40,w:32,h:Math.random()*80+40,win:Math.random()>0.5});
+}
+
+function init(){
+  px=120; py=H/2; vy=0;
+  pipes=[]; healthItems=[];
+  score=0; hp=0; speed=PIPE_SPEED;
+  trail=[]; flapAngle=0; armAngle=0; frameCount=0;
+  dead=false; gameStarted=true;
+  document.getElementById('score-val').textContent='0';
+  document.getElementById('hp-val').textContent='0';
+  spawnPipe();
+}
+
+function spawnPipe(){
+  const gapY=Math.random()*(H-200-GAP)+100;
+  pipes.push({x:W+10,gapY,hit:false,passed:false,type:Math.floor(Math.random()*3)});
+  // maybe spawn health item in gap
+  if(Math.random()<0.6){
+    const idx=Math.floor(Math.random()*3);
+    healthItems.push({x:W+PIPE_W+60,y:gapY+GAP/2,emoji:HEALTH_ICONS[idx],label:HEALTH_LABELS[idx],collected:false,alpha:1});
+  }
+}
+
+// Skyline scroll offset
+let bgOff=0;
+
+function drawBg(){
+  // gradient sky
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'#05070F');
+  grad.addColorStop(0.7,'#0a0f1a');
+  grad.addColorStop(1,'#0d1220');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,W,H);
+
+  // stars
+  bgStars.forEach(s=>{
+    ctx.fillStyle=`rgba(255,255,255,${0.3+s.a*0.5})`;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+  });
+
+  // city skyline parallax
+  const off=(bgOff*0.3)%40;
+  ctx.fillStyle='rgba(20,25,45,0.9)';
+  buildings.forEach(b=>{
+    const bx=((b.x-off%40+40*14)%40*14)-20;
+    // actually tile them
+  });
+  // Simple tiled buildings
+  ctx.fillStyle='#0d1525';
+  for(let i=-1;i<Math.ceil(W/40)+1;i++){
+    const bx=((i*40-bgOff*0.3%40+40)%W)-(i===0?0:0);
+    const bxi=i*40-Math.floor(bgOff*0.3/40)*40+Math.floor(bgOff*0.3/40)*40%(40);
+  }
+  // Simplified: draw static-ish buildings
+  ctx.fillStyle='rgba(15,20,38,0.95)';
+  buildings.forEach((b,i)=>{
+    const bx=(b.x - bgOff*0.25 % (W+80) + W+80) % (W+80) - 40;
+    ctx.fillRect(bx,H-b.h,b.w,b.h);
+    if(b.win){
+      ctx.fillStyle='rgba(255,215,0,0.15)';
+      for(let wy=H-b.h+6;wy<H-10;wy+=14)
+        for(let wx=bx+4;wx<bx+b.w-4;wx+=10)
+          ctx.fillRect(wx,wy,6,8);
+      ctx.fillStyle='rgba(15,20,38,0.95)';
+    }
+  });
+  bgOff+=speed;
+}
+
+function drawJunkPipe(x,topH,bottomY,type){
+  // top pipe (junk food stacked downward)
+  const colors=['#8B2020','#6B3520','#7B1530'];
+  ctx.fillStyle=colors[type];
+  // main column
+  ctx.fillRect(x,0,PIPE_W,topH);
+  // cap
+  ctx.fillStyle='#FF3B5C';
+  ctx.fillRect(x-4,topH-20,PIPE_W+8,20);
+
+  // junk food decorations on top pipe
+  ctx.font='22px serif';ctx.textAlign='center';
+  if(topH>40) ctx.fillText(type===0?'🍔':type===1?'🍟':'🥤',x+PIPE_W/2,topH-28);
+  if(topH>80) ctx.fillText(type===0?'🍟':type===1?'🥤':'🍔',x+PIPE_W/2,topH-58);
+
+  // bottom pipe
+  ctx.fillStyle=colors[type];
+  ctx.fillRect(x,bottomY,PIPE_W,H-bottomY);
+  // cap
+  ctx.fillStyle='#FF3B5C';
+  ctx.fillRect(x-4,bottomY,PIPE_W+8,20);
+  // junk food
+  ctx.font='22px serif';
+  if(H-bottomY>40) ctx.fillText(type===0?'🥤':type===1?'🍔':'🍟',x+PIPE_W/2,bottomY+45);
+  if(H-bottomY>80) ctx.fillText(type===0?'🍔':type===1?'🍟':'🥤',x+PIPE_W/2,bottomY+75);
+}
+
+function drawPlayer(){
+  // trail
+  trail.forEach((t,i)=>{
+    const a=(i/trail.length)*0.18;
+    ctx.fillStyle=`rgba(255,215,0,${a})`;
+    ctx.beginPath();ctx.arc(t.x,t.y,BIRD_R*(i/trail.length)*0.7,0,Math.PI*2);ctx.fill();
+  });
+
+  const ax=px, ay=py;
+  // body
+  ctx.fillStyle='#FFD700';
+  ctx.beginPath();ctx.roundRect(ax-10,ay-5,20,24,5);ctx.fill();
+  // head
+  ctx.fillStyle='#FFD700';
+  ctx.beginPath();ctx.arc(ax,ay-12,12,0,Math.PI*2);ctx.fill();
+  // face
+  ctx.fillStyle='#05070F';
+  ctx.beginPath();ctx.arc(ax+4,ay-13,2.5,0,Math.PI*2);ctx.fill(); // eye
+  ctx.beginPath();ctx.arc(ax+3,ay-8,3,0,Math.PI,false);ctx.stroke(); // smile
+  // hair
+  ctx.fillStyle='#8B6914';
+  ctx.beginPath();ctx.arc(ax,ay-22,7,Math.PI,Math.PI*2);ctx.fill();
+
+  // arms flapping
+  const a1=Math.sin(armAngle)*0.5;
+  ctx.strokeStyle='#FFD700';ctx.lineWidth=4;ctx.lineCap='round';
+  // left arm
+  ctx.beginPath();ctx.moveTo(ax-10,ay+4);ctx.lineTo(ax-22,ay+4+Math.sin(armAngle+1)*8);ctx.stroke();
+  // right arm
+  ctx.beginPath();ctx.moveTo(ax+10,ay+4);ctx.lineTo(ax+22,ay+4+Math.sin(armAngle-1)*8);ctx.stroke();
+  // legs
+  ctx.beginPath();ctx.moveTo(ax-5,ay+19);ctx.lineTo(ax-5,ay+30);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax+5,ay+19);ctx.lineTo(ax+5,ay+30);ctx.stroke();
+}
+
+function drawHealthItems(){
+  healthItems.forEach(item=>{
+    if(item.collected) return;
+    ctx.globalAlpha=item.alpha;
+    ctx.fillStyle='rgba(0,229,160,0.2)';
+    ctx.beginPath();ctx.arc(item.x,item.y,16,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(0,229,160,0.5)';
+    ctx.lineWidth=2;ctx.strokeStyle='#00E5A0';
+    ctx.beginPath();ctx.arc(item.x,item.y,16,0,Math.PI*2);ctx.stroke();
+    ctx.font='18px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(item.emoji,item.x,item.y);
+    ctx.globalAlpha=1;
+  });
+}
+
+function drawHUD(){
+  ctx.fillStyle='rgba(5,7,15,0.6)';
+  ctx.fillRect(8,8,110,50);
+  ctx.strokeStyle='rgba(255,215,0,0.3)';ctx.lineWidth=1;
+  ctx.strokeRect(8,8,110,50);
+  ctx.font='bold 13px Cinzel';ctx.fillStyle='#FFD700';ctx.textAlign='left';
+  ctx.fillText('PIPES: '+score,16,28);
+  ctx.font='bold 12px Nunito';ctx.fillStyle='#00E5A0';
+  ctx.fillText('HEALTH: +'+hp,16,48);
+}
+
+function collides(bx,by,br,rx,ry,rw,rh){
+  return bx+br>rx && bx-br<rx+rw && by+br>ry && by-br<ry+rh;
+}
+
+let lastT=0;
+function gameLoop(ts){
+  if(dead) return;
+  animId=requestAnimationFrame(gameLoop);
+  const dt=Math.min(ts-lastT,50)/16.67; lastT=ts;
+  frameCount++;
+
+  vy+=GRAVITY*dt;
+  py+=vy*dt;
+  armAngle+=0.18*dt;
+
+  // trail
+  trail.push({x:px,y:py});
+  if(trail.length>18) trail.shift();
+
+  // spawn pipes
+  const lastPipe=pipes[pipes.length-1];
+  if(!lastPipe||lastPipe.x<W-200) spawnPipe();
+
+  // update pipes
+  pipes.forEach(p=>{ p.x-=speed*dt; });
+  healthItems.forEach(item=>{ item.x-=speed*dt; });
+  pipes=pipes.filter(p=>p.x>-PIPE_W-10);
+  healthItems=healthItems.filter(i=>i.x>-30);
+
+  // check pipe pass
+  pipes.forEach(p=>{
+    if(!p.passed && p.x+PIPE_W<px-BIRD_R){
+      p.passed=true; score++;
+      document.getElementById('score-val').textContent=score;
+      if(score%5===0) speed=Math.min(speed+0.3,5);
+    }
+  });
+
+  // check collisions
+  pipes.forEach(p=>{
+    const topH=p.gapY, bottomY=p.gapY+GAP;
+    if(collides(px,py,BIRD_R-2,p.x,0,PIPE_W,topH)||collides(px,py,BIRD_R-2,p.x,bottomY,PIPE_W,H-bottomY)){
+      const msgs=['Crashed into a burger tower!','Hit the fries pile!','Smashed into a soda stack!'];
+      endGame(msgs[p.type%msgs.length]);
+    }
+  });
+
+  // health items
+  healthItems.forEach(item=>{
+    if(!item.collected && Math.hypot(px-item.x,py-item.y)<BIRD_R+14){
+      item.collected=true; hp++;
+      document.getElementById('hp-val').textContent=hp;
+    }
+  });
+
+  // floor/ceiling
+  if(py-BIRD_R<0||py+BIRD_R>H){endGame('Flew out of bounds!');return;}
+
+  drawBg();
+  pipes.forEach(p=>drawJunkPipe(p.x,p.gapY,p.gapY+GAP,p.type));
+  drawHealthItems();
+  drawPlayer();
+  drawHUD();
+}
+
+function endGame(cause){
+  dead=true;
+  cancelAnimationFrame(animId);
+  const best=Math.max(score,parseInt(localStorage.getItem('flapBest')||'0'));
+  localStorage.setItem('flapBest',best);
+  document.getElementById('cause-text').textContent=cause||'Crashed!';
+  document.getElementById('final-score').textContent='Pipes passed: '+score;
+  document.getElementById('final-hp').textContent='Health items: +'+hp;
+  document.getElementById('best-score').textContent='Best: '+best+' pipes';
+  document.getElementById('overlay').style.display='flex';
+}
+
+function startGame(){
+  initStars(); initBuildings();
+  init(); bgOff=0; lastT=performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+function handleFlap(){
+  if(dead) return;
+  vy=JUMP;
+}
+
+canvas.addEventListener('click',handleFlap);
+canvas.addEventListener('touchstart',e=>{e.preventDefault();handleFlap();},{passive:false});
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();handleFlap();}});
+
+document.getElementById('start-btn').addEventListener('click',()=>{
+  document.getElementById('start-overlay').style.display='none';
+  startGame();
+});
+document.getElementById('play-btn').addEventListener('click',()=>{
+  document.getElementById('overlay').style.display='none';
+  startGame();
+});
+
+initStars(); initBuildings();
+// draw static start screen
+drawBg();
+ctx.font='bold 28px Cinzel Decorative';ctx.fillStyle='#FFD700';ctx.textAlign='center';
+ctx.fillText('Dopp Flap',W/2,H/2-20);
+ctx.font='16px Nunito';ctx.fillStyle='#aaa';
+ctx.fillText('Click Start to play!',W/2,H/2+20);
+</script>
+</body>
+</html>

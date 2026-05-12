@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp 2048 – Health Class</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
+#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85}
+#back-btn:hover{opacity:1}
+#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(16px,3vw,22px);text-align:center}
+#score-area{text-align:right;min-width:130px}
+.score-box{display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:6px;padding:4px 10px;margin-left:6px}
+.score-box .lbl{font-family:'Cinzel',sans-serif;font-size:9px;color:#aaa;display:block;text-transform:uppercase}
+.score-box .val{font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;color:#FFD700}
+#main{display:flex;flex-direction:column;align-items:center;padding:16px 10px 30px;width:100%;max-width:500px}
+#info-bar{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+#new-game-btn{background:rgba(255,215,0,0.15);color:#FFD700;font-family:'Cinzel',sans-serif;font-size:12px;padding:6px 14px;border:1px solid rgba(255,215,0,0.3);border-radius:6px;cursor:pointer}
+#new-game-btn:hover{background:rgba(255,215,0,0.25)}
+#tip-box{font-family:'Nunito',sans-serif;font-size:12px;color:#38BFFF;text-align:center;min-height:18px;margin-bottom:8px;opacity:0;transition:opacity .4s}
+#tip-box.show{opacity:1}
+#grid-container{position:relative;width:100%;max-width:440px;aspect-ratio:1/1;background:#0d1020;border-radius:12px;padding:10px;border:2px solid rgba(255,215,0,0.15)}
+#grid-bg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;height:100%}
+.cell-bg{background:rgba(255,255,255,0.04);border-radius:8px}
+#tiles-layer{position:absolute;inset:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;pointer-events:none}
+.tile{border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform 0.1s ease;padding:4px 2px;position:relative;overflow:hidden}
+.tile .t-emoji{font-size:clamp(18px,5vw,28px);line-height:1.1;filter:drop-shadow(0 0 4px rgba(0,0,0,0.5))}
+.tile .t-num{font-family:'Nunito',sans-serif;font-weight:800;font-size:clamp(10px,3vw,15px);opacity:0.9;line-height:1.1}
+.tile .t-lbl{font-family:'Nunito',sans-serif;font-weight:600;font-size:clamp(7px,1.8vw,10px);opacity:0.8;line-height:1.2;text-align:center;padding:0 2px}
+.tile.new-tile{animation:popIn 0.18s ease forwards}
+.tile.merge-tile{animation:mergePop 0.22s ease forwards}
+@keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+@keyframes mergePop{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
+#win-overlay{position:fixed;inset:0;background:rgba(5,7,15,.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20}
+#win-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,5vw,32px);margin-bottom:10px;text-shadow:0 0 30px rgba(255,215,0,0.8)}
+#win-overlay p{font-family:'Nunito',sans-serif;font-size:16px;color:#fff;margin-bottom:20px;text-align:center;max-width:320px}
+#canvas-confetti{position:fixed;inset:0;pointer-events:none;z-index:19}
+#gameover-overlay{position:fixed;inset:0;background:rgba(5,7,15,.88);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20}
+#gameover-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FF3B5C;font-size:clamp(20px,5vw,30px);margin-bottom:12px}
+.ol-p{font-family:'Nunito';font-size:16px;color:#fff;margin-bottom:4px}
+.ol-best{font-size:14px;color:#00E5A0;margin-bottom:24px}
+.ol-btn{background:#FFD700;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:11px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 16px rgba(255,215,0,.35);margin:5px}
+.ol-btn:hover{transform:scale(1.05)}
+.ol-btn.green{background:#00E5A0}
+#start-overlay{position:fixed;inset:0;background:rgba(5,7,15,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+#start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,5vw,30px);margin-bottom:10px}
+#start-overlay p{font-family:'Nunito';color:#aaa;font-size:14px;margin-bottom:6px;text-align:center;max-width:340px}
+#start-game-btn{margin-top:18px;background:#00E5A0;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(0,229,160,.4)}
+</style>
+</head>
+<body>
+<div id="header">
+  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <div id="game-title">Dopp 2048</div>
+  <div id="score-area">
+    <div class="score-box"><span class="lbl">Score</span><span class="val" id="score-val">0</span></div>
+    <div class="score-box"><span class="lbl">Best</span><span class="val" id="best-val">0</span></div>
+  </div>
+</div>
+<div id="main">
+  <div id="info-bar">
+    <span style="font-family:'Nunito';font-size:12px;color:#666">Combine tiles → reach 🏆 Peak Health!</span>
+    <button id="new-game-btn">New Game</button>
+  </div>
+  <div id="tip-box"></div>
+  <div id="grid-container">
+    <div id="grid-bg">
+      <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+      <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+      <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+      <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+    </div>
+    <div id="tiles-layer"></div>
+  </div>
+  <p style="font-family:'Nunito';font-size:12px;color:#444;margin-top:14px;text-align:center">Arrow keys or swipe to play</p>
+</div>
+
+<canvas id="canvas-confetti" width="0" height="0"></canvas>
+
+<div id="start-overlay">
+  <h2>Dopp 2048</h2>
+  <p>Slide tiles to combine them and build your health!</p>
+  <p style="color:#38BFFF">Reach 🏆 2048 = Peak Health!</p>
+  <p style="color:#aaa;margin-top:4px">Arrow keys or swipe to move</p>
+  <button id="start-game-btn">Start Game</button>
+</div>
+
+<div id="win-overlay">
+  <h2>🏆 Peak Health!</h2>
+  <p>You reached 2048! You are a Wellness Champion!</p>
+  <button class="ol-btn green" id="continue-btn">Keep Playing</button>
+  <button class="ol-btn" id="win-new-btn">New Game</button>
+</div>
+
+<div id="gameover-overlay">
+  <h2>Game Over</h2>
+  <p class="ol-p" id="go-score">Score: 0</p>
+  <p class="ol-best" id="go-best">Best: 0</p>
+  <button class="ol-btn" id="go-new-btn">Play Again</button>
+</div>
+
+<script>
+const TILE_DATA={
+  2:  {emoji:'😴',label:'Nap',        bg:['#1a2035','#242840']},
+  4:  {emoji:'🚶',label:'Walk',       bg:['#1c2e28','#243828']},
+  8:  {emoji:'🥗',label:'Salad',      bg:['#1a3020','#204020']},
+  16: {emoji:'💧',label:'Hydrated',   bg:['#142840','#183860']},
+  32: {emoji:'🏃',label:'Jog',        bg:['#2a2020','#402818']},
+  64: {emoji:'🥦',label:'Veggie Day', bg:['#153020','#1c4828']},
+  128:{emoji:'🏋️',label:'Workout',   bg:['#301828','#4a2035']},
+  256:{emoji:'🧘',label:'Zen Mode',   bg:['#182838','#204860']},
+  512:{emoji:'💪',label:'Athlete',    bg:['#302010','#504018']},
+  1024:{emoji:'🌟',label:'Wellness Pro',bg:['#382808','#604010']},
+  2048:{emoji:'🏆',label:'Peak Health!',bg:['#403000','#705000']},
+};
+
+const TILE_TEXT_COLOR={
+  2:'#8899cc',4:'#66bb88',8:'#88dd88',16:'#66aaff',32:'#ffaa66',
+  64:'#88ffaa',128:'#ff88cc',256:'#88ccff',512:'#ffcc44',1024:'#ffdd66',2048:'#FFD700'
+};
+
+const MERGE_TIPS={
+  4:'Walking just 30 min/day improves heart health!',
+  8:'Salads full of fiber keep your gut happy!',
+  16:'Drinking water boosts focus and energy!',
+  32:'Jogging releases endorphins — feel great!',
+  64:'Vegetables reduce risk of chronic disease!',
+  128:'Strength training builds bone density!',
+  256:'Mindfulness reduces stress and anxiety!',
+  512:'Athletes sleep 9+ hours for recovery!',
+  1024:'Wellness pros balance all 5 health pillars!',
+  2048:'You have reached PEAK HEALTH! Amazing!'
+};
+
+const GRID=4;
+let board, score, bestScore, wonBefore, won2048, animId;
+
+function newBoard(){return Array.from({length:GRID},()=>Array(GRID).fill(0));}
+
+function addTile(b){
+  const empty=[];
+  b.forEach((r,ri)=>r.forEach((v,ci)=>{if(!v)empty.push([ri,ci]);}));
+  if(!empty.length) return false;
+  const [r,c]=empty[Math.floor(Math.random()*empty.length)];
+  b[r][c]=Math.random()<0.85?2:4;
+  return true;
+}
+
+function initGame(){
+  board=newBoard();
+  score=0; wonBefore=false; won2048=false;
+  addTile(board); addTile(board);
+  render();
+  updateScoreUI();
+}
+
+function updateScoreUI(){
+  document.getElementById('score-val').textContent=score;
+  bestScore=Math.max(score,parseInt(localStorage.getItem('2048best')||'0'));
+  localStorage.setItem('2048best',bestScore);
+  document.getElementById('best-val').textContent=bestScore;
+}
+
+function compress(row){
+  const nz=row.filter(v=>v);
+  const res=[];
+  let i=0,merged=0;
+  while(i<nz.length){
+    if(i+1<nz.length&&nz[i]===nz[i+1]){
+      const val=nz[i]*2;
+      res.push(val);
+      score+=val;
+      merged=val;
+      i+=2;
+    } else { res.push(nz[i]); i++; }
+  }
+  while(res.length<GRID) res.push(0);
+  return {row:res,merged};
+}
+
+function move(dir){
+  let changed=false, mergedVal=0;
+  const b=board.map(r=>[...r]);
+
+  function processRow(row){
+    const r=compress(row);
+    if(r.merged) mergedVal=Math.max(mergedVal,r.merged);
+    return r.row;
+  }
+
+  if(dir==='left'){
+    for(let r=0;r<GRID;r++){
+      const orig=[...b[r]];
+      b[r]=processRow(b[r]);
+      if(b[r].some((v,i)=>v!==orig[i])) changed=true;
+    }
+  } else if(dir==='right'){
+    for(let r=0;r<GRID;r++){
+      const orig=[...b[r]];
+      b[r]=processRow([...b[r]].reverse()).reverse();
+      if(b[r].some((v,i)=>v!==orig[i])) changed=true;
+    }
+  } else if(dir==='up'){
+    for(let c=0;c<GRID;c++){
+      const col=b.map(r=>r[c]);
+      const orig=[...col];
+      const res=processRow(col);
+      b.forEach((r,ri)=>r[c]=res[ri]);
+      if(res.some((v,i)=>v!==orig[i])) changed=true;
+    }
+  } else if(dir==='down'){
+    for(let c=0;c<GRID;c++){
+      const col=b.map(r=>r[c]);
+      const orig=[...col];
+      const res=processRow([...col].reverse()).reverse();
+      b.forEach((r,ri)=>r[c]=res[ri]);
+      if(res.some((v,i)=>v!==orig[i])) changed=true;
+    }
+  }
+
+  if(changed){
+    board=b;
+    addTile(board);
+    updateScoreUI();
+    render();
+    if(mergedVal&&MERGE_TIPS[mergedVal]) showTip(MERGE_TIPS[mergedVal]);
+    checkWin();
+    if(!canMove()) showGameOver();
+  }
+}
+
+function canMove(){
+  for(let r=0;r<GRID;r++)
+    for(let c=0;c<GRID;c++){
+      if(!board[r][c]) return true;
+      if(c+1<GRID&&board[r][c]===board[r][c+1]) return true;
+      if(r+1<GRID&&board[r][c]===board[r+1][c]) return true;
+    }
+  return false;
+}
+
+function checkWin(){
+  if(won2048) return;
+  for(let r=0;r<GRID;r++)
+    for(let c=0;c<GRID;c++)
+      if(board[r][c]===2048){
+        won2048=true;
+        if(!wonBefore){wonBefore=true;showWin();}
+        return;
+      }
+}
+
+function showTip(msg){
+  const box=document.getElementById('tip-box');
+  box.textContent=msg;
+  box.classList.remove('show');
+  void box.offsetWidth;
+  box.classList.add('show');
+  clearTimeout(box._t);
+  box._t=setTimeout(()=>box.classList.remove('show'),3800);
+}
+
+function render(){
+  const layer=document.getElementById('tiles-layer');
+  // Remove old tiles
+  layer.innerHTML='';
+  for(let r=0;r<GRID;r++){
+    for(let c=0;c<GRID;c++){
+      const v=board[r][c];
+      if(!v) continue;
+      const td=TILE_DATA[Math.min(v,2048)]||TILE_DATA[2048];
+      const tc=TILE_TEXT_COLOR[Math.min(v,2048)]||'#FFD700';
+      const tile=document.createElement('div');
+      tile.className='tile new-tile';
+      // Position using grid
+      tile.style.gridColumn=(c+1);
+      tile.style.gridRow=(r+1);
+      // Background
+      const bg=td.bg;
+      tile.style.background=`linear-gradient(135deg,${bg[0]},${bg[1]})`;
+      if(v>=128){
+        tile.style.boxShadow=`0 0 12px ${bg[1]}88`;
+      }
+      tile.style.color=tc;
+      tile.innerHTML=`<span class="t-emoji">${td.emoji}</span><span class="t-num">${v}</span><span class="t-lbl">${td.label}</span>`;
+      layer.appendChild(tile);
+    }
+  }
+}
+
+function showWin(){
+  document.getElementById('win-overlay').style.display='flex';
+  startConfetti();
+}
+
+function showGameOver(){
+  document.getElementById('go-score').textContent='Score: '+score;
+  document.getElementById('go-best').textContent='Best: '+bestScore;
+  document.getElementById('gameover-overlay').style.display='flex';
+}
+
+// Confetti
+const confCanvas=document.getElementById('canvas-confetti');
+const confCtx=confCanvas.getContext('2d');
+let particles=[], confRunning=false;
+
+function startConfetti(){
+  confCanvas.width=window.innerWidth;
+  confCanvas.height=window.innerHeight;
+  particles=[];
+  const colors=['#FFD700','#00E5A0','#38BFFF','#FF3B5C','#a855f7','#ff69b4'];
+  for(let i=0;i<120;i++){
+    particles.push({
+      x:Math.random()*confCanvas.width,
+      y:Math.random()*confCanvas.height-confCanvas.height,
+      w:Math.random()*10+4,h:Math.random()*6+3,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      vx:(Math.random()-0.5)*3,vy:Math.random()*3+2,
+      rot:Math.random()*Math.PI*2,vr:(Math.random()-0.5)*0.2,
+      life:1
+    });
+  }
+  confRunning=true;
+  animateConfetti();
+}
+
+function animateConfetti(){
+  if(!confRunning) return;
+  confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
+  let alive=false;
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
+    if(p.y<confCanvas.height){alive=true;}
+    confCtx.save();
+    confCtx.translate(p.x,p.y);
+    confCtx.rotate(p.rot);
+    confCtx.fillStyle=p.color;
+    confCtx.globalAlpha=Math.min(1,(confCanvas.height-p.y)/200);
+    confCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    confCtx.restore();
+  });
+  if(alive) requestAnimationFrame(animateConfetti);
+  else{confRunning=false;confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);}
+}
+
+// Controls
+document.addEventListener('keydown',e=>{
+  const map={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'};
+  if(map[e.key]){e.preventDefault();move(map[e.key]);}
+});
+
+// Touch swipe
+let tx0,ty0;
+document.getElementById('grid-container').addEventListener('touchstart',e=>{
+  tx0=e.touches[0].clientX; ty0=e.touches[0].clientY;
+},{passive:true});
+document.getElementById('grid-container').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
+  const adx=Math.abs(dx), ady=Math.abs(dy);
+  if(adx<10&&ady<10) return;
+  if(adx>ady) move(dx>0?'right':'left');
+  else move(dy>0?'down':'up');
+},{passive:true});
+
+document.getElementById('new-game-btn').addEventListener('click',()=>{
+  document.getElementById('gameover-overlay').style.display='none';
+  document.getElementById('win-overlay').style.display='none';
+  confRunning=false;
+  initGame();
+});
+document.getElementById('start-game-btn').addEventListener('click',()=>{
+  document.getElementById('start-overlay').style.display='none';
+  initGame();
+});
+document.getElementById('continue-btn').addEventListener('click',()=>{
+  document.getElementById('win-overlay').style.display='none';
+  confRunning=false;
+});
+document.getElementById('win-new-btn').addEventListener('click',()=>{
+  document.getElementById('win-overlay').style.display='none';
+  confRunning=false;
+  initGame();
+});
+document.getElementById('go-new-btn').addEventListener('click',()=>{
+  document.getElementById('gameover-overlay').style.display='none';
+  initGame();
+});
+
+// Load best
+bestScore=parseInt(localStorage.getItem('2048best')||'0');
+document.getElementById('best-val').textContent=bestScore;
+// Show initial grid behind start overlay
+board=newBoard();
+addTile(board);addTile(board);
+render();
+</script>
+</body>
+</html>
