@@ -38,11 +38,11 @@ body { font-size: 16px; }
 /* ── ENHANCED BACKGROUND ── */
 #stars {
   background:
-    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(56,191,255,0.18) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 45% at 85% 85%, rgba(0,229,160,0.1) 0%, transparent 60%),
-    radial-gradient(ellipse 65% 50% at 15% 65%, rgba(255,59,92,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 35% at 70% 20%, rgba(168,85,247,0.07) 0%, transparent 55%),
-    #05070F !important;
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(56,191,255,0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 45% at 85% 85%, rgba(0,229,160,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 50% at 15% 65%, rgba(255,59,92,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 70% 20%, rgba(168,85,247,0.05) 0%, transparent 55%),
+    #FDFAF2 !important;
 }
 
 #stars::after {
@@ -72,10 +72,10 @@ body { font-size: 16px; }
   transition: all .18s !important;
 }
 .nav-link:hover {
-  color: #F0F4FF !important;
-  border-color: rgba(255,255,255,0.28) !important;
-  background: rgba(255,255,255,0.07) !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
+  color: #1C1A2E !important;
+  border-color: rgba(28,26,46,0.28) !important;
+  background: rgba(28,26,46,0.06) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1) !important;
 }
 .nav-link.active {
   color: #FFD700 !important;
@@ -318,7 +318,7 @@ body { font-size: 16px; }
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 7px; }
-::-webkit-scrollbar-track { background: #05070F; }
+::-webkit-scrollbar-track { background: #F0ECD8; }
 ::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.18); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,215,0,0.38); }
 
