@@ -36,7 +36,7 @@ canvas{border-radius:16px;max-width:100%;touch-action:none;display:block}
 </header>
 <main>
   <canvas id="gc" width="660" height="450"></canvas>
-  <div class="instructions" id="instrLabel">Phase 1: Mash SPACE rapidly to build speed! Phase 2: Hit SPACE at the right moment to toss!</div>
+  <div class="instructions" id="instrLabel">Phase 1: Mash SPACE rapidly to build speed! Phase 2: Hit ENTER at the right moment to toss!</div>
   <div class="tip-box">
     <div class="tip-label">HEALTH TIP</div>
     <div class="tip-text">Whole-body power movements strengthen muscles from feet to fingertips.</div>
@@ -347,7 +347,7 @@ function drawMomentumBar() {
   ctx.fillStyle = 'rgba(255,215,0,0.8)';
   ctx.textAlign = 'left';
   ctx.font = "12px 'Cinzel', serif";
-  ctx.fillText('MASH SPACE!', bx, by + bh + 18);
+  ctx.fillText('MASH SPACE!  (mobile: tap left)', bx, by + bh + 18);
 }
 
 function drawPlantWindow() {
@@ -360,7 +360,7 @@ function drawPlantWindow() {
   ctx.font = "bold 11px 'Cinzel', serif";
   ctx.fillStyle = '#FFD700';
   ctx.textAlign = 'left';
-  ctx.fillText('TOSS TIMING — Hit SPACE!', bx, by - 6);
+  ctx.fillText('TOSS TIMING — Hit ENTER!', bx, by - 6);
   // Background bar
   ctx.fillStyle = 'rgba(255,59,92,0.25)';
   ctx.beginPath();
@@ -398,6 +398,16 @@ function drawPlantWindow() {
   ctx.fillText('GOOD', bx + bw * ((GOOD_ZONE_START + GOOD_ZONE_END) / 2), by + 14);
   ctx.fillStyle = '#FFD700';
   ctx.fillText('PERFECT', bx + bw * ((PERFECT_ZONE_START + PERFECT_ZONE_END) / 2), by + 14);
+  // Mobile tap-zone hint
+  ctx.fillStyle = 'rgba(255,215,0,0.18)';
+  ctx.beginPath();
+  ctx.roundRect(W / 2 + 10, GROUND_Y - 80, W / 2 - 20, 50, 10);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,215,0,0.7)';
+  ctx.font = "bold 11px 'Cinzel', serif";
+  ctx.textAlign = 'center';
+  ctx.fillText('TAP HERE → FLIP', W * 3 / 4, GROUND_Y - 49);
+
   // If window expired, auto-toss
   if (prog >= 1 && !plantPressed) {
     plantPressed = true;
@@ -513,7 +523,7 @@ function startRun() {
   doppX = 80;
   runFrame = 0;
   momentumDecay = false;
-  document.getElementById('instrLabel').textContent = 'Mash SPACE rapidly! Build momentum to at least 60% then it auto-advances!';
+  document.getElementById('instrLabel').textContent = 'Mash SPACE rapidly to build speed! When the timing bar appears, hit ENTER in the gold zone!';
   requestAnimationFrame(gameLoop);
 }
 
@@ -534,7 +544,7 @@ function startPlantWindow() {
   plantWindowStart = Date.now();
   plantPressed = false;
   plantMomentum = momentum;
-  document.getElementById('instrLabel').textContent = 'Hit SPACE in the gold zone for a PERFECT toss!';
+  document.getElementById('instrLabel').textContent = 'Hit ENTER in the gold zone for a PERFECT toss! (Mobile: tap right side)';
 }
 
 function pressToss() {
@@ -708,7 +718,7 @@ function gameLoop(ts) {
           momentum = 0;
           doppX = 80;
           runFrame = 0;
-          document.getElementById('instrLabel').textContent = 'Press SPACE to begin next attempt!';
+          document.getElementById('instrLabel').textContent = 'Press SPACE to begin next attempt! Then ENTER to toss.';
           requestAnimationFrame(gameLoop);
         }
       }, 1800);
@@ -723,10 +733,11 @@ function gameLoop(ts) {
     ctx.font = "18px 'Cinzel', serif";
     ctx.fillStyle = 'rgba(255,215,0,0.9)';
     ctx.textAlign = 'center';
-    ctx.fillText('Press SPACE to start your run!', W / 2, H / 2 + 30);
+    ctx.fillText('Press SPACE to start your run!', W / 2, H / 2 + 20);
     ctx.font = "13px 'Nunito', sans-serif";
     ctx.fillStyle = 'rgba(240,244,255,0.6)';
-    ctx.fillText('Attempt ' + (attempt + 1) + ' of ' + maxAttempts, W / 2, H / 2 + 55);
+    ctx.fillText('Then press ENTER to flip — aim for 12 o\'clock!', W / 2, H / 2 + 45);
+    ctx.fillText('Attempt ' + (attempt + 1) + ' of ' + maxAttempts, W / 2, H / 2 + 65);
   } else if (phase === 'result') {
     drawDopp(doppX, false, runFrame);
     if (showClock) {
@@ -779,7 +790,7 @@ function restartGame() {
   document.getElementById('resultScreen').style.display = 'none';
   canvas.style.display = 'block';
   document.getElementById('instrLabel').style.display = 'block';
-  document.getElementById('instrLabel').textContent = 'Press SPACE to begin your run!';
+  document.getElementById('instrLabel').textContent = 'Press SPACE to begin your run! Then ENTER to flip.';
   requestAnimationFrame(gameLoop);
 }
 
@@ -789,10 +800,14 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     if (phase === 'run') {
       doMash();
-    } else if (phase === 'plant_window') {
-      pressToss();
     } else if (phase === 'ready') {
       startRun();
+    }
+  }
+  if (e.code === 'Enter') {
+    e.preventDefault();
+    if (phase === 'plant_window') {
+      pressToss();
     }
   }
   if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyA' || e.code === 'KeyD') {
@@ -800,21 +815,36 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Click: left half = speed/start, right half = flip
 canvas.addEventListener('click', (e) => {
-  if (phase === 'run') {
-    doMash();
-  } else if (phase === 'plant_window') {
-    pressToss();
-  } else if (phase === 'ready') {
+  const rect = canvas.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const isRightHalf = clickX > rect.width / 2;
+  if (phase === 'ready') {
     startRun();
+  } else if (phase === 'run' && !isRightHalf) {
+    doMash();
+  } else if (phase === 'plant_window' && isRightHalf) {
+    pressToss();
+  } else if (phase === 'run') {
+    doMash(); // tap anywhere during run still works
   }
 });
 
+// Touch: left side = speed, right side = flip
 canvas.addEventListener('touchstart', (e) => {
   e.preventDefault();
-  if (phase === 'run') doMash();
-  else if (phase === 'plant_window') pressToss();
-  else if (phase === 'ready') startRun();
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.changedTouches[0];
+  const touchX = touch.clientX - rect.left;
+  const isRightHalf = touchX > rect.width / 2;
+  if (phase === 'ready') {
+    startRun();
+  } else if (phase === 'run') {
+    doMash();
+  } else if (phase === 'plant_window' && isRightHalf) {
+    pressToss();
+  }
 }, {passive: false});
 
 // Initial draw
@@ -837,10 +867,11 @@ for (let i = 0; i < 3; i++) {
 ctx.font = "18px 'Cinzel', serif";
 ctx.fillStyle = 'rgba(255,215,0,0.9)';
 ctx.textAlign = 'center';
-ctx.fillText('Press SPACE or Tap to begin!', W / 2, H / 2 + 30);
+ctx.fillText('Press SPACE to run · ENTER to flip!', W / 2, H / 2 + 20);
 ctx.font = "13px 'Nunito', sans-serif";
 ctx.fillStyle = 'rgba(240,244,255,0.6)';
-ctx.fillText('3 attempts — aim for 12 o\'clock!', W / 2, H / 2 + 55);
+ctx.fillText('Mobile: tap left = speed · tap right = flip', W / 2, H / 2 + 45);
+ctx.fillText('3 attempts — aim for 12 o\'clock!', W / 2, H / 2 + 65);
 </script>
 </body>
 </html>
