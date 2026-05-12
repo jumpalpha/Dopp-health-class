@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════
    LEGEND OF WELLNESS — Chapter Read-Aloud
-   Uses Web Speech API (SpeechSynthesis) — no cost, no key
+   Uses PDF.js (Mozilla) to extract PDF text, then
+   Web Speech API (SpeechSynthesis) to speak it — no cost, no key
    ═══════════════════════════════════════════════════════ */
 (function () {
-  if (!window.speechSynthesis) return; // browser not supported
+  if (!window.speechSynthesis) return;
 
   // ── STYLES ─────────────────────────────────────────────
   const style = document.createElement('style');
@@ -51,12 +52,14 @@
     }
     .rb-speed-btn:hover { border-color: rgba(255,215,0,0.3); color: #FFD700; }
     .rb-speed-btn.sel { border-color: rgba(255,215,0,0.5); color: #FFD700; background: rgba(255,215,0,0.08); }
-    .reader-highlight {
-      background: rgba(255,215,0,0.12) !important;
-      border-radius: 4px;
-      outline: 2px solid rgba(255,215,0,0.3);
-      transition: background .2s;
+    #rb-source-toggle {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(240,244,255,0.5); border-radius: 6px; padding: 4px 9px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      font-family: 'Nunito', sans-serif; transition: all .15s; white-space: nowrap;
     }
+    #rb-source-toggle:hover { border-color: rgba(255,215,0,0.3); color: #FFD700; }
+    #rb-source-toggle.pdf-mode { border-color: rgba(255,215,0,0.4); color: #FFD700; background: rgba(255,215,0,0.08); }
     @media(max-width:600px) {
       #reader-bar { padding: 8px 12px; gap: 6px; }
       #rb-progress { display: none; }
@@ -83,33 +86,80 @@
     <button class="rb-speed-btn sel" data-rate="1">1×</button>
     <button class="rb-speed-btn" data-rate="1.25">1.25×</button>
     <button class="rb-speed-btn" data-rate="1.5">1.5×</button>
+    <button id="rb-source-toggle" title="Switch reading source">📄 PDF</button>
     <button class="rb-btn" id="rb-close" style="margin-left:auto">✕ Close</button>
   `;
   document.body.appendChild(bar);
 
   // ── STATE ──────────────────────────────────────────────
-  let segments = [];
-  let current  = 0;
-  let rate     = 1;
-  let paused   = false;
-  let activeEl = null;
+  let sentences  = [];   // flat string array for PDF mode
+  let segments   = [];   // {el, text} array for page mode
+  let current    = 0;
+  let rate       = 1;
+  let paused     = false;
+  let pdfMode    = true; // default: read PDF
+  let pdfLoaded  = false;
+  let pdfLoading = false;
 
-  // ── COLLECT READABLE SEGMENTS ──────────────────────────
+  // ── DETECT PDF ON PAGE ─────────────────────────────────
+  function detectPdfUrl() {
+    const card = document.querySelector('a.pdf-card[href$=".pdf"]');
+    return card ? card.getAttribute('href') : null;
+  }
+
+  const pdfUrl = detectPdfUrl();
+  const srcBtn = document.getElementById('rb-source-toggle');
+
+  // If no PDF on page, default to page mode
+  if (!pdfUrl) {
+    pdfMode = false;
+    srcBtn.style.display = 'none';
+  } else {
+    srcBtn.classList.add('pdf-mode');
+    srcBtn.textContent = '📄 PDF';
+  }
+
+  // ── LOAD PDF.JS ────────────────────────────────────────
+  function loadPdfJs(cb) {
+    if (window.pdfjsLib) { cb(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+    s.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      cb();
+    };
+    s.onerror = () => {
+      pdfMode = false;
+      document.getElementById('rb-progress').textContent = 'PDF library failed to load. Switching to page mode.';
+      setTimeout(startReading, 1200);
+    };
+    document.head.appendChild(s);
+  }
+
+  // ── EXTRACT TEXT FROM PDF ──────────────────────────────
+  async function extractPdfText(url) {
+    const pdf = await window.pdfjsLib.getDocument(url).promise;
+    const parts = [];
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(i => i.str).join(' ');
+      parts.push(pageText);
+    }
+    // Split into natural sentences for smoother playback
+    const full = parts.join(' ').replace(/\s+/g, ' ').trim();
+    return full.match(/[^.!?]+[.!?]+/g) || [full];
+  }
+
+  // ── COLLECT PAGE SEGMENTS (fallback) ──────────────────
   function collectSegments() {
     const out = [];
     const selectors = [
-      '.ch-sub',
-      '.sec-title',
-      '.act-title',
-      '.act-desc',
-      '.pdf-title',
-      '.step-text',
-      '.vocab-term',
-      '.vocab-def',
-      '.vc-title',
-      '.vc-desc',
+      '.ch-sub', '.sec-title', '.act-title', '.act-desc',
+      '.pdf-title', '.step-text', '.vocab-term', '.vocab-def',
+      '.vc-title', '.vc-desc',
     ];
-    // Walk DOM in order to preserve page flow
     document.querySelectorAll(selectors.join(',')).forEach(el => {
       const text = el.innerText.trim();
       if (text.length > 3) out.push({ el, text });
@@ -117,22 +167,36 @@
     return out;
   }
 
-  // ── SPEAK ──────────────────────────────────────────────
+  // ── SPEAK ONE SENTENCE (PDF mode) ─────────────────────
+  function speakSentence(index) {
+    if (index >= sentences.length) { stopReading(); return; }
+    current = index;
+    const text = sentences[index].trim();
+    if (!text) { speakSentence(index + 1); return; }
+
+    const pct = Math.round((index / sentences.length) * 100);
+    document.getElementById('rb-progress').textContent =
+      `📄 ${index + 1} / ${sentences.length}  (${pct}%)  —  ${text.substring(0, 55)}${text.length > 55 ? '…' : ''}`;
+
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = rate;
+    utt.onend = () => { if (!paused) speakSentence(index + 1); };
+    utt.onerror = () => speakSentence(index + 1);
+    window.speechSynthesis.speak(utt);
+  }
+
+  // ── SPEAK ONE SEGMENT (page mode) ─────────────────────
+  let activeEl = null;
   function speakSegment(index) {
     if (index >= segments.length) { stopReading(); return; }
     current = index;
     const { el, text } = segments[index];
-
-    // Highlight
     if (activeEl) activeEl.classList.remove('reader-highlight');
     activeEl = el;
     el.classList.add('reader-highlight');
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    // Progress
     document.getElementById('rb-progress').textContent =
-      `${index + 1} / ${segments.length}  —  ${text.substring(0, 60)}${text.length > 60 ? '…' : ''}`;
-
+      `📝 ${index + 1} / ${segments.length}  —  ${text.substring(0, 60)}${text.length > 60 ? '…' : ''}`;
     const utt = new SpeechSynthesisUtterance(text);
     utt.rate = rate;
     utt.onend = () => { if (!paused) speakSegment(index + 1); };
@@ -140,16 +204,47 @@
     window.speechSynthesis.speak(utt);
   }
 
+  // ── START ──────────────────────────────────────────────
   function startReading() {
     window.speechSynthesis.cancel();
     paused = false;
-    segments = collectSegments();
-    if (!segments.length) {
-      document.getElementById('rb-progress').textContent = 'No readable content found on this page.';
-      return;
+
+    if (pdfMode && pdfUrl) {
+      if (pdfLoaded) {
+        setButtons('playing');
+        speakSentence(current);
+        return;
+      }
+      if (pdfLoading) return;
+      pdfLoading = true;
+      document.getElementById('rb-progress').textContent = '⏳ Loading PDF…';
+      document.getElementById('rb-play').disabled = true;
+
+      loadPdfJs(async () => {
+        try {
+          sentences = await extractPdfText(pdfUrl);
+          pdfLoaded = true;
+          current = 0;
+          setButtons('playing');
+          speakSentence(0);
+        } catch (e) {
+          pdfLoading = false;
+          document.getElementById('rb-progress').textContent = 'Could not read PDF. Switching to page mode.';
+          pdfMode = false;
+          srcBtn.classList.remove('pdf-mode');
+          srcBtn.textContent = '📝 Page';
+          setTimeout(startReading, 1200);
+        }
+      });
+    } else {
+      segments = collectSegments();
+      if (!segments.length) {
+        document.getElementById('rb-progress').textContent = 'No readable content found on this page.';
+        return;
+      }
+      setButtons('playing');
+      speakSegment(current);
     }
-    setButtons('playing');
-    speakSegment(current);
   }
 
   function pauseReading() {
@@ -216,6 +311,20 @@
   document.getElementById('rb-pause').addEventListener('click', pauseReading);
   document.getElementById('rb-stop').addEventListener('click', stopReading);
 
+  srcBtn.addEventListener('click', () => {
+    if (!pdfUrl) return;
+    stopReading();
+    current = 0;
+    pdfMode = !pdfMode;
+    if (pdfMode) {
+      srcBtn.classList.add('pdf-mode');
+      srcBtn.textContent = '📄 PDF';
+    } else {
+      srcBtn.classList.remove('pdf-mode');
+      srcBtn.textContent = '📝 Page';
+    }
+  });
+
   bar.querySelectorAll('.rb-speed-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       bar.querySelectorAll('.rb-speed-btn').forEach(b => b.classList.remove('sel'));
@@ -223,11 +332,11 @@
       rate = parseFloat(btn.dataset.rate);
       if (window.speechSynthesis.speaking && !paused) {
         window.speechSynthesis.cancel();
-        speakSegment(current);
+        if (pdfMode) speakSentence(current);
+        else speakSegment(current);
       }
     });
   });
 
-  // Stop speech if user navigates away
   window.addEventListener('beforeunload', () => window.speechSynthesis.cancel());
 })();
