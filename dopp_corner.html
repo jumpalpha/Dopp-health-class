@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>😤 Dopp's Corner — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#F0F4FF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(5,7,15,0.95);border-bottom:1px solid rgba(255,59,92,0.2);flex-shrink:0}
+.back-btn{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
+.hdr-title{font-family:'Cinzel Decorative',serif;font-size:18px;color:#FFD700}
+.hdr-right{font-family:'Cinzel',serif;font-size:13px;color:#F0F4FF;text-align:right;min-width:130px}
+#wrap{position:relative;width:100%;max-width:660px;flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 12px 6px}
+canvas{display:block;border-radius:14px;border:1px solid rgba(255,59,92,0.15)}
+#msg{height:34px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(255,200,100,0.85);text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <div class="hdr-title">😤 Dopp's Corner</div>
+  <div class="hdr-right" id="hdr-right">Students: 10</div>
+</header>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="msg">Dodge Dopp's sweeps — be the LAST student standing!</div>
+</div>
+<script>
+const cv=document.getElementById('c'), cx=cv.getContext('2d');
+const WRAP=document.getElementById('wrap');
+function resize(){
+  const w=Math.min(WRAP.clientWidth-24,660);
+  cv.width=w; cv.height=Math.min(window.innerHeight-140,500);
+}
+resize(); window.addEventListener('resize',()=>{resize();initGame();});
+
+const GOLD='#FFD700',EMERALD='#00E5A0',CRIMSON='#FF3B5C',SKY='#38BFFF',ORANGE='#FF8C00';
+function W(){return cv.width;} function H(){return cv.height;}
+
+// ── CORNER (bottom-left) ─────────────────────────
+const CORNER_X=()=>55, CORNER_Y=()=>H()-55;
+const CORNER_R=()=>70; // pile radius
+
+// ── STUDENT COLORS ───────────────────────────────
+const STUDENT_COLORS=['#38BFFF','#00E5A0','#a855f7','#FF69B4','#FF8C00',
+  '#87CEEB','#90EE90','#FFB6C1','#DDA0DD','#F0E68C'];
+const STUDENT_NAMES=['Alex','Sam','Jordan','Casey','Riley','Morgan','Drew','Avery','Quinn','Blake'];
+
+// ── STATE ────────────────────────────────────────
+let students, player, dopp, phase, sweepAngle, sweepTimer, sweepCooldown;
+let roundNum, corneredCount, particles, shakeTimer;
+
+const STUDENT_R=14, PLAYER_R=16, DOPP_R=28;
+const TOTAL_STUDENTS=9; // 9 AI + 1 player = 10 total visible
+
+const DOPP_ANGERS=[
+  "GET IN THE CORNER!","CLASS DISMISSED — TO THE CORNER!","OH YOU THINK THAT'S FUNNY?!",
+  "DETENTION! CORNER! NOW!","EVERYONE SIT DOWN!","I AM NOT YOUR FRIEND RIGHT NOW!",
+  "CORNER. ALL OF YOU. GO.","WHO DID THAT?! ALL OF YOU!"
+];
+
+function initGame(){
+  phase='countdown'; roundNum=0; corneredCount=0; particles=[];
+  shakeTimer=0; sweepTimer=0; sweepCooldown=180;
+
+  // Player starts at bottom-right area
+  player={
+    x:W()*0.75, y:H()*0.75,
+    vx:0, vy:0,
+    color:'#FFD700', name:'YOU',
+    alive:true, cornered:false,
+    pileX:0, pileY:0,
+    blinkTimer:0
+  };
+
+  // AI students scattered around
+  students=[];
+  for(let i=0;i<TOTAL_STUDENTS;i++){
+    students.push({
+      x:100+Math.random()*(W()-200),
+      y:80+Math.random()*(H()-200),
+      vx:(Math.random()-.5)*2,
+      vy:(Math.random()-.5)*2,
+      color:STUDENT_COLORS[i],
+      name:STUDENT_NAMES[i],
+      alive:true, cornered:false,
+      pileX:0, pileY:0,
+      aiTimer:0
+    });
+  }
+
+  // Dopp starts at top-center, angry
+  dopp={
+    x:W()/2, y:80,
+    vx:0, vy:0,
+    angle:Math.PI/2, // facing down
+    sweeping:false,
+    sweepStartAngle:0,
+    sweepProgress:0,
+    angerLevel:0, // 0-1 ramps up each round
+    mood:'calm', // calm | charging | sweep | recover
+    moodTimer:0,
+    sayTimer:0,
+    saying:''
+  };
+
+  sweepAngle=0;
+  updateHdr();
+  setTimeout(()=>{ phase='play'; showMsg('Dodge the sweep! Move with mouse/touch!'); },1200);
+}
+
+function updateHdr(){
+  const alive=[player,...students].filter(s=>s.alive&&!s.cornered).length;
+  document.getElementById('hdr-right').textContent=`Free: ${alive} · Cornered: ${corneredCount}`;
+}
+
+function showMsg(t){ document.getElementById('msg').textContent=t; }
+
+function lerp(a,b,t){return a+(b-a)*Math.max(0,Math.min(1,t));}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+
+// ── MOUSE/TOUCH ───────────────────────────────────
+let mouse={x:-999,y:-999};
+cv.addEventListener('mousemove',e=>{
+  const r=cv.getBoundingClientRect();
+  mouse.x=(e.clientX-r.left)*(W()/r.width);
+  mouse.y=(e.clientY-r.top)*(H()/r.height);
+});
+cv.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const r=cv.getBoundingClientRect();
+  mouse.x=(e.touches[0].clientX-r.left)*(W()/r.width);
+  mouse.y=(e.touches[0].clientY-r.top)*(H()/r.height);
+},{passive:false});
+cv.addEventListener('click',e=>{
+  if(phase==='over'||phase==='win'){
+    const r=cv.getBoundingClientRect();
+    const mx=(e.clientX-r.left)*(W()/r.width),my=(e.clientY-r.top)*(H()/r.height);
+    const by=H()/2+80;
+    if(Math.abs(mx-W()/2)<90&&Math.abs(my-by)<24){initGame();}
+  }
+});
+
+// ── CORNER PILE POSITIONS ─────────────────────────
+function pilePos(index){
+  // Spiral stack in bottom-left corner
+  const angle=(index*2.4);
+  const r=STUDENT_R*1.3*Math.sqrt(index);
+  return{
+    x:CORNER_X()+Math.cos(angle)*Math.min(r,CORNER_R()-STUDENT_R),
+    y:CORNER_Y()+Math.sin(angle)*Math.min(r,CORNER_R()-STUDENT_R)
+  };
+}
+
+// ── SWEEP BEAM ────────────────────────────────────
+// Dopp sweeps a cone from his position toward the corner — everything in the cone gets cornered
+function sweepHits(entity){
+  if(entity.cornered||!entity.alive) return false;
+  const dx=entity.x-dopp.x, dy=entity.y-dopp.y;
+  const d=Math.hypot(dx,dy);
+  if(d>W()*0.65) return false;
+  const angle=Math.atan2(dy,dx);
+  let diff=angle-dopp.sweepStartAngle;
+  while(diff> Math.PI) diff-=Math.PI*2;
+  while(diff<-Math.PI) diff+=Math.PI*2;
+  return diff>=0 && diff<=dopp.sweepProgress;
+}
+
+// ── AI STUDENTS ───────────────────────────────────
+function updateAI(s){
+  if(s.cornered){
+    // Slowly settle to pile position
+    s.x=lerp(s.x,s.pileX,0.08);
+    s.y=lerp(s.y,s.pileY,0.08);
+    return;
+  }
+  s.aiTimer--;
+  // Flee from Dopp
+  const dd=dist(s,dopp);
+  if(dd<160){
+    const a=Math.atan2(s.y-dopp.y,s.x-dopp.x);
+    s.vx+=Math.cos(a)*0.7;
+    s.vy+=Math.sin(a)*0.7;
+  }
+  // Random wander
+  if(s.aiTimer<=0){
+    s.vx+=(Math.random()-.5)*1.5;
+    s.vy+=(Math.random()-.5)*1.5;
+    s.aiTimer=30+Math.floor(Math.random()*40);
+  }
+  // Speed limit
+  const spd=Math.hypot(s.vx,s.vy);
+  if(spd>3.5){s.vx=s.vx/spd*3.5;s.vy=s.vy/spd*3.5;}
+  s.x+=s.vx; s.y+=s.vy;
+  s.vx*=0.92; s.vy*=0.92;
+  // Bounce walls
+  if(s.x<STUDENT_R){s.x=STUDENT_R;s.vx*=-0.5;}
+  if(s.x>W()-STUDENT_R){s.x=W()-STUDENT_R;s.vx*=-0.5;}
+  if(s.y<STUDENT_R){s.y=STUDENT_R;s.vy*=-0.5;}
+  if(s.y>H()-STUDENT_R){s.y=H()-STUDENT_R;s.vy*=-0.5;}
+}
+
+// ── DOPP AI ───────────────────────────────────────
+function updateDopp(){
+  if(dopp.mood==='calm'){
+    dopp.moodTimer--;
+    // Drift toward center
+    dopp.vx+=(W()/2-dopp.x)*0.004;
+    dopp.vy+=(H()*0.35-dopp.y)*0.004;
+    if(dopp.moodTimer<=0){
+      dopp.mood='charging';
+      dopp.moodTimer=60+Math.floor(Math.random()*60);
+      dopp.saying=DOPP_ANGERS[Math.floor(Math.random()*DOPP_ANGERS.length)];
+      dopp.sayTimer=120;
+    }
+  } else if(dopp.mood==='charging'){
+    dopp.moodTimer--;
+    // Flash red, build up
+    if(dopp.moodTimer<=0){
+      // SWEEP — angle from Dopp toward the general classroom, sweeping
+      dopp.sweeping=true;
+      dopp.sweepStartAngle=Math.atan2(CORNER_Y()-dopp.y,CORNER_X()-dopp.x)-0.3;
+      dopp.sweepProgress=0;
+      dopp.mood='sweep';
+      dopp.moodTimer=90;
+      shakeTimer=8;
+    }
+  } else if(dopp.mood==='sweep'){
+    dopp.sweepProgress=Math.min(2.2, dopp.sweepProgress+0.045);
+    dopp.moodTimer--;
+    // Corner anyone in the beam
+    const all=[player,...students].filter(s=>s.alive&&!s.cornered);
+    all.forEach(s=>{
+      if(sweepHits(s)){
+        cornerStudent(s);
+      }
+    });
+    if(dopp.sweepProgress>=2.2||dopp.moodTimer<=0){
+      dopp.mood='recover';
+      dopp.sweeping=false;
+      dopp.moodTimer=120+Math.floor(Math.random()*80);
+    }
+  } else if(dopp.mood==='recover'){
+    dopp.moodTimer--;
+    if(dopp.moodTimer<=0){
+      dopp.mood='calm';
+      dopp.moodTimer=90+Math.floor(Math.random()*60);
+      dopp.angerLevel=Math.min(1,dopp.angerLevel+0.1);
+    }
+  }
+
+  // Move Dopp
+  const speed=1.5+dopp.angerLevel;
+  if(dopp.mood==='charging'){
+    // Drift randomly while building up
+    dopp.vx+=(Math.random()-.5)*0.3;
+    dopp.vy+=(Math.random()-.5)*0.3;
+  }
+  dopp.x+=dopp.vx; dopp.y+=dopp.vy;
+  dopp.vx*=0.9; dopp.vy*=0.9;
+  dopp.x=Math.max(DOPP_R,Math.min(W()-DOPP_R,dopp.x));
+  dopp.y=Math.max(DOPP_R,Math.min(H()-DOPP_R,dopp.y));
+  if(dopp.sayTimer>0) dopp.sayTimer--;
+}
+
+function cornerStudent(s){
+  s.cornered=true;
+  const pos=pilePos(corneredCount);
+  s.pileX=pos.x; s.pileY=pos.y;
+  corneredCount++;
+  spawnParticles(s.x,s.y,s.color);
+  updateHdr();
+
+  const freeStudents=[player,...students].filter(s=>s.alive&&!s.cornered);
+  if(s===player){
+    phase='over';
+    showMsg('');
+  } else if(freeStudents.filter(f=>f!==player).length===0&&!player.cornered){
+    // Player is the last one free!
+    phase='win';
+    showMsg('');
+    spawnWinBurst();
+  } else {
+    const freeCount=freeStudents.length;
+    if(freeCount===1&&freeStudents[0]===player){
+      // Will trigger on next frame
+    } else {
+      showMsg(`${s.name} cornered! ${freeCount-1} students left + YOU`);
+    }
+  }
+}
+
+function spawnParticles(x,y,color,n=18){
+  for(let i=0;i<n;i++){
+    particles.push({x,y,vx:(Math.random()-.5)*10,vy:(Math.random()-1)*8,
+      size:Math.random()*5+2,color,life:1,dec:0.018+Math.random()*0.015});
+  }
+}
+function spawnWinBurst(){
+  for(let i=0;i<80;i++){
+    particles.push({x:W()/2,y:H()/2,
+      vx:(Math.random()-.5)*18,vy:(Math.random()-1.2)*14,
+      size:Math.random()*9+3,
+      color:[GOLD,EMERALD,SKY,'#a855f7','#FF69B4'][Math.floor(Math.random()*5)],
+      life:1,dec:0.01+Math.random()*0.012});
+  }
+}
+
+// ── DRAW ─────────────────────────────────────────
+function drawBg(){
+  cx.fillStyle='#05070F'; cx.fillRect(0,0,W(),H());
+  // Classroom floor
+  cx.fillStyle='rgba(255,255,255,0.015)'; cx.fillRect(0,H()-30,W(),30);
+  // Subtle grid
+  cx.strokeStyle='rgba(255,255,255,0.02)'; cx.lineWidth=1;
+  for(let x=0;x<W();x+=60){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H());cx.stroke();}
+  for(let y=0;y<H();y+=60){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W(),y);cx.stroke();}
+  // Shake
+  if(shakeTimer>0){
+    cx.save(); cx.translate((Math.random()-.5)*shakeTimer,(Math.random()-.5)*shakeTimer); shakeTimer--;
+  }
+}
+
+function drawCorner(){
+  const cx2=cx, x=CORNER_X(), y=CORNER_Y(), r=CORNER_R();
+  // Corner marker
+  cx2.strokeStyle='rgba(255,59,92,0.25)'; cx2.lineWidth=2; cx2.setLineDash([6,4]);
+  cx2.beginPath(); cx2.arc(x,y,r,0,Math.PI*2); cx2.stroke(); cx2.setLineDash([]);
+  cx2.fillStyle='rgba(255,59,92,0.05)'; cx2.beginPath(); cx2.arc(x,y,r,0,Math.PI*2); cx2.fill();
+  cx2.font='10px Nunito'; cx2.textAlign='center'; cx2.fillStyle='rgba(255,59,92,0.45)';
+  cx2.fillText('THE CORNER',x,y-r-6);
+}
+
+function drawSweep(){
+  if(!dopp.sweeping) return;
+  const endAngle=dopp.sweepStartAngle+dopp.sweepProgress;
+  cx.save();
+  const grd=cx.createConicalGradient?null:null;
+  cx.globalAlpha=0.18;
+  cx.fillStyle=CRIMSON;
+  cx.beginPath();
+  cx.moveTo(dopp.x,dopp.y);
+  cx.arc(dopp.x,dopp.y,W()*0.72,dopp.sweepStartAngle,endAngle);
+  cx.closePath();
+  cx.fill();
+  cx.globalAlpha=0.5;
+  cx.strokeStyle=CRIMSON; cx.lineWidth=3;
+  cx.beginPath();
+  cx.moveTo(dopp.x,dopp.y);
+  cx.lineTo(dopp.x+Math.cos(endAngle)*W()*0.7,dopp.y+Math.sin(endAngle)*W()*0.7);
+  cx.stroke();
+  cx.globalAlpha=1;
+  cx.restore();
+}
+
+function drawStudent(s, isPlayer){
+  if(!s.alive) return;
+  const r=isPlayer?PLAYER_R:STUDENT_R;
+  const x=s.x, y=s.y;
+  // Glow if player
+  if(isPlayer){
+    cx.shadowColor=GOLD; cx.shadowBlur=16;
+  }
+  // Body
+  cx.fillStyle=s.color;
+  cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2); cx.fill();
+  cx.shadowBlur=0;
+  // Face
+  cx.fillStyle='rgba(0,0,0,0.25)';
+  cx.beginPath(); cx.arc(x-r*0.3,y-r*0.2,r*0.18,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(x+r*0.3,y-r*0.2,r*0.18,0,Math.PI*2); cx.fill();
+  cx.strokeStyle='rgba(0,0,0,0.3)'; cx.lineWidth=1.5;
+  cx.beginPath(); cx.arc(x,y+r*0.1,r*0.28,0.1,Math.PI-0.1); cx.stroke();
+  // Name
+  cx.font=`bold ${isPlayer?10:8}px Nunito`; cx.textAlign='center';
+  cx.fillStyle=isPlayer?GOLD:'rgba(255,255,255,0.7)';
+  cx.fillText(s.name,x,y-r-4);
+  // Cornered = squish into pile
+  if(s.cornered){
+    cx.fillStyle='rgba(255,59,92,0.15)';
+    cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2); cx.fill();
+  }
+}
+
+function drawDopp2(){
+  const x=dopp.x, y=dopp.y, r=DOPP_R;
+  const angry=dopp.mood==='charging'||dopp.mood==='sweep';
+  // Glow
+  cx.shadowColor=angry?CRIMSON:ORANGE;
+  cx.shadowBlur=angry?24:12;
+  // Body
+  const bodyColor=angry?'#8B0000':'#6B3A2A';
+  cx.fillStyle=bodyColor;
+  cx.beginPath(); cx.ellipse(x,y,r*0.8,r,0,0,Math.PI*2); cx.fill();
+  cx.shadowBlur=0;
+  // Shirt
+  cx.fillStyle=angry?CRIMSON:ORANGE;
+  cx.beginPath(); cx.ellipse(x,y+r*0.2,r*0.65,r*0.55,0,0,Math.PI*2); cx.fill();
+  // "DOPP" label
+  cx.font='bold 8px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(255,255,255,0.6)';
+  cx.fillText('DOPP',x,y+r*0.28);
+  // Head
+  const skin='#C68642';
+  cx.fillStyle=skin;
+  cx.beginPath(); cx.arc(x,y-r*0.72,r*0.55,0,Math.PI*2); cx.fill();
+  // Angry eyebrows
+  cx.strokeStyle='#333'; cx.lineWidth=2.5; cx.lineCap='round';
+  if(angry){
+    cx.beginPath(); cx.moveTo(x-r*0.45,y-r*0.92); cx.lineTo(x-r*0.12,y-r*0.78); cx.stroke();
+    cx.beginPath(); cx.moveTo(x+r*0.45,y-r*0.92); cx.lineTo(x+r*0.12,y-r*0.78); cx.stroke();
+    cx.fillStyle=CRIMSON;
+  } else {
+    cx.beginPath(); cx.moveTo(x-r*0.45,y-r*0.82); cx.lineTo(x-r*0.1,y-r*0.88); cx.stroke();
+    cx.beginPath(); cx.moveTo(x+r*0.45,y-r*0.82); cx.lineTo(x+r*0.1,y-r*0.88); cx.stroke();
+    cx.fillStyle='#333';
+  }
+  // Eyes
+  cx.beginPath(); cx.arc(x-r*0.22,y-r*0.72,r*0.1,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(x+r*0.22,y-r*0.72,r*0.1,0,Math.PI*2); cx.fill();
+  // Mouth — angry or calm
+  cx.strokeStyle='#333'; cx.lineWidth=2;
+  if(angry){
+    // Angry flat-line mouth
+    cx.beginPath(); cx.moveTo(x-r*0.3,y-r*0.52); cx.lineTo(x+r*0.3,y-r*0.52); cx.stroke();
+    // Steam puffs
+    cx.fillStyle='rgba(255,100,0,0.5)';
+    for(let i=0;i<3;i++){
+      cx.beginPath(); cx.arc(x-r*0.35+i*r*0.35,y-r*1.35+Math.sin(Date.now()/200+i)*4,r*0.1,0,Math.PI*2); cx.fill();
+    }
+  } else {
+    cx.beginPath(); cx.arc(x,y-r*0.5,r*0.2,0.1,Math.PI-0.1); cx.stroke();
+  }
+  // Arms out when sweeping
+  if(dopp.mood==='sweep'){
+    cx.strokeStyle=skin; cx.lineWidth=r*0.35; cx.lineCap='round';
+    const sweepMid=dopp.sweepStartAngle+dopp.sweepProgress*0.5;
+    cx.beginPath();
+    cx.moveTo(x,y);
+    cx.lineTo(x+Math.cos(sweepMid)*r*1.8,y+Math.sin(sweepMid)*r*1.8);
+    cx.stroke();
+  } else {
+    cx.strokeStyle=skin; cx.lineWidth=r*0.35; cx.lineCap='round';
+    cx.beginPath(); cx.moveTo(x-r*0.7,y-r*0.2); cx.lineTo(x-r*1.2,y+r*0.3); cx.stroke();
+    cx.beginPath(); cx.moveTo(x+r*0.7,y-r*0.2); cx.lineTo(x+r*1.2,y+r*0.3); cx.stroke();
+  }
+  // Speech bubble
+  if(dopp.sayTimer>0&&dopp.saying){
+    const alpha=Math.min(1,dopp.sayTimer/30);
+    cx.globalAlpha=alpha;
+    const tw=cx.measureText(dopp.saying).width+20;
+    const bx=x-tw/2, by2=y-r*1.9-30;
+    cx.fillStyle='rgba(255,59,92,0.9)';
+    roundRect(bx,by2,tw,26,8); cx.fill();
+    // Tail
+    cx.beginPath(); cx.moveTo(x-8,by2+26); cx.lineTo(x+8,by2+26); cx.lineTo(x,by2+38); cx.closePath(); cx.fill();
+    cx.font='bold 10px Nunito'; cx.textAlign='center'; cx.fillStyle='white';
+    cx.fillText(dopp.saying,x,by2+17);
+    cx.globalAlpha=1;
+  }
+}
+
+function roundRect(x,y,w,h,r){
+  cx.beginPath();
+  cx.moveTo(x+r,y); cx.lineTo(x+w-r,y); cx.quadraticCurveTo(x+w,y,x+w,y+r);
+  cx.lineTo(x+w,y+h-r); cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  cx.lineTo(x+r,y+h); cx.quadraticCurveTo(x,y+h,x,y+h-r);
+  cx.lineTo(x,y+r); cx.quadraticCurveTo(x,y,x+r,y); cx.closePath();
+}
+
+function drawBtn(x,y,label){
+  const bw=180,bh=44;
+  cx.fillStyle='rgba(255,215,0,0.12)';
+  roundRect(x-bw/2,y-bh/2,bw,bh,10); cx.fill();
+  cx.strokeStyle='rgba(255,215,0,0.4)'; cx.lineWidth=1.5;
+  roundRect(x-bw/2,y-bh/2,bw,bh,10); cx.stroke();
+  cx.font='bold 14px Nunito'; cx.fillStyle=GOLD; cx.textAlign='center';
+  cx.fillText(label,x,y+5);
+}
+
+// ── MAIN LOOP ─────────────────────────────────────
+function loop(){
+  drawBg();
+
+  // Particles
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    cx.globalAlpha=p.life;
+    cx.fillStyle=p.color;
+    cx.beginPath(); cx.arc(p.x,p.y,p.size,0,Math.PI*2); cx.fill();
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.25; p.life-=p.dec;
+  });
+  cx.globalAlpha=1;
+
+  drawCorner();
+  drawSweep();
+
+  // Update
+  if(phase==='play'){
+    // Move player toward mouse
+    const pdx=mouse.x-player.x, pdy=mouse.y-player.y;
+    const pd=Math.hypot(pdx,pdy);
+    if(pd>4&&!player.cornered){
+      player.vx+=pdx/pd*0.8;
+      player.vy+=pdy/pd*0.8;
+    }
+    const spd=Math.hypot(player.vx,player.vy);
+    if(spd>4.5){player.vx=player.vx/spd*4.5;player.vy=player.vy/spd*4.5;}
+    player.x+=player.vx; player.y+=player.vy;
+    player.vx*=0.88; player.vy*=0.88;
+    player.x=Math.max(PLAYER_R,Math.min(W()-PLAYER_R,player.x));
+    player.y=Math.max(PLAYER_R,Math.min(H()-PLAYER_R,player.y));
+
+    students.forEach(updateAI);
+    updateDopp();
+  } else if(phase==='play'&&player.cornered){
+    // Slide to pile
+    player.x=lerp(player.x,player.pileX,0.08);
+    player.y=lerp(player.y,player.pileY,0.08);
+  }
+
+  // Draw pile students (in corner, behind)
+  [...students,player].filter(s=>s.cornered).forEach(s=>drawStudent(s,s===player));
+
+  // Draw active students
+  students.filter(s=>!s.cornered&&s.alive).forEach(s=>drawStudent(s,false));
+
+  // Draw sweep, then Dopp on top
+  drawDopp2();
+
+  // Draw player on top of everyone
+  if(!player.cornered) drawStudent(player,true);
+
+  // Anger meter
+  const am=dopp.angerLevel;
+  cx.fillStyle='rgba(255,59,92,0.15)'; roundRect(W()-22,20,10,H()-80,5); cx.fill();
+  const fh=(H()-80)*am;
+  cx.fillStyle=CRIMSON; roundRect(W()-22,20+(H()-80)-fh,10,fh,5); cx.fill();
+  cx.font='9px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(255,59,92,0.5)';
+  cx.fillText('😤',W()-17,14);
+
+  if(phase==='over'){
+    cx.fillStyle='rgba(5,7,15,0.82)'; cx.fillRect(0,0,W(),H());
+    cx.textAlign='center';
+    cx.font='bold 36px Nunito'; cx.fillStyle=CRIMSON;
+    cx.fillText('😤 CORNER!',W()/2,H()/2-65);
+    cx.font='18px Nunito'; cx.fillStyle='rgba(240,244,255,0.8)';
+    cx.fillText('Dopp got you!',W()/2,H()/2-28);
+    cx.font='13px Nunito'; cx.fillStyle='rgba(240,244,255,0.4)';
+    cx.fillText(`${corneredCount} students cornered before you.`,W()/2,H()/2+4);
+    cx.fillText('Stay on your toes — and maybe do your homework! 📚',W()/2,H()/2+26);
+    drawBtn(W()/2,H()/2+80,'▶ Try Again');
+
+  } else if(phase==='win'){
+    cx.fillStyle='rgba(5,7,15,0.75)'; cx.fillRect(0,0,W(),H());
+    cx.textAlign='center';
+    cx.font='bold 38px Nunito'; cx.fillStyle=GOLD;
+    cx.shadowColor=GOLD; cx.shadowBlur=20;
+    cx.fillText('🏆 LAST ONE STANDING!',W()/2,H()/2-60);
+    cx.shadowBlur=0;
+    cx.font='18px Nunito'; cx.fillStyle=EMERALD;
+    cx.fillText('You outlasted ALL your classmates!',W()/2,H()/2-22);
+    cx.font='13px Nunito'; cx.fillStyle='rgba(240,244,255,0.45)';
+    cx.fillText('Agility, awareness, and quick decisions = life skills 💪',W()/2,H()/2+8);
+    drawBtn(W()/2,H()/2+80,'▶ Play Again');
+  }
+
+  if(shakeTimer>0) cx.restore();
+  requestAnimationFrame(loop);
+}
+
+initGame();
+loop();
+</script>
+</body>
+</html>

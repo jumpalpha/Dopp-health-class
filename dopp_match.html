@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dopp Memory Match – Health Class</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
+#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
+#back-btn:hover{opacity:1}
+#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(15px,3vw,21px);text-align:center}
+#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:100px}
+#main{display:flex;flex-direction:column;align-items:center;padding:16px 10px 30px;width:100%;max-width:820px}
+#stats-bar{display:flex;gap:24px;margin-bottom:14px;font-family:'Cinzel',sans-serif;font-size:14px}
+#stats-bar span{color:#aaa}
+#stats-bar b{color:#FFD700}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:460px}
+.card{aspect-ratio:1;cursor:pointer;perspective:600px}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.5s ease;border-radius:10px}
+.card.flipped .card-inner{transform:rotateY(180deg)}
+.card-front,.card-back{position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.card-back{background:#1a1a2e;border:2px solid rgba(255,215,0,0.3);font-family:'Cinzel Decorative',cursive;font-size:clamp(22px,5vw,32px);color:#FFD700}
+.card-front{background:#0d1530;border:2px solid #38BFFF;transform:rotateY(180deg);font-size:clamp(28px,7vw,44px);flex-direction:column;gap:4px}
+.card-front .card-label{font-family:'Cinzel',sans-serif;font-size:clamp(8px,2vw,11px);color:#38BFFF;text-align:center;padding:0 4px}
+.card.matched .card-inner{border-radius:10px}
+.card.matched .card-front{border:2px solid #00E5A0;box-shadow:0 0 16px rgba(0,229,160,0.5);background:#0a2a1a}
+#win-overlay{position:fixed;inset:0;background:rgba(5,7,15,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;display:none}
+#win-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,34px);margin-bottom:16px}
+.win-stat{font-family:'Nunito',sans-serif;font-size:16px;color:#fff;margin-bottom:6px}
+#win-rating{font-size:28px;margin:10px 0}
+.play-btn{background:#FFD700;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:11px 32px;border:none;border-radius:8px;cursor:pointer;margin-top:16px;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
+.play-btn:hover{transform:scale(1.05)}
+</style>
+</head>
+<body>
+<div id="header">
+  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <span id="game-title">Dopp Memory Match</span>
+  <span id="score-display">Matches: <span id="matchCount">0</span>/8</span>
+</div>
+<div id="main">
+  <div id="stats-bar">
+    <div><span>Moves: </span><b id="movesVal">0</b></div>
+    <div><span>Time: </span><b id="timeVal">0:00</b></div>
+    <div><span>Matches: </span><b id="matchVal">0</b></div>
+  </div>
+  <div id="grid"></div>
+</div>
+<div id="win-overlay">
+  <h2>All Matched! 🎉</h2>
+  <div class="win-stat">Time: <b id="winTime"></b></div>
+  <div class="win-stat">Moves: <b id="winMoves"></b></div>
+  <div id="win-rating"></div>
+  <button class="play-btn" id="playAgain">Play Again</button>
+</div>
+<script>
+const CARDS=[
+  {emoji:'🍎',label:'Apple'},
+  {emoji:'💧',label:'Water'},
+  {emoji:'🏃',label:'Runner'},
+  {emoji:'😴',label:'Sleep'},
+  {emoji:'🧘',label:'Yoga'},
+  {emoji:'🥦',label:'Broccoli'},
+  {emoji:'❤️',label:'Heart'},
+  {emoji:'🧠',label:'Brain'},
+];
+let moves,matched,firstCard,secondCard,canFlip,timerInt,seconds,gameStarted;
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function init(){
+  moves=0;matched=0;firstCard=null;secondCard=null;canFlip=true;seconds=0;gameStarted=false;
+  clearInterval(timerInt);
+  document.getElementById('movesVal').textContent=0;
+  document.getElementById('timeVal').textContent='0:00';
+  document.getElementById('matchVal').textContent=0;
+  document.getElementById('matchCount').textContent=0;
+  document.getElementById('win-overlay').style.display='none';
+  buildGrid();
+}
+
+function buildGrid(){
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  const deck=shuffle([...CARDS,...CARDS]);
+  deck.forEach((card,i)=>{
+    const div=document.createElement('div');
+    div.className='card';
+    div.dataset.id=i;
+    div.dataset.emoji=card.emoji;
+    div.dataset.label=card.label;
+    div.innerHTML=`<div class="card-inner">
+      <div class="card-back">?</div>
+      <div class="card-front">${card.emoji}<span class="card-label">${card.label}</span></div>
+    </div>`;
+    div.addEventListener('click',()=>flipCard(div));
+    grid.appendChild(div);
+  });
+}
+
+function flipCard(div){
+  if(!canFlip) return;
+  if(div.classList.contains('flipped')||div.classList.contains('matched')) return;
+  if(!gameStarted){
+    gameStarted=true;
+    timerInt=setInterval(()=>{
+      seconds++;
+      const m=Math.floor(seconds/60);
+      const s=seconds%60;
+      document.getElementById('timeVal').textContent=m+':'+(s<10?'0':'')+s;
+    },1000);
+  }
+  div.classList.add('flipped');
+  if(!firstCard){firstCard=div;return;}
+  secondCard=div;
+  moves++;
+  document.getElementById('movesVal').textContent=moves;
+  canFlip=false;
+  checkMatch();
+}
+
+function checkMatch(){
+  const match=firstCard.dataset.emoji===secondCard.dataset.emoji;
+  if(match){
+    firstCard.classList.add('matched');
+    secondCard.classList.add('matched');
+    matched++;
+    document.getElementById('matchVal').textContent=matched;
+    document.getElementById('matchCount').textContent=matched;
+    firstCard=null;secondCard=null;canFlip=true;
+    if(matched===8) setTimeout(winGame,500);
+  } else {
+    setTimeout(()=>{
+      firstCard.classList.remove('flipped');
+      secondCard.classList.remove('flipped');
+      firstCard=null;secondCard=null;canFlip=true;
+    },800);
+  }
+}
+
+function winGame(){
+  clearInterval(timerInt);
+  const m=Math.floor(seconds/60);
+  const s=seconds%60;
+  document.getElementById('winTime').textContent=m+':'+(s<10?'0':'')+s;
+  document.getElementById('winMoves').textContent=moves;
+  // rating based on moves
+  let stars='⭐⭐⭐';
+  if(moves>20) stars='⭐⭐';
+  if(moves>30) stars='⭐';
+  document.getElementById('win-rating').textContent=stars;
+  document.getElementById('win-overlay').style.display='flex';
+}
+
+document.getElementById('playAgain').addEventListener('click',init);
+init();
+</script>
+</body>
+</html>
