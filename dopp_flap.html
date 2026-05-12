@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#05070F;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+body{background:#0B1D51;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
 #header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
 #back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85}
 #back-btn:hover{opacity:1}
@@ -20,12 +20,12 @@ canvas{display:block;border:2px solid rgba(255,215,0,0.2);border-radius:8px;max-
 #overlay .cause{font-size:15px;color:#FF3B5C;margin-bottom:14px;font-family:'Nunito'}
 #overlay p{font-family:'Nunito',sans-serif;font-size:17px;color:#fff;margin-bottom:4px}
 .best{font-size:14px!important;color:#00E5A0!important;margin-bottom:28px!important}
-#play-btn{background:#FFD700;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4)}
+#play-btn{background:#FFD700;color:#0B1D51;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4)}
 #play-btn:hover{transform:scale(1.05)}
 #start-overlay{position:fixed;inset:0;background:rgba(5,7,15,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
 #start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,5vw,30px);margin-bottom:12px}
 #start-overlay p{font-family:'Nunito';color:#aaa;font-size:14px;margin-bottom:6px;text-align:center;max-width:340px}
-#start-btn{margin-top:16px;background:#00E5A0;color:#05070F;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(0,229,160,.4)}
+#start-btn{margin-top:16px;background:#00E5A0;color:#0B1D51;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(0,229,160,.4)}
 #start-btn:hover{transform:scale(1.05)}
 </style>
 </head>
@@ -106,7 +106,7 @@ let bgOff=0;
 function drawBg(){
   // gradient sky
   const grad=ctx.createLinearGradient(0,0,0,H);
-  grad.addColorStop(0,'#05070F');
+  grad.addColorStop(0,'#0B1D51');
   grad.addColorStop(0.7,'#0a0f1a');
   grad.addColorStop(1,'#0d1220');
   ctx.fillStyle=grad;
@@ -190,7 +190,7 @@ function drawPlayer(){
   ctx.fillStyle='#FFD700';
   ctx.beginPath();ctx.arc(ax,ay-12,12,0,Math.PI*2);ctx.fill();
   // face
-  ctx.fillStyle='#05070F';
+  ctx.fillStyle='#0B1D51';
   ctx.beginPath();ctx.arc(ax+4,ay-13,2.5,0,Math.PI*2);ctx.fill(); // eye
   ctx.beginPath();ctx.arc(ax+3,ay-8,3,0,Math.PI,false);ctx.stroke(); // smile
   // hair

@@ -6,7 +6,7 @@
 <title>Dopp's Hot Take Stand — Health Arcade</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#05070F;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0B1D51;--card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.09);--text:#F0F4FF;--dim:rgba(240,244,255,0.55)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
 header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(5,7,15,0.95);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
@@ -27,7 +27,7 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 2
 .vote-btn{flex:1;padding:15px 10px;border-radius:12px;border:none;cursor:pointer;font-family:'Cinzel',serif;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s,box-shadow .15s;letter-spacing:.5px}
 .vote-btn:hover{transform:translateY(-2px)}
 .vote-btn:active{transform:scale(0.96)}
-.agree-btn{background:linear-gradient(135deg,var(--emerald),#00b880);color:#05070F}
+.agree-btn{background:linear-gradient(135deg,var(--emerald),#00b880);color:#0B1D51}
 .agree-btn:hover{box-shadow:0 6px 20px rgba(0,229,160,0.3)}
 .disagree-btn{background:linear-gradient(135deg,var(--crimson),#cc1a33);color:#fff}
 .disagree-btn:hover{box-shadow:0 6px 20px rgba(255,59,92,0.3)}
@@ -37,7 +37,7 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 2
 .verdict-title{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);line-height:1.3}
 .verdict-text{font-size:13px;color:var(--text);line-height:1.6}
 .verdict-fact{font-size:12px;color:var(--emerald);background:rgba(0,229,160,0.07);border-radius:8px;padding:8px 12px;line-height:1.6}
-.next-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:12px 30px;border-radius:10px;font-family:'Cinzel',serif;font-size:13px;font-weight:700;cursor:pointer;transition:transform .15s;align-self:center}
+.next-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#0B1D51;border:none;padding:12px 30px;border-radius:10px;font-family:'Cinzel',serif;font-size:13px;font-weight:700;cursor:pointer;transition:transform .15s;align-self:center}
 .next-btn:hover{transform:scale(1.04)}
 .tally-row{display:flex;gap:12px;width:100%}
 .tally-item{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center}
@@ -46,7 +46,7 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 2
 .result-screen{display:none;flex-direction:column;align-items:center;gap:18px;text-align:center;width:100%}
 .result-title{font-family:'Cinzel Decorative',serif;font-size:clamp(20px,5vw,32px);font-weight:900;color:var(--gold)}
 .result-sub{font-size:14px;color:var(--dim);line-height:1.6;max-width:380px}
-.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#05070F;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
+.play-again-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#0B1D51;border:none;padding:14px 36px;border-radius:12px;font-family:'Cinzel',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
 .play-again-btn:hover{transform:translateY(-2px)}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fadeIn{animation:fadeIn .35s ease forwards}
