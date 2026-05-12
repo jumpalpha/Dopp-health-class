@@ -521,3 +521,177 @@ body { font-size: 16px; }
     transition: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   B + D COMBO — JEWEL TILES × GOLD ACADEMY
+   Vibrant realm/chapter tiles + gold banner anchors
+   ═══════════════════════════════════════════════════ */
+
+/* ── GOLD BANNER LABELS — anchors every section ── */
+.sec-label {
+  background: linear-gradient(135deg, #C87800, #E8A800) !important;
+  color: #2D1800 !important;
+  padding: 7px 16px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: fit-content !important;
+  margin-bottom: 20px !important;
+  letter-spacing: 2px !important;
+  font-size: 11px !important;
+  box-shadow: 0 3px 14px rgba(160,90,0,0.25) !important;
+}
+.sec-label::after { display: none !important; }
+
+.section-label {
+  background: linear-gradient(135deg, #C87800, #E8A800) !important;
+  color: #2D1800 !important;
+  padding: 6px 14px !important;
+  border-radius: 7px !important;
+  display: inline-block !important;
+  margin-bottom: 10px !important;
+  box-shadow: 0 2px 10px rgba(160,90,0,0.2) !important;
+  letter-spacing: 3px !important;
+  font-size: 10px !important;
+}
+
+/* ── REALM CARDS — jewel-tinted tiles ── */
+.realm-card {
+  background: var(--realm-color, rgba(255,215,0,0.25)) !important;
+  border: 2px solid var(--realm-accent, #FFD700) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+}
+.realm-card:hover {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.18) !important;
+  transform: translateY(-4px) !important;
+}
+.realm-name { color: #1C1A2E !important; }
+.realm-chapters { color: rgba(28,26,46,0.65) !important; }
+.realm-desc { color: rgba(28,26,46,0.7) !important; }
+
+/* ── CHAPTER CARDS — jewel-tinted by realm color ── */
+.chapter-card, .ch-card {
+  background: color-mix(in srgb, var(--ch-color, #FFD700) 10%, white) !important;
+  border-left: 4px solid var(--ch-color, #FFD700) !important;
+  border-top: 1px solid color-mix(in srgb, var(--ch-color, #FFD700) 25%, transparent) !important;
+  border-right: 1px solid color-mix(in srgb, var(--ch-color, #FFD700) 15%, transparent) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--ch-color, #FFD700) 15%, transparent) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important;
+}
+
+/* ── BADGE BANNERS — gold glow ── */
+.badge-banner {
+  background: linear-gradient(135deg, rgba(255,215,0,0.22), rgba(255,160,0,0.14)) !important;
+  border: 2px solid rgba(255,195,0,0.65) !important;
+  box-shadow: 0 4px 24px rgba(200,140,0,0.18) !important;
+}
+.badge-name { color: #7C4A00 !important; }
+
+/* ── BOSS BATTLE CARD — strong crimson ── */
+.boss-card {
+  background: linear-gradient(135deg, rgba(255,59,92,0.18), rgba(255,59,92,0.07)) !important;
+  border: 2.5px solid rgba(255,59,92,0.65) !important;
+  box-shadow: 0 4px 28px rgba(255,59,92,0.18) !important;
+}
+
+/* ── REALM BADGE CARD ── */
+.realm-badge-card {
+  background: linear-gradient(135deg, rgba(56,191,255,0.18), rgba(0,229,160,0.12)) !important;
+  border: 2px solid rgba(56,191,255,0.55) !important;
+  box-shadow: 0 4px 20px rgba(56,191,255,0.12) !important;
+}
+
+/* ── BADGE REQUIREMENT BOX ── */
+.badge-req {
+  background: rgba(200,150,0,0.08) !important;
+  border: 1px solid rgba(200,150,0,0.3) !important;
+  color: rgba(28,26,46,0.75) !important;
+}
+
+/* ── CHAPTER NUMBER BADGES — solid jewel pill ── */
+.ch-num-badge {
+  font-weight: 800 !important;
+  padding: 5px 12px !important;
+  background: color-mix(in srgb, currentColor 18%, transparent) !important;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent) !important;
+}
+
+/* ── ICON CIRCLES — jewel colored, high contrast ── */
+.pdf-icon {
+  background: rgba(255,195,0,0.22) !important;
+  border-radius: 14px !important;
+  padding: 12px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.realm-icon-lg {
+  background: rgba(255,195,0,0.18) !important;
+  border-radius: 20px !important;
+  padding: 18px !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  box-shadow: 0 4px 16px rgba(180,120,0,0.15) !important;
+}
+.badge-icon-wrap {
+  background: rgba(255,195,0,0.22) !important;
+  border-radius: 16px !important;
+  padding: 14px !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  box-shadow: 0 3px 12px rgba(180,120,0,0.15) !important;
+}
+.boss-icon {
+  background: rgba(255,59,92,0.22) !important;
+  border-radius: 14px !important;
+  padding: 12px !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+}
+.vc-icon {
+  background: rgba(56,191,255,0.2) !important;
+  border-radius: 10px !important;
+  padding: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  font-size: 20px !important;
+}
+.act-icon {
+  background: rgba(0,229,160,0.2) !important;
+  border-radius: 10px !important;
+  padding: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 18px !important;
+  flex-shrink: 0 !important;
+}
+.sec-icon {
+  background: rgba(255,195,0,0.22) !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 15px !important;
+}
+
+/* ── CHAPTER NAV BUTTONS ── */
+.ch-nav-btn {
+  background: #fff !important;
+  border: 1.5px solid rgba(28,26,46,0.22) !important;
+}
+.ch-nav-btn:hover {
+  background: rgba(255,215,0,0.1) !important;
+  border-color: rgba(200,140,0,0.45) !important;
+  color: #7C4A00 !important;
+  box-shadow: 0 0 16px rgba(200,140,0,0.15) !important;
+}
