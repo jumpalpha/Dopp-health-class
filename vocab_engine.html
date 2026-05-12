@@ -659,7 +659,7 @@ function renderSpeedQuiz(gc) {
       <div class="quiz-def">${term.d}</div>
       <div class="quiz-timer"><div class="quiz-timer-fill" id="qtf" style="width:100%"></div></div>
     </div>
-    <div class="quiz-options">${opts.map((o, i) => `<div class="quiz-opt" id="qo${i}" onclick="sqPick(${i},${o.t === term.t},'${o.t.replace(/'/g,'\\'')}')"><strong>${'ABCD'[i]}.</strong> ${o.t}</div>`).join('')}</div>
+    <div class="quiz-options">${opts.map((o, i) => `<div class="quiz-opt" id="qo${i}" onclick="sqPick(${i},${o.t === term.t},'${o.t.replace(/'/g,"\\'")}')"><strong>${'ABCD'[i]}.</strong> ${o.t}</div>`).join('')}</div>
     <div class="quiz-explanation" id="qex">${term.d} — <em>${term.t}</em></div>
     <div class="fc-controls">
       <button class="btn btn-restart" onclick="resetGame();renderGame()">↺ Restart</button>
