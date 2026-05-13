@@ -283,7 +283,7 @@ td input, td select, td textarea { min-width: 105px; }
   </div>
   <div class="topbar" style="display:block">
     <h1>Weight Control Quest</h1>
-    <p class="subtitle">Build a real food supply, research nutrition, design a 3-day plan, and compare it with your personal energy needs. This is about learning, not judging bodies.</p>
+    <p class="subtitle">Build a food supply, research nutrition, design a 3-day plan, and compare it with estimated energy needs. This is an educational quest, not a diet plan or a judgment of anyone's body.</p>
   </div>
 </header>
 
@@ -298,6 +298,7 @@ td input, td select, td textarea { min-width: 105px; }
   </div>
 
   <section class="card">
+    <p class="help"><b>Before you begin:</b> This activity is for practicing nutrition research, meal planning, and energy-balance thinking. It is not medical advice, and it is not asking you to change your body. Your goal is to learn, revise, and explain your choices.</p>
     <div class="grid">
       <label>Student name
         <input id="studentName" placeholder="Your name">
@@ -319,7 +320,7 @@ td input, td select, td textarea { min-width: 105px; }
 
   <section class="stage active" id="stage1">
     <h2>Stage 1: Choose 15 Foods</h2>
-    <p class="help">Choose exactly 13 natural foods and exactly 2 combination foods. Write a reason for every food. Natural foods are close to their original form. Combination foods mix multiple ingredients, such as a sandwich, soup, burrito, or pasta dish.</p>
+    <p class="help">Create your starting food supply. Pick exactly 13 natural foods and exactly 2 combination foods. Natural foods are close to their original form, such as fruit, vegetables, grains, eggs, beans, or plain meats. Combination foods mix ingredients, such as a sandwich, soup, burrito, or pasta dish. Give a real reason for every choice.</p>
     <div class="wide-table">
       <table>
         <thead><tr><th>#</th><th>Food</th><th>Type</th><th>Reason for choosing it</th></tr></thead>
@@ -328,15 +329,15 @@ td input, td select, td textarea { min-width: 105px; }
     </div>
     <div id="foodCountStatus" class="status"></div>
     <h3>Nonsense Food Reflection Detour</h3>
-    <p class="help">Some food names sound fun but do not help with real nutrition planning. Explain why a nonsense food like "rainbow battery pizza" would not work for this project.</p>
-    <textarea id="nonsenseReflection" placeholder="A nonsense food is not useful because..."></textarea>
+    <p class="help">Pause for a quick reality check. Funny made-up foods can be creative, but they do not work for nutrition planning because they have no reliable serving size or nutrition facts.</p>
+    <textarea id="nonsenseReflection" placeholder="A nonsense food would not work for this project because..."></textarea>
     <h3>Food Supply Reflection</h3>
-    <textarea id="stage1Reflection" placeholder="What patterns do you notice in your food choices? What might be easy or hard about planning with them?"></textarea>
+    <textarea id="stage1Reflection" placeholder="What patterns do you notice in your food choices? What might be easy or challenging about planning meals with them?"></textarea>
   </section>
 
   <section class="stage" id="stage2">
     <h2>Stage 2: Nutrition Research</h2>
-    <p class="help">Research nutrition for each food. The first 5 foods must be entered manually. Foods 6-15 include a quick assist that gives a starting estimate you can edit.</p>
+    <p class="help">Now turn your food list into usable data. Enter serving size, calories, carbohydrates, protein, fat, and fiber for each food. Do the first 5 foods manually for practice. For foods 6-15, Quick Assist can give you an editable starting estimate.</p>
     <div class="wide-table">
       <table>
         <thead><tr><th>#</th><th>Food</th><th>Serving size</th><th>Calories</th><th>Carbs g</th><th>Protein g</th><th>Fat g</th><th>Fiber g</th><th>Assist</th></tr></thead>
@@ -347,7 +348,7 @@ td input, td select, td textarea { min-width: 105px; }
 
   <section class="stage" id="stage3">
     <h2>Stage 3: 3-Day Meal Plan</h2>
-    <p class="help">Plan breakfast, lunch, dinner, and snack for 3 days. Each card totals itself from servings multiplied by nutrition per serving.</p>
+    <p class="help">Use your food supply to build a realistic 3-day plan: breakfast, lunch, dinner, and snack each day. Try to make meals that a student could actually recognize and explain. The app totals each card from servings multiplied by nutrition per serving.</p>
     <div class="summary-grid">
       <div class="summary-box">Average daily calories<b id="avgCalories">0</b></div>
       <div class="summary-box">Average daily carbs<b id="avgCarbs">0g</b></div>
@@ -359,7 +360,7 @@ td input, td select, td textarea { min-width: 105px; }
 
   <section class="stage" id="stage4">
     <h2>Stage 4: Personal Reality Check</h2>
-    <p class="help">This estimate compares your meal-plan average to a basic energy-needs formula. It is not a medical diagnosis. Bodies are different, and the goal is to learn how energy balance works.</p>
+    <p class="help">Compare your meal-plan average with a basic energy-needs estimate. This is not a grade on your body and not a medical diagnosis. If your projection is too far from the target range, revise Stage 3 like a scientist improving a model.</p>
     <div class="grid-3">
       <label>Age
         <input id="age" type="number" min="10" max="25" placeholder="15">
@@ -398,8 +399,8 @@ td input, td select, td textarea { min-width: 105px; }
 
   <section class="stage" id="stage5">
     <h2>Stage 5: Learning Summary</h2>
-    <p class="help">Explain what you learned. Use supportive language and focus on skills: planning, research, portions, balance, and revision.</p>
-    <textarea id="learningSummary" placeholder="In this quest I learned..."></textarea>
+    <p class="help">Finish by explaining the learning, not judging the body. Focus on skills: choosing foods, checking serving sizes, using nutrition data, balancing meals, and revising a plan when the numbers do not work yet.</p>
+    <textarea id="learningSummary" placeholder="In this quest I learned how to..."></textarea>
     <h3>Concept Checklist</h3>
     <div class="checklist" id="conceptChecklist"></div>
   </section>
@@ -408,11 +409,11 @@ td input, td select, td textarea { min-width: 105px; }
     <div class="report-title">
       <div>
         <h2>Final One-Page Summary</h2>
-        <p class="small">Use the Print / Save PDF button to turn this into a printable PDF.</p>
+        <p class="small">Build this after Stage 5, then use Print / Save PDF to create a one-page class summary.</p>
       </div>
       <div class="small" id="reportStudent">Name: --<br>Period: --</div>
     </div>
-    <div id="reportBody">Fill out the quest, then choose Build Final Report.</div>
+    <div id="reportBody">Complete the quest stages, then choose Build Final Report.</div>
   </section>
 </main>
 
@@ -429,7 +430,7 @@ const CONCEPTS = [
   'Carbohydrates, protein, fat, and fiber each matter.',
   'A 3-day plan can be averaged to estimate daily intake.',
   'BMR and TDEE are estimates, not perfect numbers.',
-  'A plan can be revised when the projection is unrealistic.',
+  'A plan can be revised when the projection needs adjustment.',
   'Supportive health language is better than body-shaming language.'
 ];
 const ASSIST = {
@@ -483,7 +484,7 @@ function makeFoodRows(){
       <td>${i+1}</td>
       <td><input class="food-name" data-i="${i}" placeholder="Food ${i+1}"></td>
       <td><select class="food-type" data-i="${i}"><option value="">Choose</option><option>Natural</option><option>Combination</option></select></td>
-      <td><textarea class="food-reason" data-i="${i}" placeholder="Why did you choose this food?"></textarea></td>
+      <td><textarea class="food-reason" data-i="${i}" placeholder="How could this food help your plan?"></textarea></td>
     </tr>`);
   }
 }
@@ -500,7 +501,7 @@ function makeNutritionRows(){
       <td><input class="nut-protein" data-i="${i}" type="number" min="0" step="0.1"></td>
       <td><input class="nut-fat" data-i="${i}" type="number" min="0" step="0.1"></td>
       <td><input class="nut-fiber" data-i="${i}" type="number" min="0" step="0.1"></td>
-      <td>${i<5 ? '<span class="small">Manual required</span>' : `<button type="button" class="secondary assist-btn" data-i="${i}">Quick Assist</button>`}</td>
+      <td>${i<5 ? '<span class="small">Manual practice</span>' : `<button type="button" class="secondary assist-btn" data-i="${i}">Quick Assist</button>`}</td>
     </tr>`);
   }
 }
@@ -514,7 +515,7 @@ function makeMealCards(){
         <div class="meal-head"><b>Day ${d}: ${meal}</b><span class="badge meal-cal" data-i="${idx}">0 cal</span></div>
         <label>Meal items<textarea class="meal-items" data-i="${idx}" placeholder="Example: oats, banana, yogurt"></textarea></label>
         <div class="grid">
-          <label>Food supply used<input class="meal-supply" data-i="${idx}" list="foodOptions" placeholder="Choose or type food"></label>
+          <label>Food supply used<input class="meal-supply" data-i="${idx}" list="foodOptions" placeholder="Choose from your list or type food"></label>
           <label>Serving size<input class="meal-serving" data-i="${idx}" placeholder="1 cup"></label>
         </div>
         <div class="grid-3">
@@ -716,7 +717,7 @@ function runRealityCheck(){
     <b>TDEE estimate:</b> ${round(tdee)} calories/day<br>
     <b>Your meal-plan average:</b> ${round(avg)} calories/day<br>
     <b>One-year projection:</b> ${projected >= 0 ? '+' : ''}${projected.toFixed(1)} pounds<br>
-    ${pass ? 'Projection is within 10 pounds. You may continue to Stage 5.' : 'Projection is more than 10 pounds. Revise Stage 3, then run the reality check again.'}
+    ${pass ? 'Projection is within 10 pounds. You may continue to Stage 5.' : 'Projection is more than 10 pounds from the estimate. Revise Stage 3, then run the reality check again.'}
   `;
   if(!pass) showStage(3);
   buildReport(false);
@@ -765,7 +766,7 @@ function load(){
   flash('Loaded your saved quest.', true);
 }
 function clearAll(){
-  if(!confirm('Clear this page and local saved work?')) return;
+  if(!confirm('Clear this page and the saved work in this browser?')) return;
   localStorage.removeItem(STORAGE_KEY);
   location.reload();
 }
@@ -777,7 +778,7 @@ function fillDemo(){
     studentName:'Teacher Demo',
     classPeriod:'Period 1',
     foods:names.map((name,i)=>({name,type:types[i],reason:reasons[i]})),
-    nonsenseReflection:'A nonsense food is not useful because it does not have a real serving size or nutrition facts we can research.',
+    nonsenseReflection:'A nonsense food does not work for this project because it does not have a real serving size or nutrition facts we can research.',
     stage1Reflection:'This supply has fruits, vegetables, proteins, grains, and two combination foods, so it gives me flexible choices for meals.',
     nutrition:names.map(name=>{
       const key = Object.keys(ASSIST).find(k => name.toLowerCase().includes(k)) || 'sandwich';
@@ -786,7 +787,7 @@ function fillDemo(){
     }),
     meals:[],
     reality:{age:15, gender:'female', activity:1.55, heightFt:5, heightIn:5, weightLb:125, tryCount:0},
-    learningSummary:'I learned that a realistic plan needs serving sizes, nutrition facts, and enough energy to match the person using it.',
+    learningSummary:'I learned that a useful plan needs serving sizes, nutrition facts, and enough energy to match the person using it.',
     concepts:CONCEPTS.map(()=>true)
   };
   const mealNames = [
