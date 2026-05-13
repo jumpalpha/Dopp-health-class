@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weight Control Quest - Dopp Health Class</title>
+<meta name="description" content="A student-facing nutrition, meal planning, and energy balance quest for health class.">
+<style>
+:root {
+  --bg: #f5f7fb;
+  --ink: #172033;
+  --muted: #5c687d;
+  --card: #ffffff;
+  --line: #dbe2ee;
+  --gold: #b77900;
+  --green: #127a53;
+  --blue: #2463c9;
+  --red: #b42335;
+  --soft: #eef4ff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 260px);
+  color: var(--ink);
+}
+header {
+  padding: 22px clamp(14px, 4vw, 42px);
+  background: #111827;
+  color: #fff;
+  border-bottom: 5px solid #f2b705;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.back {
+  color: #f9d56b;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+}
+h1 {
+  margin: 12px 0 6px;
+  font-size: clamp(28px, 6vw, 54px);
+  line-height: 1;
+}
+.subtitle {
+  margin: 0;
+  color: #d7e3ff;
+  max-width: 820px;
+  line-height: 1.5;
+}
+main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px clamp(12px, 3vw, 28px) 64px;
+}
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(245, 247, 251, 0.94);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+button, .button-link {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #fff;
+  background: var(--blue);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+button.secondary { background: #435066; }
+button.green { background: var(--green); }
+button.gold { background: var(--gold); }
+button.red { background: var(--red); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.stage-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(110px, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+.stage-tab {
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 10px;
+}
+.stage-tab.active {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+.card, .stage {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(31, 41, 55, 0.08);
+}
+.card { padding: 18px; margin-bottom: 16px; }
+.stage { padding: clamp(14px, 3vw, 24px); display: none; }
+.stage.active { display: block; }
+h2 { margin: 0 0 10px; font-size: clamp(22px, 4vw, 32px); }
+h3 { margin: 18px 0 10px; }
+.help {
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+label {
+  display: grid;
+  gap: 5px;
+  font-weight: 800;
+  font-size: 13px;
+}
+input, select, textarea {
+  width: 100%;
+  border: 1px solid #c9d3e4;
+  border-radius: 10px;
+  padding: 10px;
+  font: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+textarea { min-height: 76px; resize: vertical; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th, td {
+  border-bottom: 1px solid var(--line);
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: #f2f5fb; position: sticky; top: 68px; z-index: 2; }
+td input, td select, td textarea { min-width: 105px; }
+.wide-table { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 800;
+  font-size: 12px;
+}
+.status {
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+  background: #fff8df;
+  border: 1px solid #f3d06a;
+  color: #5c4100;
+  line-height: 1.5;
+}
+.status.good { background: #eafaf2; border-color: #9edcbf; color: #0d5137; }
+.status.bad { background: #fff0f1; border-color: #f2a9b4; color: #7a1020; }
+.meal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.meal-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  background: #fbfcff;
+}
+.meal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.meal-total {
+  background: #111827;
+  color: #fff;
+  border-radius: 10px;
+  padding: 8px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.summary-box {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  background: #fbfcff;
+}
+.summary-box b { display: block; font-size: 20px; margin-top: 4px; }
+.checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+.checkline {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-weight: 700;
+  color: var(--ink);
+}
+.checkline input { width: auto; margin-top: 2px; }
+#finalReport {
+  background: #fff;
+  border: 2px solid #111827;
+  color: #111827;
+}
+.report-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 2px solid #111827;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+.report-cols {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 14px;
+}
+.small { font-size: 12px; color: var(--muted); }
+.hidden { display: none !important; }
+@media (max-width: 820px) {
+  .stage-tabs, .grid, .grid-3, .meal-grid, .summary-grid, .report-cols, .checklist {
+    grid-template-columns: 1fr;
+  }
+  th { position: static; }
+  .toolbar { position: static; }
+}
+@media print {
+  body { background: #fff; }
+  header, .toolbar, .stage-tabs, .stage, .no-print { display: none !important; }
+  main { padding: 0; max-width: none; }
+  #finalReport { display: block !important; border: 0; box-shadow: none; padding: 0; }
+  .card { box-shadow: none; border: 0; margin: 0; }
+  @page { size: letter; margin: .45in; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <a class="back" href="index.html">Back to Dopp Health Class</a>
+    <span class="badge">Standalone Student App</span>
+  </div>
+  <div class="topbar" style="display:block">
+    <h1>Weight Control Quest</h1>
+    <p class="subtitle">Build a real food supply, research nutrition, design a 3-day plan, and compare it with your personal energy needs. This is about learning, not judging bodies.</p>
+  </div>
+</header>
+
+<main>
+  <div class="toolbar no-print">
+    <button class="gold" id="demoBtn">Fill Teacher Demo</button>
+    <button class="green" id="saveBtn">Save</button>
+    <button class="secondary" id="loadBtn">Load</button>
+    <button class="secondary" id="clearBtn">Clear</button>
+    <button class="green" id="reportBtn">Build Final Report</button>
+    <button class="red" id="printBtn">Print / Save PDF</button>
+  </div>
+
+  <section class="card">
+    <div class="grid">
+      <label>Student name
+        <input id="studentName" placeholder="Your name">
+      </label>
+      <label>Class period
+        <input id="classPeriod" placeholder="Example: Period 3">
+      </label>
+    </div>
+    <div id="saveStatus" class="status hidden"></div>
+  </section>
+
+  <div class="stage-tabs no-print">
+    <button class="stage-tab active" data-stage="1">1 Food Supply</button>
+    <button class="stage-tab" data-stage="2">2 Research</button>
+    <button class="stage-tab" data-stage="3">3 Meal Plan</button>
+    <button class="stage-tab" data-stage="4">4 Reality Check</button>
+    <button class="stage-tab" data-stage="5">5 Summary</button>
+  </div>
+
+  <section class="stage active" id="stage1">
+    <h2>Stage 1: Choose 15 Foods</h2>
+    <p class="help">Choose exactly 13 natural foods and exactly 2 combination foods. Write a reason for every food. Natural foods are close to their original form. Combination foods mix multiple ingredients, such as a sandwich, soup, burrito, or pasta dish.</p>
+    <div class="wide-table">
+      <table>
+        <thead><tr><th>#</th><th>Food</th><th>Type</th><th>Reason for choosing it</th></tr></thead>
+        <tbody id="foodRows"></tbody>
+      </table>
+    </div>
+    <div id="foodCountStatus" class="status"></div>
+    <h3>Nonsense Food Reflection Detour</h3>
+    <p class="help">Some food names sound fun but do not help with real nutrition planning. Explain why a nonsense food like "rainbow battery pizza" would not work for this project.</p>
+    <textarea id="nonsenseReflection" placeholder="A nonsense food is not useful because..."></textarea>
+    <h3>Food Supply Reflection</h3>
+    <textarea id="stage1Reflection" placeholder="What patterns do you notice in your food choices? What might be easy or hard about planning with them?"></textarea>
+  </section>
+
+  <section class="stage" id="stage2">
+    <h2>Stage 2: Nutrition Research</h2>
+    <p class="help">Research nutrition for each food. The first 5 foods must be entered manually. Foods 6-15 include a quick assist that gives a starting estimate you can edit.</p>
+    <div class="wide-table">
+      <table>
+        <thead><tr><th>#</th><th>Food</th><th>Serving size</th><th>Calories</th><th>Carbs g</th><th>Protein g</th><th>Fat g</th><th>Fiber g</th><th>Assist</th></tr></thead>
+        <tbody id="nutritionRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="stage" id="stage3">
+    <h2>Stage 3: 3-Day Meal Plan</h2>
+    <p class="help">Plan breakfast, lunch, dinner, and snack for 3 days. Each card totals itself from servings multiplied by nutrition per serving.</p>
+    <div class="summary-grid">
+      <div class="summary-box">Average daily calories<b id="avgCalories">0</b></div>
+      <div class="summary-box">Average daily carbs<b id="avgCarbs">0g</b></div>
+      <div class="summary-box">Average daily protein<b id="avgProtein">0g</b></div>
+      <div class="summary-box">Average daily fat<b id="avgFat">0g</b></div>
+    </div>
+    <div class="meal-grid" id="mealCards"></div>
+  </section>
+
+  <section class="stage" id="stage4">
+    <h2>Stage 4: Personal Reality Check</h2>
+    <p class="help">This estimate compares your meal-plan average to a basic energy-needs formula. It is not a medical diagnosis. Bodies are different, and the goal is to learn how energy balance works.</p>
+    <div class="grid-3">
+      <label>Age
+        <input id="age" type="number" min="10" max="25" placeholder="15">
+      </label>
+      <label>Gender for formula
+        <select id="gender">
+          <option value="">Choose</option>
+          <option value="female">Female formula</option>
+          <option value="male">Male formula</option>
+        </select>
+      </label>
+      <label>Activity level
+        <select id="activity">
+          <option value="1.2">Low activity</option>
+          <option value="1.375">Light activity</option>
+          <option value="1.55">Moderate activity</option>
+          <option value="1.725">High activity</option>
+        </select>
+      </label>
+      <label>Height feet
+        <input id="heightFt" type="number" min="3" max="7" placeholder="5">
+      </label>
+      <label>Height inches
+        <input id="heightIn" type="number" min="0" max="11" placeholder="6">
+      </label>
+      <label>Weight pounds
+        <input id="weightLb" type="number" min="50" max="400" placeholder="135">
+      </label>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="green" id="realityBtn">Run Stage 4 Reality Check</button>
+      <span class="badge">Try count: <span id="tryCount">0</span></span>
+    </div>
+    <div id="realityResult" class="status"></div>
+  </section>
+
+  <section class="stage" id="stage5">
+    <h2>Stage 5: Learning Summary</h2>
+    <p class="help">Explain what you learned. Use supportive language and focus on skills: planning, research, portions, balance, and revision.</p>
+    <textarea id="learningSummary" placeholder="In this quest I learned..."></textarea>
+    <h3>Concept Checklist</h3>
+    <div class="checklist" id="conceptChecklist"></div>
+  </section>
+
+  <section class="card" id="finalReport">
+    <div class="report-title">
+      <div>
+        <h2>Final One-Page Summary</h2>
+        <p class="small">Use the Print / Save PDF button to turn this into a printable PDF.</p>
+      </div>
+      <div class="small" id="reportStudent">Name: --<br>Period: --</div>
+    </div>
+    <div id="reportBody">Fill out the quest, then choose Build Final Report.</div>
+  </section>
+</main>
+
+<datalist id="foodOptions"></datalist>
+
+<script>
+const STORAGE_KEY = 'weightControlQuest.v1';
+const FOOD_COUNT = 15;
+const MEALS = ['Breakfast','Lunch','Dinner','Snack'];
+const CONCEPTS = [
+  'Natural foods and combination foods are different.',
+  'Serving size changes the nutrition totals.',
+  'Calories are energy, not a moral score.',
+  'Carbohydrates, protein, fat, and fiber each matter.',
+  'A 3-day plan can be averaged to estimate daily intake.',
+  'BMR and TDEE are estimates, not perfect numbers.',
+  'A plan can be revised when the projection is unrealistic.',
+  'Supportive health language is better than body-shaming language.'
+];
+const ASSIST = {
+  apple:['1 medium',95,25,0.5,0.3,4],
+  banana:['1 medium',105,27,1,0.4,3],
+  orange:['1 medium',62,15,1,0.2,3],
+  grapes:['1 cup',104,27,1,0.2,1],
+  strawberries:['1 cup',49,12,1,0.5,3],
+  blueberries:['1 cup',84,21,1,0.5,4],
+  carrots:['1 cup',52,12,1,0.3,4],
+  broccoli:['1 cup',55,11,4,0.6,5],
+  spinach:['2 cups',14,2,2,0.2,2],
+  potato:['1 medium',161,37,4,0.2,4],
+  rice:['1 cup cooked',205,45,4,0.4,1],
+  oats:['1/2 cup dry',150,27,5,3,4],
+  egg:['1 large',72,0,6,5,0],
+  chicken:['3 oz',165,0,26,4,0],
+  salmon:['3 oz',177,0,17,11,0],
+  beans:['1/2 cup',114,20,8,0.5,7],
+  yogurt:['1 cup plain',150,17,13,4,0],
+  milk:['1 cup',122,12,8,5,0],
+  almonds:['1 oz',164,6,6,14,4],
+  sandwich:['1 sandwich',350,40,18,12,4],
+  burrito:['1 burrito',420,55,20,14,8],
+  soup:['1 bowl',220,28,12,6,5],
+  salad:['1 bowl',180,14,8,10,5],
+  pasta:['1 plate',430,70,16,10,4]
+};
+
+function $(id){ return document.getElementById(id); }
+function num(v){ return Number(v) || 0; }
+function round(v){ return Math.round(v); }
+function showStage(n){
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  $('stage'+n).classList.add('active');
+  document.querySelectorAll('.stage-tab').forEach(b => b.classList.toggle('active', b.dataset.stage == n));
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+function flash(msg, good=true){
+  const box = $('saveStatus');
+  box.className = 'status ' + (good ? 'good' : 'bad');
+  box.textContent = msg;
+  box.classList.remove('hidden');
+}
+
+function makeFoodRows(){
+  const body = $('foodRows');
+  body.innerHTML = '';
+  for(let i=0;i<FOOD_COUNT;i++){
+    body.insertAdjacentHTML('beforeend', `<tr>
+      <td>${i+1}</td>
+      <td><input class="food-name" data-i="${i}" placeholder="Food ${i+1}"></td>
+      <td><select class="food-type" data-i="${i}"><option value="">Choose</option><option>Natural</option><option>Combination</option></select></td>
+      <td><textarea class="food-reason" data-i="${i}" placeholder="Why did you choose this food?"></textarea></td>
+    </tr>`);
+  }
+}
+function makeNutritionRows(){
+  const body = $('nutritionRows');
+  body.innerHTML = '';
+  for(let i=0;i<FOOD_COUNT;i++){
+    body.insertAdjacentHTML('beforeend', `<tr>
+      <td>${i+1}</td>
+      <td><span class="nutrition-food" data-i="${i}">Food ${i+1}</span></td>
+      <td><input class="nut-serving" data-i="${i}" placeholder="1 cup"></td>
+      <td><input class="nut-cal" data-i="${i}" type="number" min="0"></td>
+      <td><input class="nut-carb" data-i="${i}" type="number" min="0" step="0.1"></td>
+      <td><input class="nut-protein" data-i="${i}" type="number" min="0" step="0.1"></td>
+      <td><input class="nut-fat" data-i="${i}" type="number" min="0" step="0.1"></td>
+      <td><input class="nut-fiber" data-i="${i}" type="number" min="0" step="0.1"></td>
+      <td>${i<5 ? '<span class="small">Manual required</span>' : `<button type="button" class="secondary assist-btn" data-i="${i}">Quick Assist</button>`}</td>
+    </tr>`);
+  }
+}
+function makeMealCards(){
+  const wrap = $('mealCards');
+  wrap.innerHTML = '';
+  let idx = 0;
+  for(let d=1; d<=3; d++){
+    for(const meal of MEALS){
+      wrap.insertAdjacentHTML('beforeend', `<div class="meal-card" data-meal="${idx}">
+        <div class="meal-head"><b>Day ${d}: ${meal}</b><span class="badge meal-cal" data-i="${idx}">0 cal</span></div>
+        <label>Meal items<textarea class="meal-items" data-i="${idx}" placeholder="Example: oats, banana, yogurt"></textarea></label>
+        <div class="grid">
+          <label>Food supply used<input class="meal-supply" data-i="${idx}" list="foodOptions" placeholder="Choose or type food"></label>
+          <label>Serving size<input class="meal-serving" data-i="${idx}" placeholder="1 cup"></label>
+        </div>
+        <div class="grid-3">
+          <label>Servings<input class="meal-servings" data-i="${idx}" type="number" min="0" step="0.25" value="1"></label>
+          <label>Calories / serving<input class="meal-cal-input" data-i="${idx}" type="number" min="0"></label>
+          <label>Carbs g / serving<input class="meal-carb-input" data-i="${idx}" type="number" min="0" step="0.1"></label>
+          <label>Protein g / serving<input class="meal-protein-input" data-i="${idx}" type="number" min="0" step="0.1"></label>
+          <label>Fat g / serving<input class="meal-fat-input" data-i="${idx}" type="number" min="0" step="0.1"></label>
+          <label>Fiber g / serving<input class="meal-fiber-input" data-i="${idx}" type="number" min="0" step="0.1"></label>
+        </div>
+        <div class="meal-total" id="mealTotal${idx}">Total: 0 calories, 0g carbs, 0g protein, 0g fat, 0g fiber</div>
+      </div>`);
+      idx++;
+    }
+  }
+}
+function makeChecklist(){
+  $('conceptChecklist').innerHTML = CONCEPTS.map((c,i)=>`<label class="checkline"><input type="checkbox" class="concept" data-i="${i}"><span>${c}</span></label>`).join('');
+}
+
+function collectData(){
+  const foods = [...document.querySelectorAll('.food-name')].map((el,i)=>({
+    name: el.value.trim(),
+    type: document.querySelector(`.food-type[data-i="${i}"]`).value,
+    reason: document.querySelector(`.food-reason[data-i="${i}"]`).value.trim()
+  }));
+  const nutrition = [...Array(FOOD_COUNT)].map((_,i)=>({
+    serving: document.querySelector(`.nut-serving[data-i="${i}"]`).value.trim(),
+    calories: num(document.querySelector(`.nut-cal[data-i="${i}"]`).value),
+    carbs: num(document.querySelector(`.nut-carb[data-i="${i}"]`).value),
+    protein: num(document.querySelector(`.nut-protein[data-i="${i}"]`).value),
+    fat: num(document.querySelector(`.nut-fat[data-i="${i}"]`).value),
+    fiber: num(document.querySelector(`.nut-fiber[data-i="${i}"]`).value)
+  }));
+  const meals = [...Array(12)].map((_,i)=>({
+    items: document.querySelector(`.meal-items[data-i="${i}"]`).value.trim(),
+    supply: document.querySelector(`.meal-supply[data-i="${i}"]`).value.trim(),
+    serving: document.querySelector(`.meal-serving[data-i="${i}"]`).value.trim(),
+    servings: num(document.querySelector(`.meal-servings[data-i="${i}"]`).value),
+    calories: num(document.querySelector(`.meal-cal-input[data-i="${i}"]`).value),
+    carbs: num(document.querySelector(`.meal-carb-input[data-i="${i}"]`).value),
+    protein: num(document.querySelector(`.meal-protein-input[data-i="${i}"]`).value),
+    fat: num(document.querySelector(`.meal-fat-input[data-i="${i}"]`).value),
+    fiber: num(document.querySelector(`.meal-fiber-input[data-i="${i}"]`).value)
+  }));
+  return {
+    studentName: $('studentName').value.trim(),
+    classPeriod: $('classPeriod').value.trim(),
+    foods,
+    nonsenseReflection: $('nonsenseReflection').value.trim(),
+    stage1Reflection: $('stage1Reflection').value.trim(),
+    nutrition,
+    meals,
+    reality: {
+      age: num($('age').value),
+      gender: $('gender').value,
+      activity: num($('activity').value),
+      heightFt: num($('heightFt').value),
+      heightIn: num($('heightIn').value),
+      weightLb: num($('weightLb').value),
+      tryCount: num($('tryCount').textContent)
+    },
+    learningSummary: $('learningSummary').value.trim(),
+    concepts: [...document.querySelectorAll('.concept')].map(c=>c.checked)
+  };
+}
+function applyData(data){
+  if(!data) return;
+  $('studentName').value = data.studentName || '';
+  $('classPeriod').value = data.classPeriod || '';
+  (data.foods || []).forEach((f,i)=>{
+    if(i>=FOOD_COUNT) return;
+    document.querySelector(`.food-name[data-i="${i}"]`).value = f.name || '';
+    document.querySelector(`.food-type[data-i="${i}"]`).value = f.type || '';
+    document.querySelector(`.food-reason[data-i="${i}"]`).value = f.reason || '';
+  });
+  $('nonsenseReflection').value = data.nonsenseReflection || '';
+  $('stage1Reflection').value = data.stage1Reflection || '';
+  (data.nutrition || []).forEach((n,i)=>{
+    if(i>=FOOD_COUNT) return;
+    document.querySelector(`.nut-serving[data-i="${i}"]`).value = n.serving || '';
+    document.querySelector(`.nut-cal[data-i="${i}"]`).value = n.calories || '';
+    document.querySelector(`.nut-carb[data-i="${i}"]`).value = n.carbs || '';
+    document.querySelector(`.nut-protein[data-i="${i}"]`).value = n.protein || '';
+    document.querySelector(`.nut-fat[data-i="${i}"]`).value = n.fat || '';
+    document.querySelector(`.nut-fiber[data-i="${i}"]`).value = n.fiber || '';
+  });
+  (data.meals || []).forEach((m,i)=>{
+    if(i>=12) return;
+    document.querySelector(`.meal-items[data-i="${i}"]`).value = m.items || '';
+    document.querySelector(`.meal-supply[data-i="${i}"]`).value = m.supply || '';
+    document.querySelector(`.meal-serving[data-i="${i}"]`).value = m.serving || '';
+    document.querySelector(`.meal-servings[data-i="${i}"]`).value = m.servings || 0;
+    document.querySelector(`.meal-cal-input[data-i="${i}"]`).value = m.calories || '';
+    document.querySelector(`.meal-carb-input[data-i="${i}"]`).value = m.carbs || '';
+    document.querySelector(`.meal-protein-input[data-i="${i}"]`).value = m.protein || '';
+    document.querySelector(`.meal-fat-input[data-i="${i}"]`).value = m.fat || '';
+    document.querySelector(`.meal-fiber-input[data-i="${i}"]`).value = m.fiber || '';
+  });
+  const r = data.reality || {};
+  $('age').value = r.age || '';
+  $('gender').value = r.gender || '';
+  $('activity').value = r.activity || 1.2;
+  $('heightFt').value = r.heightFt || '';
+  $('heightIn').value = r.heightIn || '';
+  $('weightLb').value = r.weightLb || '';
+  $('tryCount').textContent = r.tryCount || 0;
+  $('learningSummary').value = data.learningSummary || '';
+  (data.concepts || []).forEach((checked,i)=>{
+    const box = document.querySelector(`.concept[data-i="${i}"]`);
+    if(box) box.checked = checked;
+  });
+  syncFoodNames();
+  updateFoodStatus();
+  updateMealTotals();
+  buildReport(false);
+}
+
+function syncFoodNames(){
+  const data = collectData();
+  document.querySelectorAll('.nutrition-food').forEach((el,i)=>{
+    el.textContent = data.foods[i].name || `Food ${i+1}`;
+  });
+  $('foodOptions').innerHTML = data.foods.filter(f=>f.name).map(f=>`<option value="${escapeHtml(f.name)}"></option>`).join('');
+}
+function updateFoodStatus(){
+  const data = collectData();
+  const natural = data.foods.filter(f=>f.type === 'Natural').length;
+  const combo = data.foods.filter(f=>f.type === 'Combination').length;
+  const reasons = data.foods.filter(f=>f.reason).length;
+  const ok = natural === 13 && combo === 2 && reasons === 15;
+  $('foodCountStatus').className = 'status ' + (ok ? 'good' : '');
+  $('foodCountStatus').textContent = `Natural foods: ${natural}/13 | Combination foods: ${combo}/2 | Reasons: ${reasons}/15`;
+}
+function assistFood(i){
+  const food = collectData().foods[i].name.toLowerCase();
+  let hit = Object.keys(ASSIST).find(k => food.includes(k));
+  if(!hit) hit = 'sandwich';
+  const v = ASSIST[hit];
+  document.querySelector(`.nut-serving[data-i="${i}"]`).value = v[0];
+  document.querySelector(`.nut-cal[data-i="${i}"]`).value = v[1];
+  document.querySelector(`.nut-carb[data-i="${i}"]`).value = v[2];
+  document.querySelector(`.nut-protein[data-i="${i}"]`).value = v[3];
+  document.querySelector(`.nut-fat[data-i="${i}"]`).value = v[4];
+  document.querySelector(`.nut-fiber[data-i="${i}"]`).value = v[5];
+}
+function mealTotals(){
+  const data = collectData();
+  return data.meals.map(m=>({
+    calories: m.servings * m.calories,
+    carbs: m.servings * m.carbs,
+    protein: m.servings * m.protein,
+    fat: m.servings * m.fat,
+    fiber: m.servings * m.fiber
+  }));
+}
+function updateMealTotals(){
+  const totals = mealTotals();
+  totals.forEach((t,i)=>{
+    $(`mealTotal${i}`).textContent = `Total: ${round(t.calories)} calories, ${round(t.carbs)}g carbs, ${round(t.protein)}g protein, ${round(t.fat)}g fat, ${round(t.fiber)}g fiber`;
+    document.querySelector(`.meal-cal[data-i="${i}"]`).textContent = `${round(t.calories)} cal`;
+  });
+  const sum = totals.reduce((a,t)=>({
+    calories:a.calories+t.calories, carbs:a.carbs+t.carbs, protein:a.protein+t.protein, fat:a.fat+t.fat, fiber:a.fiber+t.fiber
+  }), {calories:0,carbs:0,protein:0,fat:0,fiber:0});
+  $('avgCalories').textContent = round(sum.calories/3);
+  $('avgCarbs').textContent = round(sum.carbs/3) + 'g';
+  $('avgProtein').textContent = round(sum.protein/3) + 'g';
+  $('avgFat').textContent = round(sum.fat/3) + 'g';
+}
+function getAverageCalories(){
+  return mealTotals().reduce((sum,t)=>sum+t.calories,0) / 3;
+}
+function runRealityCheck(){
+  updateMealTotals();
+  const data = collectData();
+  const r = data.reality;
+  if(!r.age || !r.gender || !r.heightFt || !r.weightLb){
+    $('realityResult').className = 'status bad';
+    $('realityResult').textContent = 'Please enter age, formula choice, height, weight, and activity level.';
+    return false;
+  }
+  const heightIn = r.heightFt * 12 + r.heightIn;
+  const cm = heightIn * 2.54;
+  const kg = r.weightLb / 2.20462;
+  const bmr = r.gender === 'male'
+    ? (10 * kg + 6.25 * cm - 5 * r.age + 5)
+    : (10 * kg + 6.25 * cm - 5 * r.age - 161);
+  const tdee = bmr * r.activity;
+  const avg = getAverageCalories();
+  const projected = ((avg - tdee) * 365) / 3500;
+  const pass = Math.abs(projected) <= 10;
+  if(!pass){
+    $('tryCount').textContent = num($('tryCount').textContent) + 1;
+  }
+  $('realityResult').className = 'status ' + (pass ? 'good' : 'bad');
+  $('realityResult').innerHTML = `
+    <b>BMR estimate:</b> ${round(bmr)} calories/day<br>
+    <b>TDEE estimate:</b> ${round(tdee)} calories/day<br>
+    <b>Your meal-plan average:</b> ${round(avg)} calories/day<br>
+    <b>One-year projection:</b> ${projected >= 0 ? '+' : ''}${projected.toFixed(1)} pounds<br>
+    ${pass ? 'Projection is within 10 pounds. You may continue to Stage 5.' : 'Projection is more than 10 pounds. Revise Stage 3, then run the reality check again.'}
+  `;
+  if(!pass) showStage(3);
+  buildReport(false);
+  return pass;
+}
+function buildReport(show=true){
+  updateMealTotals();
+  const data = collectData();
+  const totals = mealTotals();
+  const dayTotals = [0,1,2].map(day => totals.slice(day*4, day*4+4).reduce((sum,t)=>sum+t.calories,0));
+  const avg = getAverageCalories();
+  const checked = data.concepts.map((v,i)=>v ? CONCEPTS[i] : null).filter(Boolean);
+  $('reportStudent').innerHTML = `Name: ${escapeHtml(data.studentName || '--')}<br>Period: ${escapeHtml(data.classPeriod || '--')}`;
+  $('reportBody').innerHTML = `
+    <div class="report-cols">
+      <div>
+        <h3>Food Supply</h3>
+        <p><b>Natural foods:</b> ${data.foods.filter(f=>f.type==='Natural').length}/13<br>
+        <b>Combination foods:</b> ${data.foods.filter(f=>f.type==='Combination').length}/2</p>
+        <p><b>Reflection:</b> ${escapeHtml(data.stage1Reflection || 'Not written yet.')}</p>
+        <h3>3-Day Plan</h3>
+        <p>Day 1: ${round(dayTotals[0])} cal | Day 2: ${round(dayTotals[1])} cal | Day 3: ${round(dayTotals[2])} cal</p>
+        <p><b>Average:</b> ${round(avg)} calories/day</p>
+      </div>
+      <div>
+        <h3>Reality Check</h3>
+        <p>${$('realityResult').textContent || 'Run Stage 4 to complete this section.'}</p>
+        <h3>Learning Summary</h3>
+        <p>${escapeHtml(data.learningSummary || 'Not written yet.')}</p>
+      </div>
+    </div>
+    <h3>Concepts Learned</h3>
+    <p>${checked.length ? checked.map(escapeHtml).join('<br>') : 'Checklist not completed yet.'}</p>
+  `;
+  if(show) flash('Final report updated. Use Print / Save PDF when you are ready.', true);
+}
+function escapeHtml(text){
+  return String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(collectData())); flash('Saved on this Chromebook/browser.', true); }
+function load(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw){ flash('No saved Weight Control Quest found in this browser yet.', false); return; }
+  applyData(JSON.parse(raw));
+  flash('Loaded your saved quest.', true);
+}
+function clearAll(){
+  if(!confirm('Clear this page and local saved work?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+function fillDemo(){
+  const names = ['Oats','Banana','Greek yogurt','Apple','Chicken breast','Brown rice','Broccoli','Carrots','Black beans','Spinach','Salmon','Almonds','Blueberries','Turkey sandwich','Vegetable soup'];
+  const types = [...Array(13).fill('Natural'), 'Combination', 'Combination'];
+  const reasons = names.map(n => `${n} adds useful nutrients and can fit into a balanced meal plan.`);
+  const demo = {
+    studentName:'Teacher Demo',
+    classPeriod:'Period 1',
+    foods:names.map((name,i)=>({name,type:types[i],reason:reasons[i]})),
+    nonsenseReflection:'A nonsense food is not useful because it does not have a real serving size or nutrition facts we can research.',
+    stage1Reflection:'This supply has fruits, vegetables, proteins, grains, and two combination foods, so it gives me flexible choices for meals.',
+    nutrition:names.map(name=>{
+      const key = Object.keys(ASSIST).find(k => name.toLowerCase().includes(k)) || 'sandwich';
+      const v = ASSIST[key];
+      return {serving:v[0], calories:v[1], carbs:v[2], protein:v[3], fat:v[4], fiber:v[5]};
+    }),
+    meals:[],
+    reality:{age:15, gender:'female', activity:1.55, heightFt:5, heightIn:5, weightLb:125, tryCount:0},
+    learningSummary:'I learned that a realistic plan needs serving sizes, nutrition facts, and enough energy to match the person using it.',
+    concepts:CONCEPTS.map(()=>true)
+  };
+  const mealNames = [
+    ['Oats, banana, yogurt','Oats','1 bowl',1,520,72,24,12,8],
+    ['Turkey sandwich, carrots','Turkey sandwich','1 sandwich',1,590,65,30,18,8],
+    ['Chicken, rice, broccoli','Chicken breast','1 plate',1,710,78,45,18,8],
+    ['Apple and almonds','Apple','1 snack',1,290,31,7,14,7],
+    ['Yogurt, blueberries, oats','Greek yogurt','1 bowl',1,540,68,28,13,8],
+    ['Vegetable soup and rice','Vegetable soup','1 bowl',1,620,86,22,14,10],
+    ['Salmon, rice, spinach','Salmon','1 plate',1,720,62,42,26,6],
+    ['Banana and almonds','Banana','1 snack',1,285,33,7,14,7],
+    ['Eggs, oats, blueberries','Oats','1 breakfast',1,560,64,27,18,8],
+    ['Beans, rice, spinach','Black beans','1 bowl',1,650,98,28,10,15],
+    ['Chicken, potato, broccoli','Chicken breast','1 plate',1,720,70,48,18,10],
+    ['Yogurt and apple','Greek yogurt','1 snack',1,300,42,14,4,4]
+  ];
+  demo.meals = mealNames.map(m=>({items:m[0], supply:m[1], serving:m[2], servings:m[3], calories:m[4], carbs:m[5], protein:m[6], fat:m[7], fiber:m[8]}));
+  applyData(demo);
+  save();
+  runRealityCheck();
+  showStage(4);
+}
+
+function wireEvents(){
+  document.querySelectorAll('.stage-tab').forEach(b=>b.addEventListener('click',()=>showStage(b.dataset.stage)));
+  document.addEventListener('input', e=>{
+    if(e.target.matches('.food-name,.food-type,.food-reason')){ syncFoodNames(); updateFoodStatus(); }
+    if(e.target.matches('.meal-card input,.meal-card textarea')) updateMealTotals();
+  });
+  document.addEventListener('click', e=>{
+    if(e.target.matches('.assist-btn')) assistFood(Number(e.target.dataset.i));
+  });
+  $('demoBtn').addEventListener('click', fillDemo);
+  $('saveBtn').addEventListener('click', save);
+  $('loadBtn').addEventListener('click', load);
+  $('clearBtn').addEventListener('click', clearAll);
+  $('reportBtn').addEventListener('click', ()=>buildReport(true));
+  $('printBtn').addEventListener('click', ()=>{ buildReport(false); window.print(); });
+  $('realityBtn').addEventListener('click', runRealityCheck);
+}
+
+makeFoodRows();
+makeNutritionRows();
+makeMealCards();
+makeChecklist();
+wireEvents();
+updateFoodStatus();
+updateMealTotals();
+buildReport(false);
+</script>
+</body>
+</html>
