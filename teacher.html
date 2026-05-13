@@ -1005,52 +1005,39 @@ async function loadProgressData() {
   document.getElementById('lb-body').innerHTML =
     '<tr><td colspan="8" class="lb-empty">⏳ Fetching student data…</td></tr>';
 
-  const [studRes, progRes, daysRes] = await Promise.all([
-    db.from('students').select('id, display_name, avatar, class_code').eq('trimester', TRIMESTER),
-    db.from('quest_progress').select('student_id, task_key'),
-    db.from('active_days').select('student_id, day_date'),
-  ]);
+  const { data, error } = await db.rpc('get_leaderboard_data', { p_trimester: TRIMESTER });
 
-  if (studRes.error || progRes.error || daysRes.error) {
-    const msg = (studRes.error || progRes.error || daysRes.error).message;
-    setLbError('Supabase error: ' + msg);
+  if (error) {
+    setLbError('Supabase error: ' + error.message);
     document.getElementById('lb-body').innerHTML =
       '<tr><td colspan="8" class="lb-empty">Could not load data. Check console for details.</td></tr>';
     lbLoading = false;
     return;
   }
 
-  const taskCounts = {}, dayCounts = {}, streakCounts = {};
-  (progRes.data || []).forEach(r => { taskCounts[r.student_id] = (taskCounts[r.student_id] || 0) + 1; });
-
-  // streak: consecutive days from today going backwards
-  const daysByStudent = {};
-  (daysRes.data || []).forEach(r => {
-    if (!daysByStudent[r.student_id]) daysByStudent[r.student_id] = new Set();
-    daysByStudent[r.student_id].add(r.day_date);
-    dayCounts[r.student_id] = (dayCounts[r.student_id] || 0) + 1;
-  });
-  Object.entries(daysByStudent).forEach(([sid, daySet]) => {
+  lbData = (data || []).map(s => {
+    const daySet = new Set(s.day_dates || []);
     let streak = 0, d = new Date();
     while (true) {
       const key = d.toISOString().slice(0,10);
       if (daySet.has(key)) { streak++; d.setDate(d.getDate()-1); }
       else break;
     }
-    streakCounts[sid] = streak;
+    const tasks = Number(s.task_count || 0);
+    return {
+      id: s.id,
+      display_name: s.display_name,
+      avatar: s.avatar,
+      class_code: s.class_code,
+      tasks,
+      xp: tasks * XP_PER_TASK,
+      days: daySet.size,
+      streak,
+    };
   });
-
-  lbData = (studRes.data || []).map(s => ({
-    ...s,
-    tasks  : taskCounts[s.id] || 0,
-    xp     : (taskCounts[s.id] || 0) * XP_PER_TASK,
-    days   : dayCounts[s.id]   || 0,
-    streak : streakCounts[s.id] || 0,
-  }));
   lbLoading = false;
   renderLeaderboard();
 }
-
 function renderLeaderboard() {
   if (!lbData) return;
   let rows = lbFilter === 'all' ? [...lbData] : lbData.filter(s => s.class_code === lbFilter);

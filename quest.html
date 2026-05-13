@@ -385,22 +385,21 @@ async function hashPin(pin) {
 // ─── LOAD PROGRESS FROM SUPABASE ─────────────────────────────
 async function loadProgress() {
   const [{ data: tasks }, { data: days }] = await Promise.all([
-    db.from('quest_progress').select('task_key').eq('student_id', student.id),
-    db.from('active_days').select('day_date').eq('student_id', student.id)
+    db.rpc('get_student_tasks', { p_student_id: student.id }),
+    db.rpc('get_student_days', { p_student_id: student.id })
   ]);
   doneKeys = new Set((tasks || []).map(t => t.task_key));
   doneDays = new Set((days || []).map(d => d.day_date));
 }
-
-// ─── INIT ─────────────────────────────────────────────────────
 async function init() {
   const sid = localStorage.getItem('qSID_' + TRIMESTER);
   if (sid) {
-    const { data } = await db.from('students')
-      .select('id,display_name,avatar,class_code')
-      .eq('id', sid).eq('trimester', TRIMESTER).maybeSingle();
-    if (data) {
-      student = data;
+    const { data } = await db.rpc('get_student_by_id', {
+      p_student_id: sid,
+      p_trimester: TRIMESTER
+    });
+    if (data && data.length) {
+      student = data[0];
       await loadProgress();
       render();
       return;
@@ -410,10 +409,6 @@ async function init() {
   showStep(1);
   document.getElementById('modal').classList.add('show');
 }
-
-// ═══════════════════════════════════════════════════════════
-// LOGIN FLOW
-// ═══════════════════════════════════════════════════════════
 function showStep(n) {
   document.getElementById('mstep1').style.display  = n === 1 ? 'block' : 'none';
   document.getElementById('mstep2a').style.display = n === 2 ? 'block' : 'none';
@@ -430,14 +425,17 @@ async function checkStudent() {
   const { data: cc } = await db.from('class_codes').select('code').eq('code', code).eq('trimester', TRIMESTER).maybeSingle();
   if (!cc) { err.textContent = 'Invalid class code. Check with your teacher.'; return; }
 
-  const { data: existing } = await db.from('students')
-    .select('id,display_name,avatar,class_code')
-    .eq('class_code', code).eq('trimester', TRIMESTER).ilike('last_name', last).maybeSingle();
+  const { data: existing, error } = await db.rpc('find_student_for_login', {
+    p_class_code: code,
+    p_last_name: last,
+    p_trimester: TRIMESTER
+  });
+  if (error) { err.textContent = 'Error checking account. Try again.'; return; }
 
   err.textContent = '';
-  if (existing) {
-    foundStudent = existing;
-    document.getElementById('m-return-sub').textContent = `Welcome back, ${existing.display_name}! Enter your PIN.`;
+  if (existing && existing.length) {
+    foundStudent = existing[0];
+    document.getElementById('m-return-sub').textContent = `Welcome back, ${foundStudent.display_name}! Enter your PIN.`;
     showStep(2);
     setTimeout(() => document.getElementById('m-pin-return').focus(), 100);
   } else {
@@ -446,7 +444,6 @@ async function checkStudent() {
     setTimeout(() => document.getElementById('m-display').focus(), 100);
   }
 }
-
 async function loginReturning() {
   const pin = document.getElementById('m-pin-return').value.trim();
   const err = document.getElementById('m-err2a');
@@ -454,19 +451,21 @@ async function loginReturning() {
   err.textContent = 'Verifying...';
 
   const hash = await hashPin(pin);
-  const { data } = await db.from('students')
-    .select('id,display_name,avatar,class_code,pin_hash').eq('id', foundStudent.id).maybeSingle();
+  const { data, error } = await db.rpc('verify_student_pin', {
+    p_student_id: foundStudent.id,
+    p_pin_hash: hash,
+    p_trimester: TRIMESTER
+  });
 
-  if (!data || data.pin_hash !== hash) { err.textContent = 'Incorrect PIN. Try again.'; return; }
+  if (error || !data || !data.length) { err.textContent = 'Incorrect PIN. Try again.'; return; }
 
-  student = { id: data.id, display_name: data.display_name, avatar: data.avatar, class_code: data.class_code };
+  student = data[0];
   localStorage.setItem('qSID_' + TRIMESTER, student.id);
   document.getElementById('modal').classList.remove('show');
   await loadProgress();
   render();
   showToast(`Welcome back, ${student.display_name}! ⚔`);
 }
-
 async function registerNew() {
   const name    = document.getElementById('m-display').value.trim();
   const pin     = document.getElementById('m-pin-new').value.trim();
@@ -478,24 +477,28 @@ async function registerNew() {
   err.textContent = 'Creating your hero...';
 
   const hash = await hashPin(pin);
-  const { data, error } = await db.from('students').insert({
-    class_code: foundStudent.class_code, last_name: foundStudent.last_name,
-    display_name: name, pin_hash: hash, avatar: selectedAv, trimester: TRIMESTER
-  }).select('id,display_name,avatar,class_code').maybeSingle();
+  const { data, error } = await db.rpc('create_student_profile', {
+    p_class_code: foundStudent.class_code,
+    p_last_name: foundStudent.last_name,
+    p_display_name: name,
+    p_pin_hash: hash,
+    p_avatar: selectedAv,
+    p_trimester: TRIMESTER
+  });
 
-  if (error) {
-    err.textContent = error.code === '23505'
+  if (error || !data || !data.length) {
+    err.textContent = error && error.code === '23505'
       ? 'That name already exists in your class. See your teacher.'
       : 'Error creating account. Try again.';
     return;
   }
-  student = data;
+  student = data[0];
   localStorage.setItem('qSID_' + TRIMESTER, student.id);
   document.getElementById('modal').classList.remove('show');
+  await loadProgress();
   render();
   showToast(`Welcome, ${student.display_name}! Your quest begins! ⚔`);
 }
-
 // ═══════════════════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════════════════
@@ -624,13 +627,10 @@ async function toggleTask(realmId, ti) {
   const key = `${realmId}_${ti}`;
   if (doneKeys.has(key)) {
     doneKeys.delete(key);
-    await db.from('quest_progress').delete().eq('student_id', student.id).eq('task_key', key);
+    await db.rpc('remove_task', { p_student_id: student.id, p_task_key: key });
   } else {
     doneKeys.add(key);
-    await db.from('quest_progress').upsert(
-      { student_id: student.id, task_key: key },
-      { onConflict: 'student_id,task_key' }
-    );
+    await db.rpc('complete_task', { p_student_id: student.id, p_task_key: key });
     const realm = REALMS.find(r => r.id === realmId);
     const allDone = realm.tasks.every((_,i) => doneKeys.has(`${realmId}_${i}`));
     if (allDone) showToast(`🏆 Badge Earned: ${realm.badge}!`);
@@ -638,22 +638,17 @@ async function toggleTask(realmId, ti) {
   }
   render();
 }
-
 async function toggleDay(ds) {
   if (!student) return;
   if (doneDays.has(ds)) {
     doneDays.delete(ds);
-    await db.from('active_days').delete().eq('student_id', student.id).eq('day_date', ds);
+    await db.rpc('remove_day', { p_student_id: student.id, p_day_date: ds });
   } else {
     doneDays.add(ds);
-    await db.from('active_days').upsert(
-      { student_id: student.id, day_date: ds },
-      { onConflict: 'student_id,day_date' }
-    );
+    await db.rpc('complete_day', { p_student_id: student.id, p_day_date: ds });
   }
   render();
 }
-
 async function markToday() {
   const t = todayStr();
   if (!doneDays.has(t)) { await toggleDay(t); showToast('✓ Today marked as active!'); }
@@ -663,14 +658,10 @@ async function markToday() {
 async function resetAll() {
   if (!student) return;
   if (!confirm('Reset ALL your progress? This cannot be undone.')) return;
-  await Promise.all([
-    db.from('quest_progress').delete().eq('student_id', student.id),
-    db.from('active_days').delete().eq('student_id', student.id)
-  ]);
+  await db.rpc('reset_student_progress', { p_student_id: student.id });
   doneKeys = new Set(); doneDays = new Set();
   render(); showToast('Progress reset. New adventure begins!');
 }
-
 function showModal() {
   if (student) {
     if (confirm('Log out? You can log back in with your class code, last name, and PIN.')) {
