@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Game Arcade — Legend of Wellness</title>
+<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<link rel="canonical" href="https://doppsclass.com/arcade.html">
+<meta property="og:title" content="Game Arcade — Legend of Wellness">
+<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/arcade.html">
+<meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -195,7 +202,7 @@ function renderGames(){
       <div class="game-realm">Best for: ${g.realm}</div>
       <div class="game-desc">${g.desc}</div>
       <div class="game-features">${g.features.map(f=>`<span class="feature">${f}</span>`).join('')}</div>
-      <a class="play-btn" href="${g.file}" target="_blank">▶ Play Now</a>
+      <a class="play-btn" href="${g.file}" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
     </div>`).join('');
 }
 
