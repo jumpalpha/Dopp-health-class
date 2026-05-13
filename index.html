@@ -91,6 +91,22 @@ nav {
 .nav-link:hover { color: var(--text); border-color: var(--border); background: var(--bg-card); }
 .nav-link.active { color: var(--gold); border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.06); }
 
+.nav-logo,
+.nav-link.active,
+.section-label,
+.realm-num,
+.ch-num,
+.type-daily,
+.game-play-btn:hover,
+.footer-brand,
+.tt-title,
+footer a[href="teacher.html"] {
+  -webkit-text-stroke: 0.25px rgba(35, 18, 0, 0.72);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.55),
+    0 0 6px rgba(255, 215, 0, 0.24);
+}
+
 /* ── HERO ── */
 .hero {
   position: relative; z-index: 1;
@@ -117,6 +133,8 @@ nav {
   margin-bottom: 8px;
   background: linear-gradient(135deg, #FFD700 0%, #FFB800 40%, #FF8C00 70%, #FF3B5C 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.35px rgba(42, 21, 0, 0.78);
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.62)) drop-shadow(0 0 7px rgba(255,215,0,0.24));
   animation: fadeUp .8s .1s ease both;
 }
 .hero-subtitle {
@@ -309,6 +327,8 @@ nav {
   font-size: 36px; font-weight: 700;
   background: linear-gradient(135deg, var(--gold), #FF8C00);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.3px rgba(35, 18, 0, 0.72);
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.55)) drop-shadow(0 0 6px rgba(255,215,0,0.2));
   margin-bottom: 6px;
 }
 .stat-label { font-size: 13px; color: var(--text-dim); font-weight: 600; }
