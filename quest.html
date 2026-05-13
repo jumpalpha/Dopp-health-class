@@ -356,7 +356,7 @@ const ACHIEVEMENTS = [
   { id:'first_step', icon:'🌟', name:'First Step', desc:'Complete your first task', req: s => s.totalTasks >= 1 },
   { id:'week1', icon:'📅', name:'Week One Warrior', desc:'Complete 7 days of activity', req: s => s.totalDays >= 7 },
   { id:'realm1', icon:'🏰', name:'Keep Cleared', desc:'Finish Realm I', req: s => s.badges.includes('Wellness Apprentice') },
-  { id:'vocab100', icon:'📚', name:'Vocab Master', desc:'Complete 100 vocab tasks', req: s => s.vocabTasks >= 100 },
+  { id:'vocab100', icon:'📚', name:'Vocab Master', desc:'Complete all 28 vocab tasks', req: s => s.vocabTasks >= 28 },
   { id:'halfway', icon:'⚡', name:'Halfway There', desc:'Complete 4 realms', req: s => s.badges.length >= 4 },
   { id:'shadow', icon:'💀', name:'Shadow Slayer', desc:'Beat the Shadow World', req: s => s.badges.includes('Shadow Slayer') },
   { id:'no_hints', icon:'🧠', name:'No Hints Needed', desc:'Earn 500 XP', req: s => s.xp >= 500 },
@@ -537,9 +537,11 @@ function calcStats() {
 
 function calcCompletedChapters() {
   const chDone = new Set();
-  doneKeys.forEach(k => {
-    const realm = REALMS.find(r => r.id === k.split('_')[0]);
-    if (realm) realm.chapters.forEach(c => chDone.add(c));
+  REALMS.forEach(r => {
+    r.tasks.forEach((task, ti) => {
+      const match = task.match(/^Read Chapter (\d+) PDF$/i);
+      if (match && doneKeys.has(`${r.id}_${ti}`)) chDone.add(Number(match[1]));
+    });
   });
   return chDone.size;
 }
