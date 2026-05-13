@@ -375,6 +375,7 @@ let doneKeys    = new Set();  // completed task_keys
 let doneDays    = new Set();  // active day strings YYYY-MM-DD
 let selectedAv  = '⚔';
 let foundStudent = null;      // temp holder during login
+let studentPinHash = null;    // session-only proof for progress changes
 
 // ─── PIN HASHING ─────────────────────────────────────────────
 async function hashPin(pin) {
@@ -385,26 +386,30 @@ async function hashPin(pin) {
 // ─── LOAD PROGRESS FROM SUPABASE ─────────────────────────────
 async function loadProgress() {
   const [{ data: tasks }, { data: days }] = await Promise.all([
-    db.rpc('get_student_tasks', { p_student_id: student.id }),
-    db.rpc('get_student_days', { p_student_id: student.id })
+    db.rpc('get_student_tasks', { p_student_id: student.id, p_pin_hash: studentPinHash }),
+    db.rpc('get_student_days', { p_student_id: student.id, p_pin_hash: studentPinHash })
   ]);
   doneKeys = new Set((tasks || []).map(t => t.task_key));
   doneDays = new Set((days || []).map(d => d.day_date));
 }
 async function init() {
   const sid = localStorage.getItem('qSID_' + TRIMESTER);
-  if (sid) {
-    const { data } = await db.rpc('get_student_by_id', {
+  const savedHash = sessionStorage.getItem('qPIN_' + TRIMESTER);
+  if (sid && savedHash) {
+    const { data } = await db.rpc('get_student_by_auth', {
       p_student_id: sid,
+      p_pin_hash: savedHash,
       p_trimester: TRIMESTER
     });
     if (data && data.length) {
       student = data[0];
+      studentPinHash = savedHash;
       await loadProgress();
       render();
       return;
     }
     localStorage.removeItem('qSID_' + TRIMESTER);
+    sessionStorage.removeItem('qPIN_' + TRIMESTER);
   }
   showStep(1);
   document.getElementById('modal').classList.add('show');
@@ -460,7 +465,9 @@ async function loginReturning() {
   if (error || !data || !data.length) { err.textContent = 'Incorrect PIN. Try again.'; return; }
 
   student = data[0];
+  studentPinHash = hash;
   localStorage.setItem('qSID_' + TRIMESTER, student.id);
+  sessionStorage.setItem('qPIN_' + TRIMESTER, hash);
   document.getElementById('modal').classList.remove('show');
   await loadProgress();
   render();
@@ -493,7 +500,9 @@ async function registerNew() {
     return;
   }
   student = data[0];
+  studentPinHash = hash;
   localStorage.setItem('qSID_' + TRIMESTER, student.id);
+  sessionStorage.setItem('qPIN_' + TRIMESTER, hash);
   document.getElementById('modal').classList.remove('show');
   await loadProgress();
   render();
@@ -627,10 +636,10 @@ async function toggleTask(realmId, ti) {
   const key = `${realmId}_${ti}`;
   if (doneKeys.has(key)) {
     doneKeys.delete(key);
-    await db.rpc('remove_task', { p_student_id: student.id, p_task_key: key });
+    await db.rpc('remove_task', { p_student_id: student.id, p_pin_hash: studentPinHash, p_task_key: key });
   } else {
     doneKeys.add(key);
-    await db.rpc('complete_task', { p_student_id: student.id, p_task_key: key });
+    await db.rpc('complete_task', { p_student_id: student.id, p_pin_hash: studentPinHash, p_task_key: key });
     const realm = REALMS.find(r => r.id === realmId);
     const allDone = realm.tasks.every((_,i) => doneKeys.has(`${realmId}_${i}`));
     if (allDone) showToast(`🏆 Badge Earned: ${realm.badge}!`);
@@ -642,10 +651,10 @@ async function toggleDay(ds) {
   if (!student) return;
   if (doneDays.has(ds)) {
     doneDays.delete(ds);
-    await db.rpc('remove_day', { p_student_id: student.id, p_day_date: ds });
+    await db.rpc('remove_day', { p_student_id: student.id, p_pin_hash: studentPinHash, p_day_date: ds });
   } else {
     doneDays.add(ds);
-    await db.rpc('complete_day', { p_student_id: student.id, p_day_date: ds });
+    await db.rpc('complete_day', { p_student_id: student.id, p_pin_hash: studentPinHash, p_day_date: ds });
   }
   render();
 }
@@ -658,7 +667,7 @@ async function markToday() {
 async function resetAll() {
   if (!student) return;
   if (!confirm('Reset ALL your progress? This cannot be undone.')) return;
-  await db.rpc('reset_student_progress', { p_student_id: student.id });
+  await db.rpc('reset_student_progress', { p_student_id: student.id, p_pin_hash: studentPinHash });
   doneKeys = new Set(); doneDays = new Set();
   render(); showToast('Progress reset. New adventure begins!');
 }
@@ -666,7 +675,8 @@ function showModal() {
   if (student) {
     if (confirm('Log out? You can log back in with your class code, last name, and PIN.')) {
       localStorage.removeItem('qSID_' + TRIMESTER);
-      student = null; doneKeys = new Set(); doneDays = new Set();
+      sessionStorage.removeItem('qPIN_' + TRIMESTER);
+      student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set();
       showStep(1);
       document.getElementById('modal').classList.add('show');
     }
