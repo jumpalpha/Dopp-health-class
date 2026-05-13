@@ -218,7 +218,7 @@ function drawOverlay(){
     // Sort finishers
     const t=(elapsed/1000).toFixed(2);
     const best=bestTime?(bestTime/1000).toFixed(2)+'s':'--';
-    cx.font='bold 30px Nunito';cx.fillStyle=GOLD;cx.fillText('🏁 Finish!',W/2,H/2-50);
+    cx.font='bold 30px Nunito';cx.fillStyle=GOLD;cx.fillText('You Win!',W/2,H/2-50);
     cx.font='20px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Your time: ${t}s`,W/2,H/2-14);
     cx.font='13px Nunito';cx.fillStyle='rgba(240,244,255,0.5)';cx.fillText(`Personal Best: ${best}`,W/2,H/2+14);
     cx.font='11px Nunito';cx.fillStyle='rgba(240,244,255,0.35)';cx.fillText('World Record: 9.58s (Usain Bolt)',W/2,H/2+36);

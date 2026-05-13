@@ -82,6 +82,7 @@ let groundY = H - 60;
 
 const WORLD_RECORD = 23.0;
 const MAX_DIST = 26;
+const WIN_DIST = 8.0;
 
 function initBall(){
   ball = null;
@@ -395,14 +396,14 @@ function draw(){
     ctx.fillStyle='#FFD700';
     ctx.font='bold 22px Cinzel Decorative, serif';
     ctx.textAlign='center';
-    ctx.fillText('Round Complete!', W/2, H/2-40);
+    ctx.fillText(bestDist>=WIN_DIST?'You Win!':'Try Again', W/2, H/2-40);
     ctx.font='16px Cinzel, serif';
     ctx.fillStyle='#fff';
     ctx.fillText('Best: '+bestDist.toFixed(2)+'m', W/2, H/2-10);
     const pct = (bestDist/WORLD_RECORD*100).toFixed(0);
     ctx.font='13px Nunito';
     ctx.fillStyle='#00E5A0';
-    ctx.fillText(pct+'% of World Record ('+WORLD_RECORD+'m)', W/2, H/2+15);
+    ctx.fillText('Goal: '+WIN_DIST.toFixed(1)+'m - '+pct+'% of World Record ('+WORLD_RECORD+'m)', W/2, H/2+15);
     ctx.fillStyle='#38BFFF';
     ctx.font='13px Nunito';
     ctx.fillText('Click to play again', W/2, H/2+45);

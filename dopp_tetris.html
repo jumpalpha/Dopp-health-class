@@ -58,14 +58,14 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
 
 <div id="start-overlay">
   <h2>Dopp Tetris</h2>
-  <p style="font-family:'Nunito';color:#aaa;margin-bottom:8px;text-align:center;max-width:340px">Stack food groups to clear lines and learn nutrition!</p>
+  <p style="font-family:'Nunito';color:#aaa;margin-bottom:8px;text-align:center;max-width:340px">Clear 10 lines to win the nutrition stack challenge!</p>
   <div class="key-hint">
     <span class="key">← → Move</span><span class="key">↑ Rotate</span><span class="key">↓ Drop</span><span class="key">Space Hard Drop</span>
   </div>
   <button id="start-btn">Start Game</button>
 </div>
 <div id="overlay">
-  <h2>Game Over</h2>
+  <h2 id="overlay-title">Game Over</h2>
   <p id="final-score">Score: 0</p>
   <p class="best" id="best-score">Best: 0</p>
   <button id="play-btn">Play Again</button>
@@ -78,6 +78,7 @@ const side = document.getElementById('sideCanvas');
 const sCtx = side.getContext('2d');
 
 const COLS=10, ROWS=20, BS=30; // block size
+const WIN_LINES=10;
 const W=COLS*BS, H=ROWS*BS;
 
 const PIECES = {
@@ -92,7 +93,7 @@ const PIECES = {
 const PIECE_KEYS = Object.keys(PIECES);
 const SCORES_PER_LINE = [0,100,300,500,800];
 
-let board, current, next, score, lines, level, gameOver, dropTimer, dropInterval, animId;
+let board, current, next, score, lines, level, gameOver, wonGame, dropTimer, dropInterval, animId;
 
 function newBoard(){return Array.from({length:ROWS},()=>Array(COLS).fill(null));}
 
@@ -152,6 +153,7 @@ function clearLines(){
       if(pKey) showTip(PIECES[pKey].tip);
     }
     drawSidebar();
+    if(lines>=WIN_LINES){winGame();}
   }
 }
 
@@ -168,9 +170,10 @@ function showTip(msg){
 function initGame(){
   board=newBoard();
   current=rndPiece(); next=rndPiece();
-  score=0; lines=0; level=0; gameOver=false;
+  score=0; lines=0; level=0; gameOver=false; wonGame=false;
   dropInterval=800; dropTimer=0;
   document.getElementById('score-val').textContent='0';
+  document.getElementById('overlay-title').textContent='Game Over';
 }
 
 let last=0;
@@ -277,6 +280,13 @@ function drawSidebar(){
   sCtx.fillStyle=next.color;
   sCtx.textAlign='center';
   sCtx.fillText(next.name,80,280);
+}
+
+function winGame(){
+  wonGame=true;
+  endGame();
+  document.getElementById('overlay-title').textContent='You Win!';
+  document.getElementById('final-score').textContent='Lines Cleared: '+lines+' / '+WIN_LINES;
 }
 
 function endGame(){

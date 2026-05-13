@@ -30,8 +30,8 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
 .card.flipped .card-inner{transform:rotateY(180deg)}
 .card-front,.card-back{position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 .card-back{background:#1a1a2e;border:2px solid rgba(255,215,0,0.3);font-family:'Cinzel Decorative',cursive;font-size:clamp(22px,5vw,32px);color:#FFD700}
-.card-front{background:#0d1530;border:2px solid #38BFFF;transform:rotateY(180deg);font-size:clamp(28px,7vw,44px);flex-direction:column;gap:4px}
-.card-front .card-label{font-family:'Cinzel',sans-serif;font-size:clamp(8px,2vw,11px);color:#38BFFF;text-align:center;padding:0 4px}
+.card-front{background:#0d1530;border:2px solid #38BFFF;transform:rotateY(180deg);flex-direction:column;gap:6px;overflow:hidden}.card-front:before{content:"";position:absolute;inset:7px;border-radius:8px;background:radial-gradient(circle at 50% 36%,rgba(56,191,255,.16),transparent 42%);z-index:-1}
+.card-front .card-label{font-family:'Cinzel',sans-serif;font-size:clamp(8px,2vw,11px);color:#38BFFF;text-align:center;padding:0 4px}.match-sprite{position:relative;width:52%;aspect-ratio:1;min-width:42px;max-width:62px}.match-sprite:before,.match-sprite:after{content:"";position:absolute}.sprite-apple{border-radius:52% 48% 48% 52%;background:linear-gradient(135deg,#ff5b68,#c91f3f);box-shadow:inset -8px -8px 0 rgba(90,0,20,.18),0 0 16px rgba(255,91,104,.28)}.sprite-apple:before{width:10px;height:14px;background:#6b3b18;border-radius:6px;left:50%;top:-9px;transform:translateX(-50%) rotate(12deg)}.sprite-apple:after{width:22px;height:12px;background:#00E5A0;border-radius:90% 20% 90% 20%;right:2px;top:-7px;transform:rotate(-22deg)}.sprite-water{border-radius:55% 55% 62% 62%;background:linear-gradient(145deg,#38BFFF,#0d78d6);clip-path:polygon(50% 0,84% 42%,70% 92%,30% 92%,16% 42%);box-shadow:0 0 18px rgba(56,191,255,.34)}.sprite-water:after{width:13px;height:22px;border-radius:50%;background:rgba(255,255,255,.45);left:32%;top:24%;transform:rotate(24deg)}.sprite-runner{border-radius:50%;background:#00E5A0;box-shadow:0 0 16px rgba(0,229,160,.35)}.sprite-runner:before{width:46px;height:8px;background:#FFD700;left:7px;top:34px;transform:rotate(-24deg);border-radius:8px;box-shadow:-8px 16px 0 #38BFFF,17px 20px 0 #38BFFF}.sprite-runner:after{width:18px;height:18px;background:#f2bc91;border-radius:50%;left:21px;top:8px;box-shadow:0 17px 0 4px #00E5A0}.sprite-sleep{border-radius:14px;background:linear-gradient(145deg,#7d5cff,#312073);box-shadow:0 0 16px rgba(125,92,255,.35)}.sprite-sleep:before{width:42px;height:22px;background:#f2bc91;border-radius:22px 22px 10px 10px;left:9px;top:24px}.sprite-sleep:after{content:"Z";font:bold 24px Cinzel;color:#FFD700;right:5px;top:0}.sprite-yoga{border-radius:50%;background:#38BFFF;box-shadow:0 0 16px rgba(56,191,255,.3)}.sprite-yoga:before{width:18px;height:18px;background:#f2bc91;border-radius:50%;left:21px;top:7px;box-shadow:0 18px 0 7px #00E5A0}.sprite-yoga:after{width:50px;height:8px;background:#FFD700;border-radius:8px;left:5px;bottom:12px;box-shadow:12px -12px 0 -1px #FFD700,-12px -12px 0 -1px #FFD700}.sprite-broccoli{border-radius:50%;background:#00E5A0;box-shadow:-14px 4px 0 #13b877,14px 4px 0 #13b877,0 0 16px rgba(0,229,160,.32)}.sprite-broccoli:after{width:15px;height:29px;background:#71c35a;border-radius:8px;left:22px;top:30px}.sprite-heart{background:#FF3B5C;transform:rotate(-45deg);border-radius:8px;box-shadow:0 0 16px rgba(255,59,92,.34)}.sprite-heart:before,.sprite-heart:after{width:100%;height:100%;background:#FF3B5C;border-radius:50%}.sprite-heart:before{left:0;top:-50%}.sprite-heart:after{left:50%;top:0}.sprite-brain{border-radius:45% 55% 50% 50%;background:linear-gradient(145deg,#ff9ed0,#c764ff);box-shadow:0 0 16px rgba(199,100,255,.32)}.sprite-brain:before{inset:11px;border:3px solid rgba(28,26,46,.55);border-left:0;border-right:0;border-radius:50%}.sprite-brain:after{width:3px;height:44px;background:rgba(28,26,46,.55);left:50%;top:8px;border-radius:3px}
 .card.matched .card-inner{border-radius:10px}
 .card.matched .card-front{border:2px solid #00E5A0;box-shadow:0 0 16px rgba(0,229,160,0.5);background:#0a2a1a}
 #win-overlay{position:fixed;inset:0;background:rgba(248,244,232,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;display:none}
@@ -65,14 +65,14 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
 </div>
 <script>
 const CARDS=[
-  {emoji:'🍎',label:'Apple'},
-  {emoji:'💧',label:'Water'},
-  {emoji:'🏃',label:'Runner'},
-  {emoji:'😴',label:'Sleep'},
-  {emoji:'🧘',label:'Yoga'},
-  {emoji:'🥦',label:'Broccoli'},
-  {emoji:'❤️',label:'Heart'},
-  {emoji:'🧠',label:'Brain'},
+  {sprite:'apple',label:'Apple'},
+  {sprite:'water',label:'Water'},
+  {sprite:'runner',label:'Runner'},
+  {sprite:'sleep',label:'Sleep'},
+  {sprite:'yoga',label:'Yoga'},
+  {sprite:'broccoli',label:'Broccoli'},
+  {sprite:'heart',label:'Heart'},
+  {sprite:'brain',label:'Brain'},
 ];
 let moves,matched,firstCard,secondCard,canFlip,timerInt,seconds,gameStarted;
 
@@ -101,11 +101,12 @@ function buildGrid(){
     const div=document.createElement('div');
     div.className='card';
     div.dataset.id=i;
-    div.dataset.emoji=card.emoji;
+    div.dataset.sprite=card.sprite;
+    div.dataset.key=card.label;
     div.dataset.label=card.label;
     div.innerHTML=`<div class="card-inner">
       <div class="card-back">?</div>
-      <div class="card-front">${card.emoji}<span class="card-label">${card.label}</span></div>
+      <div class="card-front"><span class="match-sprite sprite-${card.sprite}"></span><span class="card-label">${card.label}</span></div>
     </div>`;
     div.addEventListener('click',()=>flipCard(div));
     grid.appendChild(div);
@@ -134,7 +135,7 @@ function flipCard(div){
 }
 
 function checkMatch(){
-  const match=firstCard.dataset.emoji===secondCard.dataset.emoji;
+  const match=firstCard.dataset.key===secondCard.dataset.key;
   if(match){
     firstCard.classList.add('matched');
     secondCard.classList.add('matched');

@@ -20,7 +20,7 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
 #back-btn:hover{opacity:1}
 #game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(16px,3vw,22px);text-align:center}
 #score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:90px}
-#main{display:flex;flex-direction:column;align-items:center;padding:16px 10px 30px;width:100%;max-width:820px}
+#main{display:flex;flex-direction:column;align-items:center;padding:16px 10px 30px;width:100%;max-width:820px}.sprite-panel{width:min(420px,100%);min-height:76px;display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:10px 14px;border:1px solid rgba(56,191,255,.24);border-radius:8px;background:linear-gradient(135deg,rgba(13,21,48,.88),rgba(28,26,46,.92))}.dopp-sprite{position:relative;width:54px;height:58px;flex:0 0 54px}.dopp-sprite:before{content:"";position:absolute;left:14px;top:3px;width:26px;height:26px;border-radius:50%;background:#f2bc91;box-shadow:0 22px 0 6px #00E5A0}.dopp-sprite:after{content:"";position:absolute;left:9px;top:33px;width:36px;height:12px;border-radius:12px;background:#FFD700;box-shadow:-9px 14px 0 -3px #38BFFF,9px 14px 0 -3px #38BFFF}.sprite-copy{font-family:'Nunito',sans-serif;font-size:13px;line-height:1.35;color:#d8f7ff}.sprite-copy b{font-family:'Cinzel',sans-serif;color:#FFD700}.word-sprite{display:none;position:relative;width:54px;height:54px;margin:-2px 0 9px;border-radius:50%;background:#00E5A0;box-shadow:0 0 22px rgba(0,229,160,.35)}.word-sprite:before{content:"";position:absolute;inset:13px;border-radius:4px;background:#FFD700;box-shadow:0 0 0 5px rgba(28,26,46,.2)}.word-sprite:after{content:"OK";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:bold 13px Cinzel;color:#1C1A2E}body.solved .word-sprite{display:block;animation:pop .45s ease}@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
 #grid{display:grid;grid-template-rows:repeat(6,1fr);gap:6px;margin-bottom:16px}
 .tile-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .tile{width:58px;height:58px;border:2px solid rgba(255,255,255,0.2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',sans-serif;font-size:26px;font-weight:600;text-transform:uppercase;color:#fff;transition:border-color .1s;user-select:none;transform-style:preserve-3d;position:relative}
@@ -66,6 +66,8 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
   <span id="score-display">Wins: <span id="wins">0</span></span>
 </div>
 <div id="main">
+  <div class="sprite-panel"><span class="dopp-sprite"></span><div class="sprite-copy"><b>Dopp Decoder</b><br>Find the 5-letter health word and unlock the sprite badge.</div></div>
+  <div class="word-sprite" aria-hidden="true"></div>
   <div id="message"></div>
   <div id="grid"></div>
   <div id="fact-box"></div>
@@ -126,6 +128,7 @@ wins = parseInt(localStorage.getItem('wordleWins')||'0');
 document.getElementById('wins').textContent = wins;
 
 function init(){
+  document.body.classList.remove('solved');
   target = WORDS[Math.floor(Math.random()*WORDS.length)];
   guesses = [];
   currentGuess = '';
@@ -209,7 +212,8 @@ function submitGuess(){
       wins++;
       localStorage.setItem('wordleWins',wins);
       document.getElementById('wins').textContent=wins;
-      showMsg('🎉 Excellent! You got it!');
+      showMsg('Excellent! You got it!');
+      document.body.classList.add('solved');
       showFact();
       endGame();
     } else if(guesses.length===6){

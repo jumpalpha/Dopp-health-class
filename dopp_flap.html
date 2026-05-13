@@ -54,7 +54,7 @@ canvas{display:block;border:2px solid rgba(255,215,0,0.2);border-radius:8px;max-
   <button id="start-btn">Start Game</button>
 </div>
 <div id="overlay" style="display:none">
-  <h2>Oops!</h2>
+  <h2 id="overlay-title">Oops!</h2>
   <p class="cause" id="cause-text">Crashed into a burger tower!</p>
   <p id="final-score">Pipes: 0</p>
   <p id="final-hp">Health items: 0</p>
@@ -68,6 +68,7 @@ const ctx = canvas.getContext('2d');
 const W=480, H=580;
 const GAP=160, PIPE_W=54, BIRD_R=18;
 const GRAVITY=0.38, JUMP=-7.2, PIPE_SPEED=2.4;
+const WIN_PIPES=10;
 
 const DEATH_MSGS=['Crashed into a burger tower!','Hit the fries pile!','Smashed into a soda stack!','Flew into a junk food wall!','Donut dodge that one!'];
 const HEALTH_ICONS=['💊','💧','🏃'];
@@ -277,6 +278,7 @@ function gameLoop(ts){
       p.passed=true; score++;
       document.getElementById('score-val').textContent=score;
       if(score%5===0) speed=Math.min(speed+0.3,5);
+      if(score>=WIN_PIPES){ winGame(); return; }
     }
   });
 
@@ -312,8 +314,22 @@ function endGame(cause){
   cancelAnimationFrame(animId);
   const best=Math.max(score,parseInt(localStorage.getItem('flapBest')||'0'));
   localStorage.setItem('flapBest',best);
+  document.getElementById('overlay-title').textContent='Oops!';
   document.getElementById('cause-text').textContent=cause||'Crashed!';
   document.getElementById('final-score').textContent='Pipes passed: '+score;
+  document.getElementById('final-hp').textContent='Health items: +'+hp;
+  document.getElementById('best-score').textContent='Best: '+best+' pipes';
+  document.getElementById('overlay').style.display='flex';
+}
+
+function winGame(){
+  dead=true;
+  cancelAnimationFrame(animId);
+  const best=Math.max(score,parseInt(localStorage.getItem('flapBest')||'0'));
+  localStorage.setItem('flapBest',best);
+  document.getElementById('overlay-title').textContent='You Win!';
+  document.getElementById('cause-text').textContent='You dodged 10 junk food towers!';
+  document.getElementById('final-score').textContent='Pipes passed: '+score+' / '+WIN_PIPES;
   document.getElementById('final-hp').textContent='Health items: +'+hp;
   document.getElementById('best-score').textContent='Best: '+best+' pipes';
   document.getElementById('overlay').style.display='flex';

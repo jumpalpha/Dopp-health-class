@@ -187,7 +187,7 @@ function drawOverlay(){
     cx.textAlign='center';
     const t=(elapsed/1000).toFixed(2);
     const best=bestTime?(bestTime/1000).toFixed(2)+'s':'--';
-    cx.font='bold 30px Nunito';cx.fillStyle=GOLD;cx.fillText('🏁 Finished!',W/2,H/2-45);
+    cx.font='bold 30px Nunito';cx.fillStyle=GOLD;cx.fillText('You Win!',W/2,H/2-45);
     cx.font='20px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Your time: ${t}s`,W/2,H/2-8);
     cx.font='13px Nunito';cx.fillStyle='rgba(240,244,255,0.5)';cx.fillText(`Best: ${best}`,W/2,H/2+18);
     cx.font='11px Nunito';cx.fillStyle='rgba(240,244,255,0.3)';cx.fillText('World Record: 43.03s (Wayde van Niekerk)',W/2,H/2+38);

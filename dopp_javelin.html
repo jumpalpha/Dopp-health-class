@@ -64,6 +64,7 @@ resize(); window.addEventListener('resize',resize);
 const GROUND_Y = H-60;
 const MAX_DIST = 100; // meters (WR ~98m)
 const WORLD_RECORD = 98.48;
+const WIN_DIST = 30;
 
 let state = 'run'; // run, window, flying, result, done
 let runSpeed = 0;
@@ -328,11 +329,11 @@ function draw(){
     ctx.fillStyle='rgba(5,7,15,0.8)'; ctx.fillRect(0,0,W,H);
     ctx.textAlign='center';
     ctx.fillStyle='#FFD700'; ctx.font='bold 22px Cinzel Decorative,serif';
-    ctx.fillText('Round Complete!', W/2, H/2-50);
+    ctx.fillText(bestDist>=WIN_DIST?'You Win!':'Try Again', W/2, H/2-50);
     ctx.fillStyle='#fff'; ctx.font='16px Cinzel,serif';
     ctx.fillText('Best: '+bestDist.toFixed(2)+'m', W/2, H/2-20);
     ctx.fillStyle='#00E5A0'; ctx.font='13px Nunito';
-    ctx.fillText((bestDist/WORLD_RECORD*100).toFixed(0)+'% of WR ('+WORLD_RECORD+'m)', W/2, H/2+5);
+    ctx.fillText('Goal: '+WIN_DIST+'m - '+(bestDist/WORLD_RECORD*100).toFixed(0)+'% of WR ('+WORLD_RECORD+'m)', W/2, H/2+5);
     ctx.fillStyle='#38BFFF'; ctx.font='13px Nunito';
     ctx.fillText('Click to play again', W/2, H/2+40);
     ctx.textAlign='left';

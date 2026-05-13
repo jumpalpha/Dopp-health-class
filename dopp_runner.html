@@ -42,6 +42,7 @@ const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
 const W=640,H=300;
 const GROUND=240;
+const WIN_SCORE=300;
 let score,bestScore,gameState,animFrame;
 let player,obstacles,vitamins,particles,floatTexts;
 let frameCount,speed,scrollX,scrollX2;
@@ -69,7 +70,7 @@ function initGame(){
 }
 
 function jump(){
-  if(gameState==='dead'){initGame();return;}
+  if(gameState==='dead'||gameState==='win'){initGame();return;}
   if(gameState==='start'){initGame();return;}
   if(player.onGround){
     player.vy=-13;
@@ -98,6 +99,7 @@ function update(){
   score=Math.floor(frameCount*0.15*(speed/4));
   if(frameCount%200===0) speed=Math.min(10,speed+0.3);
   document.getElementById('scoreVal').textContent=score;
+  if(score>=WIN_SCORE){winGame();return;}
 
   // parallax scroll
   scrollX-=speed*0.3;
@@ -162,6 +164,11 @@ function update(){
 
   // flash
   if(flashRed){flashTimer--;if(flashTimer<=0)flashRed=false;}
+}
+
+function winGame(){
+  gameState='win';
+  if(score>bestScore){bestScore=score;localStorage.setItem('runnerBest',bestScore);document.getElementById('bestVal').textContent=bestScore;}
 }
 
 function hitPlayer(){
@@ -256,6 +263,22 @@ function draw(){
     ctx.font='11px Nunito,sans-serif';
     ctx.fillStyle='#FFD700';
     ctx.fillText('Double Jump!',W-12,40);
+  }
+
+  // win overlay
+  if(gameState==='win'){
+    ctx.fillStyle='rgba(5,7,15,0.78)';
+    ctx.fillRect(0,0,W,H);
+    ctx.font='bold 28px Cinzel Decorative,cursive';
+    ctx.fillStyle='#00E5A0';
+    ctx.textAlign='center';
+    ctx.fillText('YOU WIN!',W/2,H/2-30);
+    ctx.font='16px Cinzel,sans-serif';
+    ctx.fillStyle='#FFD700';
+    ctx.fillText('Score: '+score+' / '+WIN_SCORE,W/2,H/2+5);
+    ctx.font='13px Nunito,sans-serif';
+    ctx.fillStyle='#aaa';
+    ctx.fillText('Space / Tap to play again',W/2,H/2+42);
   }
 
   // game over overlay
@@ -386,6 +409,11 @@ function drawPlayer(){
 }
 
 // start state
+score=0;frameCount=0;speed=4;scrollX=0;scrollX2=0;
+player={x:90,y:GROUND,w:28,h:56,vy:0,onGround:true,leg:0,legTimer:0};
+obstacles=[];vitamins=[];particles=[];floatTexts=[];
+doubleJump=false;doubleJumpTimer=0;doubleJumpActive=false;
+flashRed=false;flashTimer=0;
 gameState='start';
 loop();
 </script>

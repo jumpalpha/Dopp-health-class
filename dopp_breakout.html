@@ -76,6 +76,7 @@ const PADDLE_H=12,PADDLE_W_BASE=90;
 const BALL_R=8;
 const BRICK_ROWS=5,BRICK_COLS=10;
 const BRICK_W=54,BRICK_H=22,BRICK_PAD=4,BRICK_OFF_X=12,BRICK_OFF_Y=40;
+const WIN_LEVEL=3;
 
 const BRICK_DATA=[
   {label:'ADDICTION',color:'#FF3B5C',hits:3,pts:30,tip:'Avoiding addiction protects your brain chemistry and mental health.'},
@@ -211,6 +212,7 @@ function update(){
 
   // check win
   if(bricks.every(b=>!b.alive)){
+    if(level>=WIN_LEVEL){ winGame(); return; }
     level++;
     speedMult+=0.15;
     floatTexts.push({x:W/2,y:H/2,text:'Level '+level+'!',color:'#00E5A0',life:120,big:true});
@@ -301,6 +303,15 @@ function endGame(){
   if(score>bestScore){bestScore=score;localStorage.setItem('breakoutBest',bestScore);}
   document.getElementById('ovTitle').textContent='Game Over';
   document.getElementById('ovScore').textContent=score;
+  document.getElementById('ovBest').textContent=bestScore;
+  document.getElementById('overlay').style.display='flex';
+}
+
+function winGame(){
+  gameRunning=false;
+  if(score>bestScore){bestScore=score;localStorage.setItem('breakoutBest',bestScore);}
+  document.getElementById('ovTitle').textContent='You Win!';
+  document.getElementById('ovScore').textContent=score+' (Level '+WIN_LEVEL+' cleared)';
   document.getElementById('ovBest').textContent=bestScore;
   document.getElementById('overlay').style.display='flex';
 }

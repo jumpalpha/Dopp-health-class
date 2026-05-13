@@ -43,6 +43,7 @@ const DOPP_X=120,DOPP_Y=H/2;
 const CIRCLE_R=30; // throwing circle
 const MAX_SPIN=12; // max rotations/s feeling
 const OPTIMAL_RELEASE_WINDOW=0.15; // fraction of rotation that gives best throw
+const WIN_DIST=25;
 
 let phase='idle'; // idle|spinning|flying|landed|done
 let spinSpeed=0,spinAngle=0,throwPower=0;
@@ -278,11 +279,11 @@ function drawOverlay(){
   if(phase==='done'){
     cx.fillStyle='rgba(5,7,15,0.82)';cx.fillRect(0,0,W,H);
     cx.textAlign='center';
-    cx.font='bold 32px Nunito';cx.fillStyle=GOLD;cx.fillText('🏆 All Throws Done!',W/2,H/2-50);
+    cx.font='bold 32px Nunito';cx.fillStyle=GOLD;cx.fillText(bestDist>=WIN_DIST?'You Win!':'Try Again',W/2,H/2-50);
     cx.font='18px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Best: ${bestDist.toFixed(0)}m`,W/2,H/2-10);
     const record=86;
     cx.font='12px Nunito';cx.fillStyle='rgba(240,244,255,0.4)';
-    cx.fillText(`World Record: ${record}m`,W/2,H/2+18);
+    cx.fillText(`Goal: ${WIN_DIST}m - World Record: ${record}m`,W/2,H/2+18);
     cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Click to Throw Again',W/2,H/2+58);
   }
 }

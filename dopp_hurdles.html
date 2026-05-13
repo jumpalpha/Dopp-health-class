@@ -240,7 +240,7 @@ function drawOverlay(){
   } else if(phase==='done'){
     cx.fillStyle='rgba(5,7,15,0.75)';cx.fillRect(0,0,W,H);
     cx.textAlign='center';
-    cx.font='bold 32px Nunito';cx.fillStyle=GOLD;cx.fillText('🏁 Race Complete!',W/2,H/2-30);
+    cx.font='bold 32px Nunito';cx.fillStyle=GOLD;cx.fillText('You Win!',W/2,H/2-30);
     const best=bestTime?(bestTime/1000).toFixed(2)+'s':'--';
     cx.font='14px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Best: ${best}`,W/2,H/2+10);
     cx.font='bold 13px Nunito';cx.fillStyle=GOLD;cx.fillText('Space / Click to Run Again',W/2,H/2+50);

@@ -60,6 +60,7 @@ const STANDARD_X2 = BAR_X + 30;
 const WORLD_RECORD = 2.45;
 const BAR_START = 1.50;
 const BAR_INCREMENT = 0.05;
+const WIN_HEIGHT = 1.70;
 const HEIGHT_SCALE = 80; // pixels per meter above ground for display
 
 let barHeight = BAR_START;
@@ -292,12 +293,12 @@ function draw(){
     ctx.fillStyle='rgba(5,7,15,0.82)'; ctx.fillRect(0,0,W,H);
     ctx.textAlign='center';
     ctx.fillStyle='#FFD700'; ctx.font='bold 22px Cinzel Decorative,serif';
-    ctx.fillText('Round Over!',W/2,H/2-50);
+    ctx.fillText(bestHeight>=WIN_HEIGHT?'You Win!':'Try Again',W/2,H/2-50);
     ctx.fillStyle='#fff'; ctx.font='16px Cinzel,serif';
     ctx.fillText('Best Height: '+bestHeight.toFixed(2)+'m',W/2,H/2-18);
     const pct=(bestHeight/WORLD_RECORD*100).toFixed(0);
     ctx.fillStyle='#00E5A0'; ctx.font='13px Nunito';
-    ctx.fillText(pct+'% of WR ('+WORLD_RECORD+'m)',W/2,H/2+8);
+    ctx.fillText('Goal: '+WIN_HEIGHT.toFixed(2)+'m - '+pct+'% of WR ('+WORLD_RECORD+'m)',W/2,H/2+8);
     ctx.fillStyle='#38BFFF'; ctx.font='13px Nunito';
     ctx.fillText('Click to play again',W/2,H/2+40);
     ctx.textAlign='left';

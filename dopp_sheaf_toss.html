@@ -49,7 +49,7 @@ canvas{border-radius:16px;max-width:100%;touch-action:none;cursor:pointer;displa
     <div class="tip-text">Explosive overhead movements build shoulder and core stability.</div>
   </div>
   <div class="result-screen" id="resultScreen">
-    <div class="result-title">Games Over!</div>
+    <div class="result-title" id="resultTitle">Games Over!</div>
     <div class="big-score" id="bigScore">0 ft</div>
     <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--gold)">Max Height Cleared</div>
     <div class="result-sub" id="resultSub"></div>
@@ -64,6 +64,7 @@ const W = canvas.width, H = canvas.height;
 
 // Game constants
 const RECORD = 56;
+const WIN_HEIGHT = 24;
 const GROUND_Y = H - 60;
 const DOPP_X = 110;
 const BAR_X_LEFT = 460;
@@ -651,6 +652,7 @@ function endGame() {
   document.getElementById('instrLabel').style.display = 'none';
   const rs = document.getElementById('resultScreen');
   rs.style.display = 'flex';
+  document.getElementById('resultTitle').textContent = bestHeight >= WIN_HEIGHT ? 'You Win!' : 'Try Again';
   document.getElementById('bigScore').textContent = bestHeight + ' ft';
   let sub = '';
   if (bestHeight >= RECORD) sub = '🏆 New Record! You\'ve matched the world best!';

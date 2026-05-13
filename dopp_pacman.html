@@ -58,6 +58,7 @@ const ctx=canvas.getContext('2d');
 const CW=560,CH=560;
 const COLS=20,ROWS=20;
 const TS=CW/COLS; // tile size = 28
+const WIN_LEVEL=3;
 
 // 0=path, 1=wall, 2=dot, 3=power pellet
 // Build a hand-crafted maze (20x20)
@@ -133,9 +134,9 @@ function updateHUD(){
 }
 
 document.addEventListener('keydown',e=>{
-  if(gameState==='start'||gameState==='gameover'){
+  if(gameState==='start'||gameState==='gameover'||gameState==='win'){
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D',' '].includes(e.key)){
-      if(gameState==='gameover'){initGame();return;}
+      if(gameState==='gameover'||gameState==='win'){initGame();return;}
       gameState='running';
     }
   }
@@ -155,7 +156,7 @@ document.querySelectorAll('.dpad-btn').forEach(btn=>{
     else if(d==='left') nextDir=[-1,0];
     else if(d==='right') nextDir=[1,0];
     if(gameState==='start') gameState='running';
-    if(gameState==='gameover') initGame();
+    if(gameState==='gameover'||gameState==='win') initGame();
   });
 });
 
@@ -324,6 +325,11 @@ function update(){
   particles=particles.filter(p=>p.life>0);
 }
 
+function winGame(){
+  gameState='win';
+  if(score>bestScore){bestScore=score;localStorage.setItem('pacmanBest',bestScore);}
+}
+
 function playerDie(){
   lives--;updateHUD();
   if(lives<=0){
@@ -339,6 +345,7 @@ function playerDie(){
 }
 
 function nextLevel(){
+  if(level>=WIN_LEVEL){winGame();return;}
   level++;
   updateHUD();
   cloneMaze();
@@ -468,6 +475,25 @@ function draw(){
     ctx.font='13px Nunito,sans-serif';
     ctx.fillStyle='#FFD700';
     ctx.fillText('Press any direction to start',CW/2,CH/2+36);
+  }
+
+  if(gameState==='win'){
+    ctx.fillStyle='rgba(5,7,15,0.82)';
+    ctx.fillRect(0,0,CW,CH);
+    ctx.font='bold 28px Cinzel Decorative,cursive';
+    ctx.fillStyle='#00E5A0';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('YOU WIN!',CW/2,CH/2-40);
+    ctx.font='16px Cinzel,sans-serif';
+    ctx.fillStyle='#FFD700';
+    ctx.fillText('Cleared Level '+WIN_LEVEL,CW/2,CH/2);
+    ctx.font='14px Cinzel,sans-serif';
+    ctx.fillStyle='#00E5A0';
+    ctx.fillText('Score: '+score,CW/2,CH/2+28);
+    ctx.font='13px Nunito,sans-serif';
+    ctx.fillStyle='#aaa';
+    ctx.fillText('Any key or D-pad to play again',CW/2,CH/2+60);
   }
 
   if(gameState==='gameover'){

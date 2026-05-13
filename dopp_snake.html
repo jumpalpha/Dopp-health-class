@@ -50,14 +50,14 @@ canvas{display:block;background:#FDFAF2;border:2px solid rgba(255,215,0,0.25);bo
 
 <div id="start-overlay">
   <h2>Dopp Snake</h2>
-  <p>Eat healthy foods to grow and score points!</p>
+  <p>Eat healthy food sprites to reach 100 points and win!</p>
   <p style="color:#FF3B5C">Avoid junk food — it shrinks you!</p>
   <p style="color:#aaa;font-size:13px;margin-top:8px">Arrow keys / WASD to move</p>
   <button id="start-btn">Start Game</button>
 </div>
 
 <div id="overlay" style="display:none">
-  <h2>Game Over</h2>
+  <h2 id="overlay-title">Game Over</h2>
   <p id="final-score">Score: 0</p>
   <p class="best" id="best-score">Best: 0</p>
   <button id="play-btn">Play Again</button>
@@ -68,6 +68,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const CELL = 28, COLS = 20, ROWS = 20;
 const W = COLS * CELL, H = ROWS * CELL;
+const WIN_SCORE = 100;
 
 const TIPS = [
   "💧 Drink 8 glasses of water daily!",
@@ -90,7 +91,7 @@ const FOODS = [
   {emoji:'🥤', label:'Soda -10',     pts:-10, good:false},
 ];
 
-let snake, dir, nextDir, foods, score, speed, foodCount, tipIndex, gameOver, flashRed, flashTimer, animId;
+let snake, dir, nextDir, foods, score, speed, foodCount, tipIndex, gameOver, wonGame, flashRed, flashTimer, animId;
 
 function initGame() {
   snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
@@ -102,11 +103,13 @@ function initGame() {
   foodCount = 0;
   tipIndex = 0;
   gameOver = false;
+  wonGame = false;
   flashRed = false;
   flashTimer = 0;
   spawnFood();
   spawnFood();
   document.getElementById('score-val').textContent = '0';
+  document.getElementById('overlay-title').textContent = 'Game Over';
 }
 
 function rnd(n){return Math.floor(Math.random()*n)}
@@ -167,6 +170,7 @@ function update(){
       ate = true;
       foodCount++;
       showTip();
+      if(score>=WIN_SCORE){winGame();return;}
       if(!f.good){
         // remove tail segments (shrink)
         if(snake.length > 2){ snake.pop(); snake.pop(); }
@@ -238,6 +242,36 @@ function draw(){
     ctx.beginPath();ctx.arc(ex-4, ey+dir.y*3, 2.5, 0, Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(ex+4, ey+dir.y*3, 2.5, 0, Math.PI*2);ctx.fill();
   }
+}
+
+
+function drawFoodSprite(f, px, py){
+  const good = f.good;
+  ctx.fillStyle = good ? 'rgba(0,229,160,0.12)' : 'rgba(255,59,92,0.15)';
+  ctx.beginPath();ctx.roundRect(px+1,py+1,CELL-2,CELL-2,6);ctx.fill();
+  ctx.save();ctx.translate(px+CELL/2,py+CELL/2-2);
+  if(f.label.includes('Apple')) drawAppleSprite(0,0,10);
+  else if(f.label.includes('Broccoli')) drawBroccoliSprite(0,0,10);
+  else if(f.label.includes('Water')) drawWaterSprite(0,0,11);
+  else if(f.label.includes('Banana')) drawBananaSprite(0,0,11);
+  else if(f.label.includes('Carrot')) drawCarrotSprite(0,0,11);
+  else drawJunkSprite(0,0,11);
+  ctx.restore();
+  ctx.font='bold 8px Nunito';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle = good ? '#00E5A0' : '#FF3B5C';
+  ctx.fillText(f.label, px+CELL/2, py+CELL-3);
+}
+function drawAppleSprite(x,y,r){ctx.fillStyle='#ff5b68';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6b3b18';ctx.fillRect(x-2,y-r-6,4,8);ctx.fillStyle='#00E5A0';ctx.beginPath();ctx.ellipse(x+6,y-r-5,7,3,-.4,0,Math.PI*2);ctx.fill();}
+function drawBroccoliSprite(x,y,r){ctx.fillStyle='#00E5A0';[-8,0,8].forEach(dx=>{ctx.beginPath();ctx.arc(x+dx,y-4,r*.65,0,Math.PI*2);ctx.fill();});ctx.fillStyle='#71c35a';ctx.beginPath();ctx.roundRect(x-4,y+2,8,14,4);ctx.fill();}
+function drawWaterSprite(x,y,r){ctx.fillStyle='#38BFFF';ctx.beginPath();ctx.moveTo(x,y-r);ctx.bezierCurveTo(x+r,y,x+r*.6,y+r,x,y+r);ctx.bezierCurveTo(x-r*.6,y+r,x-r,y,x,y-r);ctx.fill();ctx.fillStyle='rgba(255,255,255,.5)';ctx.beginPath();ctx.ellipse(x-3,y,3,6,.3,0,Math.PI*2);ctx.fill();}
+function drawBananaSprite(x,y,r){ctx.strokeStyle='#FFD700';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.arc(x,y-3,r,0.25*Math.PI,0.95*Math.PI);ctx.stroke();ctx.strokeStyle='#8a5a14';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-3,r,0.25*Math.PI,0.95*Math.PI);ctx.stroke();}
+function drawCarrotSprite(x,y,r){ctx.fillStyle='#ff8c2a';ctx.beginPath();ctx.moveTo(x-8,y-6);ctx.lineTo(x+8,y-6);ctx.lineTo(x,y+13);ctx.closePath();ctx.fill();ctx.fillStyle='#00E5A0';ctx.fillRect(x-2,y-15,4,10);ctx.fillRect(x-9,y-12,18,4);}
+function drawJunkSprite(x,y,r){ctx.fillStyle='#FF3B5C';ctx.beginPath();ctx.roundRect(x-r,y-r,r*2,r*2,4);ctx.fill();ctx.fillStyle='#FFD700';ctx.font='bold 13px Cinzel';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('!',x,y+1);}
+function winGame(){
+  wonGame = true;
+  endGame();
+  document.getElementById('overlay-title').textContent = 'You Win!';
+  document.getElementById('final-score').textContent = 'Wellness Score: ' + score + ' / ' + WIN_SCORE;
 }
 
 function endGame(){

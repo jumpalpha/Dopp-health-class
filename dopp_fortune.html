@@ -58,9 +58,11 @@ canvas{display:block}
     <div class="fortune-sub" id="fortuneSub"></div>
     <div class="lucky-numbers" id="luckyNums"></div>
   </div>
+  <div class="all-done" id="allDone">You Win! Three fortunes unlocked.</div>
 </main>
 
 <script>
+const WIN_COOKIES = 3;
 const fortunes = [
   {text:"Sleep is the original superpower — and it\'s free.",sub:"Your body repairs damaged cells, clears brain toxins, and consolidates memories during sleep. 8 hours is not laziness — it is maintenance.",lucky:"Lucky health numbers: 8, 7, 9, 8"},
   {text:"The best time to drink water was an hour ago. The second best time is NOW.",sub:"Chronic mild dehydration affects mood, concentration, and energy. Most people misidentify thirst as hunger. Drink up, legend.",lucky:"Lucky health numbers: 8, 2, 64, 0"},
@@ -235,6 +237,10 @@ function showFortune(){
   document.getElementById('fortuneText').textContent=f.text;
   document.getElementById('fortuneSub').textContent=f.sub;
   document.getElementById('luckyNums').textContent=f.lucky;
+  if(opened>=WIN_COOKIES){
+    document.getElementById('allDone').style.display='block';
+    document.getElementById('cookieHint').textContent='You win! Keep opening for bonus fortunes.';
+  }
   const scroll=document.getElementById('fortuneScroll');
   scroll.classList.remove('show');
   void scroll.offsetWidth;
