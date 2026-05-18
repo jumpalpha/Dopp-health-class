@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Side Quests — Dopp Health Class</title>
+<meta name="description" content="Optional deep-dive health challenges. Take on a Side Quest to earn extra XP and go beyond the main curriculum.">
+<link rel="canonical" href="https://doppsclass.com/side_quests.html">
+<meta property="og:title" content="Side Quests — Dopp Health Class">
+<meta property="og:description" content="Optional deep-dive health challenges for students who want to go further.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/side_quests.html">
+<meta name="twitter:card" content="summary">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #FFD700;
+  --gold-dim: #B8960C;
+  --emerald: #00E5A0;
+  --sky: #38BFFF;
+  --crimson: #FF3B5C;
+  --wild: #a855f7;
+  --bg-deep: #FDFAF2;
+  --bg-card: rgba(28,26,46,0.05);
+  --border: rgba(28,26,46,0.12);
+  --text: #1C1A2E;
+  --text-dim: rgba(28,26,46,0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: var(--bg-deep); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+#stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(168,85,247,0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(0,229,160,0.07) 0%, transparent 60%),
+    #FDFAF2;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 32px;
+  background: rgba(210,196,168,0.98);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-decoration: none; }
+.nav-logo span { color: var(--text-dim); font-weight: 400; }
+.nav-links { display: flex; gap: 6px; }
+.nav-link { padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--text-dim); text-decoration: none; border: 1px solid transparent; transition: all .2s; }
+.nav-link:hover { color: var(--text); border-color: var(--border); background: var(--bg-card); }
+
+.page-hero {
+  position: relative; z-index: 1;
+  padding: 120px 32px 60px;
+  max-width: 900px; margin: 0 auto;
+  text-align: center;
+}
+.page-badge {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 11px; font-weight: 600; letter-spacing: 3px;
+  color: var(--wild);
+  border: 1px solid rgba(168,85,247,0.3);
+  padding: 6px 16px; border-radius: 20px;
+  margin-bottom: 20px;
+  background: rgba(168,85,247,0.06);
+}
+.page-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 700; line-height: 1.15;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #a855f7 0%, #38BFFF 60%, #00E5A0 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(168,85,247,0.2));
+}
+.page-sub { font-size: 16px; color: var(--text-dim); line-height: 1.7; max-width: 580px; margin: 0 auto; }
+
+.quests-section {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 32px 100px;
+}
+.section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; font-weight: 600; letter-spacing: 3px;
+  color: var(--gold-dim); text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.section-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 700; color: var(--text);
+  margin-bottom: 6px;
+}
+.section-sub { font-size: 14px; color: var(--text-dim); margin-bottom: 28px; line-height: 1.6; }
+
+.quest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.quest-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 24px;
+  text-decoration: none;
+  color: inherit;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: all .25s;
+  position: relative; overflow: hidden;
+}
+.quest-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--quest-accent, var(--wild));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .3s;
+}
+.quest-card:hover { border-color: var(--quest-accent, var(--wild)); transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,0.12); }
+.quest-card:hover::before { transform: scaleX(1); }
+
+.quest-icon { font-size: 36px; }
+.quest-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; font-weight: 600; letter-spacing: 2px;
+  color: var(--quest-accent, var(--wild));
+}
+.quest-title { font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.3; }
+.quest-desc { font-size: 13px; color: var(--text-dim); line-height: 1.65; flex: 1; }
+.quest-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.quest-tag {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 6px;
+  background: rgba(168,85,247,0.1);
+  color: var(--wild);
+  border: 1px solid rgba(168,85,247,0.25);
+}
+.quest-cta {
+  display: block; margin-top: 8px;
+  padding: 10px 0;
+  background: rgba(168,85,247,0.08);
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 10px;
+  color: var(--wild);
+  font-size: 13px; font-weight: 700;
+  text-align: center;
+  transition: all .15s;
+}
+.quest-cta:hover { background: rgba(168,85,247,0.16); }
+
+.coming-soon { opacity: 0.5; pointer-events: none; }
+.coming-soon .quest-label { color: var(--text-dim); }
+.coming-soon .quest-cta { color: var(--text-dim); background: transparent; border-color: var(--border); }
+
+footer {
+  position: relative; z-index: 1;
+  background: rgba(5, 7, 18, 0.96);
+  border-top: 1px solid rgba(255,215,0,0.22);
+  padding: 28px 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+}
+.footer-brand { font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold); font-weight: 600; }
+.footer-tags { font-size: 13px; color: rgba(255,255,255,0.78); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeUp .7s ease both; }
+.fade-in-2 { animation: fadeUp .7s .1s ease both; }
+.fade-in-3 { animation: fadeUp .7s .2s ease both; }
+
+@media (max-width: 700px) {
+  nav { padding: 12px 16px; }
+  .nav-link { padding: 6px 10px; font-size: 12px; }
+  .page-hero { padding: 100px 20px 48px; }
+  .quests-section { padding: 0 20px 80px; }
+  .quest-grid { grid-template-columns: 1fr; }
+}
+</style>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div id="stars"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="leaderboard.html">🏆 Hall</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-badge fade-in">Bonus Content · Optional Missions</div>
+  <h1 class="page-title fade-in-2">Side Quests</h1>
+  <p class="page-sub fade-in-3">Go beyond the main curriculum. Side Quests are optional deep-dive challenges that earn bonus XP and expand your health knowledge into areas the textbook only scratches.</p>
+</div>
+
+<div class="quests-section">
+  <div class="section-label">Available Now</div>
+  <div class="section-title">Active Side Quests</div>
+  <p class="section-sub">Complete any side quest for bonus XP. Show your work to Mr. Dopp for credit.</p>
+
+  <div class="quest-grid">
+
+    <!-- Weight Control Quest -->
+    <a class="quest-card" href="weight-control-quest.html" style="--quest-accent:#00E5A0">
+      <div class="quest-icon">⚖️</div>
+      <div class="quest-label">Nutrition Realm · Side Quest</div>
+      <div class="quest-title">Weight Control Quest</div>
+      <div class="quest-desc">
+        A deep-dive mission into managing weight, body composition, and eating behaviors. Explore caloric balance, the science of metabolism, and how to build a healthy relationship with food — beyond what's in Chapter 11.
+      </div>
+      <div class="quest-tags">
+        <span class="quest-tag" style="background:rgba(0,229,160,0.1);color:#00E5A0;border-color:rgba(0,229,160,0.25)">Nutrition</span>
+        <span class="quest-tag" style="background:rgba(0,229,160,0.1);color:#00E5A0;border-color:rgba(0,229,160,0.25)">Body Image</span>
+        <span class="quest-tag" style="background:rgba(0,229,160,0.1);color:#00E5A0;border-color:rgba(0,229,160,0.25)">Fitness</span>
+      </div>
+      <div class="quest-cta" style="background:rgba(0,229,160,0.08);border-color:rgba(0,229,160,0.25);color:#00E5A0">Start Quest →</div>
+    </a>
+
+    <!-- Placeholder: Coming Soon -->
+    <div class="quest-card coming-soon">
+      <div class="quest-icon">🧠</div>
+      <div class="quest-label">Mind Citadel · Side Quest</div>
+      <div class="quest-title">Mental Health Deep Dive</div>
+      <div class="quest-desc">
+        Coming soon — an extended exploration of anxiety, depression, and building resilience. Includes research activities, journaling prompts, and real-world coping strategies.
+      </div>
+      <div class="quest-tags">
+        <span class="quest-tag">Mental Health</span>
+        <span class="quest-tag">Coping Skills</span>
+      </div>
+      <div class="quest-cta">Coming Soon</div>
+    </div>
+
+    <div class="quest-card coming-soon">
+      <div class="quest-icon">💀</div>
+      <div class="quest-label">Shadow World · Side Quest</div>
+      <div class="quest-title">Substance Use Prevention</div>
+      <div class="quest-desc">
+        Coming soon — a deep look at the opioid epidemic, fentanyl crisis, and the neuroscience of addiction. Includes community prevention project.
+      </div>
+      <div class="quest-tags">
+        <span class="quest-tag">Drugs</span>
+        <span class="quest-tag">Prevention</span>
+      </div>
+      <div class="quest-cta">Coming Soon</div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">⚔ The Legend of Wellness</div>
+  <div class="footer-tags">#OnedayIwokeup &nbsp;·&nbsp; <a href="dopp_games.html" style="color:inherit;text-decoration:none;">#Doppitup</a></div>
+  <a href="index.html" style="font-size:12px;color:rgba(255,255,255,0.6);text-decoration:none">← Back to Home</a>
+</footer>
+
+</body>
+</html>
