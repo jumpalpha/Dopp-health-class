@@ -690,15 +690,16 @@ body.site-home footer {
   }
 }
 
-/* CHAPTER 1 DESIGN PASS */
-body.chapter-one-page {
+/* CHAPTER READER DESIGN PASS */
+body.chapter-reader-page {
   background:
     linear-gradient(135deg, rgba(56,191,255,0.13), transparent 34%),
     linear-gradient(225deg, rgba(0,229,160,0.1), transparent 38%),
     linear-gradient(180deg, #f8fbff 0%, #eef7f6 54%, #fbfbf4 100%) !important;
+  overflow-x: hidden;
 }
 
-body.chapter-one-page #stars {
+body.chapter-reader-page #stars {
   background:
     radial-gradient(ellipse 68% 44% at 42% -8%, rgba(56,191,255,0.2) 0%, transparent 70%),
     radial-gradient(ellipse 42% 32% at 88% 24%, rgba(255,215,0,0.12) 0%, transparent 58%),
@@ -706,51 +707,53 @@ body.chapter-one-page #stars {
     transparent !important;
 }
 
-body.chapter-one-page nav {
+body.chapter-reader-page nav {
   background: rgba(16,24,39,0.94) !important;
   border-bottom: 1px solid rgba(255,255,255,0.12) !important;
   box-shadow: 0 12px 30px rgba(16,24,39,0.16) !important;
 }
 
-body.chapter-one-page .nav-logo {
+body.chapter-reader-page .nav-logo {
   color: #ffd84d !important;
   text-shadow: 0 2px 10px rgba(0,0,0,0.35) !important;
 }
 
-body.chapter-one-page .nav-logo span,
-body.chapter-one-page .nav-link {
+body.chapter-reader-page .nav-logo span,
+body.chapter-reader-page .nav-link {
   color: rgba(255,255,255,0.74) !important;
 }
 
-body.chapter-one-page .nav-links {
+body.chapter-reader-page .nav-links {
   background: rgba(255,255,255,0.06) !important;
   border: 1px solid rgba(255,255,255,0.1) !important;
   border-radius: 999px !important;
   padding: 4px !important;
 }
 
-body.chapter-one-page .nav-link {
+body.chapter-reader-page .nav-link {
   border-radius: 999px !important;
   padding: 8px 14px !important;
 }
 
-body.chapter-one-page .nav-link:hover {
+body.chapter-reader-page .nav-link:hover {
   color: #fff !important;
   background: rgba(255,255,255,0.1) !important;
   border-color: rgba(255,255,255,0.18) !important;
 }
 
-body.chapter-one-page .breadcrumb {
+body.chapter-reader-page .breadcrumb {
   max-width: 1120px !important;
   padding-top: 98px !important;
 }
 
-body.chapter-one-page .ch-hero {
+body.chapter-reader-page .ch-hero {
   max-width: 1120px !important;
+  width: 100% !important;
+  overflow: hidden;
   padding: 46px 72px 62px !important;
 }
 
-body.chapter-one-page .ch-hero::before {
+body.chapter-reader-page .ch-hero::before {
   content: '';
   position: absolute;
   inset: 4px 32px 26px;
@@ -763,7 +766,7 @@ body.chapter-one-page .ch-hero::before {
   box-shadow: 0 24px 70px rgba(16,24,39,0.2);
 }
 
-body.chapter-one-page .ch-realm-tag {
+body.chapter-reader-page .ch-realm-tag {
   background: rgba(255,255,255,0.86) !important;
   border-color: rgba(255,255,255,0.5) !important;
   color: #087f7a !important;
@@ -771,7 +774,7 @@ body.chapter-one-page .ch-realm-tag {
   box-shadow: 0 10px 26px rgba(16,24,39,0.12) !important;
 }
 
-body.chapter-one-page .ch-title {
+body.chapter-reader-page .ch-title {
   max-width: 760px;
   color: #ffd84d !important;
   font-size: clamp(30px, 4.45vw, 54px) !important;
@@ -785,21 +788,22 @@ body.chapter-one-page .ch-title {
     0 12px 30px rgba(0,0,0,0.26) !important;
 }
 
-body.chapter-one-page .ch-sub {
+body.chapter-reader-page .ch-sub {
   max-width: 720px !important;
   color: rgba(255,255,255,0.82) !important;
   font-size: 18px !important;
   line-height: 1.68 !important;
   margin-bottom: 28px !important;
+  overflow-wrap: anywhere;
 }
 
-body.chapter-one-page .ch-meta {
+body.chapter-reader-page .ch-meta {
   gap: 12px !important;
   margin-bottom: 24px !important;
 }
 
-body.chapter-one-page .meta-item,
-body.chapter-one-page .lesson-pill {
+body.chapter-reader-page .meta-item,
+body.chapter-reader-page .lesson-pill {
   background: rgba(255,255,255,0.1) !important;
   border: 1px solid rgba(255,255,255,0.14) !important;
   border-radius: 999px !important;
@@ -807,38 +811,38 @@ body.chapter-one-page .lesson-pill {
   padding: 8px 12px !important;
 }
 
-body.chapter-one-page .meta-item {
+body.chapter-reader-page .meta-item {
   min-height: 42px !important;
 }
 
-body.chapter-one-page .lesson-pills {
+body.chapter-reader-page .lesson-pills {
   gap: 10px !important;
   margin-bottom: 0 !important;
 }
 
-body.chapter-one-page .meta-val,
-body.chapter-one-page .lesson-pill {
+body.chapter-reader-page .meta-val,
+body.chapter-reader-page .lesson-pill {
   color: #fff !important;
 }
 
-body.chapter-one-page .main-grid {
+body.chapter-reader-page .main-grid {
   max-width: 1120px !important;
   gap: 26px !important;
 }
 
-body.chapter-one-page .pdf-card,
-body.chapter-one-page .reading-card,
-body.chapter-one-page .vocab-card,
-body.chapter-one-page .activity-item,
-body.chapter-one-page .side-card,
-body.chapter-one-page .realm-badge-card {
+body.chapter-reader-page .pdf-card,
+body.chapter-reader-page .reading-card,
+body.chapter-reader-page .vocab-card,
+body.chapter-reader-page .activity-item,
+body.chapter-reader-page .side-card,
+body.chapter-reader-page .realm-badge-card {
   background: rgba(255,255,255,0.86) !important;
   border-color: rgba(20,23,42,0.12) !important;
   border-radius: 8px !important;
   box-shadow: 0 12px 34px rgba(16,24,39,0.08) !important;
 }
 
-body.chapter-one-page .pdf-card {
+body.chapter-reader-page .pdf-card {
   align-items: center !important;
   background:
     linear-gradient(135deg, rgba(255,255,255,0.94), rgba(239,250,255,0.9)) !important;
@@ -846,31 +850,31 @@ body.chapter-one-page .pdf-card {
   padding: 28px !important;
 }
 
-body.chapter-one-page .pdf-card:hover,
-body.chapter-one-page .vocab-card:hover,
-body.chapter-one-page .activity-item:hover {
+body.chapter-reader-page .pdf-card:hover,
+body.chapter-reader-page .vocab-card:hover,
+body.chapter-reader-page .activity-item:hover {
   transform: translateY(-3px) !important;
   box-shadow: 0 18px 44px rgba(16,24,39,0.14), 0 0 0 1px rgba(56,191,255,0.24) !important;
 }
 
-body.chapter-one-page .pdf-btn {
+body.chapter-reader-page .pdf-btn {
   background: linear-gradient(135deg, #ffd84d, #f97316) !important;
   border-color: rgba(249,115,22,0.28) !important;
   color: #141008 !important;
   border-radius: 8px !important;
 }
 
-body.chapter-one-page .reading-card {
+body.chapter-reader-page .reading-card {
   padding: 30px !important;
 }
 
-body.chapter-one-page .reader-shell {
+body.chapter-reader-page .reader-shell {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-body.chapter-one-page .reader-top {
+body.chapter-reader-page .reader-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -879,11 +883,11 @@ body.chapter-one-page .reader-top {
   padding-bottom: 16px;
 }
 
-body.chapter-one-page .reader-top h2 {
+body.chapter-reader-page .reader-top h2 {
   margin-bottom: 0;
 }
 
-body.chapter-one-page .reader-meta {
+body.chapter-reader-page .reader-meta {
   flex-shrink: 0;
   padding: 8px 10px;
   border: 1px solid rgba(15,118,110,0.14);
@@ -894,7 +898,7 @@ body.chapter-one-page .reader-meta {
   font-weight: 900;
 }
 
-body.chapter-one-page .reader-scroll {
+body.chapter-reader-page .reader-scroll {
   max-height: 620px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -902,23 +906,23 @@ body.chapter-one-page .reader-scroll {
   scrollbar-width: thin;
 }
 
-body.chapter-one-page .reader-scroll:focus {
+body.chapter-reader-page .reader-scroll:focus {
   outline: 2px solid rgba(56,191,255,0.42);
   outline-offset: 4px;
 }
 
-body.chapter-one-page .reader-section {
+body.chapter-reader-page .reader-section {
   padding: 8px 0 28px;
   border-bottom: 1px solid rgba(20,23,42,0.08);
   margin-bottom: 18px;
 }
 
-body.chapter-one-page .reader-section:last-child {
+body.chapter-reader-page .reader-section:last-child {
   border-bottom: 0;
   margin-bottom: 0;
 }
 
-body.chapter-one-page .reader-section h3 {
+body.chapter-reader-page .reader-section h3 {
   color: #0f766e;
   font-family: 'Cinzel', serif;
   font-size: 21px;
@@ -926,15 +930,15 @@ body.chapter-one-page .reader-section h3 {
   margin: 0 0 12px;
 }
 
-body.chapter-one-page .reader-section h4 {
+body.chapter-reader-page .reader-section h4 {
   color: #14172a;
   font-size: 16px;
   font-weight: 900;
   margin: 18px 0 8px;
 }
 
-body.chapter-one-page .reader-list,
-body.chapter-one-page .reader-checklist {
+body.chapter-reader-page .reader-list,
+body.chapter-reader-page .reader-checklist {
   display: grid;
   gap: 9px;
   margin: 14px 0 18px;
@@ -943,16 +947,16 @@ body.chapter-one-page .reader-checklist {
   line-height: 1.65;
 }
 
-body.chapter-one-page .reader-list strong {
+body.chapter-reader-page .reader-list strong {
   color: #14172a;
 }
 
-body.chapter-one-page .reader-checklist {
+body.chapter-reader-page .reader-checklist {
   list-style: none;
   padding-left: 0;
 }
 
-body.chapter-one-page .reader-checklist li {
+body.chapter-reader-page .reader-checklist li {
   padding: 10px 12px 10px 36px;
   position: relative;
   border: 1px solid rgba(15,118,110,0.12);
@@ -960,7 +964,7 @@ body.chapter-one-page .reader-checklist li {
   background: rgba(15,118,110,0.06);
 }
 
-body.chapter-one-page .reader-checklist li::before {
+body.chapter-reader-page .reader-checklist li::before {
   content: '✓';
   position: absolute;
   left: 12px;
@@ -969,16 +973,16 @@ body.chapter-one-page .reader-checklist li::before {
   font-weight: 900;
 }
 
-body.chapter-one-page .reading-grid.compact {
+body.chapter-reader-page .reading-grid.compact {
   grid-template-columns: repeat(2, 1fr);
 }
 
-body.chapter-one-page .vocab-table {
+body.chapter-reader-page .vocab-table {
   display: grid;
   gap: 8px;
 }
 
-body.chapter-one-page .vocab-table div {
+body.chapter-reader-page .vocab-table div {
   display: grid;
   grid-template-columns: minmax(130px, 0.42fr) 1fr;
   gap: 12px;
@@ -988,18 +992,18 @@ body.chapter-one-page .vocab-table div {
   background: rgba(255,255,255,0.68);
 }
 
-body.chapter-one-page .vocab-table strong {
+body.chapter-reader-page .vocab-table strong {
   color: #14172a;
   font-size: 13px;
 }
 
-body.chapter-one-page .vocab-table span {
+body.chapter-reader-page .vocab-table span {
   color: rgba(20,23,42,0.72);
   font-size: 13px;
   line-height: 1.45;
 }
 
-body.chapter-one-page .reading-kicker {
+body.chapter-reader-page .reading-kicker {
   display: inline-block;
   margin-bottom: 12px;
   padding: 5px 10px;
@@ -1013,7 +1017,7 @@ body.chapter-one-page .reading-kicker {
   text-transform: uppercase;
 }
 
-body.chapter-one-page .reading-card h2 {
+body.chapter-reader-page .reading-card h2 {
   color: #14172a;
   font-family: 'Cinzel', serif;
   font-size: clamp(26px, 3vw, 38px);
@@ -1021,19 +1025,19 @@ body.chapter-one-page .reading-card h2 {
   margin-bottom: 14px;
 }
 
-body.chapter-one-page .reading-card p {
+body.chapter-reader-page .reading-card p {
   color: rgba(20,23,42,0.72);
   font-size: 16px;
   line-height: 1.75;
   margin-bottom: 14px;
 }
 
-body.chapter-one-page .reading-lead {
+body.chapter-reader-page .reading-lead {
   color: rgba(20,23,42,0.84) !important;
   font-size: 18px !important;
 }
 
-body.chapter-one-page .reading-callout {
+body.chapter-reader-page .reading-callout {
   display: grid;
   grid-template-columns: 90px 1fr;
   gap: 14px;
@@ -1046,7 +1050,7 @@ body.chapter-one-page .reading-callout {
   line-height: 1.6;
 }
 
-body.chapter-one-page .callout-label {
+body.chapter-reader-page .callout-label {
   color: #9a5b00;
   font-size: 12px;
   font-weight: 900;
@@ -1054,39 +1058,39 @@ body.chapter-one-page .callout-label {
   text-transform: uppercase;
 }
 
-body.chapter-one-page .reading-grid {
+body.chapter-reader-page .reading-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin: 24px 0;
 }
 
-body.chapter-one-page .reading-tile {
+body.chapter-reader-page .reading-tile {
   padding: 18px;
   border: 1px solid rgba(20,23,42,0.1);
   border-radius: 8px;
   background: rgba(255,255,255,0.7);
 }
 
-body.chapter-one-page .tile-icon {
+body.chapter-reader-page .tile-icon {
   font-size: 24px;
   margin-bottom: 8px;
 }
 
-body.chapter-one-page .reading-tile h3 {
+body.chapter-reader-page .reading-tile h3 {
   color: #14172a;
   font-size: 15px;
   font-weight: 900;
   margin-bottom: 7px;
 }
 
-body.chapter-one-page .reading-tile p {
+body.chapter-reader-page .reading-tile p {
   font-size: 13px;
   line-height: 1.55;
   margin: 0;
 }
 
-body.chapter-one-page .reading-check {
+body.chapter-reader-page .reading-check {
   margin-top: 22px;
   padding: 16px 18px;
   border-radius: 8px;
@@ -1094,111 +1098,113 @@ body.chapter-one-page .reading-check {
   border: 1px solid rgba(15,118,110,0.14);
 }
 
-body.chapter-one-page .reading-check strong {
+body.chapter-reader-page .reading-check strong {
   display: block;
   color: #0f766e;
   margin-bottom: 4px;
 }
 
-body.chapter-one-page .reading-check span {
+body.chapter-reader-page .reading-check span {
   color: rgba(20,23,42,0.74);
   line-height: 1.6;
 }
 
-body.chapter-one-page .sec-title,
-body.chapter-one-page .side-title {
+body.chapter-reader-page .sec-title,
+body.chapter-reader-page .side-title {
   color: #0f766e !important;
   -webkit-text-stroke: 0 !important;
   text-shadow: none !important;
 }
 
-body.chapter-one-page footer {
+body.chapter-reader-page footer {
   background: linear-gradient(135deg, rgba(10,14,28,0.98), rgba(18,35,46,0.98)) !important;
 }
 
 @media (max-width: 700px) {
-  body.chapter-one-page .nav-links {
+  body.chapter-reader-page .nav-links {
     border-radius: 14px !important;
   }
 
-  body.chapter-one-page .breadcrumb {
+  body.chapter-reader-page .breadcrumb {
     padding-top: 112px !important;
   }
 
-  body.chapter-one-page .ch-hero {
+  body.chapter-reader-page .ch-hero {
     padding: 34px 32px 42px !important;
   }
 
-  body.chapter-one-page .ch-hero::before {
+  body.chapter-reader-page .ch-hero::before {
     inset: 4px 16px 22px;
   }
 
-  body.chapter-one-page .ch-title {
-    font-size: clamp(27px, 7.1vw, 33px) !important;
+  body.chapter-reader-page .ch-title {
+    max-width: 100% !important;
+    font-size: clamp(25px, 6.2vw, 30px) !important;
     margin-bottom: 16px !important;
   }
 
-  body.chapter-one-page .ch-sub {
-    font-size: 16px !important;
+  body.chapter-reader-page .ch-sub {
+    max-width: 100% !important;
+    font-size: 15px !important;
     line-height: 1.62 !important;
     margin-bottom: 24px !important;
   }
 
-  body.chapter-one-page .ch-meta {
+  body.chapter-reader-page .ch-meta {
     gap: 8px !important;
     margin-bottom: 22px !important;
   }
 
-  body.chapter-one-page .meta-item {
+  body.chapter-reader-page .meta-item {
     min-height: 38px !important;
     padding: 7px 10px !important;
   }
 
-  body.chapter-one-page .lesson-pill {
+  body.chapter-reader-page .lesson-pill {
     border-radius: 8px !important;
   }
 
-  body.chapter-one-page .pdf-card {
+  body.chapter-reader-page .pdf-card {
     align-items: flex-start !important;
     flex-direction: column !important;
   }
 
-  body.chapter-one-page .reading-card {
+  body.chapter-reader-page .reading-card {
     padding: 22px !important;
   }
 
-  body.chapter-one-page .reader-top {
+  body.chapter-reader-page .reader-top {
     flex-direction: column;
   }
 
-  body.chapter-one-page .reader-meta {
+  body.chapter-reader-page .reader-meta {
     border-radius: 8px;
   }
 
-  body.chapter-one-page .reader-scroll {
+  body.chapter-reader-page .reader-scroll {
     max-height: 680px;
     padding-right: 8px;
   }
 
-  body.chapter-one-page .reading-callout {
+  body.chapter-reader-page .reading-callout {
     grid-template-columns: 1fr;
   }
 
-  body.chapter-one-page .reading-grid,
-  body.chapter-one-page .reading-grid.compact {
+  body.chapter-reader-page .reading-grid,
+  body.chapter-reader-page .reading-grid.compact {
     grid-template-columns: 1fr;
   }
 
-  body.chapter-one-page .vocab-table div {
+  body.chapter-reader-page .vocab-table div {
     grid-template-columns: 1fr;
   }
 
-  body.chapter-one-page .pdf-btn {
+  body.chapter-reader-page .pdf-btn {
     width: 100% !important;
     text-align: center !important;
   }
 
-  body.chapter-one-page .sidebar {
+  body.chapter-reader-page .sidebar {
     order: 0 !important;
   }
 }
