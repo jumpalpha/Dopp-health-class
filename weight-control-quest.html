@@ -257,6 +257,13 @@ td input, td select, td textarea { min-width: 105px; }
   gap: 14px;
 }
 .small { font-size: 12px; color: var(--muted); }
+.save-state {
+  align-self: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 4px;
+}
 .hidden { display: none !important; }
 @media (max-width: 820px) {
   .stage-tabs, .grid, .grid-3, .meal-grid, .summary-grid, .report-cols, .checklist {
@@ -295,6 +302,7 @@ td input, td select, td textarea { min-width: 105px; }
     <button class="secondary" id="clearBtn">Clear</button>
     <button class="green" id="reportBtn">Build Final Report</button>
     <button class="red" id="printBtn">Print / Save PDF</button>
+    <span class="save-state" id="saveModeStatus">Cloud save unavailable</span>
   </div>
 
   <section class="card">
@@ -425,10 +433,16 @@ td input, td select, td textarea { min-width: 105px; }
 
 <datalist id="foodOptions"></datalist>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 const STORAGE_KEY = 'weightControlQuest.v1';
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRIMESTER = '2026-T1';
 const FOOD_COUNT = 15;
 const MEALS = ['Breakfast','Lunch','Dinner','Snack'];
+let isSubmitted = false;
+let autosaveTimer = null;
 const CONCEPTS = [
   'Natural foods and combination foods are different.',
   'Serving size changes the nutrition totals.',
@@ -465,6 +479,7 @@ const ASSIST = {
   salad:['1 bowl',180,14,8,10,5],
   pasta:['1 plate',430,70,16,10,4]
 };
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 function $(id){ return document.getElementById(id); }
 function num(v){ return Number(v) || 0; }
@@ -480,6 +495,20 @@ function flash(msg, good=true){
   box.className = 'status ' + (good ? 'good' : 'bad');
   box.textContent = msg;
   box.classList.remove('hidden');
+}
+function setSaveMode(msg){ $('saveModeStatus').textContent = msg; }
+function scheduleAutosave(){
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(()=>save(true), 900);
+}
+function getCloudSession(){
+  const studentId = localStorage.getItem('qSID_' + TRIMESTER);
+  const pinHash = sessionStorage.getItem('qPIN_' + TRIMESTER);
+  return studentId && pinHash ? { studentId, pinHash } : null;
+}
+function getActiveStageNumber(){
+  const active = document.querySelector('.stage.active');
+  return active ? Number(active.id.replace('stage','')) || 1 : 1;
 }
 
 function makeFoodRows(){
@@ -585,11 +614,15 @@ function collectData(){
       tryCount: num($('tryCount').textContent)
     },
     learningSummary: $('learningSummary').value.trim(),
-    concepts: [...document.querySelectorAll('.concept')].map(c=>c.checked)
+    concepts: [...document.querySelectorAll('.concept')].map(c=>c.checked),
+    realityResult: $('realityResult').innerHTML,
+    activeStage: getActiveStageNumber(),
+    isSubmitted
   };
 }
 function applyData(data){
   if(!data) return;
+  isSubmitted = Boolean(data.isSubmitted);
   $('studentName').value = data.studentName || '';
   $('classPeriod').value = data.classPeriod || '';
   (data.foods || []).forEach((f,i)=>{
@@ -629,6 +662,7 @@ function applyData(data){
   $('heightIn').value = r.heightIn || '';
   $('weightLb').value = r.weightLb || '';
   $('tryCount').textContent = r.tryCount || 0;
+  if(data.realityResult) $('realityResult').innerHTML = data.realityResult;
   $('learningSummary').value = data.learningSummary || '';
   (data.concepts || []).forEach((checked,i)=>{
     const box = document.querySelector(`.concept[data-i="${i}"]`);
@@ -638,6 +672,7 @@ function applyData(data){
   updateFoodStatus();
   updateMealTotals();
   buildReport(false);
+  if(data.activeStage) showStage(data.activeStage);
 }
 
 function syncFoodNames(){
@@ -766,12 +801,72 @@ function escapeHtml(text){
   return String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(collectData())); flash('Saved on this Chromebook/browser.', true); }
-function load(){
+function getStageCompleted(data){
+  const natural = data.foods.filter(f=>f.type === 'Natural').length;
+  const combo = data.foods.filter(f=>f.type === 'Combination').length;
+  const stage1 = natural === 13 && combo === 2 && data.foods.every(f=>f.name && f.reason) && data.nonsenseReflection && data.stage1Reflection;
+  const stage2 = data.nutrition.every(n=>n.serving && n.calories >= 0 && n.carbs >= 0 && n.protein >= 0 && n.fat >= 0 && n.fiber >= 0);
+  const stage3 = data.meals.every(m=>m.items && m.supply && m.serving && m.servings > 0);
+  const stage4 = $('realityResult').textContent.includes('You may continue to Stage 5');
+  const stage5 = data.learningSummary && data.concepts.some(Boolean);
+  return [stage1, stage2, stage3, stage4, stage5].filter(Boolean).length;
+}
+async function saveCloud(data, silent=false){
+  if(!db) return null;
+  const session = getCloudSession();
+  if(!session) return null;
+  const { error } = await db.rpc('save_weight_control_quest_progress', {
+    p_student_id: session.studentId,
+    p_pin_hash: session.pinHash,
+    p_trimester: TRIMESTER,
+    p_draft_data: data,
+    p_stage_completed: getStageCompleted(data),
+    p_is_submitted: Boolean(data.isSubmitted)
+  });
+  if(error){
+    setSaveMode('Cloud save unavailable');
+    if(!silent) flash('Saved locally. Cloud save unavailable: ' + error.message, false);
+    return false;
+  }
+  setSaveMode('Saved to cloud');
+  return true;
+}
+async function loadCloud(){
+  if(!db) return null;
+  const session = getCloudSession();
+  if(!session) return null;
+  const { data, error } = await db.rpc('get_weight_control_quest_progress', {
+    p_student_id: session.studentId,
+    p_pin_hash: session.pinHash,
+    p_trimester: TRIMESTER
+  });
+  if(error){ setSaveMode('Cloud save unavailable'); return null; }
+  const row = data && data[0];
+  if(!row || !row.draft_data) return null;
+  setSaveMode('Saved to cloud');
+  return row.draft_data;
+}
+async function save(silent=false){
+  const data = collectData();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  setSaveMode('Saved locally');
+  if(!silent) flash('Saved locally.', true);
+  const cloudSaved = await saveCloud(data, silent);
+  if(cloudSaved && !silent) flash('Saved to cloud.', true);
+  if(cloudSaved === false) setSaveMode('Cloud save unavailable');
+}
+async function load(){
+  const cloudData = await loadCloud();
+  if(cloudData){
+    applyData(cloudData);
+    flash('Loaded cloud progress.', true);
+    return;
+  }
   const raw = localStorage.getItem(STORAGE_KEY);
   if(!raw){ flash('No saved Weight Control Quest found in this browser yet.', false); return; }
   applyData(JSON.parse(raw));
-  flash('Loaded your saved quest.', true);
+  setSaveMode('Saved locally');
+  flash('Loaded local progress.', true);
 }
 function clearAll(){
   if(!confirm('Clear this page and the saved work in this browser?')) return;
@@ -814,9 +909,9 @@ function fillDemo(){
   ];
   demo.meals = mealNames.map(m=>({items:m[0], supply:m[1], serving:m[2], servings:m[3], calories:m[4], carbs:m[5], protein:m[6], fat:m[7], fiber:m[8]}));
   applyData(demo);
-  save();
   runRealityCheck();
   showStage(4);
+  save();
 }
 
 function wireEvents(){
@@ -824,17 +919,18 @@ function wireEvents(){
   document.addEventListener('input', e=>{
     if(e.target.matches('.food-name,.food-type,.food-reason')){ syncFoodNames(); updateFoodStatus(); }
     if(e.target.matches('.meal-card input,.meal-card textarea')) updateMealTotals();
+    if(e.target.matches('input, textarea, select')) scheduleAutosave();
   });
   document.addEventListener('click', e=>{
-    if(e.target.matches('.assist-btn')) assistFood(Number(e.target.dataset.i));
+    if(e.target.matches('.assist-btn')){ assistFood(Number(e.target.dataset.i)); scheduleAutosave(); }
   });
   $('demoBtn').addEventListener('click', fillDemo);
-  $('saveBtn').addEventListener('click', save);
+  $('saveBtn').addEventListener('click', ()=>save(false));
   $('loadBtn').addEventListener('click', load);
   $('clearBtn').addEventListener('click', clearAll);
-  $('reportBtn').addEventListener('click', ()=>buildReport(true));
-  $('printBtn').addEventListener('click', ()=>{ buildReport(false); window.print(); });
-  $('realityBtn').addEventListener('click', runRealityCheck);
+  $('reportBtn').addEventListener('click', ()=>{ buildReport(true); scheduleAutosave(); });
+  $('printBtn').addEventListener('click', ()=>{ isSubmitted = true; buildReport(false); save(true); window.print(); });
+  $('realityBtn').addEventListener('click', ()=>{ runRealityCheck(); scheduleAutosave(); });
 }
 
 makeFoodRows();

@@ -572,6 +572,73 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
         </table>
       </div>
     </div>
+
+    <div class="card" style="margin-top:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div>
+          <div class="card-title" style="margin-bottom:2px">Weight Control Quest</div>
+          <div style="font-size:12px;color:var(--dim)">Student progress, submissions, and reality-check attempts.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <label class="form-label" for="wq-trimester" style="margin:0">Trimester</label>
+          <select id="wq-trimester" onchange="refreshWeightQuest()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:8px 10px">
+            <option value="2026-T1">2026-T1</option>
+            <option value="2026-T2">2026-T2</option>
+            <option value="2026-T3">2026-T3</option>
+          </select>
+          <button class="btn btn-gold btn-sm" onclick="refreshWeightQuest()">Refresh</button>
+        </div>
+      </div>
+
+      <div id="wq-error-banner" style="display:none"></div>
+
+      <div class="stat-row" style="margin-bottom:16px">
+        <div class="stat-card">
+          <div class="sc-num" id="wq-stat-total">-</div>
+          <div class="sc-label">Total Students</div>
+          <div class="sc-sub">Selected trimester</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-num" id="wq-stat-not-started">-</div>
+          <div class="sc-label">Not Started</div>
+          <div class="sc-sub">Stage 0</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-num" id="wq-stat-progress">-</div>
+          <div class="sc-label">In Progress</div>
+          <div class="sc-sub">Stages 1-4</div>
+        </div>
+        <div class="stat-card highlight">
+          <div class="sc-num" id="wq-stat-submitted">-</div>
+          <div class="sc-label">Submitted</div>
+          <div class="sc-sub">Final PDF step</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-num" id="wq-stat-tries">-</div>
+          <div class="sc-label">Average Try Count</div>
+          <div class="sc-sub">Reality check</div>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Class Code</th>
+              <th>Stage</th>
+              <th>Submitted</th>
+              <th>Submitted At</th>
+              <th>Last Updated</th>
+              <th>Try Count</th>
+            </tr>
+          </thead>
+          <tbody id="wq-body">
+            <tr><td colspan="7" class="lb-empty">Click refresh to load Weight Control Quest progress.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 </div><!-- /main -->
@@ -985,10 +1052,14 @@ let lbData       = null;
 let lbFilter     = 'all';
 let lbSort       = 'xp';
 let lbLoading    = false;
+let wqData       = null;
+let wqLoading    = false;
 
 async function renderProgress() {
-  if (lbData) { renderLeaderboard(); return; }
-  await loadProgressData();
+  if (lbData) renderLeaderboard();
+  else await loadProgressData();
+  if (wqData) renderWeightQuest();
+  else await loadWeightQuestData();
 }
 
 async function refreshProgress() {
@@ -1099,6 +1170,117 @@ function setLbSort(val, el) {
 
 function setLbError(msg) {
   const el = document.getElementById('lb-error-banner');
+  if (!el) return;
+  if (msg) { el.className = 'lb-error'; el.textContent = msg; el.style.display = 'block'; }
+  else el.style.display = 'none';
+}
+
+async function refreshWeightQuest() {
+  wqData = null;
+  document.getElementById('wq-body').innerHTML =
+    '<tr><td colspan="7" class="lb-empty">Loading Weight Control Quest progress...</td></tr>';
+  await loadWeightQuestData();
+}
+
+async function loadWeightQuestData() {
+  if (wqLoading) return;
+  wqLoading = true;
+  setWqError('');
+  const trimester = getWeightQuestTrimester();
+  document.getElementById('wq-body').innerHTML =
+    '<tr><td colspan="7" class="lb-empty">Fetching Weight Control Quest progress...</td></tr>';
+
+  const { data, error } = await db.rpc('get_weight_control_quest_teacher_summary', {
+    p_trimester: trimester
+  });
+
+  if (error) {
+    setWqError('Supabase error: ' + error.message);
+    document.getElementById('wq-body').innerHTML =
+      '<tr><td colspan="7" class="lb-empty">Could not load Weight Control Quest progress.</td></tr>';
+    wqLoading = false;
+    return;
+  }
+
+  wqData = data || [];
+  wqLoading = false;
+  renderWeightQuest();
+}
+
+function renderWeightQuest() {
+  const tbody = document.getElementById('wq-body');
+  if (!tbody || !wqData) return;
+  updateWeightQuestStats(wqData);
+  if (!wqData.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="lb-empty">No students found for this trimester.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = wqData.map(row => {
+    const stage = Number(row.stage_completed || 0);
+    const submitted = row.is_submitted ? 'Yes' : 'No';
+    const submittedColor = row.is_submitted ? 'var(--emerald)' : 'var(--dim)';
+    return `<tr>
+      <td style="font-weight:700;color:var(--text)">${escapeHtml(row.student_name || 'Unknown')}</td>
+      <td style="font-size:12px;color:var(--dim)">${escapeHtml(row.class_code || '—')}</td>
+      <td>${formatWeightQuestStage(stage)}</td>
+      <td style="font-size:12px;font-weight:800;color:${submittedColor}">${submitted}</td>
+      <td style="font-size:12px;color:var(--dim)">${formatDateTime(row.submitted_at)}</td>
+      <td style="font-size:12px;color:var(--dim)">${formatDateTime(row.updated_at)}</td>
+      <td style="font-size:12px;color:var(--dim)">${row.try_count ?? '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function updateWeightQuestStats(rows) {
+  const total = rows.length;
+  const notStarted = rows.filter(row => Number(row.stage_completed || 0) === 0).length;
+  const inProgress = rows.filter(row => {
+    const stage = Number(row.stage_completed || 0);
+    return stage > 0 && stage < 5 && !row.is_submitted;
+  }).length;
+  const submitted = rows.filter(row => row.is_submitted).length;
+  const tryCounts = rows
+    .filter(row => row.try_count !== null && row.try_count !== undefined)
+    .map(row => Number(row.try_count))
+    .filter(count => Number.isFinite(count));
+  const avgTries = tryCounts.length
+    ? (tryCounts.reduce((sum, count) => sum + count, 0) / tryCounts.length).toFixed(1)
+    : '-';
+
+  document.getElementById('wq-stat-total').textContent = total;
+  document.getElementById('wq-stat-not-started').textContent = notStarted;
+  document.getElementById('wq-stat-progress').textContent = inProgress;
+  document.getElementById('wq-stat-submitted').textContent = submitted;
+  document.getElementById('wq-stat-tries').textContent = avgTries;
+}
+
+function getWeightQuestTrimester() {
+  const el = document.getElementById('wq-trimester');
+  return el ? el.value : TRIMESTER;
+}
+
+function formatWeightQuestStage(stage) {
+  const safeStage = Math.max(0, Math.min(5, Number(stage) || 0));
+  const pct = Math.round(safeStage / 5 * 100);
+  return `<div style="display:flex;align-items:center;gap:6px">
+    <div class="progress-mini" style="width:72px"><div class="progress-mini-fill" style="width:${pct}%"></div></div>
+    <span style="font-size:11px;color:var(--dim)">Stage ${safeStage}/5</span></div>`;
+}
+
+function formatDateTime(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+}
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function setWqError(msg) {
+  const el = document.getElementById('wq-error-banner');
   if (!el) return;
   if (msg) { el.className = 'lb-error'; el.textContent = msg; el.style.display = 'block'; }
   else el.style.display = 'none';
