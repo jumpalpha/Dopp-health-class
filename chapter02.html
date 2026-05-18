@@ -360,6 +360,10 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
       </div>
     </div>
     <div class="side-card">
+      <div class="side-title">Key Vocab — Quick Review</div>
+      <div class="key-vocab" id="vocab-list"></div>
+    </div>
+    <div class="side-card">
       <div class="side-title">Navigate</div>
       <div class="ch-nav-row">
         <a class="ch-nav-btn" href="chapter01.html">← Ch 1</a>
@@ -375,6 +379,33 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
   <div style="font-size:12px;color:rgba(255,255,255,0.25)">Chapter 2 of 28</div>
 </footer>
 
+<script>
+const VOCAB=[
+  {term:"Health skills",def:"Specific tools and strategies to maintain, protect, and improve all aspects of your health; also called life skills."},
+  {term:"Interpersonal communication",def:"The exchange of thoughts, feelings, and beliefs between two or more people."},
+  {term:"Refusal skills",def:"Communication strategies that help you say no to unsafe or unhealthful behaviors."},
+  {term:"Conflict resolution",def:"The process of ending a conflict through cooperation and problem solving."},
+  {term:"Stress",def:"The reaction of the body and mind to everyday challenges and demands."},
+  {term:"Stress management skills",def:"Skills that help you reduce and manage stress in your life."},
+  {term:"Advocacy",def:"Taking action to influence others to address a health-related concern or support a health-related belief."},
+  {term:"Values",def:"The ideas, beliefs, and attitudes about what is important that help guide the way you live."},
+  {term:"Decision-making skills",def:"Steps that enable you to make a healthful decision."},
+  {term:"Goals",def:"Things you aim for that take planning and work."},
+  {term:"Short-term goal",def:"A goal you can reach in a short period of time."},
+  {term:"Long-term goal",def:"A goal you plan to reach over an extended period of time."},
+  {term:"Action plan",def:"A multistep strategy to identify and achieve your goals."},
+  {term:"S.M.A.R.T. goals",def:"A goal-setting framework where goals are Specific, Measurable, Achievable, Relevant, and Time-bound."},
+  {term:"Health consumer",def:"Someone who purchases or uses health products or services."},
+  {term:"Advertising",def:"A written or spoken media message designed to interest consumers in purchasing a product or service."},
+  {term:"Comparison shopping",def:"Judging the benefits of different products by comparing factors such as quality, features, and cost."},
+  {term:"Warranty",def:"A company's or store's written agreement to repair a product or refund your money if it does not function properly."},
+  {term:"Consumer advocates",def:"People or groups whose purpose is to take on consumer issues and inform the public about potential problems."},
+  {term:"Malpractice",def:"Failure by a health professional to meet accepted standards of care."},
+  {term:"Health fraud",def:"The sale of worthless products or services that claim to prevent disease or cure health problems; also called quackery."},
+];
+const vl=document.getElementById('vocab-list');
+if(vl) VOCAB.forEach(v=>{const el=document.createElement('div');el.className='vocab-item';el.innerHTML=`<div class="vocab-term">${v.term}</div><div class="vocab-def">${v.def}</div>`;el.onclick=()=>el.classList.toggle('open');vl.appendChild(el);});
+</script>
   <script src="shared.js"></script>
 </body>
 </html>
