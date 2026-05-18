@@ -747,7 +747,7 @@ body.chapter-one-page .breadcrumb {
 
 body.chapter-one-page .ch-hero {
   max-width: 1120px !important;
-  padding: 24px 32px 42px !important;
+  padding: 46px 72px 62px !important;
 }
 
 body.chapter-one-page .ch-hero::before {
@@ -772,10 +772,11 @@ body.chapter-one-page .ch-realm-tag {
 }
 
 body.chapter-one-page .ch-title {
-  max-width: 740px;
+  max-width: 760px;
   color: #ffd84d !important;
-  font-size: clamp(30px, 4.8vw, 58px) !important;
-  line-height: 1.08 !important;
+  font-size: clamp(30px, 4.45vw, 54px) !important;
+  line-height: 1.06 !important;
+  margin-bottom: 18px !important;
   overflow-wrap: anywhere !important;
   text-shadow:
     -1px 0 0 rgba(0,0,0,0.9),
@@ -788,6 +789,13 @@ body.chapter-one-page .ch-sub {
   max-width: 720px !important;
   color: rgba(255,255,255,0.82) !important;
   font-size: 18px !important;
+  line-height: 1.68 !important;
+  margin-bottom: 28px !important;
+}
+
+body.chapter-one-page .ch-meta {
+  gap: 12px !important;
+  margin-bottom: 24px !important;
 }
 
 body.chapter-one-page .meta-item,
@@ -797,6 +805,15 @@ body.chapter-one-page .lesson-pill {
   border-radius: 999px !important;
   color: rgba(255,255,255,0.76) !important;
   padding: 8px 12px !important;
+}
+
+body.chapter-one-page .meta-item {
+  min-height: 42px !important;
+}
+
+body.chapter-one-page .lesson-pills {
+  gap: 10px !important;
+  margin-bottom: 0 !important;
 }
 
 body.chapter-one-page .meta-val,
@@ -1109,7 +1126,7 @@ body.chapter-one-page footer {
   }
 
   body.chapter-one-page .ch-hero {
-    padding: 20px 18px 34px !important;
+    padding: 34px 32px 42px !important;
   }
 
   body.chapter-one-page .ch-hero::before {
@@ -1117,11 +1134,24 @@ body.chapter-one-page footer {
   }
 
   body.chapter-one-page .ch-title {
-    font-size: clamp(28px, 7.4vw, 34px) !important;
+    font-size: clamp(27px, 7.1vw, 33px) !important;
+    margin-bottom: 16px !important;
+  }
+
+  body.chapter-one-page .ch-sub {
+    font-size: 16px !important;
+    line-height: 1.62 !important;
+    margin-bottom: 24px !important;
   }
 
   body.chapter-one-page .ch-meta {
     gap: 8px !important;
+    margin-bottom: 22px !important;
+  }
+
+  body.chapter-one-page .meta-item {
+    min-height: 38px !important;
+    padding: 7px 10px !important;
   }
 
   body.chapter-one-page .lesson-pill {
