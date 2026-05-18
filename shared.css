@@ -689,3 +689,486 @@ body.site-home footer {
     margin-bottom: 48px !important;
   }
 }
+
+/* CHAPTER 1 DESIGN PASS */
+body.chapter-one-page {
+  background:
+    linear-gradient(135deg, rgba(56,191,255,0.13), transparent 34%),
+    linear-gradient(225deg, rgba(0,229,160,0.1), transparent 38%),
+    linear-gradient(180deg, #f8fbff 0%, #eef7f6 54%, #fbfbf4 100%) !important;
+}
+
+body.chapter-one-page #stars {
+  background:
+    radial-gradient(ellipse 68% 44% at 42% -8%, rgba(56,191,255,0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 42% 32% at 88% 24%, rgba(255,215,0,0.12) 0%, transparent 58%),
+    radial-gradient(ellipse 46% 38% at 8% 82%, rgba(0,229,160,0.12) 0%, transparent 62%),
+    transparent !important;
+}
+
+body.chapter-one-page nav {
+  background: rgba(16,24,39,0.94) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: 0 12px 30px rgba(16,24,39,0.16) !important;
+}
+
+body.chapter-one-page .nav-logo {
+  color: #ffd84d !important;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.35) !important;
+}
+
+body.chapter-one-page .nav-logo span,
+body.chapter-one-page .nav-link {
+  color: rgba(255,255,255,0.74) !important;
+}
+
+body.chapter-one-page .nav-links {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 999px !important;
+  padding: 4px !important;
+}
+
+body.chapter-one-page .nav-link {
+  border-radius: 999px !important;
+  padding: 8px 14px !important;
+}
+
+body.chapter-one-page .nav-link:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+}
+
+body.chapter-one-page .breadcrumb {
+  max-width: 1120px !important;
+  padding-top: 98px !important;
+}
+
+body.chapter-one-page .ch-hero {
+  max-width: 1120px !important;
+  padding: 24px 32px 42px !important;
+}
+
+body.chapter-one-page .ch-hero::before {
+  content: '';
+  position: absolute;
+  inset: 4px 32px 26px;
+  z-index: -1;
+  border-radius: 18px;
+  background:
+    linear-gradient(125deg, rgba(20,23,42,0.94), rgba(24,61,78,0.88)),
+    radial-gradient(circle at 18% 20%, rgba(56,191,255,0.32), transparent 30%),
+    radial-gradient(circle at 84% 36%, rgba(255,215,0,0.2), transparent 28%);
+  box-shadow: 0 24px 70px rgba(16,24,39,0.2);
+}
+
+body.chapter-one-page .ch-realm-tag {
+  background: rgba(255,255,255,0.86) !important;
+  border-color: rgba(255,255,255,0.5) !important;
+  color: #087f7a !important;
+  border-radius: 999px !important;
+  box-shadow: 0 10px 26px rgba(16,24,39,0.12) !important;
+}
+
+body.chapter-one-page .ch-title {
+  max-width: 740px;
+  color: #ffd84d !important;
+  font-size: clamp(30px, 4.8vw, 58px) !important;
+  line-height: 1.08 !important;
+  overflow-wrap: anywhere !important;
+  text-shadow:
+    -1px 0 0 rgba(0,0,0,0.9),
+    1px 0 0 rgba(0,0,0,0.9),
+    0 2px 0 rgba(0,0,0,0.9),
+    0 12px 30px rgba(0,0,0,0.26) !important;
+}
+
+body.chapter-one-page .ch-sub {
+  max-width: 720px !important;
+  color: rgba(255,255,255,0.82) !important;
+  font-size: 18px !important;
+}
+
+body.chapter-one-page .meta-item,
+body.chapter-one-page .lesson-pill {
+  background: rgba(255,255,255,0.1) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  border-radius: 999px !important;
+  color: rgba(255,255,255,0.76) !important;
+  padding: 8px 12px !important;
+}
+
+body.chapter-one-page .meta-val,
+body.chapter-one-page .lesson-pill {
+  color: #fff !important;
+}
+
+body.chapter-one-page .main-grid {
+  max-width: 1120px !important;
+  gap: 26px !important;
+}
+
+body.chapter-one-page .pdf-card,
+body.chapter-one-page .reading-card,
+body.chapter-one-page .vocab-card,
+body.chapter-one-page .activity-item,
+body.chapter-one-page .side-card,
+body.chapter-one-page .realm-badge-card {
+  background: rgba(255,255,255,0.86) !important;
+  border-color: rgba(20,23,42,0.12) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 34px rgba(16,24,39,0.08) !important;
+}
+
+body.chapter-one-page .pdf-card {
+  align-items: center !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.94), rgba(239,250,255,0.9)) !important;
+  border-color: rgba(56,191,255,0.24) !important;
+  padding: 28px !important;
+}
+
+body.chapter-one-page .pdf-card:hover,
+body.chapter-one-page .vocab-card:hover,
+body.chapter-one-page .activity-item:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 18px 44px rgba(16,24,39,0.14), 0 0 0 1px rgba(56,191,255,0.24) !important;
+}
+
+body.chapter-one-page .pdf-btn {
+  background: linear-gradient(135deg, #ffd84d, #f97316) !important;
+  border-color: rgba(249,115,22,0.28) !important;
+  color: #141008 !important;
+  border-radius: 8px !important;
+}
+
+body.chapter-one-page .reading-card {
+  padding: 30px !important;
+}
+
+body.chapter-one-page .reader-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+body.chapter-one-page .reader-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid rgba(20,23,42,0.1);
+  padding-bottom: 16px;
+}
+
+body.chapter-one-page .reader-top h2 {
+  margin-bottom: 0;
+}
+
+body.chapter-one-page .reader-meta {
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(15,118,110,0.14);
+  border-radius: 999px;
+  background: rgba(15,118,110,0.08);
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+body.chapter-one-page .reader-scroll {
+  max-height: 620px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 16px 4px 2px;
+  scrollbar-width: thin;
+}
+
+body.chapter-one-page .reader-scroll:focus {
+  outline: 2px solid rgba(56,191,255,0.42);
+  outline-offset: 4px;
+}
+
+body.chapter-one-page .reader-section {
+  padding: 8px 0 28px;
+  border-bottom: 1px solid rgba(20,23,42,0.08);
+  margin-bottom: 18px;
+}
+
+body.chapter-one-page .reader-section:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+body.chapter-one-page .reader-section h3 {
+  color: #0f766e;
+  font-family: 'Cinzel', serif;
+  font-size: 21px;
+  line-height: 1.25;
+  margin: 0 0 12px;
+}
+
+body.chapter-one-page .reader-section h4 {
+  color: #14172a;
+  font-size: 16px;
+  font-weight: 900;
+  margin: 18px 0 8px;
+}
+
+body.chapter-one-page .reader-list,
+body.chapter-one-page .reader-checklist {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0 18px;
+  padding-left: 22px;
+  color: rgba(20,23,42,0.74);
+  line-height: 1.65;
+}
+
+body.chapter-one-page .reader-list strong {
+  color: #14172a;
+}
+
+body.chapter-one-page .reader-checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+body.chapter-one-page .reader-checklist li {
+  padding: 10px 12px 10px 36px;
+  position: relative;
+  border: 1px solid rgba(15,118,110,0.12);
+  border-radius: 8px;
+  background: rgba(15,118,110,0.06);
+}
+
+body.chapter-one-page .reader-checklist li::before {
+  content: '✓';
+  position: absolute;
+  left: 12px;
+  top: 9px;
+  color: #0f766e;
+  font-weight: 900;
+}
+
+body.chapter-one-page .reading-grid.compact {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+body.chapter-one-page .vocab-table {
+  display: grid;
+  gap: 8px;
+}
+
+body.chapter-one-page .vocab-table div {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.42fr) 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(20,23,42,0.09);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.68);
+}
+
+body.chapter-one-page .vocab-table strong {
+  color: #14172a;
+  font-size: 13px;
+}
+
+body.chapter-one-page .vocab-table span {
+  color: rgba(20,23,42,0.72);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+body.chapter-one-page .reading-kicker {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(56,191,255,0.11);
+  color: #0f766e;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+body.chapter-one-page .reading-card h2 {
+  color: #14172a;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.12;
+  margin-bottom: 14px;
+}
+
+body.chapter-one-page .reading-card p {
+  color: rgba(20,23,42,0.72);
+  font-size: 16px;
+  line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+body.chapter-one-page .reading-lead {
+  color: rgba(20,23,42,0.84) !important;
+  font-size: 18px !important;
+}
+
+body.chapter-one-page .reading-callout {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 14px;
+  margin: 24px 0;
+  padding: 18px;
+  border: 1px solid rgba(255,184,0,0.24);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255,216,77,0.16), rgba(255,255,255,0.7));
+  color: rgba(20,23,42,0.78);
+  line-height: 1.6;
+}
+
+body.chapter-one-page .callout-label {
+  color: #9a5b00;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+body.chapter-one-page .reading-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 24px 0;
+}
+
+body.chapter-one-page .reading-tile {
+  padding: 18px;
+  border: 1px solid rgba(20,23,42,0.1);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.7);
+}
+
+body.chapter-one-page .tile-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+body.chapter-one-page .reading-tile h3 {
+  color: #14172a;
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 7px;
+}
+
+body.chapter-one-page .reading-tile p {
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+body.chapter-one-page .reading-check {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-radius: 8px;
+  background: rgba(15,118,110,0.08);
+  border: 1px solid rgba(15,118,110,0.14);
+}
+
+body.chapter-one-page .reading-check strong {
+  display: block;
+  color: #0f766e;
+  margin-bottom: 4px;
+}
+
+body.chapter-one-page .reading-check span {
+  color: rgba(20,23,42,0.74);
+  line-height: 1.6;
+}
+
+body.chapter-one-page .sec-title,
+body.chapter-one-page .side-title {
+  color: #0f766e !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: none !important;
+}
+
+body.chapter-one-page footer {
+  background: linear-gradient(135deg, rgba(10,14,28,0.98), rgba(18,35,46,0.98)) !important;
+}
+
+@media (max-width: 700px) {
+  body.chapter-one-page .nav-links {
+    border-radius: 14px !important;
+  }
+
+  body.chapter-one-page .breadcrumb {
+    padding-top: 112px !important;
+  }
+
+  body.chapter-one-page .ch-hero {
+    padding: 20px 18px 34px !important;
+  }
+
+  body.chapter-one-page .ch-hero::before {
+    inset: 4px 16px 22px;
+  }
+
+  body.chapter-one-page .ch-title {
+    font-size: clamp(28px, 7.4vw, 34px) !important;
+  }
+
+  body.chapter-one-page .ch-meta {
+    gap: 8px !important;
+  }
+
+  body.chapter-one-page .lesson-pill {
+    border-radius: 8px !important;
+  }
+
+  body.chapter-one-page .pdf-card {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  body.chapter-one-page .reading-card {
+    padding: 22px !important;
+  }
+
+  body.chapter-one-page .reader-top {
+    flex-direction: column;
+  }
+
+  body.chapter-one-page .reader-meta {
+    border-radius: 8px;
+  }
+
+  body.chapter-one-page .reader-scroll {
+    max-height: 680px;
+    padding-right: 8px;
+  }
+
+  body.chapter-one-page .reading-callout {
+    grid-template-columns: 1fr;
+  }
+
+  body.chapter-one-page .reading-grid,
+  body.chapter-one-page .reading-grid.compact {
+    grid-template-columns: 1fr;
+  }
+
+  body.chapter-one-page .vocab-table div {
+    grid-template-columns: 1fr;
+  }
+
+  body.chapter-one-page .pdf-btn {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  body.chapter-one-page .sidebar {
+    order: 0 !important;
+  }
+}
