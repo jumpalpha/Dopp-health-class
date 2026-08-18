@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<title>Song Maker — Legend of Wellness</title>
+<meta name="description" content="Turn a health lesson into a song. Build a Suno-style prompt, hand it to your teacher, and hear your track in the Class Jukebox.">
+<link rel="canonical" href="https://doppsclass.com/song_maker.html">
+<meta property="og:title" content="Song Maker — Legend of Wellness">
+<meta property="og:description" content="Turn a health lesson into a song. Build a Suno-style prompt, hand it to your teacher, and hear your track in the Class Jukebox.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/song_maker.html">
+<meta name="twitter:card" content="summary">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #FFD700;
+  --gold-dim: #8a6d00;
+  --emerald: #00E5A0;
+  --sky: #38BFFF;
+  --crimson: #FF3B5C;
+  --wild: #a855f7;
+  --bg-deep: #FDFAF2;
+  --bg-card: rgba(28,26,46,0.05);
+  --border: rgba(28,26,46,0.12);
+  --text: #1C1A2E;
+  --text-dim: rgba(28,26,46,0.65);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: var(--bg-deep); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+#stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,59,92,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(0,229,160,0.07) 0%, transparent 60%),
+    #FDFAF2;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 32px;
+  background: rgba(210,196,168,0.98);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-decoration: none; }
+.nav-logo span { color: var(--text-dim); font-weight: 400; }
+.nav-links { display: flex; gap: 6px; }
+.nav-link { padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--text-dim); text-decoration: none; border: 1px solid transparent; transition: all .2s; }
+.nav-link:hover { color: var(--text); border-color: var(--border); background: var(--bg-card); }
+
+.page-hero {
+  position: relative; z-index: 1;
+  padding: 120px 32px 40px;
+  max-width: 900px; margin: 0 auto;
+  text-align: center;
+}
+.page-badge {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 11px; font-weight: 600; letter-spacing: 3px;
+  color: var(--crimson);
+  border: 1px solid rgba(255,59,92,0.3);
+  padding: 6px 16px; border-radius: 20px;
+  margin-bottom: 20px;
+  background: rgba(255,59,92,0.06);
+}
+.page-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 700; line-height: 1.15;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #FF3B5C 0%, #a855f7 60%, #38BFFF 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(255,59,92,0.2));
+}
+.page-sub { font-size: 16px; color: var(--text-dim); line-height: 1.7; max-width: 600px; margin: 0 auto; }
+
+.note-banner {
+  max-width: 900px; margin: 0 auto 8px; padding: 0 32px;
+  position: relative; z-index: 1;
+}
+.note-inner {
+  background: rgba(255,59,92,0.07); border: 1px solid rgba(255,59,92,0.22);
+  border-radius: 12px; padding: 12px 16px; font-size: 13px; color: var(--text-dim); line-height: 1.6;
+}
+.note-inner strong { color: var(--crimson); }
+
+.main-section {
+  position: relative; z-index: 1;
+  max-width: 1000px; margin: 0 auto;
+  padding: 24px 32px 100px;
+}
+.section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; font-weight: 600; letter-spacing: 3px;
+  color: var(--gold-dim); text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.section-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 700; color: var(--text);
+  margin-bottom: 6px;
+}
+.section-sub { font-size: 14px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.6; }
+
+.builder-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
+  padding: 28px; margin-bottom: 40px;
+}
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.field .hint { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+.field select, .field textarea, .field input[type=text] {
+  width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: #fff; font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--text);
+}
+.field textarea { resize: vertical; min-height: 60px; }
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.chip {
+  font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 20px;
+  border: 1px solid rgba(255,59,92,0.3); background: rgba(255,59,92,0.06); color: var(--crimson);
+  cursor: pointer; transition: all .15s; user-select: none;
+}
+.chip:hover, .chip.active { background: rgba(255,59,92,0.18); border-color: var(--crimson); }
+
+.prompt-preview {
+  background: #1C1A2E; border-radius: 14px; padding: 18px 20px; margin-top: 8px;
+  font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; color: #f3f4f6;
+  white-space: pre-wrap; word-break: break-word; min-height: 100px;
+}
+.prompt-preview .ph { color: rgba(255,255,255,0.35); }
+.prompt-preview .tag-line { color: #FFD700; font-weight: 700; }
+
+.builder-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+.btn-copy {
+  background: var(--crimson); color: #fff; border: none; border-radius: 10px;
+  padding: 12px 22px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit;
+  transition: opacity .15s;
+}
+.btn-copy:hover { opacity: .88; }
+.copy-status { font-size: 13px; color: var(--emerald); font-weight: 700; }
+
+.next-steps {
+  background: rgba(56,191,255,0.06); border: 1px solid rgba(56,191,255,0.2); border-radius: 12px;
+  padding: 14px 16px; font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-top: 18px;
+}
+.next-steps strong { color: var(--sky); }
+
+.jukebox-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+}
+.song-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 20px; display: flex; flex-direction: column; gap: 8px;
+}
+.song-topic {
+  font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  color: var(--crimson); text-transform: uppercase;
+}
+.song-title { font-size: 16px; font-weight: 800; color: var(--text); }
+.song-by { font-size: 12px; color: var(--text-dim); }
+.song-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+.song-card audio { width: 100%; margin-top: 4px; }
+
+.empty-jukebox {
+  text-align: center; padding: 50px 20px;
+  background: var(--bg-card); border: 1px dashed var(--border); border-radius: 16px;
+  color: var(--text-dim); font-size: 14px; line-height: 1.7;
+}
+.empty-jukebox .big { font-size: 40px; margin-bottom: 10px; }
+
+footer {
+  position: relative; z-index: 1;
+  background: rgba(5, 7, 18, 0.96);
+  border-top: 1px solid rgba(255,215,0,0.22);
+  padding: 28px 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+}
+.footer-brand { font-family: 'Cinzel', serif; font-size: 13px; color: var(--gold); font-weight: 600; }
+.footer-tags { font-size: 13px; color: rgba(255,255,255,0.78); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeUp .7s ease both; }
+.fade-in-2 { animation: fadeUp .7s .1s ease both; }
+.fade-in-3 { animation: fadeUp .7s .2s ease both; }
+
+@media (max-width: 700px) {
+  nav { padding: 12px 16px; }
+  .nav-link { padding: 6px 10px; font-size: 12px; }
+  .page-hero { padding: 100px 20px 32px; }
+  .note-banner { padding: 0 20px; }
+  .main-section { padding: 20px 20px 80px; }
+  .jukebox-grid { grid-template-columns: 1fr; }
+}
+</style>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div id="stars"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="side_quests.html">🧭 Side Quests</a>
+    <a class="nav-link" href="search.html">🔍 Search</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-badge fade-in">Creative · Side Quest</div>
+  <h1 class="page-title fade-in-2">🎵 Song Maker</h1>
+  <p class="page-sub fade-in-3">Turn a health lesson into a song. Build your prompt below the way you would on Suno, hand it to your teacher, and your finished track lands in the Class Jukebox for everyone to hear.</p>
+</div>
+
+<div class="note-banner">
+  <div class="note-inner fade-in-3">
+    <strong>How this works today:</strong> Suno doesn't offer a public tool for websites to generate songs automatically yet (they only opened an invite-only developer preview in mid‑2026, with no public release). So this page can't generate a song live in your browser — instead, you build the prompt here, your teacher runs it on their Suno account, and drops the finished song into the jukebox below. Same creative process as using Suno directly, just with a teacher in the loop.
+  </div>
+</div>
+
+<div class="main-section">
+
+  <div class="section-label">Step 1</div>
+  <div class="section-title">Build Your Song Prompt</div>
+  <p class="section-sub">Pick a health topic, set the vibe, and describe the message your song should teach. This mirrors exactly what you'd type into Suno.</p>
+
+  <div class="builder-card">
+    <div class="field">
+      <label>Health Topic</label>
+      <select id="topic">
+        <option value="">Choose a topic...</option>
+        <option>Vaping & Nicotine</option>
+        <option>Nutrition & Healthy Eating</option>
+        <option>Mental Health & Stress</option>
+        <option>Sleep Health</option>
+        <option>Alcohol & Drug Prevention</option>
+        <option>Fitness & Movement</option>
+        <option>Relationships & Consent</option>
+        <option>Digital Wellbeing</option>
+        <option>Other / My Own Topic</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Style / Genre Tags</label>
+      <div class="hint">Click a few to add them, or type your own — just like Suno's style box.</div>
+      <input type="text" id="styleTags" placeholder="e.g. upbeat pop, acoustic guitar, anthem">
+      <div class="chip-row" id="chipRow">
+        <span class="chip">Pop</span>
+        <span class="chip">Lo-fi</span>
+        <span class="chip">Hip-Hop</span>
+        <span class="chip">Acoustic</span>
+        <span class="chip">EDM</span>
+        <span class="chip">R&B</span>
+        <span class="chip">Anthem</span>
+        <span class="chip">Chill</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Mood</label>
+      <select id="mood">
+        <option value="">Choose a mood...</option>
+        <option>Uplifting & Motivational</option>
+        <option>Chill & Reflective</option>
+        <option>High-Energy & Fun</option>
+        <option>Serious & Emotional</option>
+        <option>Funny & Playful</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Core Message</label>
+      <div class="hint">What should someone learn or feel after hearing this song?</div>
+      <textarea id="message" placeholder="e.g. Vaping isn't harmless water vapor — it has nicotine and chemicals that hurt your lungs."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Hook / Lyric Idea (optional)</label>
+      <div class="hint">Got a line you want in the chorus? Drop it here — leave blank and let Suno write it.</div>
+      <textarea id="hook" placeholder="e.g. It's not just vapor, it's a lie in the air"></textarea>
+    </div>
+
+    <div class="section-label" style="margin-top:22px">Your Suno-Ready Prompt</div>
+    <div class="prompt-preview" id="promptPreview"><span class="ph">Fill out the fields above and your prompt will build itself here...</span></div>
+
+    <div class="builder-btns">
+      <button class="btn-copy" onclick="copyPrompt()">📋 Copy Prompt</button>
+      <span class="copy-status" id="copyStatus"></span>
+    </div>
+
+    <div class="next-steps">
+      <strong>Step 2:</strong> Copy your prompt and show it to your teacher (or paste it into a shared doc). <strong>Step 3:</strong> Your teacher generates it on Suno and saves the finished song. <strong>Step 4:</strong> It shows up in the Class Jukebox below for the whole class to hear!
+    </div>
+  </div>
+
+  <div class="section-label">Step 4</div>
+  <div class="section-title">🎧 Class Jukebox</div>
+  <p class="section-sub">Finished songs your teacher has generated from student prompts.</p>
+
+  <div class="jukebox-grid" id="jukebox"></div>
+
+</div>
+
+<footer>
+  <div class="footer-brand">⚔ The Legend of Wellness</div>
+  <div class="footer-tags">#OnedayIwokeup &nbsp;·&nbsp; <a href="dopp_games.html" style="color:inherit;text-decoration:none;">#Doppitup</a></div>
+  <a href="index.html" style="font-size:12px;color:rgba(255,255,255,0.6);text-decoration:none">← Back to Home</a>
+</footer>
+
+<script>
+// Teachers: add a finished song by adding one entry here, and dropping the mp3
+// file into an "audio/" folder next to this page (e.g. audio/vape-anthem.mp3).
+const SONGS = [
+  // { title:"Not Just Vapor", topic:"Vaping & Nicotine", by:"Period 3 Class Song", desc:"An anthem about what's really in an e-cigarette.", file:"audio/example.mp3" },
+];
+
+function renderJukebox(){
+  const el = document.getElementById('jukebox');
+  if(!SONGS.length){
+    el.outerHTML = `<div class="empty-jukebox" id="jukebox">
+      <div class="big">🎶</div>
+      No songs yet — build a prompt above and yours could be the first one added!
+    </div>`;
+    return;
+  }
+  el.innerHTML = SONGS.map(s => `
+    <div class="song-card">
+      <div class="song-topic">${s.topic}</div>
+      <div class="song-title">${s.title}</div>
+      <div class="song-by">${s.by || ''}</div>
+      <div class="song-desc">${s.desc || ''}</div>
+      <audio controls src="${s.file}"></audio>
+    </div>`).join('');
+}
+
+function updatePrompt(){
+  const topic = document.getElementById('topic').value;
+  const style = document.getElementById('styleTags').value.trim();
+  const mood = document.getElementById('mood').value;
+  const message = document.getElementById('message').value.trim();
+  const hook = document.getElementById('hook').value.trim();
+  const preview = document.getElementById('promptPreview');
+
+  if(!topic && !style && !mood && !message && !hook){
+    preview.innerHTML = '<span class="ph">Fill out the fields above and your prompt will build itself here...</span>';
+    return;
+  }
+
+  const styleParts = [style, mood].filter(Boolean).join(', ');
+  let out = '';
+  out += `<span class="tag-line">[Style]</span> ${styleParts || '(add style tags and a mood above)'}\n\n`;
+  out += `<span class="tag-line">[Topic]</span> ${topic || '(choose a health topic above)'}\n\n`;
+  out += `<span class="tag-line">[Lyrics theme]</span> ${message || '(describe the message this song should teach)'}`;
+  if(hook){
+    out += `\n\n<span class="tag-line">[Hook idea]</span> "${hook}"`;
+  }
+  preview.innerHTML = out;
+}
+
+function buildPromptText(){
+  const topic = document.getElementById('topic').value;
+  const style = document.getElementById('styleTags').value.trim();
+  const mood = document.getElementById('mood').value;
+  const message = document.getElementById('message').value.trim();
+  const hook = document.getElementById('hook').value.trim();
+  const styleParts = [style, mood].filter(Boolean).join(', ');
+  let out = `[Style] ${styleParts || '—'}\n[Topic] ${topic || '—'}\n[Lyrics theme] ${message || '—'}`;
+  if(hook) out += `\n[Hook idea] "${hook}"`;
+  return out;
+}
+
+function copyPrompt(){
+  const text = buildPromptText();
+  const status = document.getElementById('copyStatus');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      status.textContent = '✓ Copied! Show this to your teacher.';
+      setTimeout(()=>status.textContent='', 3000);
+    }).catch(()=>{
+      status.textContent = 'Could not copy — select the text above manually.';
+    });
+  } else {
+    status.textContent = 'Select the text above and copy it manually.';
+  }
+}
+
+document.getElementById('topic').addEventListener('change', updatePrompt);
+document.getElementById('styleTags').addEventListener('input', updatePrompt);
+document.getElementById('mood').addEventListener('change', updatePrompt);
+document.getElementById('message').addEventListener('input', updatePrompt);
+document.getElementById('hook').addEventListener('input', updatePrompt);
+
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    chip.classList.toggle('active');
+    const active = [...document.querySelectorAll('.chip.active')].map(c=>c.textContent);
+    document.getElementById('styleTags').value = active.join(', ');
+    updatePrompt();
+  });
+});
+
+renderJukebox();
+</script>
+
+</body>
+</html>
