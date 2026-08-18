@@ -51,32 +51,8 @@ body{font-family:system-ui,sans-serif;background:#0c1a2e;color:#fff;padding:16px
 <body>
 <div id="app"></div>
 <script>
-const WORDS=[
-  {word:"HEART",cat:"Body Systems",hint:"Pumps blood through the entire body"},
-  {word:"LUNGS",cat:"Body Systems",hint:"Where oxygen enters the blood"},
-  {word:"SYRINGE",cat:"Medical Tools",hint:"Used to inject vaccines or draw blood"},
-  {word:"SUNSCREEN",cat:"Skin Health",hint:"Protects against UV rays — SPF 30+"},
-  {word:"TREADMILL",cat:"Fitness",hint:"Exercise machine for running indoors"},
-  {word:"BRAIN",cat:"Nervous System",hint:"Control center of the entire body"},
-  {word:"BACTERIA",cat:"Disease",hint:"Microscopic single-celled organism — can be treated with antibiotics"},
-  {word:"AMBULANCE",cat:"Emergency",hint:"Vehicle that rushes patients to the hospital"},
-  {word:"BLOOD PRESSURE CUFF",cat:"Cardiovascular",hint:"Device wrapped around arm to measure hypertension"},
-  {word:"TOOTHBRUSH",cat:"Dental Health",hint:"Use it twice daily to prevent plaque"},
-  {word:"YOGA",cat:"Mental Health",hint:"Mind-body practice combining stretching and breathing"},
-  {word:"CIGARETTE",cat:"Tobacco",hint:"Contains nicotine, tar, and 7,000 chemicals"},
-  {word:"STOMACH",cat:"Digestive System",hint:"Organ that uses acid to break down food"},
-  {word:"SKELETON",cat:"Skeletal System",hint:"206 bones supporting the body"},
-  {word:"VIRUS",cat:"Disease",hint:"Microscopic pathogen — antibiotics won't work"},
-  {word:"THERMOMETER",cat:"Medical Tools",hint:"Measures body temperature — fever is above 100.4°F"},
-  {word:"ALLERGY",cat:"Immune System",hint:"Overreaction to a normally harmless substance"},
-  {word:"CPR",cat:"First Aid",hint:"Chest compressions to restore circulation"},
-  {word:"DEFIBRILLATOR",cat:"Emergency",hint:"Electric shock device — AED — restores heart rhythm"},
-  {word:"SPINE",cat:"Body Systems",hint:"Column of vertebrae protecting the spinal cord"},
-  {word:"KIDNEY",cat:"Excretory System",hint:"Filters waste from the blood into urine"},
-  {word:"ASTHMA INHALER",cat:"Respiratory",hint:"Device delivering medication to open airways"},
-  {word:"FOOD PYRAMID",cat:"Nutrition",hint:"Visual guide to healthy eating — now replaced by MyPlate"},
-  {word:"MOSQUITO",cat:"Disease Vectors",hint:"Insect that spreads malaria and dengue fever"},
-];
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+const WORDS=JSON.parse(_dx("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","doppclass2026"));
 
 let teams=['Team 1','Team 2','Team 3'];let scores=[0,0,0];let currentTeam=0;
 let wordIdx=0;let shuffled=[];let timer=60;let timerInt=null;let running=false;

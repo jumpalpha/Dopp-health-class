@@ -72,6 +72,7 @@ const QS=[
   {a:"Work in healthcare for your entire career even if you hate it",b:"Follow your dream career but work in a job with known health hazards (noise, chemicals, sedentary lifestyle)",cat:"Occupational Health",debate:"Should schools do more to educate teens about the health risks of different careers? Is work-life balance a health issue?",fact:"Occupational health is one of the 7 dimensions of wellness. Sedentary desk jobs increase cardiovascular risk. Noise-induced hearing loss is the #1 occupational disease in the U.S."},
 ];
 
+function _shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 let qIdx=0;let votesA=0;let votesB=0;let voted=false;let showDebate=false;let showFact=false;
 let totalA=0;let totalB=0;
 
@@ -125,7 +126,7 @@ function toggleFact(){showFact=!showFact;render();}
 function next(){
   qIdx=(qIdx+1)%QS.length;voted=false;votesA=0;votesB=0;showDebate=false;showFact=false;render();
 }
-function init(){qIdx=0;voted=false;votesA=0;votesB=0;showDebate=false;showFact=false;totalA=0;totalB=0;render();}
+function init(){_shuf(QS);qIdx=0;voted=false;votesA=0;votesB=0;showDebate=false;showFact=false;totalA=0;totalB=0;render();}
 
 init();
 </script>

@@ -27,20 +27,9 @@
 <div style="margin-bottom:10px"><div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px">Teams:</div>
 <div style="display:flex;gap:6px;flex-wrap:wrap" id="team-setup"></div></div>
 <script>
-const PUZZLES=[
-  {phrase:"FETAL ALCOHOL SPECTRUM DISORDER",cat:"Health Terms"},
-  {phrase:"UNDETECTABLE EQUALS UNTRANSMITTABLE",cat:"HIV Knowledge"},
-  {phrase:"HANDS ONLY CPR",cat:"First Aid"},
-  {phrase:"PREFRONTAL CORTEX",cat:"Brain Science"},
-  {phrase:"CARDIOVASCULAR DISEASE",cat:"Noncommunicable Diseases"},
-  {phrase:"MYPLATE HALF FRUITS AND VEGETABLES",cat:"Nutrition"},
-  {phrase:"SIXTY MINUTES OF PHYSICAL ACTIVITY",cat:"Fitness Goals"},
-  {phrase:"ENVIRONMENTAL TOBACCO SMOKE",cat:"Tobacco"},
-  {phrase:"NALOXONE REVERSES OPIOID OVERDOSE",cat:"Drug Safety"},
-  {phrase:"ABCDE RULE FOR MELANOMA",cat:"Skin Health"},
-  {phrase:"SEVEN DIMENSIONS OF WELLNESS",cat:"Wellness"},
-  {phrase:"BLOOD ALCOHOL CONCENTRATION",cat:"Alcohol"},
-];
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+function _shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const PUZZLES=_shuf(JSON.parse(_dx("PxRSAAseAAAWEAoSFCIqJDEvTCA/MH14fXpEPCA1IDgzJj4SdHtlKz00NTFOTVNRUVFGFF5PUjgGDQ0HGxJkV0QJHFINT0waUQNaQlNFAU1KUEE5Lzc2ZnVxYiUtPDVDKTAmMn5jEmMqOyIxLT8sOidmcXB6IU1cUEEPAAdRCBAQfi05UDsNAxYfFlZXVxQZQ1ALQRwJARJBVRAMRE04MS0oMlM8fHxrFic/IlJPTEMQEkYSCBZGKRkCEBhBMhpWEk8aRBRSAAseAAAWEAoSFDQ9NTYxIy8nMn4QcXk2OzUoQUBBURBTRBAMRE0yAgIFD1MgUVlXWAcKUg1PTBpRA1pCU0UBTUpQQS8gITd7f2R3NywlPCI+QTc6YXVzZSFNXFBBDwAHUQgQEHgLARMfDgEUHRpRUVBaAU80GRAJAAAWQRJPGkQUUgALHgAAFhAKEhQpNiA8IjgkUztzfHQWIj0lOTc/QTI9dhBkcyMqJDEhICQgUR4QEFUFG1JKQ04vBgdAWUZfCwFSDU9MGlEDWkJTRQFNSlBBPygrJ2sQf38qOiQ1MEwuNVNieGtlLSwxPEMtIic6ZHlmb0ZDUFIADRVRSRISdF8QARUDEEwmHBJeQxBLSE8LUhMEExIAVxIIFkYqPiYqPi49Pnd+ZncoTyQ/IS0iMDwSY395LypSXENOAhIHEAoSFDAAEhEADw5RDh4QSRQUBwIREAlDSVMQfnN6Kzc/PiZMMzYld2JhczdPPyAqIyg3U31md2QgICM1QUBBURBTRBAMRE00AhYLQSASVFVGT0YSXFAYThEbAVNDVxReT1IxIS8lNlNgZX5zRCk/IkMhJD8yfH9/d0ZDUFIADRVRSRISYV0NAVA4Bg0NBxsQTR4WH00AGBENEhZRCBAQZSE5NT5DKCg+Nnxje3kqPFA/JUw2Nj9+fndlN01cUEEPAAdRCBAQYQEDHB4GHxJRDh4QSRQUBwIREAlDSVMQcn55KytQMS8vLjs8fhBxeSosNT43PiAnOn1+EBpETRMRF05bU1FzXFFZDAAcUh4x","doppclass2026")));
 const WEDGES=[
   {label:'$500',val:500,color:'#1565C0'},{label:'$300',val:300,color:'#6A1B9A'},
   {label:'BANKRUPT',val:'bankrupt',color:'#B71C1C'},{label:'$700',val:700,color:'#1B5E20'},

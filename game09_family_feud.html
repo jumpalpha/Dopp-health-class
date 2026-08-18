@@ -60,40 +60,10 @@ body{font-family:system-ui,sans-serif;background:#880000;color:#fff;padding:16px
 <body>
 <div id="app"></div>
 <script>
-const QUESTIONS=[
-  {survey:"Name a reason teens say they try tobacco or vaping for the first time.",answers:[
-    {text:"Peer pressure / friends were doing it",pts:42},{text:"Curiosity",pts:28},{text:"Stress relief",pts:14},{text:"Looks cool / social image",pts:9},{text:"Boredom",pts:5},{text:"Rebellion",pts:2},
-  ]},
-  {survey:"Name something people commonly skip that dramatically raises their risk of cardiovascular disease.",answers:[
-    {text:"Exercise / physical activity",pts:38},{text:"Doctor check-ups",pts:24},{text:"Breakfast",pts:16},{text:"Sleep",pts:12},{text:"Medication",pts:7},{text:"Drinking water",pts:3},
-  ]},
-  {survey:"According to teens, name the most common reason they don't get enough sleep.",answers:[
-    {text:"Phone / social media",pts:45},{text:"Homework",pts:27},{text:"Can't fall asleep (anxiety)",pts:15},{text:"Sports / activities",pts:8},{text:"TV or gaming",pts:4},{text:"Work",pts:1},
-  ]},
-  {survey:"Name a health myth that many people still believe is true.",answers:[
-    {text:"You need 8 glasses of water per day (exact)",pts:31},{text:"You lose most heat through your head",pts:24},{text:"Cracking knuckles causes arthritis",pts:19},{text:"We only use 10% of our brains",pts:14},{text:"Sugar causes hyperactivity in kids",pts:8},{text:"Shaving makes hair grow back thicker",pts:4},
-  ]},
-  {survey:"Name a way teens say they cope with stress in a healthy way.",answers:[
-    {text:"Exercise / sports",pts:36},{text:"Music",pts:25},{text:"Talk to friends",pts:18},{text:"Sleep",pts:11},{text:"Art / creative outlet",pts:7},{text:"Deep breathing / meditation",pts:3},
-  ]},
-  {survey:"Name a reason teens give for not eating healthily.",answers:[
-    {text:"Fast food is cheaper / more convenient",pts:39},{text:"Junk food tastes better",pts:26},{text:"Not enough time",pts:17},{text:"Parents don't buy healthy food",pts:11},{text:"Don't know how to cook",pts:5},{text:"Dieting / restriction pressure",pts:2},
-  ]},
-  {survey:"Name something associated with a higher risk of developing Type 2 diabetes.",answers:[
-    {text:"Obesity / being overweight",pts:41},{text:"Poor diet / high sugar intake",pts:29},{text:"Physical inactivity",pts:16},{text:"Family history",pts:9},{text:"High blood pressure",pts:4},{text:"Age",pts:1},
-  ]},
-  {survey:"Name a vaccine teens are recommended to receive.",answers:[
-    {text:"HPV vaccine (Gardasil)",pts:33},{text:"Flu (influenza) vaccine",pts:28},{text:"Tdap (tetanus, diphtheria, pertussis)",pts:18},{text:"Meningococcal vaccine",pts:13},{text:"COVID-19 vaccine",pts:6},{text:"Hepatitis B",pts:2},
-  ]},
-];
-
-const FAST_MONEY_Q=[
-  {q:"Name the #1 cause of preventable death in the U.S.",a:"Tobacco use (480,000+ deaths/year)",pts:100},
-  {q:"Name a body system that includes the heart and blood vessels.",a:"Cardiovascular system",pts:80},
-  {q:"What does CPR stand for?",a:"Cardiopulmonary Resuscitation",pts:70},
-  {q:"Name the emergency number in the United States.",a:"911",pts:95},
-  {q:"What drug reverses an opioid overdose — now available OTC?",a:"Naloxone / Narcan",pts:60},
-];
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+function _shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const _GD9=JSON.parse(_dx("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","doppclass2026"));
+const QUESTIONS=_shuf(_GD9.QUESTIONS),FAST_MONEY_Q=_GD9.FAST_MONEY_Q;
 
 let teams=['Team 1','Team 2'];let scores=[0,0];let currentTeam=0;
 let qIdx=0;let revealed=[];let strikes=0;let roundPts=0;let phase='face-off';
@@ -196,7 +166,7 @@ function showFastMoney(){
 
 function revealFast(i){const el=document.getElementById('fa'+i);if(el)el.classList.toggle('show');}
 
-function init(){qIdx=0;revealed=[];strikes=0;roundPts=0;currentTeam=0;render();}
+function init(){_shuf(QUESTIONS);qIdx=0;revealed=[];strikes=0;roundPts=0;currentTeam=0;render();}
 
 init();
 </script>

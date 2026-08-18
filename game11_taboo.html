@@ -51,28 +51,8 @@ body{font-family:system-ui,sans-serif;background:#1a0050;color:#fff;padding:16px
 <div id="app"></div>
 <div id="modal"></div>
 <script>
-const CARDS=[
-  {word:"FENTANYL",forbidden:["opioid","drug","overdose","synthetic","pain"]},
-  {word:"CARDIOVASCULAR",forbidden:["heart","blood","vessel","cardio","system"]},
-  {word:"ABSTINENCE",forbidden:["sex","STI","pregnancy","prevent","avoid"]},
-  {word:"MELANOMA",forbidden:["skin","cancer","mole","sun","dark"]},
-  {word:"VACCINATION",forbidden:["shot","needle","immune","disease","protect"]},
-  {word:"CEREBRUM",forbidden:["brain","think","memory","large","cortex"]},
-  {word:"HYPERTENSION",forbidden:["blood","pressure","heart","high","silent"]},
-  {word:"PHOTOSYNTHESIS",forbidden:["plant","sun","chlorophyll","light","energy"]},
-  {word:"ANTIBIOTICS",forbidden:["bacteria","medicine","infection","pill","drug"]},
-  {word:"DIABETES",forbidden:["sugar","insulin","blood","type","glucose"]},
-  {word:"OSTEOPOROSIS",forbidden:["bone","calcium","weak","fracture","density"]},
-  {word:"PERISTALSIS",forbidden:["muscle","food","digest","move","intestine"]},
-  {word:"NALOXONE",forbidden:["overdose","reverse","opioid","Narcan","spray"]},
-  {word:"ATHEROSCLEROSIS",forbidden:["artery","plaque","clog","heart","fat"]},
-  {word:"PUBERTY",forbidden:["teen","grow","hormone","change","develop"]},
-  {word:"MELATONIN",forbidden:["sleep","pineal","hormone","dark","night"]},
-  {word:"PATHOGEN",forbidden:["germ","disease","cause","bacteria","virus"]},
-  {word:"EPIDERMIS",forbidden:["skin","outer","layer","cells","body"]},
-  {word:"SEROTONIN",forbidden:["mood","brain","happy","neurotransmitter","chemical"]},
-  {word:"TINNITUS",forbidden:["ears","ringing","hearing","noise","damage"]},
-];
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+const CARDS=JSON.parse(_dx("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","doppclass2026"));
 
 let teams=['Team 1','Team 2'];let scores=[0,0];let currentTeam=0;
 let cardIdx=0;let shuffled=[];let timer=60;let timerInt=null;let running=false;

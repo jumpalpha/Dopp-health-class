@@ -70,18 +70,10 @@ body{font-family:system-ui,sans-serif;background:#1a0a00;color:#fff;padding:16px
 <body>
 <div id="app"></div>
 <script>
-const QUESTIONS=[
-  {q:"What is the #1 cause of preventable death in the United States?",opts:["A: Car accidents","B: Tobacco use","C: Drug overdoses","D: Obesity"],ans:1,pts:300,debate:"Should energy drinks be banned for anyone under 18? Argue your side."},
-  {q:"Which blood pressure reading indicates Stage 1 Hypertension per updated 2017 AHA guidelines?",opts:["A: 120/80","B: 130/80","C: 140/90","D: 150/95"],ans:1,pts:400,debate:"Should fast food restaurants be required to post calorie counts prominently on menus? Debate."},
-  {q:"Teen drinking is at a 25-year low. What percentage of 8th–12th graders reported past-30-day alcohol use in 2024?",opts:["A: 45%","B: 26%","C: 20%","D: 13%"],ans:3,pts:500,debate:"Should the drinking age be raised to 25 based on brain development research? Defend your position."},
-  {q:"Fentanyl is approximately how many times more potent than heroin?",opts:["A: 5 times","B: 10 times","C: 25 times","D: 50 times"],ans:3,pts:500,debate:"Should naloxone (Narcan) be required in every high school nurse's office? Why or why not?"},
-  {q:"The current HPV vaccine (Gardasil 9) protects against how many HPV strains?",opts:["A: 2","B: 4","C: 9","D: 14"],ans:2,pts:400,debate:"Should the HPV vaccine be required for school attendance like MMR vaccines? Argue your side."},
-  {q:"What does U=U mean in HIV treatment?",opts:["A: Untested = Unsafe","B: Undetectable = Untransmittable","C: Uninfected = Unprotected","D: Universal = Unavoidable"],ans:1,pts:500,debate:"Should HIV status be required to be disclosed to all partners? Discuss privacy vs. public health."},
-  {q:"Colorectal cancer screening age was lowered in 2021. What is the new recommended starting age?",opts:["A: 40","B: 45","C: 50","D: 55"],ans:1,pts:400,debate:"Should health insurance be required to cover ALL preventive screenings at no cost? Debate."},
-  {q:"What is the compression rate per minute for adult CPR?",opts:["A: 60–80","B: 80–100","C: 100–120","D: 120–140"],ans:2,pts:300,debate:"Should CPR training be mandatory for all high school graduation requirements? Defend your view."},
-  {q:"Which law raised the minimum age to purchase tobacco products in the U.S. from 18 to 21?",opts:["A: Clean Air Act","B: Tobacco 21","C: Youth Tobacco Act","D: FDA Modernization Act"],ans:1,pts:400,debate:"Should vaping and e-cigarettes be classified as tobacco products and banned from schools? Why?"},
-  {q:"Approximately how many Americans die from cardiovascular disease every year?",opts:["A: 200,000","B: 450,000","C: 919,000","D: 1.2 million"],ans:2,pts:500,debate:"Should PE class be required every single day of high school? Make your case."},
-];
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+function _shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function _shufOpts(q){const idxs=_shuf([0,1,2,3]);const newOpts=idxs.map(i=>q.opts[i]);const newAns=idxs.indexOf(q.ans);q.opts=newOpts;q.ans=newAns;}
+const QUESTIONS=JSON.parse(_dx("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","doppclass2026"));
 
 const AVATARS=["🧑","👩","🧑‍🦱","👩‍🦰","🧑‍🦲","👩‍🦳","🧑‍🦳","👨"];
 let players=[];let scores=[];let immune=-1;let eliminated=[];let votes={};let qIdx=0;
@@ -90,6 +82,7 @@ let phase='setup';let answered=false;let selectedVote=-1;let immuneSelected=-1;
 function setup(){
   const names=["Alex","Jordan","Sam","Riley","Morgan","Casey","Taylor","Drew"];
   players=names.slice(0,6);scores=players.map(()=>0);immune=-1;eliminated=[];votes={};qIdx=0;phase='question';answered=false;selectedVote=-1;immuneSelected=-1;
+  _shuf(QUESTIONS);_shufOpts(QUESTIONS[qIdx%QUESTIONS.length]);
   render();
 }
 
@@ -118,8 +111,8 @@ function render(){
       <div class="q-round">Round ${qIdx+1} — Health Challenge</div>
       <div class="q-text">${q.q}</div>
       ${q.debate?`<div class="q-debate">🗣 Debate prompt: "${q.debate}"</div>`:''}
-      <div class="options">${q.opts.map((o,i)=>`<div class="opt${answered?(i===q.ans?' correct':(i!==q.ans&&answered?' disabled wrong-if-picked':' disabled')):''}" onclick="${answered?'':'pick('+i+')'}">${o}</div>`).join('')}</div>
-      <div class="answer-reveal${answered?' show':''}" id="ans">The correct answer is: <strong>${q.opts[q.ans]}</strong></div>
+      <div class="options">${q.opts.map((o,i)=>`<div class="opt${answered?(i===q.ans?' correct':(i!==q.ans&&answered?' disabled wrong-if-picked':' disabled')):''}" onclick="${answered?'':'pick('+i+')'}">${'ABCD'[i]}: ${o}</div>`).join('')}</div>
+      <div class="answer-reveal${answered?' show':''}" id="ans">The correct answer is: <strong>${'ABCD'[q.ans]}: ${q.opts[q.ans]}</strong></div>
     </div>
     <div class="status" id="status">${answered?`Correct answer revealed! Debate if prompted, then conduct tribal council.`:`Each active player answers — teacher scores each one. Worth ${q.pts} pts.`}</div>
     <div class="btns">
@@ -217,7 +210,7 @@ function renderTribal(loser){
     </div>`;
 }
 
-function nextRound(){qIdx++;answered=false;phase='question';render();}
+function nextRound(){qIdx++;answered=false;phase='question';_shufOpts(QUESTIONS[qIdx%QUESTIONS.length]);render();}
 
 function renderWin(winner){
   document.getElementById('app').innerHTML=`

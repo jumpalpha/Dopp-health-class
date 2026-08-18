@@ -105,9 +105,10 @@ const SHARKS=[
 
 const RUBRIC_ITEMS=["Health Impact","Evidence & Data","Feasibility","Presentation","Innovation"];
 
+function _shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 let pitchIdx=0;let stars={};let decisions=[];let sharkDecisions={};
 
-function init(){pitchIdx=0;stars={};decisions=[];sharkDecisions={};RUBRIC_ITEMS.forEach((_,i)=>stars[i]=0);render();}
+function init(){_shuf(PITCHES);pitchIdx=0;stars={};decisions=[];sharkDecisions={};RUBRIC_ITEMS.forEach((_,i)=>stars[i]=0);render();}
 
 function render(){
   if(pitchIdx>=PITCHES.length){renderResults();return;}

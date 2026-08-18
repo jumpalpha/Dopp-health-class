@@ -75,39 +75,10 @@ body{font-family:system-ui,sans-serif;background:#002B80;color:#fff;padding:16px
 <script>
 let totalScore=0;let gamesDone=[];let currentMini=-1;let qIdx=0;let answered=false;
 
-const MINI_GAMES=[
-  {name:"Calorie Countdown",icon:"🍔",desc:"Guess the calorie count — closest wins!",
-   items:[
-    {name:"Big Mac (McDonald's)",desc:"Quarter pound beef, special sauce, lettuce, cheese",price:550,unit:"calories"},
-    {name:"Venti Pumpkin Spice Latte (Starbucks)",desc:"Whole milk, whipped cream, 16 oz",price:380,unit:"calories"},
-    {name:"Chipotle Chicken Burrito (all toppings)",desc:"Rice, beans, cheese, sour cream, salsa",price:1100,unit:"calories"},
-    {name:"1 Glazed Krispy Kreme Donut",desc:"The classic original glazed",price:190,unit:"calories"},
-    {name:"Large McDonald's French Fries",desc:"Standard large fries",price:490,unit:"calories"},
-  ]},
-  {name:"What Does It Cost?",icon:"💊",desc:"Guess the real healthcare cost — you'll be shocked!",
-   items:[
-    {name:"Ambulance ride (average U.S. city)",desc:"Average cost per ride without insurance",price:1200,unit:"dollars"},
-    {name:"Emergency room visit (no procedure)",desc:"Average for just walking in with no treatment",price:2200,unit:"dollars"},
-    {name:"EpiPen 2-pack (without insurance)",desc:"Retail pharmacy price, 2023",price:650,unit:"dollars"},
-    {name:"Narcan (naloxone) nasal spray (without insurance)",desc:"2-dose pack OTC at pharmacy",price:45,unit:"dollars"},
-    {name:"Dental crown procedure",desc:"Average U.S. cost without insurance",price:1300,unit:"dollars"},
-   ]},
-  {name:"Healthy vs. Junk Cart",icon:"🛒",desc:"Which grocery cart costs more — healthy or junk?",
-   items:[
-    {q:"For 1 week of meals, which cart costs MORE at a typical grocery store?",opts:["A: $120 healthy cart (fresh produce, lean proteins, whole grains)","B: $95 junk cart (chips, frozen pizza, soda, fast food)"],ans:0,fact:"Myth busted! Healthy eating can cost more upfront — but medical bills from poor diet cost far more long-term."},
-    {q:"A daily McDonald's meal deal costs about $8/day. Over ONE YEAR that equals:",opts:["A: About $1,000","B: About $1,800","C: About $2,920","D: About $4,500"],ans:2,fact:"$8 × 365 = $2,920/year on one meal per day — before we count the healthcare costs."},
-    {q:"A pack-a-day smoker at $10/pack spends how much per YEAR on cigarettes?",opts:["A: $1,825","B: $2,500","C: $3,650","D: $5,200"],ans:2,fact:"$10 × 365 = $3,650/year. Over 30 years = $109,500 — before adding healthcare costs."},
-    {q:"Which of these is the most cost-effective preventive health investment?",opts:["A: Annual gym membership ($500)","B: Annual physical exam ($0 with insurance)","C: Daily vitamins ($200/year)","D: Organic groceries ($1,200/year)"],ans:1,fact:"An annual physical is free under the ACA for most insured Americans — and catches problems early when they're cheaper to treat."},
-   ]},
-  {name:"Stat Showdown",icon:"📊",desc:"Guess the real health statistic — closer wins bonus points!",
-   items:[
-    {name:"Americans who die from tobacco EVERY YEAR",desc:"Updated 2024 CDC figure",price:480000,unit:"people"},
-    {name:"Minutes of daily activity recommended for teens",desc:"Current CDC / WHO guideline",price:60,unit:"minutes"},
-    {name:"Americans with Alcohol Use Disorder (2023)",desc:"NIAAA updated figure, ages 12+",price:29500000,unit:"people"},
-    {name:"New HIV infections per year in the U.S.",desc:"CDC 2023 estimate",price:32000,unit:"infections"},
-    {name:"Percent of adult Americans with high blood pressure",desc:"Post-2017 AHA guideline reclassification",price:47,unit:"percent"},
-   ]},
-];
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+function _shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function _shufOpts(q){const n=q.opts.length;const order=_shuf([...Array(n).keys()]);const newOpts=order.map(i=>q.opts[i]);const newAns=order.indexOf(q.ans);q.opts=newOpts;q.ans=newAns;}
+const MINI_GAMES=JSON.parse(_dx("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","doppclass2026"));
 
 function renderMenu(){
   document.getElementById('app').innerHTML=`
@@ -193,12 +164,13 @@ function checkGuess(){
 function renderCartGame(){
   const mini=MINI_GAMES[currentMini];
   const item=mini.items[qIdx];
+  if(item.opts){_shufOpts(item);}
   document.getElementById('app').innerHTML=`
     <div class="hdr"><div class="hdr-title">${mini.name}</div><div class="hdr-sub">${mini.desc}</div></div>
     <div class="progress-dots">${mini.items.map((_,i)=>`<div class="dot${i<qIdx?' done':i===qIdx?' active':''}"></div>`).join('')}</div>
     <div class="game-card">
       <div class="game-title">${item.q}</div>
-      <div class="option-grid" id="opts">${item.opts.map((o,i)=>`<div class="opt" onclick="pickCart(${i})" id="opt${i}">${o}</div>`).join('')}</div>
+      <div class="option-grid" id="opts">${item.opts.map((o,i)=>`<div class="opt" onclick="pickCart(${i})" id="opt${i}">${'ABCD'[i]}: ${o}</div>`).join('')}</div>
       <div class="reveal-box" id="reveal"></div>
       ${item.fact?`<div style="display:none;background:#001a4d;border-left:3px solid #FFD700;padding:8px 12px;font-size:12px;color:rgba(255,255,255,0.8);margin-top:8px;line-height:1.5" id="fact">${item.fact}</div>`:''}
     </div>
