@@ -113,7 +113,173 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:28
     <button class="filter-btn" onclick="filter('Solo',this)">Solo Quests</button>
   </div>
 
-  <div class="game-grid" id="game-grid"></div>
+  <div class="game-grid" id="game-grid">
+    <div class="game-card" style="--card-glow:rgba(255,59,92,0.06)">
+      <div class="card-top">
+        <div class="game-icon">📋</div>
+        <span class="game-type type-boss">Boss</span>
+      </div>
+      <div class="game-title">Health Jeopardy</div>
+      <div class="game-realm">Best for: Any Realm Boss Battle</div>
+      <div class="game-desc">5 health categories × 5 dollar values. Hidden Daily Doubles, 2–4 team scoring, Final Jeopardy with wagers. The gold standard classroom game.</div>
+      <div class="game-features"><span class="feature">2–4 Teams</span><span class="feature">Daily Double</span><span class="feature">Final Jeopardy</span><span class="feature">25 Questions</span></div>
+      <a class="play-btn" href="game01_jeopardy.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(168,85,247,0.06)">
+      <div class="card-top">
+        <div class="game-icon">💼</div>
+        <span class="game-type type-team">Team</span>
+      </div>
+      <div class="game-title">Deal or No Deal</div>
+      <div class="game-realm">Best for: Shadow World (Ch 19–22)</div>
+      <div class="game-desc">26 briefcases hide point values, health hazard cards (answer or lose points), and bonus challenges. Banker offers after each round. All about risk decisions.</div>
+      <div class="game-features"><span class="feature">Solo Play</span><span class="feature">Risk Decisions</span><span class="feature">Health Hazard Cards</span></div>
+      <a class="play-btn" href="game02_deal_or_no_deal.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(56,191,255,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🎡</div>
+        <span class="game-type type-solo">Solo</span>
+      </div>
+      <div class="game-title">Wheel of Fortune</div>
+      <div class="game-realm">Best for: Vocab Quests — Any Chapter</div>
+      <div class="game-desc">Animated spin wheel with 16 wedges including Bankrupt and Free Spin. Guess health vocabulary phrases letter by letter. 13 health phrases to solve.</div>
+      <div class="game-features"><span class="feature">2–4 Teams</span><span class="feature">Animated Wheel</span><span class="feature">Bankrupt Rule</span><span class="feature">13 Phrases</span></div>
+      <a class="play-btn" href="game03_wheel_of_fortune.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(255,59,92,0.06)">
+      <div class="card-top">
+        <div class="game-icon">💰</div>
+        <span class="game-type type-boss">Boss</span>
+      </div>
+      <div class="game-title">Who Wants to Be a Millionaire</div>
+      <div class="game-realm">Best for: Any Realm Boss Battle</div>
+      <div class="game-desc">12 escalating health questions from $100 to $1,000,000. Three lifelines: 50/50, Phone a Friend, Ask the Class. Safe havens at Q5 and Q9. Walk-away mechanic.</div>
+      <div class="game-features"><span class="feature">12 Questions</span><span class="feature">3 Lifelines</span><span class="feature">Walk Away</span><span class="feature">Safe Havens</span></div>
+      <a class="play-btn" href="game04_millionaire.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(255,215,0,0.06)">
+      <div class="card-top">
+        <div class="game-icon">⚡</div>
+        <span class="game-type type-daily">Daily</span>
+      </div>
+      <div class="game-title">Hot Takes Buzzer Battle</div>
+      <div class="game-realm">Best for: Any Chapter Opener</div>
+      <div class="game-desc">4-player buzzers, Hot Takes, Rapid Fire, and 60-Second Blitz question types. Streak multipliers. 15 shuffled questions with 20-second timer.</div>
+      <div class="game-features"><span class="feature">4 Players</span><span class="feature">Streak Bonuses</span><span class="feature">3 Question Types</span><span class="feature">Timed</span></div>
+      <a class="play-btn" href="game05_hot_takes.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(56,191,255,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🔐</div>
+        <span class="game-type type-team">Team</span>
+      </div>
+      <div class="game-title">Health Escape Room</div>
+      <div class="game-realm">Best for: Any Realm Team Event</div>
+      <div class="game-desc">3 themed rooms: Opioid Emergency, Disease Outbreak, Cardiac Emergency. Each has 5 chained clues that unlock in sequence. 5-minute countdown timer.</div>
+      <div class="game-features"><span class="feature">3 Rooms</span><span class="feature">Chained Clues</span><span class="feature">5-Min Timer</span><span class="feature">Hint System</span></div>
+      <a class="play-btn" href="game06_escape_room.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(168,85,247,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🔥</div>
+        <span class="game-type type-wild">Wild</span>
+      </div>
+      <div class="game-title">Health Survivor</div>
+      <div class="game-realm">Best for: Surprise Event — Any Realm</div>
+      <div class="game-desc">Answer health questions, earn immunity, debate real health policies, vote someone out at tribal council. Last player standing wins.</div>
+      <div class="game-features"><span class="feature">Up to 6 Players</span><span class="feature">Tribal Debates</span><span class="feature">Immunity</span><span class="feature">Vote Out</span></div>
+      <a class="play-btn" href="game07_survivor.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(255,215,0,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🎰</div>
+        <span class="game-type type-daily">Daily</span>
+      </div>
+      <div class="game-title">The Price Is Right</div>
+      <div class="game-realm">Best for: Nutrition or Substance Realms</div>
+      <div class="game-desc">4 mini-games: Calorie Countdown (guess the calorie count), What Does It Cost? (healthcare expenses), Healthy vs. Junk Cart, and Health Stat Showdown.</div>
+      <div class="game-features"><span class="feature">4 Mini-Games</span><span class="feature">Real Data</span><span class="feature">Calorie Guessing</span><span class="feature">Cost Awareness</span></div>
+      <a class="play-btn" href="game08_price_is_right.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(56,191,255,0.06)">
+      <div class="card-top">
+        <div class="game-icon">📺</div>
+        <span class="game-type type-team">Team</span>
+      </div>
+      <div class="game-title">Health Family Feud</div>
+      <div class="game-realm">Best for: Any Realm Team Event</div>
+      <div class="game-desc">Survey says! Real health survey data powers the answers. Strike system, steal mechanic, Fast Money speed round. 8 health survey questions.</div>
+      <div class="game-features"><span class="feature">2 Teams</span><span class="feature">Strike System</span><span class="feature">Steal</span><span class="feature">Fast Money</span></div>
+      <a class="play-btn" href="game09_family_feud.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(168,85,247,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🚨</div>
+        <span class="game-type type-wild">Wild</span>
+      </div>
+      <div class="game-title">Health Imposter</div>
+      <div class="game-realm">Best for: Disease Fortress (Ch 23–25)</div>
+      <div class="game-desc">One secret imposter spreads health misinformation across 12 statements. Everyone must fact-check and identify who's giving false health info before it's too late.</div>
+      <div class="game-features"><span class="feature">6 Players</span><span class="feature">Misinformation</span><span class="feature">Voting</span><span class="feature">Fact-Check Tasks</span></div>
+      <a class="play-btn" href="game10_imposter.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(0,229,160,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🤐</div>
+        <span class="game-type type-team">Team</span>
+      </div>
+      <div class="game-title">Health Taboo</div>
+      <div class="game-realm">Best for: Vocab-Heavy Chapters</div>
+      <div class="game-desc">60-second timer, 20 health vocabulary cards, forbidden word list. Describe the health term without using any of the 5 forbidden words. Teammates shout guesses.</div>
+      <div class="game-features"><span class="feature">2–4 Teams</span><span class="feature">60-Second Timer</span><span class="feature">20 Cards</span><span class="feature">Forbidden Words</span></div>
+      <a class="play-btn" href="game11_taboo.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(255,215,0,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🤔</div>
+        <span class="game-type type-daily">Daily</span>
+      </div>
+      <div class="game-title">Would You Rather</div>
+      <div class="game-realm">Best for: Any Discussion Opener</div>
+      <div class="game-desc">10 real health dilemmas with class voting, live percentage bars, debate prompts, and surprising health facts. Perfect for sparking genuine discussion.</div>
+      <div class="game-features"><span class="feature">Class Voting</span><span class="feature">10 Dilemmas</span><span class="feature">Debate Prompts</span><span class="feature">Health Facts</span></div>
+      <a class="play-btn" href="game12_would_you_rather.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(56,191,255,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🎨</div>
+        <span class="game-type type-team">Team</span>
+      </div>
+      <div class="game-title">Health Pictionary Blitz</div>
+      <div class="game-realm">Best for: Body Systems Realm</div>
+      <div class="game-desc">Full drawing canvas with color and brush size controls. 24 health vocabulary words to draw. Multi-team support with 60-second timer.</div>
+      <div class="game-features"><span class="feature">Full Canvas</span><span class="feature">24 Health Words</span><span class="feature">Multi-Team</span><span class="feature">60s Timer</span></div>
+      <a class="play-btn" href="game13_pictionary.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(255,59,92,0.06)">
+      <div class="card-top">
+        <div class="game-icon">🦈</div>
+        <span class="game-type type-boss">Boss</span>
+      </div>
+      <div class="game-title">Health Shark Tank</div>
+      <div class="game-realm">Best for: Final Tower — Chapter 28</div>
+      <div class="game-desc">4 real health startup pitches. Rubric scoring across 5 dimensions (health impact, evidence, feasibility, presentation, innovation). Invest or go out!</div>
+      <div class="game-features"><span class="feature">4 Pitches</span><span class="feature">5-Point Rubric</span><span class="feature">Class Voting</span><span class="feature">Capstone Ready</span></div>
+      <a class="play-btn" href="game14_shark_tank.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+    <div class="game-card" style="--card-glow:rgba(255,215,0,0.06)">
+      <div class="card-top">
+        <div class="game-icon">💥</div>
+        <span class="game-type type-daily">Daily</span>
+      </div>
+      <div class="game-title">Myth Busters</div>
+      <div class="game-realm">Best for: Any Chapter Opener</div>
+      <div class="game-desc">18 health myths rapid-fire true/false. Timed mode (20 seconds per myth), streak bonuses, team scoring, complete answer log at the end.</div>
+      <div class="game-features"><span class="feature">18 Myths</span><span class="feature">Timed Mode</span><span class="feature">Streak Bonuses</span><span class="feature">Answer Log</span></div>
+      <a class="play-btn" href="game15_myth_busters.html" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    </div>
+</div>
 </div>
 
 <footer>
