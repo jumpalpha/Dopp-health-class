@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#FFD700;--gold-dim:#B8960C;--bg:#FDFAF2;--card:rgba(28,26,46,0.05);--border:rgba(28,26,46,0.12);--text:#1C1A2E;--dim:rgba(28,26,46,0.5)}
+:root{--gold:#FFD700;--gold-dim:#8a6d00;--bg:#FDFAF2;--card:rgba(28,26,46,0.05);--border:rgba(28,26,46,0.12);--text:#1C1A2E;--dim:rgba(28,26,46,0.65)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 #stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(255,215,0,0.06) 0%,transparent 70%),#FDFAF2}
@@ -90,16 +90,16 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
 <div class="search-wrap">
   <div class="search-box">
     <span class="search-icon">🔍</span>
-    <input type="text" id="searchInput" class="search-input" placeholder="Search chapters, realms, games…" autocomplete="off" autofocus>
+    <input type="text" id="searchInput" class="search-input" placeholder="Search chapters, realms, games…" aria-label="Search chapters, realms, and games" autocomplete="off" autofocus>
     <button id="clearBtn" class="search-clear" aria-label="Clear search" title="Clear search">✕</button>
   </div>
-  <div class="filter-row" id="filterRow">
-    <span class="filter-chip active" data-type="All">All</span>
-    <span class="filter-chip" data-type="Chapter">Chapters</span>
-    <span class="filter-chip" data-type="Realm">Realms</span>
-    <span class="filter-chip" data-type="Classroom Game">Classroom Games</span>
-    <span class="filter-chip" data-type="Arcade Game">Arcade Games</span>
-    <span class="filter-chip" data-type="Page">Pages</span>
+  <div class="filter-row" id="filterRow" role="group" aria-label="Filter results by type">
+    <span class="filter-chip active" data-type="All" role="button" tabindex="0" aria-pressed="true">All</span>
+    <span class="filter-chip" data-type="Chapter" role="button" tabindex="0" aria-pressed="false">Chapters</span>
+    <span class="filter-chip" data-type="Realm" role="button" tabindex="0" aria-pressed="false">Realms</span>
+    <span class="filter-chip" data-type="Classroom Game" role="button" tabindex="0" aria-pressed="false">Classroom Games</span>
+    <span class="filter-chip" data-type="Arcade Game" role="button" tabindex="0" aria-pressed="false">Arcade Games</span>
+    <span class="filter-chip" data-type="Page" role="button" tabindex="0" aria-pressed="false">Pages</span>
   </div>
 </div>
 
@@ -180,12 +180,21 @@ function render() {
 input.addEventListener('input', render);
 clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); render(); });
 
+function activateChip(chip) {
+  chips.forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
+  chip.classList.add('active');
+  chip.setAttribute('aria-pressed', 'true');
+  activeType = chip.getAttribute('data-type');
+  render();
+}
+
 chips.forEach(chip => {
-  chip.addEventListener('click', () => {
-    chips.forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    activeType = chip.getAttribute('data-type');
-    render();
+  chip.addEventListener('click', () => activateChip(chip));
+  chip.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      activateChip(chip);
+    }
   });
 });
 

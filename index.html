@@ -18,7 +18,7 @@
 <style>
 :root {
   --gold: #FFD700;
-  --gold-dim: #B8960C;
+  --gold-dim: #8a6d00;
   --emerald: #00E5A0;
   --sky: #38BFFF;
   --crimson: #FF3B5C;
@@ -26,7 +26,7 @@
   --bg-card: rgba(28,26,46,0.05);
   --border: rgba(28,26,46,0.12);
   --text: #1C1A2E;
-  --text-dim: rgba(28,26,46,0.5);
+  --text-dim: rgba(28,26,46,0.65);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -321,7 +321,7 @@ footer a[href="teacher.html"] {
   content: '✓ Complete';
   position: absolute; top: 8px; right: 8px; z-index: 2;
   font-size: 9px; font-weight: 800; letter-spacing: .3px;
-  color: var(--emerald);
+  color: #00704D;
   background: rgba(0,229,160,0.14);
   border: 1px solid rgba(0,229,160,0.4);
   padding: 2px 7px; border-radius: 6px;
@@ -837,7 +837,7 @@ GAMES.forEach(g => {
       }
       var desc = document.querySelector('.hero-desc');
       if (desc) {
-        desc.insertAdjacentHTML('afterend', '<p style="text-align:center;font-size:13px;color:var(--emerald);font-weight:700;margin:-24px 0 24px;animation:fadeUp .8s .35s ease both">Welcome back — you\'ve completed ' + visited.length + ' of 28 chapters.</p>');
+        desc.insertAdjacentHTML('afterend', '<p style="text-align:center;font-size:13px;color:#00704D;font-weight:700;margin:-24px 0 24px;animation:fadeUp .8s .35s ease both">Welcome back — you\'ve completed ' + visited.length + ' of 28 chapters.</p>');
       }
     }
   } catch (e) {}
