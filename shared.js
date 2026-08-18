@@ -1,3 +1,23 @@
+// ── PROGRESS TRACKING (for "resume where you left off") ──
+(function trackChapterVisit() {
+  try {
+    var m = location.pathname.match(/chapter(\d{2})\.html$/i);
+    if (!m) return;
+    var n = parseInt(m[1], 10);
+    var visited = JSON.parse(localStorage.getItem('lw_visited_chapters') || '[]');
+    if (visited.indexOf(n) === -1) {
+      visited.push(n);
+      localStorage.setItem('lw_visited_chapters', JSON.stringify(visited));
+    }
+    localStorage.setItem('lw_last_chapter', JSON.stringify({
+      n: n,
+      title: document.title,
+      url: location.pathname.split('/').pop(),
+      ts: Date.now()
+    }));
+  } catch (e) {}
+})();
+
 function openAI(url, title, desc) {
   const msg = 'I am working on: ' + title + '. ' + desc;
   navigator.clipboard.writeText(msg).catch(() => {});
