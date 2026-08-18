@@ -45,6 +45,7 @@ const SCALE=5.5; // pixels per meter
 let phase='title'; // title|ready|set|go|running|done
 let startTime,elapsed,bestTime=null;
 let playerPos=0,playerSpeed=0;
+let playerPlace=1;
 let lastKey='',keyAlternate=0; // track alternating L/R
 let frameCount=0;
 let opponents,cameraX=0;
@@ -54,7 +55,7 @@ let phaseTimer=0,reactionTime=null,startSignal=false;
 let tapLeft=false,tapRight=false,lastTap='';
 
 function initRace(){
-  phase='ready';phaseTimer=0;playerPos=0;playerSpeed=0;
+  phase='ready';phaseTimer=0;playerPos=0;playerSpeed=0;playerPlace=1;
   lastKey='';keyAlternate=0;elapsed=0;startSignal=false;reactionTime=null;
   cameraX=0;
   opponents=[
@@ -220,7 +221,9 @@ function drawOverlay(){
     // Sort finishers
     const t=(elapsed/1000).toFixed(2);
     const best=bestTime?(bestTime/1000).toFixed(2)+'s':'--';
-    cx.font='bold 30px Nunito';cx.fillStyle=GOLD;cx.fillText('You Win!',W/2,H/2-50);
+    const won=playerPlace===1;
+    const placeText=won?'You Win!':(playerPlace===2?'2nd Place':playerPlace===3?'3rd Place':'4th Place');
+    cx.font='bold 30px Nunito';cx.fillStyle=won?GOLD:'rgba(240,244,255,0.85)';cx.fillText(placeText,W/2,H/2-50);
     cx.font='20px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Your time: ${t}s`,W/2,H/2-14);
     cx.font='13px Nunito';cx.fillStyle='rgba(240,244,255,0.5)';cx.fillText(`Personal Best: ${best}`,W/2,H/2+14);
     cx.font='11px Nunito';cx.fillStyle='rgba(240,244,255,0.35)';cx.fillText('World Record: 9.58s (Usain Bolt)',W/2,H/2+36);
@@ -245,22 +248,26 @@ function update(){
     // Decay speed
     playerSpeed=Math.max(0,playerSpeed-0.12);
     playerPos+=playerSpeed*0.016;
-    // AI
+    // AI (stop advancing once an opponent has crossed the line)
     opponents.forEach(o=>{
-      o.speed=Math.min(o.maxSpeed,o.speed+o.accel);
-      o.pos+=o.speed*0.016;
+      if(o.pos<FINISH_M){
+        o.speed=Math.min(o.maxSpeed,o.speed+o.accel);
+        o.pos+=o.speed*0.016;
+        if(o.pos>=FINISH_M) o.pos=FINISH_M;
+      }
     });
     // Camera tracks player
     cameraX=Math.max(0,playerPos*SCALE-W*0.35);
-    // Check finish
+    // Race ends once the player crosses the line; placement reflects
+    // how many opponents already finished by that point.
     if(playerPos>=FINISH_M){
       phase='done';
       const t=Date.now()-startTime;
       if(!bestTime||t<bestTime) bestTime=t;
+      playerPlace=1+opponents.filter(o=>o.pos>=FINISH_M).length;
       document.getElementById('info').textContent=`Best: ${(bestTime/1000).toFixed(2)}s`;
       document.getElementById('msg').textContent=`🏁 ${(t/1000).toFixed(2)}s! Space to race again.`;
     }
-    opponents.forEach(o=>{ if(o.pos>=FINISH_M&&phase==='running') phase='done'; });
   }
 }
 

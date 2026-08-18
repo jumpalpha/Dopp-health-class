@@ -163,7 +163,13 @@ document.querySelectorAll('.dpad-btn').forEach(btn=>{
 });
 
 function isWall(col,row){
-  if(row<0||row>=ROWS||col<0||col>=COLS) return true;
+  if(row<0||row>=ROWS) return true;
+  if(col<0||col>=COLS){
+    // Allow horizontal wrap through tunnel rows -- rows where both edge
+    // tiles are open floor (not walls). Every other out-of-bounds column
+    // is treated as a wall, same as before.
+    return !(maze[row][0]!==1 && maze[row][COLS-1]!==1);
+  }
   return maze[row][col]===1;
 }
 
@@ -184,11 +190,14 @@ function moveEntity(e,speed){
   e.y+=e.dir[1]*speed;
   // check if passed tile center
   if(Math.abs(e.x-tileCenter(nc,nr).x)<speed+1&&Math.abs(e.y-tileCenter(nc,nr).y)<speed+1){
-    e.col=nc;e.row=nr;
-    e.x=tileCenter(nc,nr).x;e.y=tileCenter(nc,nr).y;
-    // wrap tunnels
-    if(e.col<0) e.col=COLS-1;
-    if(e.col>=COLS) e.col=0;
+    // Resolve tunnel wrap BEFORE computing the pixel position, so the
+    // sprite snaps to the wrapped-around tile's on-screen center instead
+    // of the off-grid (negative/out-of-bounds) tile center.
+    let wrappedCol=nc;
+    if(wrappedCol<0) wrappedCol=COLS-1;
+    if(wrappedCol>=COLS) wrappedCol=0;
+    e.col=wrappedCol;e.row=nr;
+    e.x=tileCenter(wrappedCol,nr).x;e.y=tileCenter(wrappedCol,nr).y;
     return true; // reached new tile
   }
   return false;

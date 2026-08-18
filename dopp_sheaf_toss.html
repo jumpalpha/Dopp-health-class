@@ -490,7 +490,7 @@ function launchBale() {
   // Physics: power maps to velocity
   const pct = power / 100;
   // angle varies: low power = steeper, high power = flatter
-  const angle = -Math.PI * (0.55 + pct * 0.3); // between -99deg and -153deg from horizontal
+  const angle = -(85 - pct * 50) * Math.PI / 180; // between -85deg and -35deg from horizontal
   const speed = 4 + pct * 14;
   baleX = FORK_TIP_X + 15;
   baleY = FORK_TIP_Y - 10;
@@ -562,6 +562,27 @@ function animateFlyV2() {
   const barY = currentBarY();
   baleMinYInZone = 9999;
   baleInZone = false;
+
+  // Initialize the bale's launch physics from the current charge power.
+  // (Without this, baleX/baleY/baleVX/baleVY stay undefined on the very
+  // first toss of a session, every physics update becomes NaN, and the
+  // flight never resolves.)
+  // Angle: steep/near-vertical at low power, flatter for more horizontal
+  // reach at high power. (The old formula stayed between -99deg and -153deg,
+  // which is always left-of-vertical -- cos() was negative at every power
+  // level, so the bale flew away from the bar and could never reach it.)
+  const pct = power / 100;
+  const angle = -(85 - pct * 50) * Math.PI / 180;
+  const speed = 4 + pct * 14;
+  baleX = FORK_TIP_X + 15;
+  baleY = FORK_TIP_Y - 10;
+  baleVX = Math.cos(angle) * speed;
+  baleVY = Math.sin(angle) * speed;
+  flyTime = 0;
+  baleRotation = 0;
+  state = 'flying';
+  attemptsLeft--;
+  power = 0;
 
   function step() {
     baleVY += 0.28;

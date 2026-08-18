@@ -110,7 +110,30 @@ function initThrow(){
 
 document.addEventListener('keydown', onKey);
 canvas.addEventListener('click', onClick);
-canvas.addEventListener('touchstart', e=>{e.preventDefault(); onClick(e.touches[0]);},{passive:false});
+// During the throw window, touchstart must NOT launch immediately -- that
+// would fire before the player gets a chance to drag their finger to set
+// the angle (see touchmove below). Instead, touchstart just registers the
+// initial angle, and touchend (releasing the finger) throws -- mirroring
+// the drag-to-aim/release-to-throw gesture used elsewhere in the arcade.
+// For every other state (run/result/done), a tap should act immediately,
+// same as a click.
+canvas.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  if(state==='window'){
+    const t=e.touches[0];
+    if(t){
+      const r=canvas.getBoundingClientRect();
+      mouseY=(t.clientY-r.top)*(H/r.height);
+      angle = Math.max(15, Math.min(50, (1-mouseY/H)*60+10));
+    }
+    return;
+  }
+  onClick(e.touches[0]);
+},{passive:false});
+canvas.addEventListener('touchend', e=>{
+  e.preventDefault();
+  if(state==='window'){ handleSpaceTap(); }
+},{passive:false});
 
 let lastSpaceTime = 0;
 function onKey(e){
@@ -145,6 +168,20 @@ canvas.addEventListener('mousemove', e=>{
     angle = Math.max(15, Math.min(50, (1-mouseY/H)*60+10));
   }
 });
+// Touch equivalent of mousemove: dragging a finger up/down during the throw
+// window sets the angle the same way. (touchstart already exists to trigger
+// speed-mashing/launch via onClick, but without this, angle never left its
+// default 35deg on mobile since nothing updated it from touch position.)
+canvas.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  const t=e.touches[0];
+  if(!t) return;
+  const r=canvas.getBoundingClientRect();
+  mouseY=(t.clientY-r.top)*(H/r.height);
+  if(state==='window'){
+    angle = Math.max(15, Math.min(50, (1-mouseY/H)*60+10));
+  }
+}, {passive:false});
 
 function launchJavelin(ang){
   const spd = 8 + (runSpeed/100)*24;

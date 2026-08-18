@@ -89,6 +89,7 @@ const BRICK_DATA=[
 ];
 
 let bricks,ball,paddle,lives,score,level,gameRunning,gameOver;
+let levelTransitioning=false;
 let paddleTarget,paddlePower=false,paddlePowerTimer=0,multiBall=false,extraBalls=[];
 let particles=[],floatTexts=[],tipQueue=[];
 let lastTipTime=0;
@@ -101,6 +102,7 @@ const keys={};
 
 function initGame(){
   lives=3;score=0;level=1;gameRunning=true;gameOver=false;
+  levelTransitioning=false;
   speedMult=1;particles=[];floatTexts=[];
   initBricks();initBall();initPaddle();
   paddlePower=false;paddlePowerTimer=0;extraBalls=[];powerUpDrop=null;
@@ -213,12 +215,13 @@ function update(){
   floatTexts=floatTexts.filter(f=>f.life>0);
 
   // check win
-  if(bricks.every(b=>!b.alive)){
+  if(bricks.every(b=>!b.alive) && !levelTransitioning){
     if(level>=WIN_LEVEL){ winGame(); return; }
+    levelTransitioning=true;
     level++;
     speedMult+=0.15;
     floatTexts.push({x:W/2,y:H/2,text:'Level '+level+'!',color:'#00E5A0',life:120,big:true});
-    setTimeout(()=>{initBricks();initBall();paddle.w=PADDLE_W_BASE;paddlePower=false;updateHUD();},1500);
+    setTimeout(()=>{initBricks();initBall();paddle.w=PADDLE_W_BASE;paddlePower=false;updateHUD();levelTransitioning=false;},1500);
   }
 }
 

@@ -242,7 +242,7 @@ function drawHUD(){
     cx.fillText('🚮 '+h.name, HOME.x, HOME.y-BR-14);
     // Instruction
     cx.font='13px Nunito'; cx.fillStyle='rgba(255,215,0,0.5)';
-    cx.fillText('Move mouse up/down to aim · Click to dunk!',W/2,H-16);
+    cx.fillText('Move up/down to aim · Click or tap to dunk!',W/2,H-16);
   }
   // Round counter
   cx.font='13px Nunito'; cx.textAlign='left'; cx.fillStyle='rgba(240,244,255,0.35)';
@@ -372,6 +372,32 @@ cv.addEventListener('click',e=>{
     if(mx>=bx&&mx<=bx+bw&&my>=by&&my<=by+bh) start();
   }
 });
+
+// Touch: dragging updates mouse.x/y just like mousemove (so the same
+// arcHeight()/aimGrade() aiming logic works), and lifting the finger
+// shoots — mirroring "move mouse to aim, click to dunk" for mobile.
+function updatePointerFromTouch(t){
+  const r=cv.getBoundingClientRect();
+  mouse.x=(t.clientX-r.left)*(W/r.width);
+  mouse.y=(t.clientY-r.top)*(H/r.height);
+}
+cv.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  if(e.touches[0]) updatePointerFromTouch(e.touches[0]);
+},{passive:false});
+cv.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches[0]) updatePointerFromTouch(e.touches[0]);
+},{passive:false});
+cv.addEventListener('touchend',e=>{
+  e.preventDefault();
+  if(phase==='aim'){
+    shoot();
+  } else if(phase==='over'){
+    const bx=W/2-90, by=H/2+65, bw=180, bh=44;
+    if(mouse.x>=bx&&mouse.x<=bx+bw&&mouse.y>=by&&mouse.y<=by+bh) start();
+  }
+},{passive:false});
 
 start(); loop();
 </script>

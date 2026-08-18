@@ -55,6 +55,7 @@ const TOTAL_DIST=400; // meters
 let phase='title';
 let playerAngle=Math.PI,playerDist=0,playerSpeed=0,stamina=100;
 let elapsed=0,startTime=0,bestTime=null;
+let playerPlace=1;
 let speedMode=0; // 0=jog,1=run,2=sprint
 let opponents,frameCount=0;
 
@@ -64,7 +65,7 @@ const STAM_REGEN=1.2;            // stamina/s when jogging
 
 function initRace(){
   phase='running';playerAngle=Math.PI;playerDist=0;playerSpeed=0;stamina=100;
-  elapsed=0;startTime=Date.now();speedMode=1;
+  elapsed=0;startTime=Date.now();speedMode=1;playerPlace=1;
   opponents=[
     {angle:Math.PI,dist:0,speed:5.2+Math.random()*0.8,color:SKY,name:'AI 1',finished:false},
     {angle:Math.PI,dist:0,speed:4.8+Math.random()*0.6,color:'#a855f7',name:'AI 2',finished:false},
@@ -189,7 +190,9 @@ function drawOverlay(){
     cx.textAlign='center';
     const t=(elapsed/1000).toFixed(2);
     const best=bestTime?(bestTime/1000).toFixed(2)+'s':'--';
-    cx.font='bold 30px Nunito';cx.fillStyle=GOLD;cx.fillText('You Win!',W/2,H/2-45);
+    const won=playerPlace===1;
+    const placeText=won?'You Win!':(playerPlace===2?'2nd Place':'3rd Place');
+    cx.font='bold 30px Nunito';cx.fillStyle=won?GOLD:'rgba(240,244,255,0.85)';cx.fillText(placeText,W/2,H/2-45);
     cx.font='20px Nunito';cx.fillStyle=EMERALD;cx.fillText(`Your time: ${t}s`,W/2,H/2-8);
     cx.font='13px Nunito';cx.fillStyle='rgba(240,244,255,0.5)';cx.fillText(`Best: ${best}`,W/2,H/2+18);
     cx.font='11px Nunito';cx.fillStyle='rgba(240,244,255,0.3)';cx.fillText('World Record: 43.03s (Wayde van Niekerk)',W/2,H/2+38);
@@ -251,6 +254,7 @@ function update(){
     phase='done';
     const t=Date.now()-startTime;
     if(!bestTime||t<bestTime) bestTime=t;
+    playerPlace=1+opponents.filter(o=>o.finished).length;
     document.getElementById('info').textContent='Best: '+(bestTime/1000).toFixed(2)+'s';
   }
 }

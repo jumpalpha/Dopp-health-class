@@ -83,6 +83,7 @@ let dx=0,gameRunning=false,gameOver=false;
 let enemyDir=1,enemySpeed,enemyDropY=20;
 let lastShot=0,shotCooldown=350;
 let invincible=false,invincibleTimer=0;
+let waveTransitioning=false;
 let floatTexts=[];
 let bestScore=parseInt(localStorage.getItem('invadersBest')||'0');
 let animFrame;
@@ -99,7 +100,7 @@ function initGame(){
   score=0;lives=3;wave=1;
   playerX=W/2-playerW/2;
   bullets=[];enemyBullets=[];powerUps=[];particles=[];floatTexts=[];
-  invincible=false;invincibleTimer=0;
+  invincible=false;invincibleTimer=0;waveTransitioning=false;
   spawnEnemies();
   updateHUD();
   gameOver=false;
@@ -173,7 +174,10 @@ function update(){
 
   // enemy movement
   const alive=enemies.filter(e=>e.alive);
-  if(alive.length===0){nextWave();return;}
+  if(alive.length===0){
+    if(!waveTransitioning){waveTransitioning=true;nextWave();}
+    return;
+  }
   const factor=1+(1-alive.length/(COLS*4))*2;
   const spd=enemySpeed*factor;
   let hitEdge=false;
@@ -276,7 +280,7 @@ function nextWave(){
   updateHUD();
   bullets=[];enemyBullets=[];powerUps=[];
   floatTexts.push({x:W/2,y:H/2,text:'Wave '+wave+'!',color:'#00E5A0',life:120,big:true});
-  setTimeout(()=>spawnEnemies(),1200);
+  setTimeout(()=>{spawnEnemies();waveTransitioning=false;},1200);
 }
 
 function endGame(){
