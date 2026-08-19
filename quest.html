@@ -324,31 +324,31 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 // ═══════════════════════════════════════════════════════════
 const REALMS = [
   { id:'r1', name:'Foundation Keep', icon:'🏰', color:'#38BFFF', badge:'Wellness Apprentice',
-    weeks:'Weeks 1–2', chapters:[1,2],
+    days:'Days 1–4', chapters:[1,2],
     tasks:['Read Chapter 1 PDF','Complete Ch 1 Vocab Games (all 4)','Health Triangle Self-Assessment','Health in the News Activity','Read Chapter 2 PDF','Complete Ch 2 Vocab Games (all 4)','2-Week Habit Tracker Started','Boss Battle — Health Jeopardy'] },
   { id:'r2', name:'Mind Citadel', icon:'🧠', color:'#a855f7', badge:'Mind Knight',
-    weeks:'Weeks 3–5', chapters:[3,4,5],
+    days:'Days 5–10', chapters:[3,4,5],
     tasks:['Read Chapter 3 PDF','Complete Ch 3 Vocab Games','Emotion Mapping Activity','Read Chapter 4 PDF','Complete Ch 4 Vocab Games','Stress Management Plan','Read Chapter 5 PDF','Complete Ch 5 Vocab Games','Mental Health Resource Research','Boss Battle — Millionaire'] },
   { id:'r3', name:'Relationship Realm', icon:'💞', color:'#FF3B5C', badge:'Social Champion',
-    weeks:'Weeks 6–9', chapters:[6,7,8,9],
+    days:'Days 11–18', chapters:[6,7,8,9],
     tasks:['Read Chapter 6 PDF','Complete Ch 6 Vocab Games','Healthy Relationship Reflection','Read Chapter 7 PDF','Complete Ch 7 Vocab Games','Conflict Resolution Role-Play','Read Chapter 8 PDF','Complete Ch 8 Vocab Games','Read Chapter 9 PDF','Complete Ch 9 Vocab Games','Family Dynamics Discussion','Boss Battle — Health Jeopardy'] },
   { id:'r4', name:'Nourish Dungeon', icon:'🥗', color:'#00E5A0', badge:'Body Warrior',
-    weeks:'Weeks 9–11', chapters:[10,11,12],
+    days:'Days 19–24', chapters:[10,11,12],
     tasks:['Read Chapter 10 PDF','Complete Ch 10 Vocab Games','MyPlate Meal Planning Activity','Read Chapter 11 PDF','Complete Ch 11 Vocab Games','Fad Diet De-bunker Challenge','Read Chapter 12 PDF','Complete Ch 12 Vocab Games','One-Week Fitness Log','Boss Battle — Millionaire'] },
   { id:'r5', name:'Body Labyrinth', icon:'⚙️', color:'#FF8C00', badge:'System Sage',
-    weeks:'Weeks 11–14', chapters:[13,14,15,16],
+    days:'Days 25–32', chapters:[13,14,15,16],
     tasks:['Read Chapter 13 PDF','Complete Ch 13 Vocab Games','Read Chapter 14 PDF','Complete Ch 14 Vocab Games','Body System Diagram Activity','Read Chapter 15 PDF','Complete Ch 15 Vocab Games','Read Chapter 16 PDF','Complete Ch 16 Vocab Games','Diagnose-the-Patient Challenge','Boss Battle — Health Jeopardy'] },
   { id:'r6', name:'Life Cycle Shrine', icon:'🌱', color:'#38BFFF', badge:'Life Keeper',
-    weeks:'Weeks 15–16', chapters:[17,18],
+    days:'Days 33–36', chapters:[17,18],
     tasks:['Read Chapter 17 PDF','Complete Ch 17 Vocab Games','Prenatal Health Decision Tree','Read Chapter 18 PDF','Complete Ch 18 Vocab Games','Teen Brain Reflection Activity','Boss Battle — Millionaire'] },
   { id:'r7', name:'Shadow World', icon:'💀', color:'#FF3B5C', badge:'Shadow Slayer',
-    weeks:'Weeks 17–20', chapters:[19,20,21,22],
+    days:'Days 37–44', chapters:[19,20,21,22],
     tasks:['Read Chapter 19 PDF','Complete Ch 19 Vocab Games','Fentanyl Awareness Mission','Read Chapter 20 PDF','Complete Ch 20 Vocab Games','Read Chapter 21 PDF','Complete Ch 21 Vocab Games','Refusal Skills Role-Play','Read Chapter 22 PDF','Complete Ch 22 Vocab Games','Substance Risk Scenario Cards','Boss Battle — Health Jeopardy'] },
   { id:'r8', name:'Disease Fortress', icon:'🏥', color:'#aaaaaa', badge:'Health Guardian',
-    weeks:'Weeks 21–24', chapters:[23,24,25],
+    days:'Days 45–50', chapters:[23,24,25],
     tasks:['Read Chapter 23 PDF','Complete Ch 23 Vocab Games','Epidemic Simulation Activity','Read Chapter 24 PDF','Complete Ch 24 Vocab Games','HIV Prevention Awareness','Read Chapter 25 PDF','Complete Ch 25 Vocab Games','Heart Disease Risk Calculator','Boss Battle — Millionaire'] },
   { id:'r9', name:'The Final Tower', icon:'★', color:'#FFD700', badge:'★ Master of Wellness',
-    weeks:'Weeks 25–27', chapters:[26,27,28],
+    days:'Days 51–55', chapters:[26,27,28],
     tasks:['Read Chapter 26 PDF','Complete Ch 26 Vocab Games','Home Safety Assessment','Read Chapter 27 PDF','Complete Ch 27 Vocab Games','CPR Hands-Only Demonstration','Read Chapter 28 PDF','Complete Ch 28 Vocab Games','Community Health Advocacy Project','FINAL BOSS — Grand Wellness Assessment'] },
 ];
 
@@ -597,7 +597,7 @@ function renderRealms(st) {
         <div class="rc-badge${badgeEarned?' earned':''}">${badgeEarned?'★ ':''}${r.badge}</div>
       </div>
       <div class="rc-name">${r.name}</div>
-      <div class="rc-meta">${r.weeks} · Ch ${r.chapters.join(', ')} · ${done}/${r.tasks.length} tasks · ${pct}%</div>
+      <div class="rc-meta">${r.days} · Ch ${r.chapters.join(', ')} · ${done}/${r.tasks.length} tasks · ${pct}%</div>
       <div class="rc-chapters">${r.chapters.map(c=>`<a class="rc-ch${done>0?(completed?' done':' partial'):''}" href="chapter${String(c).padStart(2,'0')}.html" title="Ch ${c}" onclick="event.stopPropagation()">${c}</a>`).join('')}</div>
       <div class="realm-progress"><div class="realm-progress-fill" style="width:${pct}%"></div></div>
       <div class="ch-detail" id="detail-${r.id}">

@@ -698,23 +698,23 @@ const TOTAL_TASKS  = 90; // 2250 XP / 25 per task
 // DATA
 // ═══════════════════════════════════════════════════════════
 const REALMS = [
-  {id:'r1',name:'Foundation Keep',icon:'🏰',color:'#38BFFF',badge:'Wellness Apprentice',weeks:'1–2',chapters:[1,2],
+  {id:'r1',name:'Foundation Keep',icon:'🏰',color:'#38BFFF',badge:'Wellness Apprentice',days:'1–4',chapters:[1,2],
    activities:['Chapter 1 & 2 PDF reading','Vocab games (all 4 types)','Health Triangle Self-Assessment','Health in the News','2-Week Habit Tracker','Boss Battle — Health Jeopardy']},
-  {id:'r2',name:'Mind Citadel',icon:'🧠',color:'#a855f7',badge:'Mind Knight',weeks:'3–5',chapters:[3,4,5],
+  {id:'r2',name:'Mind Citadel',icon:'🧠',color:'#a855f7',badge:'Mind Knight',days:'5–10',chapters:[3,4,5],
    activities:['Chapter 3–5 PDFs + Vocab','Emotion Mapping Activity','Stress Management Plan','Mental Health Resource Research','Boss Battle — Millionaire']},
-  {id:'r3',name:'Relationship Realm',icon:'💞',color:'#FF3B5C',badge:'Social Champion',weeks:'6–9',chapters:[6,7,8,9],
+  {id:'r3',name:'Relationship Realm',icon:'💞',color:'#FF3B5C',badge:'Social Champion',days:'11–18',chapters:[6,7,8,9],
    activities:['Chapter 6–9 PDFs + Vocab','Healthy Relationship Reflection','Conflict Resolution Role-Play','Family Dynamics Discussion','Boss Battle — Health Jeopardy']},
-  {id:'r4',name:'Nourish Dungeon',icon:'🥗',color:'#00E5A0',badge:'Body Warrior',weeks:'9–11',chapters:[10,11,12],
+  {id:'r4',name:'Nourish Dungeon',icon:'🥗',color:'#00E5A0',badge:'Body Warrior',days:'19–24',chapters:[10,11,12],
    activities:['Chapter 10–12 PDFs + Vocab','MyPlate Meal Planning Activity','Fad Diet De-bunker','One-Week Fitness Log','Boss Battle — Millionaire']},
-  {id:'r5',name:'Body Labyrinth',icon:'⚙️',color:'#FF8C00',badge:'System Sage',weeks:'11–14',chapters:[13,14,15,16],
+  {id:'r5',name:'Body Labyrinth',icon:'⚙️',color:'#FF8C00',badge:'System Sage',days:'25–32',chapters:[13,14,15,16],
    activities:['Chapter 13–16 PDFs + Vocab','Body System Diagram','Diagnose-the-Patient Challenge','Boss Battle — Health Jeopardy']},
-  {id:'r6',name:'Life Cycle Shrine',icon:'🌱',color:'#38BFFF',badge:'Life Keeper',weeks:'15–16',chapters:[17,18],
+  {id:'r6',name:'Life Cycle Shrine',icon:'🌱',color:'#38BFFF',badge:'Life Keeper',days:'33–36',chapters:[17,18],
    activities:['Chapter 17–18 PDFs + Vocab','Prenatal Decision Tree','Teen Brain Reflection','Boss Battle — Millionaire']},
-  {id:'r7',name:'Shadow World',icon:'💀',color:'#FF3B5C',badge:'Shadow Slayer',weeks:'17–20',chapters:[19,20,21,22],
+  {id:'r7',name:'Shadow World',icon:'💀',color:'#FF3B5C',badge:'Shadow Slayer',days:'37–44',chapters:[19,20,21,22],
    activities:['Chapter 19–22 PDFs + Vocab','Fentanyl Awareness Mission','Refusal Skills Role-Play','Substance Risk Scenarios','Boss Battle — Health Jeopardy']},
-  {id:'r8',name:'Disease Fortress',icon:'🏥',color:'#aaa',badge:'Health Guardian',weeks:'21–24',chapters:[23,24,25],
+  {id:'r8',name:'Disease Fortress',icon:'🏥',color:'#aaa',badge:'Health Guardian',days:'45–50',chapters:[23,24,25],
    activities:['Chapter 23–25 PDFs + Vocab','Epidemic Simulation','HIV Prevention Awareness','Heart Disease Calculator','Boss Battle — Millionaire']},
-  {id:'r9',name:'The Final Tower',icon:'★',color:'#FFD700',badge:'★ Master of Wellness',weeks:'25–27',chapters:[26,27,28],
+  {id:'r9',name:'The Final Tower',icon:'★',color:'#FFD700',badge:'★ Master of Wellness',days:'51–55',chapters:[26,27,28],
    activities:['Chapter 26–28 PDFs + Vocab','Home Safety Assessment','CPR Demonstration','Community Advocacy Project','FINAL BOSS — Grand Wellness Assessment']},
 ];
 
@@ -776,7 +776,7 @@ function renderOverview() {
     </tr></thead>
     <tbody>${REALMS.map(r=>`<tr>
       <td style="padding:7px 10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04)">${r.icon} ${r.name}</td>
-      <td style="padding:7px 10px;font-size:12px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,0.04)">Wk ${r.weeks}</td>
+      <td style="padding:7px 10px;font-size:12px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,0.04)">Day ${r.days}</td>
       <td style="padding:7px 10px;font-size:12px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,0.04)">Ch ${r.chapters.join(', ')}</td>
     </tr>`).join('')}</tbody>
   </table>`;
@@ -795,7 +795,7 @@ function quickLaunchUpdate() {
   const slug = CH_TITLES[n-1].replace(/ /g,'_').replace(/,/g,'').replace(/&/g,'and').replace(/\//g,'_');
   area.innerHTML = `
     <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Ch ${n}: ${CH_TITLES[n-1]}</div>
-    <div style="font-size:12px;color:var(--dim);margin-bottom:12px">${realm ? realm.icon+' '+realm.name+' · Weeks '+realm.weeks : ''}</div>
+    <div style="font-size:12px;color:var(--dim);margin-bottom:12px">${realm ? realm.icon+' '+realm.name+' · Days '+realm.days : ''}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a href="chapter${String(n).padStart(2,'0')}.html" target="_blank" class="btn btn-gold btn-sm" rel="noopener noreferrer">📖 Chapter Page</a>
       <a href="Chapter_${String(n).padStart(2,'0')}_${slug}.pdf" target="_blank" class="btn btn-gold btn-sm" rel="noopener noreferrer">📄 PDF</a>
@@ -889,7 +889,7 @@ function renderTracker() {
     tbody.innerHTML += `<tr onclick="showRealmDetail('${r.id}')" style="cursor:pointer">
       <td><div class="rt-realm"><div class="rt-icon">${r.icon}</div><div class="rt-name">${r.name}</div></div></td>
       <td style="font-size:12px;color:var(--dim)">Ch ${r.chapters.join(', ')}</td>
-      <td style="font-size:12px;color:var(--dim)">Wk ${r.weeks}</td>
+      <td style="font-size:12px;color:var(--dim)">Day ${r.days}</td>
       <td><span class="badge-pill">${r.badge}</span></td>
       <td><span style="font-size:12px;font-weight:700;color:${status==='completed'?'var(--emerald)':status==='active'?'var(--gold)':'var(--dim)'}">${status==='completed'?'✓ Complete':status==='active'?'▶ Active':'— Upcoming'}</span></td>
       <td><div class="progress-mini"><div class="progress-mini-fill" style="width:${pct}%"></div></div></td>
