@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<title>Dopp's Classroom Archive — Legacy Resources</title>
+<meta name="description" content="Legacy lessons, activities, and resources from earlier versions of DoppsClass.com. Reference material only — not part of the current Legend of Wellness curriculum.">
+<link rel="canonical" href="https://doppsclass.com/legacy-resources.html">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="Dopp's Classroom Archive — Legacy Resources">
+<meta property="og:description" content="Legacy lessons, activities, and resources from earlier versions of DoppsClass.com.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/legacy-resources.html">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#FFD700; --gold-dim:#8a6d00; --emerald:#00E5A0; --sky:#38BFFF; --crimson:#FF3B5C;
+  --parchment:#F2EAD3; --parchment-card:#fff; --ink:#2B2417; --ink-dim:rgba(43,36,23,0.66);
+  --border:rgba(43,36,23,0.16); --navy:rgba(5,7,18,0.96);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--parchment);color:var(--ink);min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    repeating-linear-gradient(0deg,rgba(43,36,23,0.02) 0px,rgba(43,36,23,0.02) 1px,transparent 1px,transparent 3px),
+    radial-gradient(ellipse 70% 40% at 50% 0%,rgba(255,215,0,0.05) 0%,transparent 70%);
+}
+
+/* top bar */
+.archive-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 24px;background:var(--navy);border-bottom:1px solid rgba(255,215,0,0.22)}
+.back-link{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:rgba(255,215,0,0.85);text-decoration:none;
+  display:flex;align-items:center;gap:6px;transition:color .15s}
+.back-link:hover{color:var(--gold)}
+.topbar-badge{font-family:'Cinzel',serif;font-size:11px;letter-spacing:1.5px;color:rgba(255,255,255,0.5);text-transform:uppercase}
+
+/* hero */
+.archive-hero{position:relative;z-index:1;padding:56px 24px 28px;text-align:center;max-width:760px;margin:0 auto}
+.archive-badge{display:inline-block;font-family:'Cinzel',serif;font-size:11px;font-weight:600;letter-spacing:3px;
+  color:var(--gold-dim);border:1px solid rgba(138,109,0,0.35);padding:5px 14px;border-radius:20px;
+  background:rgba(255,215,0,0.06);margin-bottom:16px;text-transform:uppercase}
+.archive-title{font-family:'Cinzel Decorative',serif;font-size:clamp(26px,4.5vw,44px);font-weight:700;
+  color:var(--ink);margin-bottom:10px;line-height:1.15}
+.archive-sub{font-size:15px;color:var(--ink-dim);line-height:1.7;max-width:560px;margin:0 auto}
+
+.archive-notice{position:relative;z-index:1;max-width:760px;margin:22px auto 0;padding:16px 20px;
+  background:rgba(255,59,92,0.07);border:1px solid rgba(255,59,92,0.28);border-radius:12px;
+  font-size:13.5px;line-height:1.6;color:var(--ink)}
+.archive-notice b{color:#B4123A}
+
+/* search/filter */
+.search-wrap{position:relative;z-index:1;max-width:760px;margin:28px auto 0;padding:0 24px}
+.search-box{position:relative}
+.search-input{width:100%;padding:14px 44px;font-size:15px;font-family:'Nunito',sans-serif;font-weight:700;
+  color:var(--ink);background:var(--parchment-card);border:2px solid var(--border);border-radius:12px;outline:none;
+  transition:border-color .2s,box-shadow .2s}
+.search-input:focus{border-color:var(--gold-dim);box-shadow:0 0 0 4px rgba(255,215,0,0.12)}
+.search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.5;pointer-events:none}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;
+  border:none;background:var(--border);color:var(--ink-dim);font-size:13px;cursor:pointer;display:none;
+  align-items:center;justify-content:center}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.filter-chip{padding:6px 13px;border-radius:20px;font-size:11.5px;font-weight:700;color:var(--ink-dim);
+  background:var(--parchment-card);border:1px solid var(--border);cursor:pointer;transition:all .15s;user-select:none}
+.filter-chip:hover{border-color:rgba(138,109,0,0.4)}
+.filter-chip.active{color:var(--gold-dim);border-color:rgba(138,109,0,0.5);background:rgba(255,215,0,0.1)}
+.result-count{font-size:12.5px;color:var(--ink-dim);text-align:center;margin-top:14px}
+
+/* sections */
+.archive-body{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:20px 24px 60px}
+.legacy-section{margin-top:38px}
+.legacy-section-head{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;padding-bottom:8px;
+  border-bottom:1px solid var(--border)}
+.legacy-section-num{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold-dim);
+  background:rgba(255,215,0,0.12);border-radius:6px;padding:2px 8px}
+.legacy-section-title{font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--ink)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.res-card{background:var(--parchment-card);border:1px solid var(--border);border-radius:12px;padding:16px;
+  display:flex;flex-direction:column;gap:8px}
+.res-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.res-title{font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.3}
+.res-type{flex-shrink:0;font-size:9.5px;font-weight:700;letter-spacing:.3px;padding:3px 8px;border-radius:6px;
+  background:rgba(43,36,23,0.06);color:var(--ink-dim);border:1px solid var(--border);white-space:nowrap}
+.res-course{font-size:11px;color:var(--gold-dim);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.res-desc{font-size:12.5px;color:var(--ink-dim);line-height:1.5}
+.res-badge{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;width:fit-content}
+.badge-live{background:rgba(0,229,160,0.12);color:#067a54;border:1px solid rgba(0,229,160,0.35)}
+.badge-unverified{background:rgba(255,215,0,0.12);color:var(--gold-dim);border:1px solid rgba(138,109,0,0.3)}
+.badge-login{background:rgba(56,191,255,0.12);color:#0a6c96;border:1px solid rgba(56,191,255,0.35)}
+.badge-guide{background:rgba(56,191,255,0.16);color:#0a5fa8;border:1px solid rgba(56,191,255,0.45)}
+.res-card-highlight{border:2px solid rgba(255,215,0,0.55);background:linear-gradient(180deg,rgba(255,215,0,0.08),var(--parchment-card) 40%);
+  box-shadow:0 2px 10px rgba(255,215,0,0.15)}
+.res-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.res-btn{font-size:12px;font-weight:700;padding:7px 12px;border-radius:8px;text-decoration:none;text-align:center;
+  transition:all .15s;border:1px solid transparent}
+.res-btn-primary{background:var(--navy);color:var(--gold);border-color:rgba(255,215,0,0.3)}
+.res-btn-primary:hover{background:#0c0f22}
+.res-btn-secondary{background:transparent;color:var(--ink-dim);border-color:var(--border)}
+.res-btn-secondary:hover{border-color:rgba(138,109,0,0.4);color:var(--ink)}
+.res-note{font-size:11px;color:var(--ink-dim);font-style:italic;line-height:1.5}
+
+/* verification checklist (section 9) */
+.check-list{display:flex;flex-direction:column;gap:8px}
+.check-item{display:flex;align-items:center;gap:10px;background:var(--parchment-card);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;font-size:13px}
+.check-item .ck-name{flex:1;font-weight:700}
+.check-item .ck-status{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap}
+
+.empty-state{text-align:center;padding:50px 20px;color:var(--ink-dim)}
+.empty-state .icon{font-size:36px;margin-bottom:10px;opacity:.5}
+
+.archive-footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24px;text-align:center;
+  font-size:12px;color:var(--ink-dim)}
+.archive-footer a{color:var(--gold-dim);text-decoration:none;font-weight:700}
+
+@media(max-width:700px){
+  .archive-hero{padding:44px 20px 20px}
+  .archive-body{padding:16px 16px 50px}
+  .card-grid{grid-template-columns:1fr}
+}
+</style>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="archive-topbar">
+  <a class="back-link" href="index.html">⚔ Back to Legend of Wellness</a>
+  <span class="topbar-badge">Records Room</span>
+</div>
+
+<div class="archive-hero">
+  <div class="archive-badge">🗄 Legacy Archive</div>
+  <h1 class="archive-title">Dopp's Classroom Archive</h1>
+  <p class="archive-sub">Legacy lessons, activities, and resources from earlier versions of DoppsClass.com</p>
+</div>
+
+<div class="archive-notice">
+  <b>Please note:</b> These materials come from earlier versions of Dopp's Class. Some instructions, links, assignments, and course requirements may no longer be current. Use these resources only when directed by Mr. Dopp.
+</div>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" class="search-input" placeholder="Search the archive…" aria-label="Search archive resources" autocomplete="off">
+    <button id="clearBtn" class="search-clear" aria-label="Clear search" title="Clear search">✕</button>
+  </div>
+  <div class="filter-row" id="filterRow" role="group" aria-label="Filter by section">
+    <span class="filter-chip active" data-section="All" role="button" tabindex="0" aria-pressed="true">All</span>
+    <span class="filter-chip" data-section="1" role="button" tabindex="0" aria-pressed="false">Health Class</span>
+    <span class="filter-chip" data-section="2" role="button" tabindex="0" aria-pressed="false">Wellness 255</span>
+    <span class="filter-chip" data-section="3" role="button" tabindex="0" aria-pressed="false">Family</span>
+    <span class="filter-chip" data-section="4" role="button" tabindex="0" aria-pressed="false">Nutrition</span>
+    <span class="filter-chip" data-section="5" role="button" tabindex="0" aria-pressed="false">Videos</span>
+  </div>
+  <div class="result-count" id="resultCount"></div>
+</div>
+
+<div class="archive-body" id="archiveBody"></div>
+
+<footer class="archive-footer">
+  This archive is a separate reference section — it is not part of Quest, XP, badge, or chapter-completion tracking.
+  <br><a href="index.html">← Return to the Legend of Wellness</a>
+</footer>
+
+<script>
+const WAYBACK = "https://web.archive.org/web/20250911050801/";
+
+// Each resource: id, section (1-8), title, course, type, desc, url (best "open" link), archivedUrl (wayback, if different/useful), status: 'live' | 'unverified' | 'login', external (bool), note
+const RESOURCES = [
+  // Section 1 — Health Class Resources
+  {section:1, title:"Digital Book Link (PDF by Chapter)", course:"Dual Credit Health", type:"Google Drive Folder", external:true,
+   desc:"Digital copy of the textbook, organized as PDFs by chapter.",
+   url:"https://drive.google.com/drive/folders/0B4LlnC8387nffkxzU0FmYUM1VFU0WTFiUE9TcGN6RFVkaVBick00NkxNZ0FkaFp3VV9lSW8?resourcekey=0-iBLhloAaue9MbwTGGmmDlA&usp=sharing",
+   status:"live",
+   note:"Recovered from the site's own \"Old Stuff\" footer link — confirmed reachable, folder loads as \"Glencoe Health Book - PDF by Chapter.\""},
+  {section:1, title:"Health Class Rules and Expectations", course:"Dual Credit Health", type:"Google Doc", external:true,
+   desc:"Class rules and expectations document.",
+   url:"https://docs.google.com/document/d/1MdgPOVx-1Ihx4r_kT483k4yFT8ZaEE2JIrFUEw_O8j0/edit?usp=sharing",
+   archivedUrl:WAYBACK+"https://docs.google.com/document/d/1MdgPOVx-1Ihx4r_kT483k4yFT8ZaEE2JIrFUEw_O8j0/edit?usp=sharing",
+   status:"live", note:"Confirmed reachable — document loads with real title and description."},
+  {section:1, title:"PowerPoint Slides (Full Book)", course:"Dual Credit Health", type:"Google Drive Folder", external:true,
+   desc:"Described on the old site as \"the entire book on power point, including vocabulary and the answer to all questions.\"",
+   url:"https://drive.google.com/drive/folders/16q6DnVZ9nbc8UMCpwNPWn9lUDkhxfWfv?usp=sharing",
+   archivedUrl:WAYBACK+"https://drive.google.com/drive/folders/16q6DnVZ9nbc8UMCpwNPWn9lUDkhxfWfv?usp=sharing",
+   status:"live", note:"Confirmed reachable — folder loads as \"Lessons - Powerpoint from the Book.\" This includes answer keys, so it's instructor material rather than a student handout."},
+
+  // Section 2 — Dual Credit Wellness 255
+  {section:2, title:"How to Sign Up for Wellness 255 (and Get It Paid For)", course:"Dual Credit Wellness 255", type:"Internal Guide", external:false, highlight:true,
+   desc:"Step-by-step instructions for registering for CSI's WELL 255 through DualEnroll, plus how to use Idaho Advanced Opportunities funds so it doesn't cost your family anything.",
+   url:"wellness-255-signup-guide.html", status:"guide",
+   note:"Written for Thunder Ridge students with zero college experience — covers both class registration and funding in order."},
+
+  // Section 3 — Family and Relationships
+  {section:3, title:"RelativeFinder.org", course:"Unit 3 — Relationships (Ch. 6–9)", type:"External Tool", external:true,
+   desc:"Genealogy tool used for the family-tree activity.",
+   url:"https://relativefinder.org/", status:"live",
+   note:"Confirmed live and loading normally."},
+  {section:3, title:"FamilySearch.org", course:"Unit 3 — Relationships (Ch. 6–9)", type:"External Tool", external:true,
+   desc:"Free genealogy and family-tree research site.",
+   url:"https://www.familysearch.org/", status:"live",
+   note:"Confirmed live and loading normally."},
+
+  // Section 4 — Nutrition, Weight, and Exercise
+  {section:4, title:"Energy Out Calculator (TDEE)", course:"Unit 4 — Nutrition, Weight & Exercise (Ch. 10–12)", type:"External Tool", external:true,
+   desc:"Third-party calculator for estimating daily calorie needs (Total Daily Energy Expenditure).",
+   url:"https://tdeecalculator.net/", status:"live",
+   note:"Confirmed live and loading normally."},
+
+  // Section 5 — Videos and Playlists
+  {section:5, title:"P.S.A. Videos Playlist", course:"Health", type:"YouTube Channel", external:true,
+   desc:"Channel of student-made Public Service Announcement videos.",
+   url:"https://www.youtube.com/channel/UCJqH3tyoQa-mONOXjdNFhkw", status:"live",
+   note:"Confirmed live — channel \"Alan Dopp\" (@doppsclass) still active."},
+  {section:5, title:"Just Dance Videos", course:"Unit 4 / P.E.", type:"YouTube Playlist", external:true,
+   desc:"Playlist of Just Dance videos used for in-class movement activities.",
+   url:"https://www.youtube.com/playlist?list=PL0G0xMrtfE_A4xnlc_gWQf5AeJk4BQGNj", status:"live",
+   note:"Confirmed live — playlist has 36 videos and is owned by the same channel."},
+];
+
+const SECTION_NAMES = {
+  1:"Health Class Resources", 2:"Dual Credit Wellness 255", 3:"Family and Relationships",
+  4:"Nutrition, Weight, and Exercise", 5:"Videos and Playlists"
+};
+
+const STATUS_BADGE = {
+  live: '',
+  unverified: '<span class="res-badge badge-unverified">⚠ Not Yet Verified</span>',
+  login: '<span class="res-badge badge-login">🔒 External Login Required</span>',
+  guide: '<span class="res-badge badge-guide">📘 Step-by-Step Guide</span>'
+};
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function cardHtml(r){
+  const linkAttrs = r.external ? ' target="_blank" rel="noopener noreferrer"' : '';
+  return `
+    <div class="res-card${r.highlight ? ' res-card-highlight' : ''}" data-section="${r.section}">
+      <div class="res-top">
+        <span class="res-title">${escapeHtml(r.title)}</span>
+        <span class="res-type">${escapeHtml(r.type)}</span>
+      </div>
+      <span class="res-course">${escapeHtml(r.course)}</span>
+      <p class="res-desc">${escapeHtml(r.desc)}</p>
+      ${STATUS_BADGE[r.status] || ''}
+      <div class="res-actions">
+        <a class="res-btn res-btn-primary" href="${r.url}"${linkAttrs}>Open Resource →</a>
+      </div>
+    </div>
+  `;
+}
+
+const body = document.getElementById('archiveBody');
+const input = document.getElementById('searchInput');
+const clearBtn = document.getElementById('clearBtn');
+const countEl = document.getElementById('resultCount');
+const chips = document.querySelectorAll('.filter-chip');
+let activeSection = 'All';
+
+function render(){
+  const q = input.value.trim().toLowerCase();
+  clearBtn.style.display = q ? 'flex' : 'none';
+
+  let results = RESOURCES.filter(r => activeSection === 'All' || String(r.section) === activeSection);
+  if (q) {
+    results = results.filter(r =>
+      r.title.toLowerCase().includes(q) ||
+      r.desc.toLowerCase().includes(q) ||
+      r.course.toLowerCase().includes(q) ||
+      r.type.toLowerCase().includes(q)
+    );
+  }
+
+  countEl.textContent = results.length + (results.length === 1 ? ' resource' : ' resources') +
+    (q || activeSection !== 'All' ? ' matching your filters' : ' in the archive');
+
+  if (!results.length) {
+    body.innerHTML = '<div class="empty-state"><div class="icon">🗄</div>No matches. Try a different word or clear the filters.</div>';
+    return;
+  }
+
+  // group by section, in section-number order
+  const bySection = {};
+  results.forEach(r => { (bySection[r.section] = bySection[r.section] || []).push(r); });
+
+  const unverifiedItems = RESOURCES.filter(r => r.status === 'unverified');
+  const sectionCount = Object.keys(bySection).length + (unverifiedItems.length ? 1 : 0);
+
+  let out = Object.keys(bySection).sort((a,b)=>a-b).map(sec => `
+    <div class="legacy-section">
+      <div class="legacy-section-head">
+        <span class="legacy-section-num">${sec}</span>
+        <span class="legacy-section-title">${SECTION_NAMES[sec]}</span>
+      </div>
+      <div class="card-grid">
+        ${bySection[sec].map(cardHtml).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  if (unverifiedItems.length) {
+    out += `
+    <div class="legacy-section" id="verifySection">
+      <div class="legacy-section-head">
+        <span class="legacy-section-num">${sectionCount}</span>
+        <span class="legacy-section-title">Unavailable or Partially Recovered Resources</span>
+      </div>
+      <p class="res-note" style="margin-bottom:12px">
+        These items are linked above but have not been fully confirmed working yet. Test before relying on them in class.
+      </p>
+      <div class="check-list">
+        ${unverifiedItems.map(r=>`
+          <div class="check-item">
+            <span class="ck-name">${escapeHtml(r.title)}</span>
+            <span class="ck-status badge-unverified" style="background:rgba(255,215,0,0.12);color:var(--gold-dim);border:1px solid rgba(138,109,0,0.3)">Not Yet Verified</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    `;
+  }
+
+  body.innerHTML = out;
+}
+
+input.addEventListener('input', render);
+clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); render(); });
+
+function activateChip(chip){
+  chips.forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed','false'); });
+  chip.classList.add('active');
+  chip.setAttribute('aria-pressed','true');
+  activeSection = chip.getAttribute('data-section');
+  render();
+}
+chips.forEach(chip => {
+  chip.addEventListener('click', () => activateChip(chip));
+  chip.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateChip(chip); }
+  });
+});
+
+render();
+</script>
+</body>
+</html>
