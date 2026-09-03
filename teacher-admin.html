@@ -110,10 +110,11 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
     <div class="card">
       <div class="card-title">Add a Class Code</div>
       <div class="field-row">
-        <input id="new-code" placeholder="e.g. PERIOD1" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addCode()">
+        <input id="new-code" placeholder="Code, e.g. PERIOD1" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addCode()">
+        <input id="new-label" placeholder="Label, e.g. Period 1" maxlength="40" onkeydown="if(event.key==='Enter')addCode()">
         <button class="btn btn-gold" id="add-btn" onclick="addCode()">Add Code</button>
       </div>
-      <div class="field-hint">Codes don't need to be secret — each student's own last name + PIN protects their account. Pick something simple students will remember and type correctly, like a period number (PERIOD1, PERIOD3) or class nickname.</div>
+      <div class="field-hint">Codes don't need to be secret — each student's own last name + PIN protects their account. Pick something simple students will remember and type correctly, like a period number (PERIOD1, PERIOD3) or class nickname. The label is just for your own reference in this list (leave it blank and it'll default to the code).</div>
       <div class="status-msg" id="add-status"></div>
     </div>
 
@@ -175,7 +176,7 @@ async function loadCodes() {
 
   const { data, error } = await db
     .from('class_codes')
-    .select('code')
+    .select('code,label')
     .eq('trimester', TRIMESTER)
     .order('code', { ascending: true });
 
@@ -195,7 +196,7 @@ async function loadCodes() {
 
   container.innerHTML = data.map(row => `
     <div class="code-row">
-      <span class="code-name">${escapeHtml(row.code)}</span>
+      <span class="code-name">${escapeHtml(row.code)}${row.label ? ` <span style="font-weight:400;color:var(--text-dim);font-family:'Nunito',sans-serif;letter-spacing:0">— ${escapeHtml(row.label)}</span>` : ''}</span>
       <button class="btn btn-danger" onclick="deleteCode('${escapeAttr(row.code)}')">Remove</button>
     </div>
   `).join('');
@@ -206,9 +207,11 @@ async function loadCodes() {
 // ═══════════════════════════════════════════════════════════
 async function addCode() {
   const input = document.getElementById('new-code');
+  const labelInput = document.getElementById('new-label');
   const btn = document.getElementById('add-btn');
   const statusEl = document.getElementById('add-status');
   const code = input.value.trim().toUpperCase();
+  const label = labelInput.value.trim() || code;
 
   statusEl.className = 'status-msg';
   statusEl.textContent = '';
@@ -222,7 +225,7 @@ async function addCode() {
   btn.disabled = true;
   btn.textContent = 'Adding…';
 
-  const { error } = await db.from('class_codes').insert({ code, trimester: TRIMESTER });
+  const { error } = await db.from('class_codes').insert({ code, label, trimester: TRIMESTER });
 
   btn.disabled = false;
   btn.textContent = 'Add Code';
@@ -240,6 +243,7 @@ async function addCode() {
   statusEl.className = 'status-msg status-success';
   statusEl.textContent = `"${code}" added! Students can now use it to log in.`;
   input.value = '';
+  labelInput.value = '';
   loadCodes();
 }
 
