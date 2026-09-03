@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<title>Teacher Admin — Class Codes</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#FFD700; --gold-dim:#8a6d00; --emerald:#00E5A0; --sky:#38BFFF; --crimson:#FF3B5C;
+  --bg-deep:#FDFAF2; --bg-card:rgba(28,26,46,0.05); --border:rgba(28,26,46,0.12);
+  --text:#1C1A2E; --text-dim:rgba(28,26,46,0.65);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg-deep);color:var(--text);min-height:100vh}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(255,215,0,0.06) 0%,transparent 70%),#FDFAF2}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;background:rgba(248,244,232,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold-dim);text-decoration:none}
+.nav-logo span{color:var(--text-dim);font-weight:400}
+.nav-tag{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--crimson);
+  border:1px solid rgba(255,59,92,0.3);padding:4px 10px;border-radius:20px;background:rgba(255,59,92,0.06)}
+
+.wrap{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:100px 24px 70px}
+
+/* GATE */
+.gate-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:32px;max-width:400px;margin:60px auto 0;
+  box-shadow:0 4px 20px rgba(28,26,46,0.06);text-align:center}
+.gate-title{font-family:'Cinzel Decorative',serif;font-size:22px;color:var(--text);margin-bottom:8px}
+.gate-sub{font-size:13px;color:var(--text-dim);margin-bottom:20px;line-height:1.6}
+.gate-input{width:100%;padding:12px 14px;font-size:16px;text-align:center;letter-spacing:2px;
+  border:1.5px solid var(--border);border-radius:10px;margin-bottom:12px;font-family:'Nunito',sans-serif}
+.gate-input:focus{outline:none;border-color:var(--gold)}
+.gate-err{font-size:12px;color:var(--crimson);min-height:16px;margin-bottom:10px}
+
+/* PAGE HEADER */
+.page-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,4vw,32px);margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--text-dim);margin-bottom:28px;line-height:1.6}
+
+/* CARD */
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;
+  box-shadow:0 4px 20px rgba(28,26,46,0.05)}
+.card-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--gold-dim);margin-bottom:14px}
+.field-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.field-row input{flex:1;min-width:140px;padding:11px 14px;font-size:14px;border:1.5px solid var(--border);
+  border-radius:10px;font-family:'Nunito',sans-serif}
+.field-row input:focus{outline:none;border-color:var(--gold)}
+.field-hint{font-size:11.5px;color:var(--text-dim);margin-top:6px;line-height:1.5}
+.btn{padding:11px 20px;border-radius:10px;border:none;font-size:14px;font-weight:800;cursor:pointer;
+  font-family:'Nunito',sans-serif;transition:transform .15s,box-shadow .15s;white-space:nowrap}
+.btn-gold{background:var(--gold);color:#05070F}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,215,0,0.35)}
+.btn-gold:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-danger{background:rgba(255,59,92,0.1);color:var(--crimson);border:1px solid rgba(255,59,92,0.25);
+  padding:6px 12px;font-size:12px;font-weight:700}
+.btn-danger:hover{background:rgba(255,59,92,0.18)}
+
+.status-msg{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.5;display:none}
+.status-success{display:block;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.35);color:#067a54}
+.status-error{display:block;background:rgba(255,59,92,0.08);border:1px solid rgba(255,59,92,0.3);color:#B4123A}
+
+/* CODE LIST */
+.code-list{display:flex;flex-direction:column;gap:8px}
+.code-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--bg-deep);border:1px solid var(--border);border-radius:10px;padding:10px 14px}
+.code-name{font-family:'Cinzel',serif;font-weight:700;font-size:14px;letter-spacing:.5px}
+.code-empty{font-size:13px;color:var(--text-dim);text-align:center;padding:16px 0}
+.code-loading{font-size:13px;color:var(--text-dim);text-align:center;padding:16px 0}
+
+.trimester-note{font-size:12px;color:var(--text-dim);margin-bottom:20px;background:rgba(255,215,0,0.06);
+  border:1px solid rgba(255,215,0,0.2);padding:10px 14px;border-radius:10px}
+.trimester-note b{color:var(--gold-dim)}
+
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24px 32px;text-align:center;
+  font-size:12px;color:var(--text-dim)}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-tag">🔒 Teacher Only</div>
+</nav>
+
+<div class="wrap">
+
+  <!-- GATE -->
+  <div id="gate" class="gate-card">
+    <div class="gate-title">🔒 Teacher Access</div>
+    <div class="gate-sub">This page manages class codes for the Quest system. Enter the teacher passcode to continue.</div>
+    <input class="gate-input" id="gate-pass" type="password" placeholder="Passcode" onkeydown="if(event.key==='Enter')checkGate()">
+    <div class="gate-err" id="gate-err"></div>
+    <button class="btn btn-gold" style="width:100%" onclick="checkGate()">Unlock →</button>
+  </div>
+
+  <!-- ADMIN PANEL (hidden until unlocked) -->
+  <div id="panel" style="display:none">
+    <div class="page-title">Class Code Manager</div>
+    <div class="page-sub">Create and remove the class codes students use to log into their Quest. This page isn't linked anywhere on the public site — only people with this exact URL and passcode can reach it.</div>
+
+    <div class="trimester-note">
+      Managing codes for trimester <b id="trimester-display"></b> — this must exactly match the <code>TRIMESTER</code> value set in <code>quest.html</code>, or codes you create here won't work for students.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Add a Class Code</div>
+      <div class="field-row">
+        <input id="new-code" placeholder="e.g. PERIOD1" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addCode()">
+        <button class="btn btn-gold" id="add-btn" onclick="addCode()">Add Code</button>
+      </div>
+      <div class="field-hint">Codes don't need to be secret — each student's own last name + PIN protects their account. Pick something simple students will remember and type correctly, like a period number (PERIOD1, PERIOD3) or class nickname.</div>
+      <div class="status-msg" id="add-status"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Active Class Codes</div>
+      <div class="code-list" id="code-list">
+        <div class="code-loading">Loading…</div>
+      </div>
+      <div class="status-msg" id="list-status"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>⚔ The Legend of Wellness — Teacher Tools</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG — keep TRIMESTER in sync with quest.html
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRIMESTER    = '2026-T1';
+
+// Change this to whatever you want the teacher passcode to be.
+// This is a light deterrent, not real security — anyone who reads this
+// file's source can see it. Don't put anything truly sensitive behind it.
+const TEACHER_PASSCODE = 'Dopp7272';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+document.getElementById('trimester-display').textContent = TRIMESTER;
+
+// ═══════════════════════════════════════════════════════════
+// GATE
+// ═══════════════════════════════════════════════════════════
+function checkGate() {
+  const val = document.getElementById('gate-pass').value;
+  const err = document.getElementById('gate-err');
+  if (val !== TEACHER_PASSCODE) {
+    err.textContent = 'Incorrect passcode.';
+    return;
+  }
+  err.textContent = '';
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('panel').style.display = 'block';
+  loadCodes();
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOAD / RENDER CODES
+// ═══════════════════════════════════════════════════════════
+async function loadCodes() {
+  const listEl = document.getElementById('list-status');
+  listEl.className = 'status-msg';
+  listEl.textContent = '';
+
+  const { data, error } = await db
+    .from('class_codes')
+    .select('code')
+    .eq('trimester', TRIMESTER)
+    .order('code', { ascending: true });
+
+  const container = document.getElementById('code-list');
+
+  if (error) {
+    container.innerHTML = '';
+    listEl.className = 'status-msg status-error';
+    listEl.innerHTML = `Couldn't load class codes: ${escapeHtml(error.message)}.<br>This usually means Supabase's Row Level Security policy on the <code>class_codes</code> table doesn't allow public reads. Check that table's policies in your Supabase dashboard.`;
+    return;
+  }
+
+  if (!data || !data.length) {
+    container.innerHTML = '<div class="code-empty">No class codes yet for this trimester. Add one above.</div>';
+    return;
+  }
+
+  container.innerHTML = data.map(row => `
+    <div class="code-row">
+      <span class="code-name">${escapeHtml(row.code)}</span>
+      <button class="btn btn-danger" onclick="deleteCode('${escapeAttr(row.code)}')">Remove</button>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADD CODE
+// ═══════════════════════════════════════════════════════════
+async function addCode() {
+  const input = document.getElementById('new-code');
+  const btn = document.getElementById('add-btn');
+  const statusEl = document.getElementById('add-status');
+  const code = input.value.trim().toUpperCase();
+
+  statusEl.className = 'status-msg';
+  statusEl.textContent = '';
+
+  if (!code) {
+    statusEl.className = 'status-msg status-error';
+    statusEl.textContent = 'Enter a class code first.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Adding…';
+
+  const { error } = await db.from('class_codes').insert({ code, trimester: TRIMESTER });
+
+  btn.disabled = false;
+  btn.textContent = 'Add Code';
+
+  if (error) {
+    statusEl.className = 'status-msg status-error';
+    if (error.code === '23505') {
+      statusEl.textContent = `"${code}" already exists for this trimester.`;
+    } else {
+      statusEl.innerHTML = `Couldn't add code: ${escapeHtml(error.message)}.<br>If this mentions "row-level security" or "permission denied," your Supabase table policy needs to allow public inserts on <code>class_codes</code>.`;
+    }
+    return;
+  }
+
+  statusEl.className = 'status-msg status-success';
+  statusEl.textContent = `"${code}" added! Students can now use it to log in.`;
+  input.value = '';
+  loadCodes();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DELETE CODE
+// ═══════════════════════════════════════════════════════════
+async function deleteCode(code) {
+  if (!confirm(`Remove class code "${code}"? Students using it won't be able to log in anymore (their existing progress is kept, just not reachable through this code).`)) return;
+
+  const { error } = await db.from('class_codes').delete().eq('code', code).eq('trimester', TRIMESTER);
+  const listEl = document.getElementById('list-status');
+
+  if (error) {
+    listEl.className = 'status-msg status-error';
+    listEl.textContent = `Couldn't remove code: ${error.message}`;
+    return;
+  }
+
+  loadCodes();
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+function escapeAttr(str) {
+  return String(str).replace(/'/g, "\\'");
+}
+</script>
+</body>
+</html>
