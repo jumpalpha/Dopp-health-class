@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Live Host — Dopp's Class</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0a0618;--panel:#160f2e;--line:rgba(255,215,0,.25);--text:#f4efff;--dim:#b9b0d6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,var(--bg) 60%) fixed;color:var(--text);font-family:Nunito,system-ui,sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 40px}
+h1,h2,.cinzel{font-family:Cinzel,serif}
+h1{color:var(--gold);text-shadow:0 2px 0 #000,0 0 18px rgba(255,215,0,.35);font-size:clamp(26px,4vw,40px)}
+.sub{color:var(--dim);margin-top:4px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:18px}
+label{display:block;font-weight:800;margin-bottom:6px}
+input[type=text],input[type=password],select{width:100%;font:inherit;font-size:17px;padding:12px 14px;border-radius:10px;border:1px solid #4a3d78;background:#0b0716;color:var(--text)}
+button{font:inherit;font-weight:900;font-size:17px;padding:12px 20px;border-radius:12px;border:0;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.btn-gold{background:var(--gold);color:#2a1d00}
+.btn-em{background:var(--emerald);color:#03261a}
+.btn-sky{background:var(--sky);color:#04202f}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid #5b4d8c}
+.btn-red{background:transparent;color:var(--crimson);border:1px solid var(--crimson)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.err{color:var(--crimson);font-weight:800;margin-top:10px;min-height:1.2em}
+.hidden{display:none!important}
+/* top bar during game */
+.topbar{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.join{display:flex;gap:18px;align-items:center}
+.join .code{font-family:Cinzel,serif;font-weight:900;font-size:clamp(40px,7vw,72px);letter-spacing:6px;color:var(--gold);text-shadow:0 3px 0 #000}
+.join .how{font-size:18px;color:var(--dim);line-height:1.4}
+.join .how b{color:var(--text)}
+#qr{background:#fff;padding:8px;border-radius:10px;line-height:0}
+.stat{font-size:20px;font-weight:800}
+.stat b{color:var(--emerald);font-size:28px}
+/* picker */
+.picker-grid{display:grid;grid-template-columns:260px 1fr;gap:16px}
+@media(max-width:760px){.picker-grid{grid-template-columns:1fr}}
+.qlist{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto;padding-right:4px}
+.qitem{text-align:left;background:#0f0a22;border:1px solid #3b2f66;color:var(--text);font-weight:700;font-size:16px;padding:12px 14px;border-radius:10px}
+.qitem.sel{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,215,0,.35)}
+.qitem .tag{display:inline-block;font-size:12px;font-weight:900;padding:2px 8px;border-radius:99px;margin-right:6px;vertical-align:2px}
+.tag.green{background:var(--emerald);color:#03261a}.tag.yellow{background:var(--gold);color:#2a1d00}.tag.red{background:var(--crimson);color:#fff}.tag.custom{background:var(--sky);color:#04202f}
+.qitem .used{color:var(--dim);font-size:13px;margin-left:6px}
+/* stage */
+.stage-label{color:var(--dim);font-weight:800;letter-spacing:1px;text-transform:uppercase;font-size:14px}
+.stage-q{font-size:clamp(28px,4.4vw,52px);font-weight:900;line-height:1.15;margin:10px 0 22px;text-shadow:0 2px 0 #000}
+.note{background:rgba(255,59,92,.12);border-left:4px solid var(--crimson);padding:10px 14px;border-radius:8px;margin-bottom:16px;color:#ffd6de}
+.bars{display:flex;flex-direction:column;gap:16px}
+.bar{position:relative;background:#0b0716;border:1px solid #3b2f66;border-radius:14px;overflow:hidden;min-height:76px}
+.bar .fill{position:absolute;inset:0 auto 0 0;width:0;transition:width .6s ease}
+.bar.a .fill{background:linear-gradient(90deg,#1d7fb0,var(--sky))}
+.bar.b .fill{background:linear-gradient(90deg,#b0213c,var(--crimson))}
+.bar .lab{position:relative;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;font-size:clamp(20px,2.6vw,30px);font-weight:900;text-shadow:0 2px 3px #000}
+.bar .pct{font-family:Cinzel,serif;white-space:nowrap}
+.hiddenres{font-size:24px;font-weight:800;color:var(--dim);padding:26px;text-align:center;border:1px dashed #4a3d78;border-radius:14px}
+.shift{margin-top:18px;font-size:24px;font-weight:900;color:var(--gold);text-align:center}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.compare{grid-template-columns:1fr}}
+.compare h3{font-family:Cinzel,serif;color:var(--dim);margin-bottom:10px}
+.controls{margin-top:22px}
+.check{display:flex;gap:8px;align-items:center;font-weight:700;color:var(--dim)}
+.check input{width:20px;height:20px}
+.tiny{font-size:14px;color:var(--dim)}
+a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ===== Setup ===== -->
+<section id="setup">
+  <h1>⚔️ Live Class Games</h1>
+  <p class="sub">Teacher screen. Put this on the projector. Students join on their phones at <b>doppsclass.com/live.html</b>.</p>
+  <div class="panel" style="max-width:520px">
+    <label for="game">Game</label>
+    <select id="game">
+      <option value="pick_a_side">Pick a Side Live: class vote</option>
+    </select>
+    <div style="height:14px"></div>
+    <label for="pass">Teacher passphrase</label>
+    <input type="password" id="pass" autocomplete="current-password" placeholder="The phrase you set in Supabase">
+    <div class="row" style="margin-top:14px"><button class="btn-gold" id="startBtn">Start game</button></div>
+    <div class="err" id="setupErr"></div>
+  </div>
+</section>
+
+<!-- ===== Game ===== -->
+<section id="game-area" class="hidden">
+  <div class="panel topbar">
+    <div class="join">
+      <div id="qr"></div>
+      <div>
+        <div class="how">Go to <b id="joinUrl">doppsclass.com/live.html</b><br>Game code:</div>
+        <div class="code" id="code">------</div>
+      </div>
+    </div>
+    <div>
+      <div class="stat"><b id="players">0</b> joined</div>
+      <div class="stat" id="votedLine"><b id="voted">0</b> voted</div>
+    </div>
+  </div>
+
+  <!-- picker -->
+  <div class="panel" id="picker">
+    <h2 style="color:var(--gold)">Choose a question</h2>
+    <div class="picker-grid" style="margin-top:14px">
+      <div>
+        <label for="set">Question set</label>
+        <select id="set"></select>
+        <div id="unlockBox" class="hidden" style="margin-top:12px">
+          <label for="redPass">Red set passcode</label>
+          <input type="password" id="redPass" autocomplete="off">
+          <div class="row" style="margin-top:8px"><button class="btn-red" id="unlockBtn">Unlock</button></div>
+          <div class="err" id="unlockErr"></div>
+        </div>
+        <div id="customBox" class="hidden" style="margin-top:12px">
+          <label for="cq">Your question</label><input type="text" id="cq" maxlength="160">
+          <div style="height:8px"></div>
+          <label for="ca">Side A</label><input type="text" id="ca" maxlength="60">
+          <div style="height:8px"></div>
+          <label for="cb">Side B</label><input type="text" id="cb" maxlength="60">
+        </div>
+        <p class="tiny" style="margin-top:12px">Full talking points and sources: <a href="pick_a_side.html" target="_blank" rel="noopener">open Pick a Side</a> in another tab.</p>
+      </div>
+      <div class="qlist" id="qlist"></div>
+    </div>
+    <div class="row controls">
+      <button class="btn-em" id="voteBtn" disabled>Start vote ▶</button>
+      <label class="check"><input type="checkbox" id="hideLive" checked> Hide results until voting closes</label>
+      <span style="flex:1"></span>
+      <button class="btn-red" id="endBtn">End game</button>
+    </div>
+  </div>
+
+  <!-- stage -->
+  <div class="panel hidden" id="stage">
+    <div class="stage-label" id="stageLabel"></div>
+    <div class="stage-q" id="stageQ"></div>
+    <div class="note hidden" id="stageNote"></div>
+    <div id="results"></div>
+    <div class="row controls">
+      <button class="btn-gold" id="closeBtn">Close voting</button>
+      <button class="btn-sky hidden" id="revoteBtn">Revote after discussion 🔁</button>
+      <button class="btn-em hidden" id="nextBtn">Next question</button>
+      <span style="flex:1"></span>
+      <button class="btn-red" id="endBtn2">End game</button>
+    </div>
+  </div>
+  <div class="err" id="gameErr"></div>
+</section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const CHAPTERS = {1:"Understanding Health & Wellness",2:"Skills for a Healthy Life",3:"Mental and Emotional Health",4:"Managing Stress",5:"Mental and Emotional Problems",6:"Building Healthy Relationships",7:"Conflict Resolution",8:"Violence Prevention",9:"Family Relationships",10:"Nutrition for Health",11:"Managing Weight",12:"Physical Activity",13:"Personal Health Care",14:"Skeletal, Muscular & Nervous Systems",15:"Cardiovascular, Respiratory & Digestive",16:"Endocrine & Reproductive Health",17:"The Beginning of the Life Cycle",18:"The Life Cycle Continues",19:"Medicines & Drugs",20:"Tobacco",21:"Alcohol",22:"Illegal Drugs",23:"Communicable Diseases",24:"STIs & HIV/AIDS",25:"Noncommunicable Diseases & Disabilities",26:"Safety & Injury Prevention",27:"First Aid & Emergencies",28:"Community & Environmental Health"};
+const QUESTIONS = [
+{"id":"ch01-choices-circumstances","light":"green","q":"Is your health mostly your choices or mostly your circumstances?","a":"Mostly my choices","b":"Mostly my circumstances","ch":1},
+{"id":"ch01-insurance-habits","light":"yellow","q":"Should people with unhealthy habits pay more for health insurance?","a":"Yes, charge them more","b":"No, charge everyone the same","ch":1},
+{"id":"ch02-influencer-credentials","light":"green","q":"Should people need credentials to give health advice online?","a":"Yes, require credentials","b":"No, anyone can share","ch":2},
+{"id":"ch02-betting-ads","light":"yellow","q":"Should sports betting apps be allowed to advertise where teens will see the ads?","a":"Yes, allow the ads","b":"No, restrict the ads","ch":2},
+{"id":"ch03-social-harm-good","light":"green","q":"Does social media do teens more harm than good?","a":"More harm","b":"More good","ch":3},
+{"id":"ch03-social-age-16","light":"yellow","q":"Should you have to be 16 to have a social media account?","a":"Yes, set the age at 16","b":"No, don't ban under-16s","ch":3},
+{"id":"ch04-later-start","light":"green","q":"Should high school start at 8:30 or later?","a":"Yes, start later","b":"No, keep the early start","ch":4},
+{"id":"ch04-mental-health-days","light":"green","q":"Should mental health days count as excused absences?","a":"Yes, excuse them","b":"No, don't excuse them","ch":4},
+{"id":"ch05-depression-screening","light":"yellow","q":"Should schools screen every student for depression?","a":"Yes, screen everyone","b":"No, don't screen at school","ch":5},
+{"id":"ch05-ai-support","light":"yellow","q":"Are AI chatbots a healthy source of emotional support?","a":"Yes, they can help","b":"No, they do more harm","ch":5},
+{"id":"ch06-online-friends","light":"green","q":"Can an online friendship be as real as an in-person one?","a":"Yes, just as real","b":"No, in person is different","ch":6},
+{"id":"ch06-parents-track","light":"yellow","q":"Should parents track their teen's location and look through their phone?","a":"Yes, parents should","b":"No, teens need privacy","ch":6},
+{"id":"ch07-suspension-restorative","light":"green","q":"When students fight, should schools suspend them or use restorative justice?","a":"Suspend them","b":"Use restorative justice","ch":7},
+{"id":"ch07-off-campus-posts","light":"yellow","q":"Should schools be able to punish students for what they post outside of school?","a":"Yes, schools should","b":"No, that's not the school's business","ch":7},
+{"id":"ch08-violent-games","light":"green","q":"Do violent video games make people more violent?","a":"Yes, they do","b":"No, they don't","ch":8},
+{"id":"ch08-school-police","light":"yellow","q":"Should schools have armed police officers on campus?","a":"Yes, have officers","b":"No officers on campus","ch":8},
+{"id":"ch09-screen-limits","light":"green","q":"Should parents set screen-time limits for teenagers?","a":"Yes, set limits","b":"No, teens should manage it","ch":9},
+{"id":"ch09-spanking","light":"yellow","q":"Should it be legal for parents to spank their children?","a":"Yes, keep it legal","b":"No, ban it","ch":9},
+{"id":"ch10-energy-drinks","light":"green","q":"Should stores be allowed to sell energy drinks to anyone under 18?","a":"Yes, keep selling them","b":"No, set an age limit","ch":10},
+{"id":"ch10-soda-tax","light":"yellow","q":"Should soda and other sugary drinks be taxed?","a":"Yes, tax them","b":"No, don't tax them","ch":10},
+{"id":"ch11-weight-drugs","light":"yellow","q":"Should doctors prescribe weight-loss drugs like Wegovy to teenagers?","a":"Yes, when a doctor recommends it","b":"No, not for teens","ch":11},
+{"id":"ch11-every-size","light":"yellow","q":"'Healthy at every size': is that healthy acceptance, or does it downplay real risk?","a":"Healthy acceptance","b":"It downplays risk","ch":11},
+{"id":"ch12-one-sport","light":"green","q":"Is it better to specialize in one sport year-round or to play several?","a":"Specialize in one","b":"Play several","ch":12},
+{"id":"ch12-pe-four-years","light":"green","q":"Should PE be required all four years of high school?","a":"Yes, require it","b":"No, make it optional","ch":12},
+{"id":"ch13-universal-healthcare","light":"yellow","q":"Should the government pay for health care for everyone?","a":"Yes, cover everyone","b":"No, keep private insurance","ch":13},
+{"id":"ch13-cosmetic-surgery","light":"yellow","q":"Should cosmetic surgery be allowed for people under 18?","a":"Yes, with parents' consent","b":"No, wait until 18","ch":13},
+{"id":"ch14-tackle-football","light":"green","q":"Should kids play tackle football before high school?","a":"Yes, let them play","b":"No, flag only until high school","ch":14},
+{"id":"ch14-creatine","light":"yellow","q":"Should high school athletes use creatine and pre-workout supplements?","a":"Yes, it's fine","b":"No, not under 18","ch":14},
+{"id":"ch15-menu-warnings","light":"green","q":"Should restaurant menus carry sodium and calorie warnings?","a":"Yes, label the menu","b":"No, leave menus alone","ch":15},
+{"id":"ch15-heart-screening","light":"yellow","q":"Should every student athlete get a heart screening (ECG) before playing?","a":"Yes, screen everyone","b":"No, don't require it","ch":15},
+{"id":"ch16-period-products","light":"green","q":"Should schools provide free period products in restrooms?","a":"Yes, schools should","b":"No, families should","ch":16},
+{"id":"ch16-drug-testing","light":"yellow","q":"Should student athletes be randomly drug tested?","a":"Yes, test them","b":"No, don't test","ch":16},
+{"id":"ch17-dna-test","light":"green","q":"Would you want a DNA test that tells you your disease risks?","a":"Yes, I'd want to know","b":"No, I'd rather not","ch":17},
+{"id":"ch17-gene-editing","light":"yellow","q":"Should parents be allowed to edit their baby's genes?","a":"Yes, to prevent disease","b":"No, don't allow it","ch":17},
+{"id":"ch18-adult-at-18","light":"green","q":"Are 18-year-olds really adults?","a":"Yes, 18 is an adult","b":"No, not fully","ch":18},
+{"id":"ch18-older-drivers","light":"green","q":"Should older drivers have to retake a driving test?","a":"Yes, retest them","b":"No, that's age discrimination","ch":18},
+{"id":"ch19-drug-ads","light":"yellow","q":"Should drug companies be allowed to advertise prescription drugs on TV?","a":"Yes, allow the ads","b":"No, ban the ads","ch":19},
+{"id":"ch19-teen-meds","light":"yellow","q":"Are too many young people on medication for ADHD?","a":"Yes, too many","b":"No, many still go untreated","ch":19},
+{"id":"ch20-vaping","light":"yellow","q":"Is vaping mostly a tool for quitting smoking, or mostly a new road into nicotine addiction?","a":"Mostly a quit tool","b":"Mostly a new addiction","ch":20},
+{"id":"ch20-flavor-ban","light":"yellow","q":"Should flavored vapes and nicotine pouches be banned?","a":"Yes, ban the flavors","b":"No, keep them legal for adults","ch":20},
+{"id":"ch21-cancer-labels","light":"green","q":"Should alcohol carry a cancer warning label?","a":"Yes, add the warning","b":"No, the current label is enough","ch":21},
+{"id":"ch21-drinking-age","light":"yellow","q":"Should the legal drinking age drop from 21 to 18?","a":"Yes, lower it to 18","b":"No, keep it at 21","ch":21},
+{"id":"ch22-marijuana-legal","light":"yellow","q":"Should marijuana be legal for adults?","a":"Yes, legalize it","b":"No, keep it illegal","ch":22},
+{"id":"ch22-harm-reduction","light":"yellow","q":"Should schools teach harm reduction and stock Narcan, or teach 'just say no'?","a":"Harm reduction and Narcan","b":"Just say no","ch":22},
+{"id":"ch23-vaccine-requirement","light":"yellow","q":"Should vaccines be required to attend public school?","a":"Yes, require them","b":"No, parents should decide","ch":23},
+{"id":"ch23-pandemic-closures","light":"yellow","q":"In a pandemic, should the government be able to close schools?","a":"Yes, it should have that power","b":"No, schools should stay open","ch":23},
+{"id":"ch24-hpv-vaccine","light":"yellow","q":"Should the HPV vaccine be required for school?","a":"Yes, require it","b":"No, keep it optional","ch":24},
+{"id":"ch24-hiv-disclosure","light":"yellow","q":"Should the law require people with HIV to tell their partners?","a":"Yes, it should be the law","b":"No, these laws backfire","ch":24},
+{"id":"ch25-organ-opt-out","light":"green","q":"Should everyone be an organ donor unless they opt out?","a":"Yes, switch to opt-out","b":"No, keep it a choice to sign up","ch":25},
+{"id":"ch25-allergy-bans","light":"yellow","q":"Should schools ban foods like peanuts because of allergies?","a":"Yes, ban them","b":"No, manage it another way","ch":25},
+{"id":"ch26-driving-age","light":"green","q":"Should the driving age be raised to 18?","a":"Yes, raise it","b":"No, keep it where it is","ch":26},
+{"id":"ch26-gun-storage","light":"yellow","q":"Should gun owners with children at home be required to lock up their firearms?","a":"Yes, require it","b":"No, leave it to owners","ch":26},
+{"id":"ch27-cpr-graduation","light":"green","q":"Should CPR training be required to graduate from high school?","a":"Yes, require it","b":"No, keep it optional","ch":27},
+{"id":"ch27-duty-to-help","light":"green","q":"Should bystanders be legally required to help in an emergency?","a":"Yes, make it the law","b":"No, helping should be a choice","ch":27},
+{"id":"ch28-smoky-air","light":"green","q":"Should outdoor practice be cancelled when wildfire smoke makes the air unhealthy?","a":"Yes, cancel or move inside","b":"No, let teams decide","ch":28},
+{"id":"ch28-fluoride","light":"yellow","q":"Should fluoride be added to public drinking water?","a":"Yes, keep adding it","b":"No, stop adding it","ch":28},
+{"id":"bg-just-friends","light":"green","q":"Can a boy and a girl be just friends?","a":"Yes, it works fine","b":"No, feelings get in the way","series":"bg"},
+{"id":"bg-who-talks-more","light":"green","q":"Do girls talk more than boys?","a":"Yes, girls talk more","b":"No, it's about the same","series":"bg"},
+{"id":"bg-first-move","light":"green","q":"Who should make the first move?","a":"The boy should ask","b":"Whoever is interested should ask","series":"bg"},
+{"id":"bg-want-in-partner","light":"green","q":"Do boys and girls want different things in a partner?","a":"Yes, very different","b":"No, mostly the same","series":"bg"},
+{"id":"bg-mature-faster","light":"green","q":"Do girls mature faster than boys?","a":"Yes, girls mature faster","b":"No, that's a stereotype","series":"bg"},
+{"id":"bg-who-has-it-harder","light":"yellow","q":"Who has it harder in high school: girls or boys?","a":"Girls have it harder","b":"Boys have it harder","series":"bg"},
+{"id":"bg-looks","light":"yellow","q":"Does the other gender judge your looks as hard as you think they do?","a":"Yes, looks matter that much","b":"No, we overestimate it","series":"bg"},
+{"id":"bg-mixed-signals","light":"yellow","q":"When someone is friendly, do boys and girls read it the same way?","a":"Yes, friendly is friendly","b":"No, boys read more into it","series":"bg"},
+{"id":"bg-jealousy","light":"yellow","q":"Is a little jealousy a sign that someone cares about you?","a":"Yes, it shows they care","b":"No, it's a warning sign","series":"bg"},
+{"id":"bg-equal-today","light":"yellow","q":"Are boys and girls treated equally today?","a":"Yes, mostly equal","b":"No, not yet","series":"bg"}
+];
+const RED_BLOB = "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";
+const RED_ITER = 200000;
+let RED = null;
+
+// ---------- state ----------
+let S = null;            // {sid, tok, code}
+let selected = null;     // question object chosen in picker
+let current = null;      // {q, qi, revote}
+let rounds = {};         // qi -> tally at close
+let lastState = null, lastRes = null, pollTimer = null, busy = false;
+const used = new Set();
+
+function saveS(){ try { sessionStorage.setItem('live_host', JSON.stringify({S, current, rounds, used:[...used]})); } catch(e){} }
+function loadS(){ try { const o = JSON.parse(sessionStorage.getItem('live_host') || 'null'); if (o && o.S){ S=o.S; current=o.current; rounds=o.rounds||{}; (o.used||[]).forEach(x=>used.add(x)); } } catch(e){} }
+function clearS(){ S=null; current=null; rounds={}; used.clear(); try { sessionStorage.removeItem('live_host'); } catch(e){} }
+
+// ---------- red set ----------
+function b64ToBytes(b){ const s = atob(b); const a = new Uint8Array(s.length); for (let i=0;i<s.length;i++) a[i]=s.charCodeAt(i); return a; }
+async function decryptRed(pass){
+  const raw = b64ToBytes(RED_BLOB), salt = raw.slice(0,16), iv = raw.slice(16,28), data = raw.slice(28);
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass.trim().toLowerCase()), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:RED_ITER, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, data)));
+}
+
+// ---------- picker ----------
+function buildSets(){
+  const o = ['<option value="custom">✏️ Your own question</option>'];
+  for (let n=1;n<=28;n++) o.push('<option value="'+n+'">Chapter '+n+': '+esc(CHAPTERS[n])+'</option>');
+  o.push('<option value="bg">👥 Boys &amp; Girls series</option>');
+  o.push('<option value="red">🔒 Red set (teacher passcode)</option>');
+  $('set').innerHTML = o.join('');
+  $('set').value = '1';
+}
+function setQuestions(v){
+  if (v === 'red') return RED || [];
+  if (v === 'bg') return QUESTIONS.filter(q => q.series === 'bg');
+  const n = +v; return QUESTIONS.filter(q => !q.series && q.ch === n);
+}
+function renderList(){
+  const v = $('set').value;
+  $('unlockBox').classList.toggle('hidden', !(v === 'red' && !RED));
+  $('customBox').classList.toggle('hidden', v !== 'custom');
+  if (v === 'custom'){ $('qlist').innerHTML = '<p class="tiny">Type a question and two sides on the left, then press Start vote.</p>'; selected = null; updateVoteBtn(); return; }
+  const qs = setQuestions(v);
+  if (!qs.length){ $('qlist').innerHTML = '<p class="tiny">'+(v==='red' ? 'Enter the passcode to see the red set.' : 'No questions here.')+'</p>'; selected=null; updateVoteBtn(); return; }
+  $('qlist').innerHTML = qs.map(q =>
+    '<button type="button" class="qitem'+(selected && selected.id===q.id ? ' sel':'')+'" data-id="'+esc(q.id)+'">'+
+    '<span class="tag '+q.light+'">'+q.light.toUpperCase()+'</span>'+esc(q.q)+
+    (used.has(q.id) ? '<span class="used">✓ used</span>' : '')+'</button>').join('');
+  $('qlist').querySelectorAll('.qitem').forEach(b => b.onclick = () => {
+    selected = qs.find(q => q.id === b.dataset.id); renderList(); updateVoteBtn();
+  });
+}
+function customQ(){
+  const q = $('cq').value.trim(), a = $('ca').value.trim(), b = $('cb').value.trim();
+  return q && a && b ? { id:'custom-'+Date.now(), light:'custom', q, a, b } : null;
+}
+function updateVoteBtn(){ $('voteBtn').disabled = !($('set').value === 'custom' ? customQ() : selected); }
+
+// ---------- server calls ----------
+async function rpc(name, args){
+  const { data, error } = await db.rpc(name, args);
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+async function startGame(){
+  $('setupErr').textContent = '';
+  if (!db){ $('setupErr').textContent = 'Could not load the game server. Check the internet connection.'; return; }
+  const pass = $('pass').value;
+  if (!pass){ $('setupErr').textContent = 'Enter your teacher passphrase.'; return; }
+  $('startBtn').disabled = true;
+  try {
+    const rows = await rpc('create_live_session', { p_teacher_pass: pass, p_game_type: $('game').value, p_settings: {} });
+    const r = rows[0];
+    clearS(); S = { sid: r.session_id, tok: r.host_token, code: r.join_code };
+    $('pass').value = '';
+    saveS(); enterGame();
+  } catch(e){
+    $('setupErr').textContent = /passphrase/i.test(e.message) ? 'That passphrase is not right.' : 'Could not start: ' + e.message;
+  } finally { $('startBtn').disabled = false; }
+}
+
+function joinUrl(){
+  const base = location.href.replace(/[?#].*$/, '').replace(/live_host\.html$/, 'live.html');
+  return base + '?code=' + S.code;
+}
+
+function enterGame(){
+  $('setup').classList.add('hidden'); $('game-area').classList.remove('hidden');
+  $('code').textContent = S.code;
+  $('joinUrl').textContent = location.protocol === 'file:' ? 'live.html' : location.host + '/live.html';
+  $('qr').innerHTML = '';
+  if (window.QRCode) new QRCode($('qr'), { text: joinUrl(), width: 132, height: 132, colorDark:'#000', colorLight:'#fff' });
+  else $('qr').classList.add('hidden');
+  renderList(); updateVoteBtn();
+  showView();
+  poll(); clearInterval(pollTimer); pollTimer = setInterval(poll, 1500);
+}
+
+async function poll(){
+  if (!S || busy) return;
+  try {
+    const [st, res] = await Promise.all([
+      rpc('get_live_state', { p_session_id: S.sid }),
+      rpc('host_get_results', { p_session_id: S.sid, p_host_token: S.tok })
+    ]);
+    if (!st || !res || st.phase === 'ended'){ gameGone(); return; }
+    lastState = st; lastRes = res;
+    $('gameErr').textContent = '';
+    $('players').textContent = st.player_count;
+    $('voted').textContent = st.phase === 'lobby' ? '–' : st.answer_count;
+    showView();
+  } catch(e){ $('gameErr').textContent = 'Connection problem, retrying… (' + e.message + ')'; }
+}
+
+function gameGone(){
+  clearInterval(pollTimer); clearS();
+  $('game-area').classList.add('hidden'); $('setup').classList.remove('hidden');
+  $('setupErr').textContent = 'Game over. Start a new one whenever you are ready.';
+}
+
+// ---------- views ----------
+function tallyOf(res){ const t = (res && res.tally) || {}; return { A: t.A || 0, B: t.B || 0 }; }
+function barsHTML(q, t){
+  const total = t.A + t.B, pa = total ? Math.round(100*t.A/total) : 0, pb = total ? 100 - pa : 0;
+  return '<div class="bars">'+
+    '<div class="bar a"><div class="fill" style="width:'+pa+'%"></div><div class="lab"><span>'+esc(q.a)+'</span><span class="pct">'+pa+'% · '+t.A+'</span></div></div>'+
+    '<div class="bar b"><div class="fill" style="width:'+pb+'%"></div><div class="lab"><span>'+esc(q.b)+'</span><span class="pct">'+pb+'% · '+t.B+'</span></div></div></div>';
+}
+function pctA(t){ const n = t.A + t.B; return n ? Math.round(100*t.A/n) : null; }
+
+function showView(){
+  const phase = lastState ? lastState.phase : 'lobby';
+  const onStage = current && (phase === 'question' || phase === 'reveal');
+  $('picker').classList.toggle('hidden', !!onStage);
+  $('stage').classList.toggle('hidden', !onStage);
+  $('votedLine').classList.toggle('hidden', !onStage);
+  if (!onStage) return;
+
+  const q = current.q;
+  $('stageLabel').textContent = (current.revote ? '🔁 Revote · ' : '') +
+    (q.series === 'bg' ? 'Boys & Girls' : q.light === 'custom' ? 'Class question' : q.light === 'red' ? 'Red set' : 'Chapter ' + q.ch + ' · ' + (CHAPTERS[q.ch] || ''));
+  $('stageQ').textContent = q.q;
+  $('stageNote').classList.toggle('hidden', !q.note);
+  if (q.note) $('stageNote').textContent = '🛑 Teacher note: ' + q.note;
+
+  const t = tallyOf(lastRes);
+  let html;
+  if (phase === 'question'){
+    html = $('hideLive').checked
+      ? '<div class="hiddenres">🤫 Results hidden until voting closes · '+(t.A+t.B)+' of '+lastState.player_count+' voted</div>'
+      : barsHTML(q, t);
+  } else {
+    const fin = rounds[current.qi] || t;
+    if (current.revote && rounds[current.qi - 1]){
+      const before = rounds[current.qi - 1], b = pctA(before), a = pctA(fin);
+      let shift = '';
+      if (b != null && a != null){
+        const d = a - b;
+        shift = d === 0 ? 'No change overall.'
+          : '“' + esc(q.a) + '” went from <b>' + b + '%</b> to <b>' + a + '%</b> ' + (d > 0 ? '⬆' : '⬇');
+      }
+      html = '<div class="compare"><div><h3>Before discussion</h3>'+barsHTML(q, before)+'</div><div><h3>After discussion</h3>'+barsHTML(q, fin)+'</div></div>'+
+             '<div class="shift">'+shift+'</div>';
+    } else html = barsHTML(q, fin);
+  }
+  $('results').innerHTML = html;
+
+  $('closeBtn').classList.toggle('hidden', phase !== 'question');
+  $('revoteBtn').classList.toggle('hidden', !(phase === 'reveal' && !current.revote));
+  $('nextBtn').classList.toggle('hidden', phase !== 'reveal');
+}
+
+// ---------- host actions ----------
+async function act(fn){
+  if (busy) return; busy = true;
+  try { await fn(); } catch(e){ $('gameErr').textContent = e.message; }
+  finally { busy = false; poll(); }
+}
+function nextIndex(){ return lastState ? Math.max(lastState.q_index, current ? current.qi : -1) + 1 : 0; }
+
+async function startVote(q, revote){
+  const qi = nextIndex();
+  const payload = { prompt: q.q, choices: [q.a, q.b], light: q.light, revote: !!revote };
+  const ok = await rpc('host_set_question', { p_session_id: S.sid, p_host_token: S.tok, p_q_index: qi,
+    p_question: payload, p_answer_key: null, p_seconds: null });
+  if (!ok) throw new Error('The server did not accept that. The game may have ended.');
+  current = { q, qi, revote: !!revote }; used.add(q.id);
+  lastState = Object.assign({}, lastState, { phase:'question', q_index: qi, answer_count: 0 });
+  lastRes = Object.assign({}, lastRes, { tally:{} });
+  saveS(); showView();
+}
+
+$('startBtn').onclick = startGame;
+$('pass').addEventListener('keydown', e => { if (e.key === 'Enter') startGame(); });
+$('set').onchange = () => { selected = null; renderList(); updateVoteBtn(); };
+['cq','ca','cb'].forEach(id => $(id).addEventListener('input', updateVoteBtn));
+$('unlockBtn').onclick = async () => {
+  $('unlockErr').textContent = '';
+  try { const d = await decryptRed($('redPass').value); RED = d.Q; $('redPass').value=''; renderList(); }
+  catch(e){ $('unlockErr').textContent = 'Wrong passcode.'; }
+};
+$('voteBtn').onclick = () => act(async () => {
+  const q = $('set').value === 'custom' ? customQ() : selected;
+  if (q) await startVote(q, false);
+});
+$('closeBtn').onclick = () => act(async () => {
+  const res = await rpc('host_get_results', { p_session_id: S.sid, p_host_token: S.tok });
+  rounds[current.qi] = tallyOf(res);
+  if (!await rpc('host_set_phase', { p_session_id: S.sid, p_host_token: S.tok, p_phase: 'reveal' })) throw new Error('Could not close voting.');
+  lastState = Object.assign({}, lastState, { phase:'reveal' }); saveS(); showView();
+});
+$('revoteBtn').onclick = () => act(async () => { await startVote(current.q, true); });
+$('nextBtn').onclick = () => act(async () => {
+  await rpc('host_set_phase', { p_session_id: S.sid, p_host_token: S.tok, p_phase: 'lobby' });
+  current = null; selected = null; lastState = Object.assign({}, lastState, { phase:'lobby' });
+  saveS(); renderList(); updateVoteBtn(); showView();
+});
+async function endGame(){
+  if (!confirmEnd()) return;
+  await act(async () => { await rpc('host_set_phase', { p_session_id: S.sid, p_host_token: S.tok, p_phase: 'ended' }); });
+  gameGone(); $('setupErr').textContent = 'Game ended.';
+}
+// two-tap confirm instead of a browser dialog
+let endArmed = 0;
+function confirmEnd(){
+  const now = Date.now();
+  if (now - endArmed < 4000) return true;
+  endArmed = now; ['endBtn','endBtn2'].forEach(id => { $(id).textContent = 'Tap again to end'; });
+  setTimeout(() => ['endBtn','endBtn2'].forEach(id => { $(id).textContent = 'End game'; }), 4000);
+  return false;
+}
+$('endBtn').onclick = endGame; $('endBtn2').onclick = endGame;
+$('hideLive').onchange = showView;
+
+buildSets(); renderList();
+loadS();
+if (S) enterGame();
+</script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Join Live Game — Dopp's Class</title>
+<meta name="description" content="Join a live class game in Dopp's Class with the code on the screen.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0a0618;--panel:#160f2e;--text:#f4efff;--dim:#b9b0d6}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,var(--bg) 65%) fixed;color:var(--text);font-family:Nunito,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:520px;margin:0 auto;padding:22px 16px 40px;min-height:100vh;display:flex;flex-direction:column}
+h1{font-family:Cinzel,serif;color:var(--gold);text-shadow:0 2px 0 #000,0 0 14px rgba(255,215,0,.3);font-size:28px;text-align:center}
+.sub{color:var(--dim);text-align:center;margin-top:6px}
+.card{background:var(--panel);border:1px solid rgba(255,215,0,.25);border-radius:16px;padding:20px;margin-top:20px}
+label{display:block;font-weight:800;margin:14px 0 6px}
+input{width:100%;font:inherit;font-size:20px;padding:14px;border-radius:12px;border:1px solid #4a3d78;background:#0b0716;color:var(--text)}
+#code{font-family:Cinzel,serif;font-weight:900;letter-spacing:8px;text-align:center;font-size:30px}
+button{font:inherit;font-weight:900;font-size:19px;padding:15px 18px;border-radius:14px;border:0;cursor:pointer;width:100%;margin-top:16px}
+button:disabled{opacity:.5}
+.btn-gold{background:var(--gold);color:#2a1d00}
+.btn-em{background:var(--emerald);color:#03261a}
+.btn-ghost{background:transparent;border:1px solid #5b4d8c;color:var(--text);font-size:16px;padding:12px}
+.err{color:var(--crimson);font-weight:800;margin-top:12px;min-height:1.2em;text-align:center}
+.or{text-align:center;color:var(--dim);margin-top:14px;font-weight:700}
+.hidden{display:none!important}
+.center{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center}
+.big{font-size:26px;font-weight:900;line-height:1.25}
+.emoji{font-size:64px;margin-bottom:10px}
+.dim{color:var(--dim)}
+.who{text-align:center;color:var(--dim);font-weight:800;font-size:14px}
+.who b{color:var(--gold)}
+.prompt{font-size:24px;font-weight:900;line-height:1.25;margin:16px 0 6px;text-align:center}
+.choices{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.choice{min-height:84px;font-size:22px;text-align:center;border:3px solid transparent;color:#fff;text-shadow:0 2px 2px rgba(0,0,0,.5);margin:0}
+.choice.c0{background:linear-gradient(135deg,#1d7fb0,var(--sky))}
+.choice.c1{background:linear-gradient(135deg,#b0213c,var(--crimson))}
+.choice.c2{background:linear-gradient(135deg,#a88a00,var(--gold));color:#1c1400;text-shadow:none}
+.choice.c3{background:linear-gradient(135deg,#00875e,var(--emerald));color:#02251a;text-shadow:none}
+.choice.picked{border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.35),0 0 24px rgba(255,255,255,.35)}
+.choice.faded{opacity:.45}
+.hint{text-align:center;color:var(--dim);margin-top:14px;font-weight:700}
+.pill{display:inline-block;padding:6px 14px;border-radius:99px;background:#0b0716;border:1px solid #4a3d78;font-weight:900;margin-top:12px}
+a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⚔️ Live Game</h1>
+
+  <!-- join -->
+  <section id="v-join">
+    <p class="sub">Enter the code on the screen.</p>
+    <div class="card">
+      <label for="code">Game code</label>
+      <input id="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="000000">
+      <div id="questBox" class="hidden">
+        <button class="btn-em" id="questBtn">Join as <span id="questName">me</span></button>
+        <div class="or">or use a nickname</div>
+      </div>
+      <label for="nick">Nickname</label>
+      <input id="nick" maxlength="20" autocomplete="off" placeholder="Pick a nickname">
+      <button class="btn-gold" id="joinBtn">Join game</button>
+      <div class="err" id="joinErr"></div>
+    </div>
+    <p class="hint"><a href="index.html">← Back to Dopp's Class</a></p>
+  </section>
+
+  <!-- in game -->
+  <section id="v-game" class="hidden" style="flex:1;display:flex;flex-direction:column">
+    <div class="who" style="margin-top:10px">Playing as <b id="meName"></b></div>
+    <div id="screen" class="center"></div>
+    <div class="err" id="gameErr"></div>
+    <button class="btn-ghost" id="leaveBtn">Leave game</button>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRIMESTER = '2026-T1';
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LETTERS = ['A','B','C','D'];
+
+let P = null;          // {sid, pid, tok, code, name}
+let st = null, timer = null, sending = false, pendingPick = null, lastKey = '';
+
+function store(k, v){ try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+function read(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(e){ return null; } }
+function quest(){
+  try {
+    const studentId = localStorage.getItem('qSID_' + TRIMESTER), pinHash = sessionStorage.getItem('qPIN_' + TRIMESTER);
+    return studentId && pinHash ? { studentId, pinHash } : null;
+  } catch(e){ return null; }
+}
+async function rpc(name, args){
+  const { data, error } = await db.rpc(name, args);
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+// ---------- join ----------
+async function join(useQuest){
+  $('joinErr').textContent = '';
+  if (!db){ $('joinErr').textContent = 'Could not reach the game. Check your internet.'; return; }
+  const code = $('code').value.replace(/\D/g, '');
+  if (code.length !== 6){ $('joinErr').textContent = 'The code has 6 numbers.'; return; }
+  const nick = $('nick').value.trim();
+  const q = useQuest ? quest() : null;
+  if (!q && !nick){ $('joinErr').textContent = 'Type a nickname first.'; return; }
+  $('joinBtn').disabled = $('questBtn').disabled = true;
+  try {
+    const args = { p_join_code: code, p_nickname: nick || 'Player' };
+    if (q) Object.assign(args, { p_student_id: q.studentId, p_pin_hash: q.pinHash, p_trimester: TRIMESTER });
+    const r = (await rpc('join_live_session', args))[0];
+    P = { sid: r.session_id, pid: r.player_id, tok: r.player_token, code, name: null, team: r.team };
+    if (!q) store('live_nick', nick);
+    store('live_player', P);
+    startGame();
+  } catch(e){
+    const m = e.message || '';
+    $('joinErr').innerHTML = /No game/.test(m) ? 'No game with that code. Check the screen.'
+      : /needs your Quest login/.test(m) ? 'This game needs your Quest login. <a href="quest.html">Sign in here</a>, then come back.'
+      : /Login expired/.test(m) ? 'Your Quest login expired. <a href="quest.html">Sign in again</a>.'
+      : /full/.test(m) ? 'This game is full.'
+      : esc(m);
+  } finally { $('joinBtn').disabled = $('questBtn').disabled = false; }
+}
+
+function showJoin(msg){
+  clearInterval(timer); P = null; store('live_player', null);
+  $('v-game').classList.add('hidden'); $('v-join').classList.remove('hidden'); $('leaveBtn').textContent = 'Leave game';
+  $('joinErr').textContent = msg || '';
+  const q = quest();
+  $('questBox').classList.toggle('hidden', !q);
+}
+
+// ---------- game ----------
+function startGame(){
+  $('v-join').classList.add('hidden'); $('v-game').classList.remove('hidden');
+  $('meName').textContent = P.name || '…';
+  lastKey = ''; st = null;
+  poll(); clearInterval(timer); timer = setInterval(poll, 1500);
+}
+
+async function poll(){
+  if (!P || sending) return;
+  try {
+    const s = await rpc('get_live_state', { p_session_id: P.sid, p_player_id: P.pid, p_player_token: P.tok });
+    $('gameErr').textContent = '';
+    if (!s){ showJoin('That game is over.'); return; }
+    if (!s.me){ showJoin('You were signed in on another device. Join again here.'); return; }
+    st = s; P.name = s.me.nickname; $('meName').textContent = s.me.nickname + (s.me.team ? ' · Team ' + s.me.team : '');
+    render();
+  } catch(e){ $('gameErr').textContent = 'Connection trouble… retrying'; }
+}
+
+function render(){
+  const s = st, q = s.question || {}, mine = pendingPick != null ? pendingPick : s.me.my_answer;
+  const isPoll = s.game_type === 'pick_a_side';
+  // only rebuild when something visible changed
+  const key = [s.phase, s.q_index, mine, s.me.my_correct, s.me.score].join('|');
+  if (key === lastKey) return; lastKey = key;
+  const scr = $('screen');
+
+  if (s.phase === 'lobby'){
+    scr.innerHTML = '<div class="emoji">🛡️</div><div class="big">You\'re in!</div><p class="dim" style="margin-top:8px">Watch the screen. The question will pop up here.</p>';
+  } else if (s.phase === 'question'){
+    const choices = q.choices || [];
+    scr.innerHTML = (q.revote ? '<div class="pill">🔁 Revote: did the discussion change your mind?</div>' : '') +
+      '<div class="prompt">' + esc(q.prompt) + '</div>' +
+      '<div class="choices">' + choices.map((c, i) =>
+        '<button class="choice c' + i + (mine === LETTERS[i] ? ' picked' : mine ? ' faded' : '') + '" data-a="' + LETTERS[i] + '"' +
+        (!isPoll && mine ? ' disabled' : '') + '>' + esc(c) + '</button>').join('') + '</div>' +
+      '<p class="hint">' + (mine ? (isPoll ? '✅ Vote in! You can change it until voting closes.' : '✅ Answer locked in!') : 'Tap your answer') + '</p>';
+    scr.querySelectorAll('.choice').forEach(b => b.onclick = () => vote(b.dataset.a));
+  } else if (s.phase === 'reveal' || s.phase === 'leaderboard'){
+    const idx = LETTERS.indexOf(mine), pick = idx >= 0 && q.choices ? q.choices[idx] : null;
+    if (isPoll){
+      scr.innerHTML = '<div class="emoji">🗳️</div><div class="big">Voting closed</div>' +
+        (pick ? '<p class="dim" style="margin-top:10px">You picked</p><div class="pill">' + esc(pick) + '</div>' : '<p class="dim" style="margin-top:10px">You didn\'t vote this time.</p>') +
+        '<p class="dim" style="margin-top:16px">Look at the screen to see how the class voted.</p>';
+    } else {
+      const c = s.me.my_correct;
+      scr.innerHTML = '<div class="emoji">' + (c ? '🎉' : mine ? '💥' : '⏰') + '</div><div class="big">' + (c ? 'Correct!' : mine ? 'Not this time' : 'Time\'s up') + '</div>' +
+        '<div class="pill">Score: ' + s.me.score + '</div>';
+    }
+  } else {
+    scr.innerHTML = '<div class="emoji">🏁</div><div class="big">Game over</div><p class="dim" style="margin-top:8px">Thanks for playing!</p>';
+    clearInterval(timer); store('live_player', null); $('leaveBtn').textContent = 'Join another game';
+  }
+}
+
+async function vote(letter){
+  if (!st || st.phase !== 'question' || sending) return;
+  sending = true; pendingPick = letter; lastKey = ''; render();
+  try {
+    const ok = await rpc('submit_live_answer', { p_player_id: P.pid, p_player_token: P.tok, p_q_index: st.q_index, p_answer: letter });
+    if (!ok) $('gameErr').textContent = 'Voting is closed for that one.';
+    else st.me.my_answer = letter;
+  } catch(e){ $('gameErr').textContent = 'Did not send. Tap again.'; }
+  finally { pendingPick = null; sending = false; lastKey = ''; poll(); }
+}
+
+// ---------- wire up ----------
+$('joinBtn').onclick = () => join(false);
+$('questBtn').onclick = () => join(true);
+$('nick').addEventListener('keydown', e => { if (e.key === 'Enter') join(false); });
+$('code').addEventListener('input', () => { $('code').value = $('code').value.replace(/\D/g, '').slice(0, 6); });
+$('leaveBtn').onclick = () => showJoin('');
+
+(async function init(){
+  const params = new URLSearchParams(location.search);
+  if (params.get('code')) $('code').value = params.get('code').replace(/\D/g, '').slice(0, 6);
+  const nick = read('live_nick'); if (nick) $('nick').value = nick;
+  const q = quest();
+  if (q && db){
+    $('questBox').classList.remove('hidden');
+    try {
+      const r = await rpc('get_student_by_auth', { p_student_id: q.studentId, p_pin_hash: q.pinHash, p_trimester: TRIMESTER });
+      if (r && r[0]) $('questName').textContent = r[0].display_name || 'me';
+      else $('questBox').classList.add('hidden');
+    } catch(e){}
+  }
+  const saved = read('live_player');
+  if (saved && saved.sid && (!params.get('code') || params.get('code') === saved.code)){ P = saved; startGame(); }
+})();
+</script>
+</body>
+</html>
