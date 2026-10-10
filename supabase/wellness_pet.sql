@@ -39,6 +39,20 @@ create table if not exists public.student_pets (
 alter table public.student_pets enable row level security;
 create index if not exists student_pets_trimester on public.student_pets (trimester);
 
+-- Permanent record of every sprite death (kept even after revival).
+create table if not exists public.pet_deaths (
+  id         bigserial primary key,
+  student_id uuid not null references public.students(id) on delete cascade,
+  trimester  text not null,
+  pet_name   text not null,
+  color      text not null,
+  stage      text,
+  died_at    timestamptz not null,
+  revived_at timestamptz
+);
+alter table public.pet_deaths enable row level security;
+create index if not exists pet_deaths_recent on public.pet_deaths (trimester, died_at desc);
+
 -- ---------- private helpers (not callable from the website) ----------
 
 create or replace function public._pet_auth(p_student_id uuid, p_pin_hash text, p_trimester text)
@@ -78,6 +92,13 @@ begin
     end if;
   end loop;
   r.last_tick := r.last_tick + make_interval(hours => h);
+  if not r.alive and r.died_at is not null
+     and not exists (select 1 from public.pet_deaths d
+                     where d.student_id = r.student_id and d.died_at = r.died_at) then
+    insert into public.pet_deaths (student_id, trimester, pet_name, color, stage, died_at)
+    values (r.student_id, r.trimester, r.name, r.color,
+            case when r.care_points = 0 then 'egg' else null end, r.died_at);
+  end if;
   update public.student_pets set
     food = r.food, energy = r.energy, mood = r.mood, clean = r.clean,
     health = r.health, alive = r.alive, died_at = r.died_at, last_tick = r.last_tick
@@ -205,6 +226,8 @@ begin
     if r.revive_progress >= 10 then
       r.alive := true; r.health := 40; r.food := 50; r.energy := 50; r.mood := 50; r.clean := 50;
       r.deaths := r.deaths + 1; r.revive_progress := 0; r.died_at := null;
+      update public.pet_deaths set revived_at = now()
+       where student_id = r.student_id and revived_at is null;
       msg := 'revived';
     else msg := 'revive_progress'; end if;
   else
@@ -265,5 +288,28 @@ begin
     into out
   from public.student_pets p join public.students s on s.id = p.student_id
   where p.trimester = p_trimester;
+  return out;
+end $$;
+
+-- Recently fallen sprites (public): sprite name, owner, when, and whether revived since.
+create or replace function public.pet_fallen(p_trimester text, p_days int default 14)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare sid uuid; out jsonb;
+begin
+  -- bring sprites up to date so fresh deaths are logged
+  for sid in select p.student_id from public.student_pets p where p.trimester = p_trimester and p.alive loop
+    perform public._pet_tick(sid);
+  end loop;
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'name', d.pet_name, 'color', d.color,
+           'owner', coalesce(nullif(btrim(s.display_name), ''), 'Student'),
+           'died_at', d.died_at, 'revived', d.revived_at is not null)
+         order by d.died_at desc), '[]'::jsonb)
+    into out
+  from (select * from public.pet_deaths
+         where trimester = p_trimester
+           and died_at > now() - make_interval(days => least(greatest(coalesce(p_days, 14), 1), 60))
+         order by died_at desc limit 30) d
+  join public.students s on s.id = d.student_id;
   return out;
 end $$;
