@@ -559,6 +559,9 @@ footer {
   </div>
 </div>
 
+<!-- CHAMPIONS (filled by home_champions.js) -->
+<div id="champions"></div>
+
 <!-- QUEST MAP -->
 <div class="section reveal">
   <div class="section-label">The World Map</div>
@@ -855,5 +858,8 @@ const obs = new IntersectionObserver(entries => {
 }, {threshold: 0.08});
 document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="pet_sprite.js"></script>
+<script src="home_champions.js"></script>
 </body>
 </html>

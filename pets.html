@@ -36,6 +36,14 @@ h2{font-family:Cinzel,serif;color:var(--gold);font-size:20px}
 .mini{height:8px;background:#0b0716;border-radius:99px;overflow:hidden;margin:6px 8px 0}
 .mini>div{height:100%;border-radius:99px}
 .cta{display:inline-block;margin-top:10px;background:var(--gold);color:#2a1d00;font-weight:900;padding:10px 16px;border-radius:12px;text-decoration:none}
+.fallen{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.fall{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;background:var(--panel2);border:1px solid #3b2f66;border-radius:12px;padding:6px 12px}
+.fall svg{width:48px;height:48px;display:block}
+.fall b{display:block}
+.fall span{color:var(--dim);font-size:13px;font-weight:700}
+.tagr{font-size:12px;font-weight:900;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.tagr.back{background:rgba(0,229,160,.15);color:var(--emerald);border:1px solid rgba(0,229,160,.4)}
+.tagr.gone{background:rgba(255,59,92,.12);color:#ff8fa3;border:1px solid rgba(255,59,92,.4)}
 select{font:inherit;font-weight:700;padding:8px 10px;border-radius:10px;border:1px solid #4a3d78;background:#0b0716;color:var(--text)}
 </style>
 </head>
@@ -50,6 +58,12 @@ select{font:inherit;font-weight:700;padding:8px 10px;border-radius:10px;border:1
     <h2>❤️ Healthiest Sprites</h2>
     <p class="dim small">Ranked by health right now, then by habit streak. Health drops when sprites are neglected, so the top spots change every day.</p>
     <div class="board" id="board"><p class="dim">Loading…</p></div>
+  </div>
+
+  <div class="panel">
+    <h2>🪦 Recently Fallen</h2>
+    <p class="dim small">Sprites that faded away in the last 14 days. Ten correct chapter answers can bring them back.</p>
+    <div class="fallen" id="fallen"><p class="dim">Loading…</p></div>
   </div>
 
   <div class="panel">
@@ -105,7 +119,24 @@ function renderGallery(){
     '<div class="mini"><div style="width:' + p.health + '%;background:' + col(p.health) + '"></div></div></div>').join('');
   $('empty').style.display = pets.length ? 'none' : 'block';
 }
+function ago(iso){
+  const h = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 3600000));
+  if (h < 1) return 'just now';
+  if (h < 24) return h + ' hour' + (h === 1 ? '' : 's') + ' ago';
+  const d = Math.round(h / 24); return d + ' day' + (d === 1 ? '' : 's') + ' ago';
+}
+async function loadFallen(){
+  const { data, error } = await db.rpc('pet_fallen', { p_trimester: TRIMESTER, p_days: 14 });
+  if (error){ $('fallen').innerHTML = '<p class="dim">Could not load.</p>'; return; }
+  const list = data || [];
+  $('fallen').innerHTML = list.length ? list.map(f =>
+    '<div class="fall">' + petSpriteSVG({ color: f.color, stage: 'child', alive: false, name: f.name }, { tight: true }) +
+    '<div><b>' + esc(f.name) + '</b><span>' + esc(f.owner) + ' · faded ' + ago(f.died_at) + '</span></div>' +
+    '<span class="tagr ' + (f.revived ? 'back">✨ Revived' : 'gone">👻 Still a ghost') + '</span></div>').join('')
+    : '<p class="dim">No sprites have fallen in the last 14 days. 🎉</p>';
+}
 async function load(){
+  loadFallen();
   if (!db){ $('err').textContent = 'Could not reach the server.'; return; }
   const { data, error } = await db.rpc('pet_gallery', { p_trimester: TRIMESTER });
   if (error){ $('err').textContent = 'Could not load sprites: ' + error.message; $('board').innerHTML = ''; return; }

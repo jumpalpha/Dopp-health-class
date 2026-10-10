@@ -19,7 +19,7 @@
   --gold:#FFD700; --gold-dim:#8a6d00; --emerald:#00E5A0; --sky:#38BFFF;
   --crimson:#FF3B5C; --purple:#a855f7; --orange:#FF8C00;
   --bg:#FDFAF2; --card:rgba(28,26,46,0.05); --border:rgba(28,26,46,0.12);
-  --text:#FDFAF2; --dim:rgba(28,26,46,0.65);
+  --text:#1C1A2E; --dim:rgba(28,26,46,0.65);
 }
 * { box-sizing:border-box; margin:0; padding:0; }
 body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
@@ -69,7 +69,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 .podium-avatar { font-size:36px; margin-bottom:8px; }
 .podium-name   { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; word-break:break-word; }
 .podium-period { font-size:11px; color:var(--dim); margin-bottom:8px; }
-.podium-xp     { font-family:'Cinzel',serif; font-size:20px; font-weight:700; color:var(--gold); }
+.podium-xp     { font-family:'Cinzel',serif; font-size:20px; font-weight:700; color:#8a6d00; }
 .podium-tasks  { font-size:11px; color:var(--dim); margin-top:2px; }
 
 /* FILTER */
@@ -78,7 +78,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
   border:1px solid var(--border); background:var(--card); color:var(--dim);
   cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif; }
 .filter-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.18); }
-.filter-btn.active { background:rgba(255,215,0,0.1); border-color:rgba(255,215,0,0.35); color:var(--gold); }
+.filter-btn.active { background:rgba(255,215,0,0.18); border-color:rgba(138,109,0,0.5); color:#6b5400; }
 .refresh-btn { margin-left:auto; padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700;
   border:1px solid var(--border); background:var(--card); color:var(--dim);
   cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif; }
@@ -158,16 +158,13 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
     </div>
   </div>
 
-  <div class="filter-bar">
-    <button class="filter-btn active" onclick="setFilter('all',this)">All Periods</button>
-    <button class="filter-btn" onclick="setFilter('PERIOD1',this)">Period 1</button>
-    <button class="filter-btn" onclick="setFilter('PERIOD2',this)">Period 2</button>
-    <button class="filter-btn" onclick="setFilter('PERIOD3',this)">Period 3</button>
-    <button class="filter-btn" onclick="setFilter('PERIOD4',this)">Period 4</button>
-    <button class="filter-btn" onclick="setFilter('PERIOD5',this)">Period 5</button>
-    <button class="filter-btn" onclick="setFilter('PERIOD6',this)">Period 6</button>
-    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-btn active" data-p="all">All Periods</button>
+    <button class="refresh-btn" onclick="loadData(true)">↻ Refresh</button>
   </div>
+  <label style="display:flex;align-items:center;gap:8px;justify-content:center;margin:-6px 0 14px;font-size:13px;font-weight:700;color:var(--dim);cursor:pointer">
+    <input type="checkbox" id="show-all" style="width:16px;height:16px"> Show students with no quests yet
+  </label>
 
   <div class="lb-card">
     <table class="lb-table">
@@ -196,8 +193,6 @@ const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
 const TRIMESTER    = '2026-T1';
 const XP_PER_TASK  = 25;
 const TOTAL_TASKS  = 90;
-const PERIOD_LABELS = {PERIOD1:'Period 1',PERIOD2:'Period 2',PERIOD3:'Period 3',
-  PERIOD4:'Period 4',PERIOD5:'Period 5',PERIOD6:'Period 6',TEST:'Test'};
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -205,40 +200,72 @@ let allData  = [];
 let lbFilter = 'all';
 let refreshInterval;
 
-async function loadData() {
-  document.getElementById('lb-body').innerHTML =
-    '<tr><td colspan="7" class="lb-empty">⏳ Summoning heroes…</td></tr>';
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// "2627T1P4" -> "P4" -> "Period 4"
+const periodKey = code => { const m = String(code || '').match(/P(\d+)$/i); return m ? 'P' + m[1] : null; };
+const periodLabel = code => { const k = periodKey(code); return k ? 'Period ' + k.slice(1) : String(code || ''); };
+const isTest = code => /test/i.test(String(code || ''));
+// Idaho calendar date, YYYY-MM-DD
+const idahoDate = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver' }).format(d);
+
+function streakFrom(daySet){
+  // counts back from today, or from yesterday if today isn't logged yet
+  const d = new Date();
+  if (!daySet.has(idahoDate(d))) d.setDate(d.getDate() - 1);
+  let n = 0;
+  while (daySet.has(idahoDate(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+async function loadData(showLoading) {
+  if (showLoading || !allData.length)
+    document.getElementById('lb-body').innerHTML = '<tr><td colspan="7" class="lb-empty">⏳ Summoning heroes…</td></tr>';
 
   const { data, error } = await db.rpc('get_leaderboard_data', { p_trimester: TRIMESTER });
-
   if (error) {
-    document.getElementById('lb-body').innerHTML =
+    if (!allData.length) document.getElementById('lb-body').innerHTML =
       '<tr><td colspan="7" class="lb-empty">Could not load data. Try refreshing.</td></tr>';
+    startCountdown();
     return;
   }
 
-  allData = (data || []).map(s => {
+  allData = (data || []).filter(s => !isTest(s.class_code)).map(s => {
     const daySet = new Set(s.day_dates || []);
-    let streak = 0, d = new Date();
-    while (daySet.has(d.toISOString().slice(0,10))) { streak++; d.setDate(d.getDate()-1); }
     const tasks = Number(s.task_count || 0);
     return {
-      id: s.id,
-      display_name: s.display_name,
-      avatar: s.avatar,
-      class_code: s.class_code,
-      tasks,
-      xp: tasks * XP_PER_TASK,
-      days: daySet.size,
-      streak,
+      id: s.id, display_name: s.display_name, avatar: s.avatar, class_code: s.class_code,
+      tasks, xp: tasks * XP_PER_TASK, days: daySet.size, streak: streakFrom(daySet)
     };
-  }).sort((a, b) => b.xp - a.xp);
+  }).sort((a, b) => b.xp - a.xp || b.streak - a.streak || b.days - a.days);
 
+  buildFilters();
   render();
   startCountdown();
 }
+
+function buildFilters(){
+  const keys = [...new Set(allData.map(s => periodKey(s.class_code)).filter(Boolean))]
+    .sort((a, b) => +a.slice(1) - +b.slice(1));
+  const bar = document.getElementById('filter-bar');
+  const want = ['all'].concat(keys).join(',');
+  if (bar.dataset.built === want) return;
+  bar.dataset.built = want;
+  bar.querySelectorAll('.filter-btn').forEach(b => b.remove());
+  const refresh = bar.querySelector('.refresh-btn');
+  ['all'].concat(keys).forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'filter-btn' + (k === lbFilter ? ' active' : '');
+    b.dataset.p = k;
+    b.textContent = k === 'all' ? 'All Periods' : 'Period ' + k.slice(1);
+    b.onclick = () => setFilter(k, b);
+    bar.insertBefore(b, refresh);
+  });
+}
+
 function render() {
-  const rows = lbFilter === 'all' ? allData : allData.filter(s => s.class_code === lbFilter);
+  const showAll = document.getElementById('show-all').checked;
+  let rows = lbFilter === 'all' ? allData : allData.filter(s => periodKey(s.class_code) === lbFilter);
+  if (!showAll) rows = rows.filter(s => s.tasks > 0 || s.days > 0);
   renderPodium(rows);
   renderTable(rows);
 }
@@ -248,7 +275,7 @@ function renderPodium(rows) {
     const s = rows[pos-1];
     document.getElementById(`pod-${pos}-avatar`).textContent = s ? s.avatar || '⚔' : '—';
     document.getElementById(`pod-${pos}-name`).textContent   = s ? s.display_name : '—';
-    document.getElementById(`pod-${pos}-period`).textContent = s ? (PERIOD_LABELS[s.class_code] || s.class_code) : '—';
+    document.getElementById(`pod-${pos}-period`).textContent = s ? periodLabel(s.class_code) : '—';
     document.getElementById(`pod-${pos}-xp`).textContent     = s ? s.xp.toLocaleString() + ' XP' : '—';
     document.getElementById(`pod-${pos}-tasks`).textContent  = s ? s.tasks + ' tasks done' : '';
   });
@@ -257,26 +284,28 @@ function renderPodium(rows) {
 function renderTable(rows) {
   const tbody = document.getElementById('lb-body');
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="lb-empty">No heroes found for this period yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="lb-empty">' +
+      (document.getElementById('show-all').checked ? 'No heroes found for this period yet.' : 'No quests completed yet in this group. Check “Show students with no quests yet” to see everyone.') +
+      '</td></tr>';
     return;
   }
   const rankIcon = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':
     `<span style="font-family:'Cinzel',serif;color:var(--dim)">${i+1}</span>`;
   tbody.innerHTML = rows.map((s,i) => {
-    const pct = Math.round(s.tasks / TOTAL_TASKS * 100);
+    const pct = Math.min(100, Math.round(s.tasks / TOTAL_TASKS * 100));
     return `<tr>
       <td style="text-align:center">${rankIcon(i)}</td>
-      <td style="font-size:20px">${s.avatar || '⚔'}</td>
-      <td style="font-weight:700;color:var(--text)">${s.display_name}</td>
-      <td style="font-size:12px;color:var(--dim)">${PERIOD_LABELS[s.class_code] || s.class_code}</td>
-      <td style="font-family:'Cinzel',serif;font-weight:700;color:var(--gold)">${s.xp.toLocaleString()}</td>
+      <td style="font-size:20px">${esc(s.avatar || '⚔')}</td>
+      <td style="font-weight:700;color:var(--text)">${esc(s.display_name)}</td>
+      <td style="font-size:12px;color:var(--dim)">${esc(periodLabel(s.class_code))}</td>
+      <td style="font-family:'Cinzel',serif;font-weight:700;color:#8a6d00">${s.xp.toLocaleString()}</td>
       <td>
         <div style="display:flex;align-items:center;gap:6px">
           <div class="progress-mini"><div class="progress-mini-fill" style="width:${pct}%"></div></div>
           <span style="font-size:11px;color:var(--dim)">${pct}%</span>
         </div>
       </td>
-      <td style="color:${s.streak>0?'var(--emerald)':'var(--dim)'}">${s.streak>0?'🔥 '+s.streak:'—'}</td>
+      <td style="color:${s.streak>0?'#0a8f63':'var(--dim)'};font-weight:700">${s.streak>0?'🔥 '+s.streak:'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -287,6 +316,7 @@ function setFilter(val, el) {
   el.classList.add('active');
   render();
 }
+document.getElementById('show-all').onchange = render;
 
 function startCountdown() {
   clearInterval(refreshInterval);
@@ -295,7 +325,7 @@ function startCountdown() {
   note.textContent = `Auto-refreshes in ${secs}s`;
   refreshInterval = setInterval(() => {
     secs--;
-    if (secs <= 0) { clearInterval(refreshInterval); loadData(); }
+    if (secs <= 0) { clearInterval(refreshInterval); loadData(false); }
     else note.textContent = `Auto-refreshes in ${secs}s`;
   }, 1000);
 }
