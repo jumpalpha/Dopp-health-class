@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wellness Sprite — Dopp's Class</title>
+<meta name="description" content="Raise your own Wellness Sprite all trimester with real healthy habits and chapter knowledge.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0a0618;--panel:#160f2e;--panel2:#0f0a22;--line:rgba(255,215,0,.22);--text:#f4efff;--dim:#b9b0d6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#1d3a2e 0%,#170f33 45%,var(--bg) 80%) fixed;color:var(--text);font-family:Nunito,system-ui,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:18px 16px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-family:Cinzel,serif;color:var(--gold);text-shadow:0 2px 0 #000,0 0 14px rgba(255,215,0,.3);font-size:clamp(24px,4vw,34px)}
+.links a{color:var(--gold);font-weight:800;text-decoration:none;margin-left:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
+h2{font-family:Cinzel,serif;color:var(--gold);font-size:19px;margin-bottom:4px}
+.dim{color:var(--dim)} .small{font-size:14px}
+.hidden{display:none!important}
+button{font:inherit;font-weight:900;border:0;border-radius:12px;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.btn{padding:12px 18px;font-size:16px}
+.btn-gold{background:var(--gold);color:#2a1d00}.btn-em{background:var(--emerald);color:#03261a}.btn-ghost{background:transparent;color:var(--text);border:1px solid #5b4d8c}
+input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;border:1px solid #4a3d78;background:#0b0716;color:var(--text);width:100%}
+.err{color:var(--crimson);font-weight:800;min-height:1.2em;margin-top:8px}
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:16px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.stage{position:relative;background:radial-gradient(circle at 50% 80%,#2a5a3a 0%,#1a2f2a 45%,#0f1a22 100%);border:1px solid rgba(0,229,160,.3);border-radius:16px;padding:10px;text-align:center;overflow:hidden}
+.stage svg{width:100%;max-width:300px;height:auto;display:block;margin:0 auto}
+.bubble{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#fff;color:#1a1030;font-weight:900;font-size:15px;padding:6px 12px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.3);max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.bubble:after{content:"";position:absolute;bottom:-7px;left:50%;margin-left:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+.petname{font-family:Cinzel,serif;font-weight:900;font-size:24px;color:var(--gold);text-shadow:0 2px 0 #000;margin-top:6px}
+.chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.chip{background:var(--panel2);border:1px solid #3b2f66;border-radius:99px;padding:4px 10px;font-size:13px;font-weight:800}
+.bars{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+.bar{display:grid;grid-template-columns:86px 1fr 38px;align-items:center;gap:8px;font-weight:800;font-size:14px}
+.track{height:14px;background:#0b0716;border:1px solid #3b2f66;border-radius:99px;overflow:hidden}
+.fill{height:100%;border-radius:99px;transition:width .5s}
+.status{margin-top:12px;font-weight:800;text-align:center}
+/* habits */
+.habits{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.habit{background:var(--panel2);border:2px solid #3b2f66;color:var(--text);padding:12px 10px;text-align:left;font-size:15px;line-height:1.25;min-height:76px;position:relative}
+.habit .ico{font-size:24px;display:block;margin-bottom:4px}
+.habit .cnt{position:absolute;top:8px;right:10px;font-size:12px;color:var(--dim)}
+.habit.done{border-color:var(--emerald);background:rgba(0,229,160,.1)}
+.habit.done .cnt{color:var(--emerald)}
+/* quiz */
+.quiz-def{background:var(--panel2);border-left:4px solid var(--sky);padding:12px 14px;border-radius:8px;font-size:17px;font-weight:700;line-height:1.4;margin:12px 0}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.opts{grid-template-columns:1fr}}
+.opt{background:#22184a;border:2px solid #4a3d78;color:var(--text);padding:13px;font-size:16px;text-align:center}
+.opt.right{background:rgba(0,229,160,.18);border-color:var(--emerald)}
+.opt.wrong{background:rgba(255,59,92,.18);border-color:var(--crimson)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.feedback{font-weight:900;margin-top:10px;min-height:1.3em}
+.extras{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.revive{border-color:rgba(255,215,0,.6);background:linear-gradient(180deg,rgba(255,215,0,.08),var(--panel))}
+.progress{height:16px;background:#0b0716;border:1px solid #4a3d78;border-radius:99px;overflow:hidden;margin-top:8px}
+.progress>div{height:100%;background:linear-gradient(90deg,#b98a00,var(--gold));transition:width .4s}
+/* hatch */
+.swatches{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.sw{width:84px;padding:4px;background:var(--panel2);border:2px solid #3b2f66;border-radius:12px}
+.sw.sel{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,215,0,.3)}
+.sw svg{width:100%;height:auto;display:block}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#fff;color:#1a1030;font-weight:900;padding:10px 16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:50;max-width:92vw;text-align:center}
+/* sprite motion */
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes jit{0%,100%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}75%{transform:translate(2px,-1px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.anim-happy{animation:bob 1.8s ease-in-out infinite}
+.anim-egg{animation:wob 2.4s ease-in-out infinite;transform-origin:50% 90%}
+.anim-sugar{animation:jit .25s linear infinite}
+.anim-ghost{animation:float 3s ease-in-out infinite}
+.anim-slow{animation:bob 3.5s ease-in-out infinite}
+.pop{animation:pop .45s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){.anim-happy,.anim-egg,.anim-sugar,.anim-ghost,.anim-slow,.pop{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>🌱 Wellness Sprite</h1>
+    <div class="links"><a href="pets.html">🏆 Sprite Gallery</a><a href="index.html">🏠 Home</a></div>
+  </div>
+
+  <!-- not signed in -->
+  <section id="v-login" class="panel hidden">
+    <h2>Sign in to raise your sprite</h2>
+    <p class="dim" style="margin:6px 0 14px">Your Wellness Sprite lives on your Quest account, so it follows you to any device. Sign in on the Quest page, then come back here.</p>
+    <a href="quest.html"><button class="btn btn-gold">⚔ Go to Quest sign-in</button></a>
+  </section>
+
+  <!-- loading -->
+  <section id="v-loading" class="panel"><p class="dim">Loading your sprite…</p></section>
+
+  <!-- hatch -->
+  <section id="v-hatch" class="panel hidden">
+    <h2>Choose your egg</h2>
+    <p class="dim small">Your sprite grows all trimester through the life stages: baby, child, teen, and adult. How you care for it decides what kind of adult it becomes. Stay healthy and it thrives. Ignore it for 5 days and it fades away.</p>
+    <div class="swatches" id="swatches"></div>
+    <label for="petName" style="font-weight:800;display:block;margin:6px 0">Name your sprite</label>
+    <input id="petName" maxlength="16" placeholder="e.g. Sprout" autocomplete="off" style="max-width:320px">
+    <div class="row" style="margin-top:12px"><button class="btn btn-gold" id="hatchBtn">🥚 Get my egg</button></div>
+    <div class="err" id="hatchErr"></div>
+  </section>
+
+  <!-- pet -->
+  <section id="v-pet" class="hidden">
+    <div class="grid">
+      <div class="panel" style="margin-top:16px">
+        <div class="stage"><div class="bubble" id="bubble"></div><div id="sprite"></div></div>
+        <div style="text-align:center"><div class="petname" id="pName"></div><div class="chips" id="chips"></div></div>
+        <div class="bars" id="bars"></div>
+        <div class="status" id="status"></div>
+        <p class="dim small" style="margin-top:10px;text-align:center" id="growth"></p>
+      </div>
+
+      <div>
+        <div class="panel revive hidden" id="revivePanel">
+          <h2>👻 <span class="rvName"></span> has faded away…</h2>
+          <p class="dim small">Answer <b>10 chapter questions</b> correctly to bring your sprite back. Each right answer adds a spark of life.</p>
+          <div class="progress"><div id="reviveBar" style="width:0"></div></div>
+          <p class="small" style="margin-top:6px;font-weight:800"><span id="reviveTxt">0 / 10</span> sparks</p>
+        </div>
+
+        <div class="panel" id="habitPanel">
+          <h2>Today's healthy habits</h2>
+          <p class="dim small">Did you do these in real life today? Be honest. Your sprite feels what you do! Log 3 different habits in a day to grow your streak 🔥.</p>
+          <div class="habits" id="habits"></div>
+        </div>
+
+        <div class="panel" id="quizPanel">
+          <h2>📚 Feed it knowledge</h2>
+          <p class="dim small" id="quizNote">Each right answer is a snack for your sprite (<span id="quizLeft">10</span> left today).</p>
+          <p class="dim small hidden" id="quizRevive">Each right answer adds a spark of life. No daily limit while reviving.</p>
+          <div class="row" style="margin-top:10px">
+            <select id="quizCh" style="flex:1;min-width:200px"></select>
+            <button class="btn btn-em" id="quizBtn">Ask me a question</button>
+          </div>
+          <div id="quizArea" class="hidden">
+            <div class="quiz-def" id="quizDef"></div>
+            <div class="opts" id="quizOpts"></div>
+            <div class="feedback" id="quizFb"></div>
+          </div>
+        </div>
+
+        <div class="panel" id="extraPanel">
+          <h2>Extras</h2>
+          <div class="extras">
+            <button class="btn btn-ghost" id="playBtn">⚽ Play (<span id="playLeft">3</span>)</button>
+            <button class="btn btn-ghost" id="treatBtn">🍩 Sugary treat (<span id="treatLeft">3</span>)</button>
+          </div>
+          <p class="dim small" style="margin-top:8px">Treats make your sprite happy for a moment… but they cost health and energy. Lots of treats can turn it into a sugar-crashed adult.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="err" id="pageErr"></div>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="pet_sprite.js"></script>
+<script src="pet_vocab.js"></script>
+<script>
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRIMESTER = '2026-T1';
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const HABITS = [
+  { k:'meal',     ico:'🥗', label:'Ate a balanced meal',        tip:'Balanced meals give steady energy all day.' },
+  { k:'water',    ico:'💧', label:'Drank 6+ cups of water',     tip:'Even mild dehydration can make it harder to focus.' },
+  { k:'sleep',    ico:'😴', label:'Slept 8+ hours',             tip:'Teens need about 8–10 hours of sleep a night.' },
+  { k:'exercise', ico:'🏃', label:'Moved 30+ minutes',          tip:'Teens need about 60 minutes of activity a day.' },
+  { k:'relax',    ico:'🧘', label:'Did something to de-stress', tip:'Deep breathing and breaks lower stress hormones.' },
+  { k:'hygiene',  ico:'🪥', label:'Brushed teeth / showered',   tip:'Good hygiene helps prevent the spread of germs.' }
+];
+const STAGE_NAME = { egg:'Egg', baby:'Baby', child:'Child', teen:'Teen', adult:'Adult' };
+const FORM_NAME = { radiant:'Radiant ✨', steady:'Steady', scruffy:'Scruffy', sugar:'Sugar-Crashed' };
+const MOOD_TEXT = {
+  happy:  n => n + ' is feeling great!',
+  hungry: n => n + ' is hungry. A balanced meal would help.',
+  tired:  n => n + ' is exhausted. Sleep is the fix.',
+  dirty:  n => n + ' could really use some hygiene.',
+  sad:    n => n + ' feels down. Try some stress relief.',
+  sick:   n => n + ' is sick! Keep up healthy habits to nurse it back.',
+  sugar:  n => n + ' is bouncing off the walls from sugar…',
+  ghost:  n => n + ' has faded away.'
+};
+const BUBBLE = { happy:'Feeling good!', hungry:'So hungry…', tired:'Sooo sleepy…', dirty:'I feel grimy…', sad:'Kinda blue…', sick:'I don\'t feel well…', sugar:'WHEEEE!!!', ghost:'…help me…', egg:'*wobble wobble*' };
+
+let session = null, pet = null, busy = false, chosenColor = 'emerald', quiz = null;
+
+function getSession(){
+  try {
+    const studentId = localStorage.getItem('qSID_' + TRIMESTER), pinHash = sessionStorage.getItem('qPIN_' + TRIMESTER);
+    return studentId && pinHash ? { studentId, pinHash } : null;
+  } catch(e){ return null; }
+}
+async function rpc(name, extra){
+  const { data, error } = await db.rpc(name, Object.assign({ p_student_id: session.studentId, p_pin_hash: session.pinHash, p_trimester: TRIMESTER }, extra || {}));
+  if (error) throw new Error(error.message);
+  return data;
+}
+function show(id){ ['v-login','v-loading','v-hatch','v-pet'].forEach(v => $(v).classList.toggle('hidden', v !== id)); }
+let toastTimer;
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add('hidden'), 3200); }
+function friendly(e){
+  const m = e.message || String(e);
+  if (/Login expired/.test(m)){ show('v-login'); return 'Your login expired. Sign in again on the Quest page.'; }
+  return m;
+}
+
+// ---------- hatch ----------
+function buildSwatches(){
+  $('swatches').innerHTML = PET_COLORS.map(c =>
+    '<button type="button" class="sw' + (c === chosenColor ? ' sel' : '') + '" data-c="' + c + '" aria-label="' + c + ' egg">' +
+    petSpriteSVG({ color:c, stage:'egg' }) + '</button>').join('');
+  $('swatches').querySelectorAll('.sw').forEach(b => b.onclick = () => { chosenColor = b.dataset.c; buildSwatches(); });
+}
+async function hatch(){
+  $('hatchErr').textContent = '';
+  const name = $('petName').value.trim();
+  if (!name){ $('hatchErr').textContent = 'Give your sprite a name first.'; return; }
+  $('hatchBtn').disabled = true;
+  try { pet = await rpc('pet_create', { p_name: name, p_color: chosenColor }); render(); show('v-pet'); toast('Your egg is here! Log a healthy habit or answer a question to hatch it.'); }
+  catch(e){ $('hatchErr').textContent = friendly(e); }
+  finally { $('hatchBtn').disabled = false; }
+}
+
+// ---------- render ----------
+function barColor(v){ return v >= 60 ? 'var(--emerald)' : v >= 30 ? 'var(--gold)' : 'var(--crimson)'; }
+function render(pop){
+  const p = pet, mood = p.alive ? (p.stage === 'egg' ? 'egg' : p.mood_label) : 'ghost';
+  $('sprite').innerHTML = petSpriteSVG(p);
+  const svg = $('sprite').firstChild;
+  svg.classList.add(p.stage === 'egg' ? 'anim-egg' : !p.alive ? 'anim-ghost' : mood === 'sugar' ? 'anim-sugar' : (mood === 'happy' ? 'anim-happy' : 'anim-slow'));
+  if (pop){ $('sprite').classList.remove('pop'); void $('sprite').offsetWidth; $('sprite').classList.add('pop'); }
+  $('bubble').textContent = BUBBLE[mood] || '';
+  $('pName').textContent = p.name;
+  document.querySelectorAll('.rvName').forEach(e => e.textContent = p.name);
+  $('chips').innerHTML =
+    '<span class="chip">' + (p.form ? FORM_NAME[p.form] + ' ' : '') + STAGE_NAME[p.stage] + '</span>' +
+    '<span class="chip">🎂 ' + p.age_days + ' day' + (p.age_days === 1 ? '' : 's') + '</span>' +
+    '<span class="chip">🔥 ' + p.streak + ' day streak</span>' +
+    (p.deaths ? '<span class="chip">👻 revived ' + p.deaths + '×</span>' : '');
+  const bars = [['❤️ Health', p.health], ['🍎 Food', p.food], ['⚡ Energy', p.energy], ['😊 Mood', p.mood], ['🫧 Clean', p.clean]];
+  $('bars').innerHTML = bars.map(([l, v]) =>
+    '<div class="bar"><span>' + l + '</span><div class="track"><div class="fill" style="width:' + v + '%;background:' + barColor(v) + '"></div></div><span>' + v + '</span></div>').join('');
+  $('status').textContent = p.stage === 'egg' && p.alive ? 'Your egg is waiting. Log a habit or answer a question to hatch it!' : (MOOD_TEXT[mood] || MOOD_TEXT.happy)(p.name);
+  // growth hint
+  if (!p.alive) $('growth').textContent = '';
+  else if (p.stage === 'adult') $('growth').textContent = 'Fully grown! Keep it healthy to stay at the top of the gallery.';
+  else if (p.stage === 'egg') $('growth').textContent = '';
+  else {
+    const next = { baby:'Child', child:'Teen', teen:'Adult' }[p.stage];
+    const needPts = Math.max(0, p.next_stage_points - p.care_points), needDays = Math.max(0, p.next_stage_days - p.age_days);
+    $('growth').textContent = 'Next stage: ' + next + ' — ' +
+      (needPts ? needPts + ' more care point' + (needPts === 1 ? '' : 's') : 'care points ✓') + ', ' +
+      (needDays ? needDays + ' more day' + (needDays === 1 ? '' : 's') : 'age ✓') + '.';
+  }
+  // habits
+  const today = p.today || {}, caps = p.caps || {};
+  $('habits').innerHTML = HABITS.map(h => {
+    const n = today[h.k] || 0, cap = caps[h.k] || 1, done = n >= cap;
+    return '<button class="habit' + (n ? ' done' : '') + '" data-k="' + h.k + '"' + (done || !p.alive ? ' disabled' : '') + '>' +
+      '<span class="cnt">' + (n ? '✓ ' : '') + n + '/' + cap + '</span><span class="ico">' + h.ico + '</span>' + esc(h.label) + '</button>';
+  }).join('');
+  $('habits').querySelectorAll('.habit').forEach(b => b.onclick = () => doAction(b.dataset.k));
+  $('habitPanel').classList.toggle('hidden', !p.alive);
+  $('extraPanel').classList.toggle('hidden', !p.alive);
+  $('revivePanel').classList.toggle('hidden', p.alive);
+  $('reviveBar').style.width = (100 * p.revive_progress / p.revive_needed) + '%';
+  $('reviveTxt').textContent = p.revive_progress + ' / ' + p.revive_needed;
+  const left = k => Math.max(0, (caps[k] || 0) - (today[k] || 0));
+  $('quizLeft').textContent = left('quiz');
+  $('playLeft').textContent = left('play'); $('treatLeft').textContent = left('treat');
+  $('playBtn').disabled = !left('play'); $('treatBtn').disabled = !left('treat');
+  $('quizNote').classList.toggle('hidden', !p.alive);
+  $('quizRevive').classList.toggle('hidden', p.alive);
+  $('quizBtn').disabled = p.alive && !left('quiz') && !quiz;
+}
+
+// ---------- actions ----------
+async function doAction(k){
+  if (busy) return; busy = true;
+  const wasStage = pet && pet.stage, wasAlive = pet && pet.alive;
+  try {
+    pet = await rpc('pet_action', { p_action: k });
+    render(true);
+    const h = HABITS.find(x => x.k === k);
+    if (pet.result === 'revived') toast('✨ ' + pet.name + ' is back! Take good care of it this time.');
+    else if (wasStage !== pet.stage) toast(pet.stage === 'baby' ? '🐣 Your egg hatched!' : '🌟 ' + pet.name + ' grew into a ' + STAGE_NAME[pet.stage] + '!');
+    else if (h) toast(h.ico + ' ' + h.tip);
+    else if (k === 'treat') toast('🍩 Yum… but that sugar costs health and energy.');
+    else if (k === 'play') toast('⚽ ' + pet.name + ' had fun!');
+    return true;
+  } catch(e){ toast(friendly(e)); return false; }
+  finally { busy = false; }
+}
+$('playBtn').onclick = () => doAction('play');
+$('treatBtn').onclick = () => doAction('treat');
+
+// ---------- quiz ----------
+function buildChapters(){
+  const o = [];
+  for (const ch in PET_VOCAB) o.push('<option value="' + ch + '">Ch ' + ch + ': ' + esc(PET_VOCAB[ch].title) + '</option>');
+  o.unshift('<option value="any">🎲 Any chapter</option>');
+  $('quizCh').innerHTML = o.join('');
+  try { const s = localStorage.getItem('pet_quiz_ch'); if (s) $('quizCh').value = s; } catch(e){}
+}
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function newQuestion(){
+  let ch = $('quizCh').value;
+  try { localStorage.setItem('pet_quiz_ch', ch); } catch(e){}
+  if (ch === 'any'){ const keys = Object.keys(PET_VOCAB); ch = keys[Math.floor(Math.random() * keys.length)]; }
+  const terms = PET_VOCAB[ch].terms;
+  const pick = terms[Math.floor(Math.random() * terms.length)];
+  const others = shuffle(terms.filter(t => t[0] !== pick[0])).slice(0, 3);
+  const opts = shuffle([pick].concat(others)).map(t => t[0]);
+  // hide the answer if the definition repeats the term
+  const re = new RegExp(pick[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  quiz = { answer: pick[0], def: pick[1].replace(re, '_____'), opts, done: false, ch };
+  $('quizArea').classList.remove('hidden');
+  $('quizDef').textContent = '“' + quiz.def + '”';
+  $('quizFb').textContent = '';
+  $('quizOpts').innerHTML = opts.map((o, i) => '<button class="opt" data-i="' + i + '">' + esc(o) + '</button>').join('');
+  $('quizOpts').querySelectorAll('.opt').forEach(b => b.onclick = () => answer(+b.dataset.i));
+  $('quizBtn').textContent = 'Skip / new question';
+}
+async function answer(i){
+  if (!quiz || quiz.done || busy) return;
+  quiz.done = true;
+  const choice = quiz.opts[i], right = choice === quiz.answer;
+  $('quizOpts').querySelectorAll('.opt').forEach((b, j) => {
+    b.disabled = true;
+    if (quiz.opts[j] === quiz.answer) b.classList.add('right'); else if (j === i) b.classList.add('wrong');
+  });
+  if (right){
+    $('quizFb').style.color = 'var(--emerald)';
+    $('quizFb').textContent = pet.alive ? '✅ Correct! ' + pet.name + ' munches happily.' : '✅ Correct! A spark of life returns…';
+    const ok = await doAction('quiz');
+    if (!ok){ $('quizFb').textContent = '✅ Correct! (No more snacks today, but keep practicing.)'; }
+  } else {
+    $('quizFb').style.color = 'var(--crimson)';
+    $('quizFb').textContent = '❌ Not quite. The answer is “' + quiz.answer + '”. Try another!';
+  }
+  $('quizBtn').textContent = 'Next question ▶';
+  $('quizBtn').disabled = false;
+}
+$('quizBtn').onclick = newQuestion;
+$('hatchBtn').onclick = hatch;
+$('petName').addEventListener('keydown', e => { if (e.key === 'Enter') hatch(); });
+
+// ---------- start ----------
+async function load(){
+  try {
+    pet = await rpc('pet_get');
+    if (!pet){ buildSwatches(); show('v-hatch'); return; }
+    render(); show('v-pet');
+  } catch(e){
+    $('pageErr').textContent = friendly(e);
+    if (!/Login expired/.test(e.message)) show('v-loading');
+  }
+}
+(function init(){
+  buildChapters();
+  if (!db){ $('pageErr').textContent = 'Could not reach the server. Check your internet and refresh.'; return; }
+  session = getSession();
+  if (!session){ show('v-login'); return; }
+  load();
+  setInterval(() => { if (!busy && pet && !document.hidden) rpc('pet_get').then(p => { if (p){ pet = p; render(); } }).catch(() => {}); }, 5 * 60 * 1000);
+})();
+</script>
+</body>
+</html>

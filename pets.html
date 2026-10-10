@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprite Gallery — Dopp's Class</title>
+<meta name="description" content="Every Wellness Sprite in Dopp's Class, and the healthiest sprites of the trimester.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0a0618;--panel:#160f2e;--panel2:#0f0a22;--line:rgba(255,215,0,.22);--text:#f4efff;--dim:#b9b0d6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#1d3a2e 0%,#170f33 45%,var(--bg) 80%) fixed;color:var(--text);font-family:Nunito,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 16px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-family:Cinzel,serif;color:var(--gold);text-shadow:0 2px 0 #000,0 0 14px rgba(255,215,0,.3);font-size:clamp(24px,4vw,34px)}
+h2{font-family:Cinzel,serif;color:var(--gold);font-size:20px}
+.links a{color:var(--gold);font-weight:800;text-decoration:none;margin-left:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
+.dim{color:var(--dim)} .small{font-size:14px}
+.board{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.rank{display:grid;grid-template-columns:40px 56px 1fr auto;gap:12px;align-items:center;background:var(--panel2);border:1px solid #3b2f66;border-radius:12px;padding:6px 12px}
+.rank .n{font-family:Cinzel,serif;font-weight:900;font-size:20px;color:var(--dim);text-align:center}
+.rank:nth-child(1) .n{color:var(--gold)} .rank:nth-child(2) .n{color:#d9d9e6} .rank:nth-child(3) .n{color:#e09a5a}
+.rank svg{width:56px;height:56px;display:block}
+.rank .who b{display:block;font-size:17px}
+.rank .who span{color:var(--dim);font-size:13px;font-weight:700}
+.hp{font-weight:900;font-size:18px;white-space:nowrap}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.card{background:var(--panel2);border:1px solid #3b2f66;border-radius:14px;padding:8px 8px 12px;text-align:center}
+.card svg{width:100%;height:auto;display:block}
+.card .nm{font-weight:900;font-size:16px;color:var(--gold)}
+.card .ow{font-size:13px;color:var(--dim);font-weight:700}
+.card .meta{font-size:12px;font-weight:800;margin-top:4px}
+.mini{height:8px;background:#0b0716;border-radius:99px;overflow:hidden;margin:6px 8px 0}
+.mini>div{height:100%;border-radius:99px}
+.cta{display:inline-block;margin-top:10px;background:var(--gold);color:#2a1d00;font-weight:900;padding:10px 16px;border-radius:12px;text-decoration:none}
+select{font:inherit;font-weight:700;padding:8px 10px;border-radius:10px;border:1px solid #4a3d78;background:#0b0716;color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>🏆 Sprite Gallery</h1>
+    <div class="links"><a href="pet.html">🌱 My Sprite</a><a href="index.html">🏠 Home</a></div>
+  </div>
+
+  <div class="panel">
+    <h2>❤️ Healthiest Sprites</h2>
+    <p class="dim small">Ranked by health right now, then by habit streak. Health drops when sprites are neglected, so the top spots change every day.</p>
+    <div class="board" id="board"><p class="dim">Loading…</p></div>
+  </div>
+
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <h2>Every Sprite</h2>
+      <select id="sort" aria-label="Sort sprites">
+        <option value="health">Healthiest first</option>
+        <option value="streak">Longest streak</option>
+        <option value="age">Oldest first</option>
+        <option value="name">A to Z</option>
+      </select>
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <p class="dim small" id="empty" style="display:none;margin-top:10px">No sprites yet. Be the first! <a class="cta" href="pet.html">🥚 Get my egg</a></p>
+  </div>
+  <p class="dim small" id="err" style="margin-top:10px"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="pet_sprite.js"></script>
+<script>
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRIMESTER = '2026-T1';
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STAGE = { egg:'Egg', baby:'Baby', child:'Child', teen:'Teen', adult:'Adult' };
+const FORM = { radiant:'Radiant', steady:'Steady', scruffy:'Scruffy', sugar:'Sugar-Crashed' };
+let pets = [];
+
+const col = v => v >= 60 ? 'var(--emerald)' : v >= 30 ? 'var(--gold)' : 'var(--crimson)';
+const label = p => p.alive ? ((p.form ? FORM[p.form] + ' ' : '') + STAGE[p.stage]) : '👻 Faded';
+
+function renderBoard(){
+  const top = pets.filter(p => p.alive && p.stage !== 'egg')
+    .sort((a, b) => b.health - a.health || b.streak - a.streak || b.age_days - a.age_days).slice(0, 10);
+  $('board').innerHTML = top.length ? top.map((p, i) =>
+    '<div class="rank"><div class="n">' + (i + 1) + '</div>' + petSpriteSVG(p, { tight: true }) +
+    '<div class="who"><b>' + esc(p.name) + '</b><span>' + esc(p.owner) + ' · ' + label(p) + ' · 🔥 ' + p.streak + '</span></div>' +
+    '<div class="hp" style="color:' + col(p.health) + '">❤️ ' + p.health + '</div></div>').join('')
+    : '<p class="dim">No hatched sprites yet. The board fills up once sprites hatch.</p>';
+}
+function renderGallery(){
+  const s = $('sort').value, list = pets.slice();
+  list.sort(s === 'name' ? (a, b) => a.name.localeCompare(b.name)
+    : s === 'streak' ? (a, b) => b.streak - a.streak || b.health - a.health
+    : s === 'age' ? (a, b) => b.age_days - a.age_days
+    : (a, b) => (b.alive - a.alive) || b.health - a.health || b.streak - a.streak);
+  $('gallery').innerHTML = list.map(p =>
+    '<div class="card">' + petSpriteSVG(p, { tight: true }) + '<div class="nm">' + esc(p.name) + '</div><div class="ow">' + esc(p.owner) + '</div>' +
+    '<div class="meta">' + label(p) + ' · 🔥 ' + p.streak + '</div>' +
+    '<div class="mini"><div style="width:' + p.health + '%;background:' + col(p.health) + '"></div></div></div>').join('');
+  $('empty').style.display = pets.length ? 'none' : 'block';
+}
+async function load(){
+  if (!db){ $('err').textContent = 'Could not reach the server.'; return; }
+  const { data, error } = await db.rpc('pet_gallery', { p_trimester: TRIMESTER });
+  if (error){ $('err').textContent = 'Could not load sprites: ' + error.message; $('board').innerHTML = ''; return; }
+  pets = data || [];
+  renderBoard(); renderGallery();
+}
+$('sort').onchange = renderGallery;
+load();
+setInterval(() => { if (!document.hidden) load(); }, 5 * 60 * 1000);
+</script>
+</body>
+</html>
