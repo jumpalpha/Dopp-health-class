@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Save Test — Dopp's Class</title>
+<style>
+  body { margin:0; min-height:100vh; background:#120c24; color:#f2ecff; font-family:system-ui,sans-serif; display:flex; justify-content:center; padding:24px 16px; box-sizing:border-box; }
+  main { width:100%; max-width:520px; }
+  h1 { color:#FFD700; text-shadow:0 2px 0 #000; margin:0 0 8px; }
+  .status { padding:10px 14px; border-radius:10px; margin:12px 0; background:#1f1640; border:1px solid #38BFFF; }
+  textarea { width:100%; box-sizing:border-box; min-height:90px; border-radius:10px; border:1px solid #444; background:#0b0716; color:#fff; padding:10px; font-size:16px; }
+  button { margin:10px 8px 0 0; padding:10px 18px; font-size:16px; border:0; border-radius:10px; font-weight:700; cursor:pointer; }
+  .save { background:#00E5A0; color:#06261b; } .load { background:#38BFFF; color:#04202f; }
+  #out { white-space:pre-wrap; font-family:monospace; font-size:14px; }
+  a { color:#FFD700; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Save Test</h1>
+  <p>Type a note, save it, then reload the page (or open it on another device) and press Load.</p>
+  <div class="status" id="who"></div>
+  <textarea id="note" placeholder="Type anything..."></textarea>
+  <div>
+    <button class="save" id="saveBtn">Save</button>
+    <button class="load" id="loadBtn">Load</button>
+  </div>
+  <div class="status" id="out">—</div>
+  <p><a href="quest.html">Sign in on the Quest page</a> to save to the cloud.</p>
+</main>
+<script src="student-save.js"></script>
+<script>
+  const out = document.getElementById('out');
+  document.getElementById('who').textContent = StudentSave.isSignedIn()
+    ? 'Signed in — saves go to the cloud.'
+    : 'Not signed in — saves stay on this device only.';
+  document.getElementById('saveBtn').onclick = async () => {
+    const r = await StudentSave.save('save_test', { note: document.getElementById('note').value });
+    out.textContent = r.ok ? 'Saved (' + r.source + ')' : 'Not saved to cloud: ' + r.error + ' (kept on this device)';
+  };
+  document.getElementById('loadBtn').onclick = async () => {
+    const r = await StudentSave.load('save_test');
+    if (r.data) document.getElementById('note').value = r.data.note || '';
+    out.textContent = r.data ? 'Loaded from ' + r.source + (r.updatedAt ? ' — saved ' + new Date(r.updatedAt).toLocaleString() : '') : 'Nothing saved yet.';
+  };
+</script>
+</body>
+</html>
