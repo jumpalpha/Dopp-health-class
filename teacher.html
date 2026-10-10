@@ -209,9 +209,9 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 <div id="pin-gate" style="position:fixed;inset:0;background:#07090F;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px">
   <div style="font-size:48px;margin-bottom:4px">⚔</div>
   <div style="font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:#FFD700">Teacher Dashboard</div>
-  <div style="font-size:14px;color:rgba(240,244,255,0.5);margin-bottom:8px">Enter your access PIN to continue</div>
-  <input type="password" id="pin-input" maxlength="30" placeholder="Enter PIN"
-    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#1C1A2E;font-size:18px;padding:12px 24px;text-align:center;font-family:'Nunito',sans-serif;width:260px;letter-spacing:4px;outline:none"
+  <div style="font-size:14px;color:rgba(240,244,255,0.5);margin-bottom:8px">Enter your teacher passphrase (the one you set in Supabase)</div>
+  <input type="password" id="pin-input" maxlength="100" placeholder="Teacher passphrase" autocomplete="current-password"
+    style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#F0F4FF;font-size:18px;padding:12px 24px;text-align:center;font-family:'Nunito',sans-serif;width:300px;max-width:100%;outline:none"
     onkeydown="if(event.key==='Enter')checkPin()">
   <button onclick="checkPin()"
     style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);color:#FFD700;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:10px 32px;border-radius:10px;cursor:pointer">
@@ -660,36 +660,39 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 // ═══════════════════════════════════════════════════════════
 // PIN GATE
 // ═══════════════════════════════════════════════════════════
-const PIN_HASH = '9a3b84136cae8f86009596df91507ee5f5c54708cf7b79e374c17c3eca2e519f';
-
-async function hashPin(pin) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
+// Unlock is checked on the server against the teacher passphrase
+// (same one used for live games). Kept in sessionStorage so it is
+// forgotten when the tab closes or the dashboard is locked.
+function teacherPass() { try { return sessionStorage.getItem('teacher_pass') || ''; } catch(e) { return ''; } }
 
 async function checkPin() {
-  const input = document.getElementById('pin-input').value.trim();
-  if (!input) return;
-  const h = await hashPin(input);
-  if (h === PIN_HASH) {
-    sessionStorage.setItem('teacher_unlocked', '1');
+  const input = document.getElementById('pin-input').value;
+  const err = document.getElementById('pin-error');
+  if (!input.trim()) return;
+  err.textContent = 'Checking…';
+  const { data, error } = await db.rpc('verify_teacher_pass', { p_teacher_pass: input });
+  if (error) { err.textContent = 'Could not reach the server. Check the internet and try again.'; return; }
+  if (data === true) {
+    try { sessionStorage.setItem('teacher_pass', input); } catch(e) {}
+    err.textContent = '';
+    document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
   } else {
-    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
+    err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-input').focus();
   }
 }
 
 function lockDashboard() {
-  sessionStorage.removeItem('teacher_unlocked');
+  try { sessionStorage.removeItem('teacher_pass'); sessionStorage.removeItem('teacher_unlocked'); } catch(e) {}
   document.getElementById('pin-input').value = '';
   document.getElementById('pin-error').textContent = '';
   document.getElementById('pin-gate').style.display = 'flex';
 }
 
-// Check if already unlocked this session
-if (sessionStorage.getItem('teacher_unlocked') === '1') {
+// Already unlocked this session?
+if (teacherPass()) {
   document.getElementById('pin-gate').style.display = 'none';
 }
 
@@ -1203,9 +1206,16 @@ async function loadWeightQuestData() {
     '<tr><td colspan="7" class="lb-empty">Fetching Weight Control Quest progress...</td></tr>';
 
   const { data, error } = await db.rpc('get_weight_control_quest_teacher_summary', {
-    p_trimester: trimester
+    p_trimester: trimester,
+    p_teacher_pass: teacherPass()
   });
 
+  if (error && /passphrase/i.test(error.message)) {
+    wqLoading = false;
+    lockDashboard();
+    document.getElementById('pin-error').textContent = 'Please enter your teacher passphrase again.';
+    return;
+  }
   if (error) {
     setWqError('Supabase error: ' + error.message);
     document.getElementById('wq-body').innerHTML =
