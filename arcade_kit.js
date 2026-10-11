@@ -181,7 +181,7 @@
           (m ? '<div class="ak-medal">' + m.icon + ' ' + m.name + ' medal</div>' : (medals[0] ? '<div class="ak-medal dim">' + medals[0].icon + ' ' + medals[0].name + ' at ' + medals[0].at + '</div>' : '')) +
           (fact ? '<div class="ak-fact">💡 ' + fact + '</div>' : '') +
           '<button class="ak-play">↻ Play again</button>' +
-          '<a class="ak-link" href="dopp_games.html">🎮 More games</a>' +
+          '<a class="ak-link" href="arcade.html">🎮 More games</a>' +
         '</div>';
       over.querySelector('.ak-play').onclick = e => { e.stopPropagation(); start(); };
       over.classList.remove('hidden');

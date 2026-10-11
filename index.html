@@ -710,21 +710,21 @@ footer {
 
 <!-- GAME ARCADE PREVIEW -->
 <div class="section reveal">
-  <div class="section-label">Game Arcade</div>
-  <div class="section-title">15 Games Ready to Play</div>
-  <p class="section-sub">Every game opens in your browser — no install needed. Project on the board, split into teams, and go.</p>
+  <div class="section-label">The Arcade</div>
+  <div class="section-title">Play Your Way to Wellness</div>
+  <p class="section-sub">50+ games, no install: Sprite arcade games starring your Wellness Sprite, Dopp originals, and classroom games for the board.</p>
 
   <div class="game-grid" id="game-grid"></div>
 
   <div style="text-align:center;margin-top:28px">
-    <a href="arcade.html" class="btn-hero btn-primary">View Full Arcade →</a>
+    <a href="arcade.html" class="btn-hero btn-primary">Open the Arcade →</a> <a href="arcade.html#classroom" class="btn-hero btn-secondary">🎓 Classroom Games</a>
   </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
   <div class="footer-brand">⚔ The Legend of Wellness</div>
-  <div class="footer-tags">#OnedayIwokeup &nbsp;·&nbsp; <a href="dopp_games.html" style="color:inherit;text-decoration:none;">#Doppitup</a></div>
+  <div class="footer-tags">#OnedayIwokeup &nbsp;·&nbsp; <a href="arcade.html" style="color:inherit;text-decoration:none;">#Doppitup</a></div>
   <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:12px">
     <a href="leaderboard.html" style="font-size:12px;color:rgba(255,255,255,0.72);text-decoration:none;transition:color .15s" onmouseover="this.style.color='#FFD700'" onmouseout="this.style.color='rgba(255,255,255,0.72)'">🏆 Hall of Champions</a>
     <a href="print_quest.html" style="font-size:12px;color:rgba(255,255,255,0.72);text-decoration:none;transition:color .15s" onmouseover="this.style.color='#FFD700'" onmouseout="this.style.color='rgba(255,255,255,0.72)'">🖨 Print Quest Sheet</a>
@@ -787,34 +787,25 @@ CHAPTERS.forEach(ch => {
   </a>`;
 });
 
-// ── GAMES ──
+// ── GAMES (featured on the home page; the full list lives in arcade.html) ──
 const GAMES = [
-  {icon:"📋",title:"Health Jeopardy",desc:"5 categories, Daily Double, Final Jeopardy. The ultimate class boss battle.",type:"Boss",file:"game01_jeopardy.html"},
-  {icon:"💼",title:"Deal or No Deal",desc:"26 briefcases hiding health hazards and point values. Risk decisions matter.",type:"Team",file:"game02_deal_or_no_deal.html"},
-  {icon:"🎡",title:"Wheel of Fortune",desc:"Spin for values, guess health vocab phrases letter by letter.",type:"Solo",file:"game03_wheel_of_fortune.html"},
-  {icon:"💰",title:"Who Wants to Be a Millionaire",desc:"12 escalating questions, 3 lifelines, walk-away mechanic.",type:"Boss",file:"game04_millionaire.html"},
-  {icon:"⚡",title:"Hot Takes Buzzer Battle",desc:"4-player buzzers, streaks, hot takes on real health controversies.",type:"Daily",file:"game05_hot_takes.html"},
-  {icon:"🔐",title:"Health Escape Room",desc:"3 rooms, 5 chained clues each. Opioids, outbreaks, cardiac emergencies.",type:"Team",file:"game06_escape_room.html"},
-  {icon:"🔥",title:"Health Survivor",desc:"Answer, debate, immunity, tribal council. Last one standing wins.",type:"Wild",file:"game07_survivor.html"},
-  {icon:"🎰",title:"The Price Is Right",desc:"Calorie guessing, healthcare costs, healthy vs. junk food carts.",type:"Daily",file:"game08_price_is_right.html"},
-  {icon:"📺",title:"Health Family Feud",desc:"Survey says! Real CDC data powers the answers. Fast Money round.",type:"Team",file:"game09_family_feud.html"},
-  {icon:"🚨",title:"Health Imposter",desc:"One player secretly spreads health misinformation. Find them.",type:"Wild",file:"game10_imposter.html"},
-  {icon:"🤐",title:"Health Taboo",desc:"Describe the term without the forbidden words. 60 seconds!",type:"Team",file:"game11_taboo.html"},
-  {icon:"🤔",title:"Would You Rather",desc:"10 health dilemmas, class voting, debate prompts, real facts.",type:"Daily",file:"game12_would_you_rather.html"},
-  {icon:"🎨",title:"Health Pictionary Blitz",desc:"Full drawing canvas, 24 health words, multi-team play.",type:"Team",file:"game13_pictionary.html"},
-  {icon:"🦈",title:"Health Shark Tank",desc:"4 health startup pitches, rubric scoring, invest or go out.",type:"Boss",file:"game14_shark_tank.html"},
-  {icon:"💥",title:"Myth Busters",desc:"18 health myths, rapid-fire true/false, timed mode, streak bonuses.",type:"Daily",file:"game15_myth_busters.html"},
+  {icon:"🪽",title:"Sprite Flap",desc:"Tap to flap your Wellness Sprite through junk food towers.",type:"New",file:"sprite_flap.html"},
+  {icon:"🏃",title:"Sprite Dash",desc:"Jump and duck past burgers, soda and candy bats.",type:"New",file:"sprite_dash.html"},
+  {icon:"🛕",title:"Sprite Run",desc:"Swipe through the Temple of Junk Food in 3D.",type:"New",file:"sprite_run.html"},
+  {icon:"📋",title:"Health Jeopardy",desc:"5 categories, Daily Double, Final Jeopardy. The ultimate class boss battle.",type:"Boss",file:"game01_jeopardy.html",tab:true},
+  {icon:"💥",title:"Myth Busters",desc:"18 health myths, rapid-fire true/false, timed mode, streak bonuses.",type:"Daily",file:"game15_myth_busters.html",tab:true},
+  {icon:"🔐",title:"Health Escape Room",desc:"3 rooms, 5 chained clues each. Opioids, outbreaks, cardiac emergencies.",type:"Team",file:"game06_escape_room.html",tab:true},
 ];
 
-const TYPE_CLS = {Boss:'type-boss',Team:'type-team',Solo:'type-solo',Daily:'type-daily',Wild:'type-wild'};
+const TYPE_CLS = {Boss:'type-boss',Team:'type-team',Solo:'type-solo',Daily:'type-daily',Wild:'type-wild',New:'type-solo'};
 const gg = document.getElementById('game-grid');
 GAMES.forEach(g => {
   gg.innerHTML += `<div class="game-card">
     <div class="game-icon">${g.icon}</div>
     <div class="game-title">${g.title}</div>
     <div class="game-desc">${g.desc}</div>
-    <span class="game-type ${TYPE_CLS[g.type]}">${g.type}</span>
-    <a class="game-play-btn" href="${g.file}" target="_blank" rel="noopener noreferrer">▶ Play Now</a>
+    <span class="game-type ${TYPE_CLS[g.type]}">${g.type === 'New' ? '✨ New' : g.type}</span>
+    <a class="game-play-btn" href="${g.file}"${g.tab ? ' target="_blank" rel="noopener noreferrer"' : ''}>▶ Play Now</a>
   </div>`;
 });
 
