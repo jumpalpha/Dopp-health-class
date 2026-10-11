@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+body{background:#0a0618;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
 #header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
 #back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
 #back-btn:hover{opacity:1}
@@ -32,10 +32,11 @@ canvas{display:block;border:2px solid rgba(255,215,0,0.2);border-radius:8px;max-
 .dpad-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;width:52px;height:52px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 @media(max-width:600px){#mobile-dpad{display:flex}}
 </style>
+<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
 <div id="header">
-  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <a id="back-btn" href="arcade.html">← Arcade</a>
   <span id="game-title">Dopp-Man</span>
   <span id="score-display">Score: <span id="scoreVal">0</span></span>
 </div>

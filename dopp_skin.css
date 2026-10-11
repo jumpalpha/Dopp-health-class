@@ -1,0 +1,7 @@
+/* dopp_skin.css: shared dark "Sprite Arcade" look for the classic Dopp games.
+   Loaded last on each dopp_*.html page so it can unify the frame around each game. */
+body{background:radial-gradient(ellipse 90% 55% at 50% -5%,#3a1f7a 0%,transparent 70%),linear-gradient(#120a2a,#0a0618 60%) fixed !important;color:#F4EFFF}
+#header,body>header{background:rgba(10,6,24,.88)!important;border-bottom:1px solid rgba(255,255,255,.11)!important;backdrop-filter:blur(10px)}
+#back-btn,.back-btn{color:#FFD700!important;font-family:Nunito,system-ui,sans-serif!important;font-weight:800!important;opacity:1!important}
+#game-title,.game-title,.hdr-title{color:#FFD700!important;text-shadow:0 2px 0 #000}
+canvas{box-shadow:0 10px 30px rgba(0,0,0,.45)}

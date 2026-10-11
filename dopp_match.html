@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+body{background:#0a0618;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
 #header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
 #back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
 #back-btn:hover{opacity:1}
@@ -36,17 +36,18 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
 .card-front .card-label{font-family:'Cinzel',sans-serif;font-size:clamp(8px,2vw,11px);color:#38BFFF;text-align:center;padding:0 4px}.match-sprite{position:relative;width:52%;aspect-ratio:1;min-width:42px;max-width:62px}.match-sprite:before,.match-sprite:after{content:"";position:absolute}.sprite-apple{border-radius:52% 48% 48% 52%;background:linear-gradient(135deg,#ff5b68,#c91f3f);box-shadow:inset -8px -8px 0 rgba(90,0,20,.18),0 0 16px rgba(255,91,104,.28)}.sprite-apple:before{width:10px;height:14px;background:#6b3b18;border-radius:6px;left:50%;top:-9px;transform:translateX(-50%) rotate(12deg)}.sprite-apple:after{width:22px;height:12px;background:#00E5A0;border-radius:90% 20% 90% 20%;right:2px;top:-7px;transform:rotate(-22deg)}.sprite-water{border-radius:55% 55% 62% 62%;background:linear-gradient(145deg,#38BFFF,#0d78d6);clip-path:polygon(50% 0,84% 42%,70% 92%,30% 92%,16% 42%);box-shadow:0 0 18px rgba(56,191,255,.34)}.sprite-water:after{width:13px;height:22px;border-radius:50%;background:rgba(255,255,255,.45);left:32%;top:24%;transform:rotate(24deg)}.sprite-runner{border-radius:50%;background:#00E5A0;box-shadow:0 0 16px rgba(0,229,160,.35)}.sprite-runner:before{width:46px;height:8px;background:#FFD700;left:7px;top:34px;transform:rotate(-24deg);border-radius:8px;box-shadow:-8px 16px 0 #38BFFF,17px 20px 0 #38BFFF}.sprite-runner:after{width:18px;height:18px;background:#f2bc91;border-radius:50%;left:21px;top:8px;box-shadow:0 17px 0 4px #00E5A0}.sprite-sleep{border-radius:14px;background:linear-gradient(145deg,#7d5cff,#312073);box-shadow:0 0 16px rgba(125,92,255,.35)}.sprite-sleep:before{width:42px;height:22px;background:#f2bc91;border-radius:22px 22px 10px 10px;left:9px;top:24px}.sprite-sleep:after{content:"Z";font:bold 24px Cinzel;color:#FFD700;right:5px;top:0}.sprite-yoga{border-radius:50%;background:#38BFFF;box-shadow:0 0 16px rgba(56,191,255,.3)}.sprite-yoga:before{width:18px;height:18px;background:#f2bc91;border-radius:50%;left:21px;top:7px;box-shadow:0 18px 0 7px #00E5A0}.sprite-yoga:after{width:50px;height:8px;background:#FFD700;border-radius:8px;left:5px;bottom:12px;box-shadow:12px -12px 0 -1px #FFD700,-12px -12px 0 -1px #FFD700}.sprite-broccoli{border-radius:50%;background:#00E5A0;box-shadow:-14px 4px 0 #13b877,14px 4px 0 #13b877,0 0 16px rgba(0,229,160,.32)}.sprite-broccoli:after{width:15px;height:29px;background:#71c35a;border-radius:8px;left:22px;top:30px}.sprite-heart{background:#FF3B5C;transform:rotate(-45deg);border-radius:8px;box-shadow:0 0 16px rgba(255,59,92,.34)}.sprite-heart:before,.sprite-heart:after{width:100%;height:100%;background:#FF3B5C;border-radius:50%}.sprite-heart:before{left:0;top:-50%}.sprite-heart:after{left:50%;top:0}.sprite-brain{border-radius:45% 55% 50% 50%;background:linear-gradient(145deg,#ff9ed0,#c764ff);box-shadow:0 0 16px rgba(199,100,255,.32)}.sprite-brain:before{inset:11px;border:3px solid rgba(28,26,46,.55);border-left:0;border-right:0;border-radius:50%}.sprite-brain:after{width:3px;height:44px;background:rgba(28,26,46,.55);left:50%;top:8px;border-radius:3px}
 .card.matched .card-inner{border-radius:10px}
 .card.matched .card-front{border:2px solid #00E5A0;box-shadow:0 0 16px rgba(0,229,160,0.5);background:#0a2a1a}
-#win-overlay{position:fixed;inset:0;background:rgba(248,244,232,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;display:none}
+#win-overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;display:none}
 #win-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,34px);margin-bottom:16px}
 .win-stat{font-family:'Nunito',sans-serif;font-size:16px;color:#fff;margin-bottom:6px}
 #win-rating{font-size:28px;margin:10px 0}
 .play-btn{background:#FFD700;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:11px 32px;border:none;border-radius:8px;cursor:pointer;margin-top:16px;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
 .play-btn:hover{transform:scale(1.05)}
 </style>
+<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
 <div id="header">
-  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <a id="back-btn" href="arcade.html">← Arcade</a>
   <span id="game-title">Dopp Memory Match</span>
   <span id="score-display">Matches: <span id="matchCount">0</span>/8</span>
 </div>

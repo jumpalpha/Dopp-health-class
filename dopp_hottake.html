@@ -15,10 +15,10 @@
 <meta name="twitter:card" content="summary">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#FDFAF2;--card:rgba(28,26,46,0.05);--border:rgba(28,26,46,0.12);--text:#1C1A2E;--dim:rgba(28,26,46,0.65)}
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0a0618;--card:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.12);--text:#F4EFFF;--dim:#B9B0D6}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(248,244,232,0.97);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(10,6,24,0.94);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
 .back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
 .back-btn:hover{opacity:.7}
 .game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(11px,2.8vw,17px);font-weight:900;color:var(--gold);text-align:center}
@@ -60,10 +60,11 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 2
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fadeIn{animation:fadeIn .35s ease forwards}
 </style>
+<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
 <header>
-  <a class="back-btn" href="javascript:history.back()">← Back</a>
+  <a class="back-btn" href="arcade.html">← Arcade</a>
   <div class="game-title">Dopp's Hot Take Stand</div>
   <div class="score-display" id="scoreDisplay">1 / 10</div>
 </header>

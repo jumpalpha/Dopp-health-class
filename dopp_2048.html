@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body{background:#0a0618;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 #header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
 #back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85}
 #back-btn:hover{opacity:1}
@@ -43,26 +43,27 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
 .tile.merge-tile{animation:mergePop 0.22s ease forwards}
 @keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
 @keyframes mergePop{0%{transform:scale(1)}50%{transform:scale(1.18)}100%{transform:scale(1)}}
-#win-overlay{position:fixed;inset:0;background:rgba(248,244,232,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20}
+#win-overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20}
 #win-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,5vw,32px);margin-bottom:10px;text-shadow:0 0 30px rgba(255,215,0,0.8)}
 #win-overlay p{font-family:'Nunito',sans-serif;font-size:16px;color:#fff;margin-bottom:20px;text-align:center;max-width:320px}
 #canvas-confetti{position:fixed;inset:0;pointer-events:none;z-index:19}
-#gameover-overlay{position:fixed;inset:0;background:rgba(248,244,232,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20}
+#gameover-overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20}
 #gameover-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FF3B5C;font-size:clamp(20px,5vw,30px);margin-bottom:12px}
 .ol-p{font-family:'Nunito';font-size:16px;color:#fff;margin-bottom:4px}
 .ol-best{font-size:14px;color:#00E5A0;margin-bottom:24px}
 .ol-btn{background:#FFD700;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:11px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 16px rgba(255,215,0,.35);margin:5px}
 .ol-btn:hover{transform:scale(1.05)}
 .ol-btn.green{background:#00E5A0}
-#start-overlay{position:fixed;inset:0;background:rgba(248,244,232,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+#start-overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
 #start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,5vw,30px);margin-bottom:10px}
 #start-overlay p{font-family:'Nunito';color:#aaa;font-size:14px;margin-bottom:6px;text-align:center;max-width:340px}
 #start-game-btn{margin-top:18px;background:#00E5A0;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(0,229,160,.4)}
 </style>
+<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
 <div id="header">
-  <a id="back-btn" href="javascript:history.back()">← Back</a>
+  <a id="back-btn" href="arcade.html">← Arcade</a>
   <div id="game-title">Dopp 2048</div>
   <div id="score-area">
     <div class="score-box"><span class="lbl">Score</span><span class="val" id="score-val">0</span></div>
@@ -71,7 +72,7 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
 </div>
 <div id="main">
   <div id="info-bar">
-    <span style="font-family:'Nunito';font-size:12px;color:#666">Combine tiles → reach 🏆 Peak Health!</span>
+    <span style="font-family:'Nunito';font-size:12px;color:#A79FC4">Combine tiles → reach 🏆 Peak Health!</span>
     <button id="new-game-btn">New Game</button>
   </div>
   <div id="tip-box"></div>
@@ -84,7 +85,7 @@ body{background:#FDFAF2;color:#fff;font-family:'Nunito',sans-serif;display:flex;
     </div>
     <div id="tiles-layer"></div>
   </div>
-  <p style="font-family:'Nunito';font-size:12px;color:#444;margin-top:14px;text-align:center">Arrow keys or swipe to play</p>
+  <p style="font-family:'Nunito';font-size:12px;color:#A79FC4;margin-top:14px;text-align:center">Arrow keys or swipe to play</p>
 </div>
 
 <canvas id="canvas-confetti" width="0" height="0"></canvas>
