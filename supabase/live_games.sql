@@ -63,6 +63,19 @@ create table if not exists public.live_answers (
 alter table public.live_answers enable row level security;
 create index if not exists live_answers_session_q on public.live_answers (session_id, q_index);
 
+-- ---------- Verified XP log (also defined in verified_xp.sql) ----------
+create table if not exists public.xp_events (
+  id         bigserial primary key,
+  student_id uuid not null references public.students(id) on delete cascade,
+  trimester  text not null,
+  source     text not null,
+  ref        text not null,
+  xp         int  not null check (xp > 0 and xp <= 500),
+  created_at timestamptz not null default now(),
+  unique (student_id, ref)
+);
+alter table public.xp_events enable row level security;
+
 -- ---------- Substitute codes ----------
 -- Day-pass codes that can start live games only. Stored scrambled (bcrypt).
 create table if not exists public.live_sub_codes (
@@ -193,6 +206,50 @@ begin
   return found;
 end $$;
 
+-- Raid: record the boss's HP (set by the host screen when the raid starts).
+create or replace function public.host_set_hp(p_session_id uuid, p_host_token text, p_hp int)
+returns boolean language plpgsql security definer set search_path = public as $$
+begin
+  update public.live_sessions s set settings = s.settings || jsonb_build_object('hp', greatest(1, least(p_hp, 5000)))
+   where s.id = p_session_id and s.game_type = 'raid'
+     and s.host_token_hash = encode(extensions.digest(p_host_token, 'sha256'), 'hex') and s.phase <> 'ended';
+  return found;
+end $$;
+
+-- End-of-game bonuses (once per game): Showdown top 3 (+25 each);
+-- Raid: if the boss fell, every signed-in player on the team with the most hits (+25).
+create or replace function public._live_award_bonus(p_session_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_s public.live_sessions; v_hp int; v_total int; v_team int;
+begin
+  select * into v_s from public.live_sessions where id = p_session_id;
+  if v_s.game_type = 'showdown' then
+    insert into public.xp_events (student_id, trimester, source, ref, xp)
+    select r.student_id, st.trimester, 'live_bonus', 'live_bonus:' || p_session_id, 25
+      from (select p.student_id, sum(a.points) as score
+              from public.live_players p join public.live_answers a on a.player_id = p.id
+             where p.session_id = p_session_id and p.student_id is not null
+             group by p.student_id having sum(a.points) > 0
+             order by sum(a.points) desc limit 3) r
+      join public.students st on st.id = r.student_id
+    on conflict (student_id, ref) do nothing;
+  elsif v_s.game_type = 'raid' then
+    v_hp := nullif(v_s.settings->>'hp', '')::int;
+    select count(*) into v_total from public.live_answers a where a.session_id = p_session_id and a.is_correct;
+    if v_hp is not null and v_total >= v_hp then
+      select p.team into v_team from public.live_players p join public.live_answers a on a.player_id = p.id
+       where p.session_id = p_session_id and a.is_correct and p.team is not null
+       group by p.team order by count(*) desc limit 1;
+      insert into public.xp_events (student_id, trimester, source, ref, xp)
+      select p.student_id, st.trimester, 'live_bonus', 'live_bonus:' || p_session_id, 25
+        from public.live_players p join public.students st on st.id = p.student_id
+       where p.session_id = p_session_id and p.team = v_team
+      on conflict (student_id, ref) do nothing;
+    end if;
+  end if;
+end $$;
+revoke execute on function public._live_award_bonus(uuid) from public, anon, authenticated;
+
 -- Move to lobby / reveal / leaderboard / ended.
 create or replace function public.host_set_phase(
   p_session_id uuid, p_host_token text, p_phase text)
@@ -208,7 +265,9 @@ begin
    where s.id = p_session_id
      and s.host_token_hash = encode(extensions.digest(p_host_token, 'sha256'), 'hex')
      and s.phase <> 'ended';
-  return found;
+  if not found then return false; end if;
+  if p_phase = 'ended' then perform public._live_award_bonus(p_session_id); end if;
+  return true;
 end $$;
 
 -- Scores, per-question tally, team totals. Host only.
@@ -350,7 +409,16 @@ begin
   on conflict (player_id, q_index) do update
      set answer = excluded.answer, answered_at = now()
    where public.live_answers.is_correct is null;  -- polls only
-  return found;
+  if not found then return false; end if;
+
+  -- Verified XP: +5 per correct answer for signed-in students
+  if v_correct and v_p.student_id is not null and v_s.game_type in ('showdown','raid') then
+    insert into public.xp_events (student_id, trimester, source, ref, xp)
+    select v_p.student_id, st.trimester, 'live', 'live:' || v_s.id || ':' || p_q_index, 5
+      from public.students st where st.id = v_p.student_id
+    on conflict (student_id, ref) do nothing;
+  end if;
+  return true;
 end $$;
 
 -- What everyone sees (projector + phones). Correct answer only after
@@ -376,7 +444,7 @@ language sql security definer set search_path = public as $$
               where p.session_id = s.id and p.team is not null
               group by p.team) t) end,
     'me', (select jsonb_build_object(
-             'nickname', p.nickname, 'team', p.team,
+             'nickname', p.nickname, 'team', p.team, 'signed_in', p.student_id is not null,
              'score', (select coalesce(sum(a.points), 0) from public.live_answers a where a.player_id = p.id),
              'my_answer', (select a.answer from public.live_answers a
                             where a.player_id = p.id and a.q_index = s.q_index),
