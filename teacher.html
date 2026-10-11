@@ -209,6 +209,7 @@ input, select, textarea { color: var(--text); }
 </style>
 <link rel="stylesheet" href="shared.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="pet_sprite.js"></script>
 </head>
 <body>
 <h1 class="sr-only">Teacher Dashboard</h1>
@@ -578,6 +579,14 @@ input, select, textarea { color: var(--text); }
       </div>
     </div>
 
+    <div class="stat-row" id="pet-stats">
+      <div class="stat-card"><div class="sc-num" id="pet-stat-hatched">—</div><div class="sc-label">🌱 Sprites Hatched</div><div class="sc-sub">Students with a Wellness Sprite</div></div>
+      <div class="stat-card"><div class="sc-num" id="pet-stat-healthy">—</div><div class="sc-label">💚 Healthy Sprites</div><div class="sc-sub">Health 60 or higher</div></div>
+      <div class="stat-card"><div class="sc-num" id="pet-stat-care">—</div><div class="sc-label">😟 Need Care</div><div class="sc-sub">Sick, hungry, tired, dirty or sad</div></div>
+      <div class="stat-card"><div class="sc-num" id="pet-stat-ghost">—</div><div class="sc-label">👻 Ghosts</div><div class="sc-sub">Need 10 answers to revive</div></div>
+    </div>
+    <div id="pet-note" style="display:none;font-size:13px;color:var(--crimson);font-weight:700;margin:-16px 0 16px"></div>
+
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
         <div class="card-title" style="margin-bottom:0">🏆 Student Leaderboard</div>
@@ -607,12 +616,27 @@ input, select, textarea { color: var(--text); }
               <th onclick="setLbSort('tasks',this)">Tasks</th>
               <th onclick="setLbSort('days',this)">Active Days</th>
               <th onclick="setLbSort('streak',this)">Streak</th>
+              <th onclick="setLbSort('pet',this)">Sprite</th>
+              <th>Next step</th>
             </tr>
           </thead>
           <tbody id="lb-body">
-            <tr><td colspan="8" class="lb-empty">Click the page to load leaderboard data.</td></tr>
+            <tr><td colspan="10" class="lb-empty">Click the page to load leaderboard data.</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💡 Ways to Earn More XP</div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Right now XP comes only from Quest tasks (25 XP each, up to 2,250). Sprite care, live games and the Weight Control Quest don't add XP yet. Ideas that would reward the work students already do:</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;font-size:14px">
+        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>🔥 Sprite streak bonus</b><br>+25 XP each time a student logs 3+ healthy habits for 7 days in a row.</div>
+        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>📚 Sprite knowledge snacks</b><br>+10 XP for every 10 correct chapter questions answered on the sprite page.</div>
+        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>⚡ Live game rewards</b><br>+25 XP for playing a Showdown or Raid, +50 for a podium finish or the boss-slaying team.</div>
+        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>⚖ Pick a Side voice</b><br>+5 XP for voting in a live Pick a Side, so quiet students still earn credit for taking part.</div>
+        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>⚖ Weight Control Quest</b><br>+50 XP per stage finished, +100 for submitting the final plan.</div>
+        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>🎖 Teacher bonus</b><br>A button here to award XP by hand for participation, helping others or great discussion.</div>
       </div>
     </div>
 
@@ -1183,14 +1207,19 @@ async function loadProgressData() {
     return;
   }
 
+  // sprites (teacher-only server function)
+  const pets = {};
+  const petRes = await db.rpc('pet_teacher_summary', { p_teacher_pass: teacherPass(), p_trimester: TRIMESTER });
+  const note = document.getElementById('pet-note');
+  if (petRes.error){ note.style.display = 'block'; note.textContent = 'Sprite info could not load: ' + petRes.error.message; }
+  else { note.style.display = 'none'; (petRes.data || []).forEach(p => { pets[p.student_id] = p; }); }
+
+  const idaho = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver' }).format(d);
   lbData = (data || []).map(s => {
     const daySet = new Set(s.day_dates || []);
-    let streak = 0, d = new Date();
-    while (true) {
-      const key = d.toISOString().slice(0,10);
-      if (daySet.has(key)) { streak++; d.setDate(d.getDate()-1); }
-      else break;
-    }
+    let streak = 0; const d = new Date();
+    if (!daySet.has(idaho(d))) d.setDate(d.getDate() - 1);   // today not logged yet: count from yesterday
+    while (daySet.has(idaho(d))) { streak++; d.setDate(d.getDate() - 1); }
     const tasks = Number(s.task_count || 0);
     return {
       id: s.id,
@@ -1201,6 +1230,7 @@ async function loadProgressData() {
       xp: tasks * XP_PER_TASK,
       days: daySet.size,
       streak,
+      pet: pets[s.id] || null,
     };
   });
   lbLoading = false;
@@ -1211,8 +1241,16 @@ function renderLeaderboard() {
   let rows = lbFilter === 'all' ? [...lbData] : lbData.filter(s => lbFilter === 'TEST' ? /test/i.test(s.class_code || '') : periodKey(s.class_code) === lbFilter);
 
   const sortMap = { xp:'xp', tasks:'tasks', name:'display_name', period:'class_code', days:'days', streak:'streak' };
-  const key = sortMap[lbSort] || 'xp';
-  rows.sort((a,b) => typeof a[key]==='string' ? a[key].localeCompare(b[key]) : b[key]-a[key]);
+  if (lbSort === 'pet') rows.sort((a,b) => petScore(b) - petScore(a));
+  else {
+    const key = sortMap[lbSort] || 'xp';
+    rows.sort((a,b) => typeof a[key]==='string' ? a[key].localeCompare(b[key]) : b[key]-a[key]);
+  }
+  const withPet = rows.filter(s => s.pet);
+  document.getElementById('pet-stat-hatched').textContent = withPet.length + ' / ' + rows.length;
+  document.getElementById('pet-stat-healthy').textContent = withPet.filter(s => s.pet.alive && s.pet.health >= 60).length;
+  document.getElementById('pet-stat-care').textContent = withPet.filter(s => s.pet.alive && s.pet.stage !== 'egg' && s.pet.mood_label !== 'happy').length;
+  document.getElementById('pet-stat-ghost').textContent = withPet.filter(s => !s.pet.alive).length;
 
   const total   = rows.length;
   const avgXP   = total ? Math.round(rows.reduce((s,x)=>s+x.xp,0)/total) : 0;
@@ -1230,7 +1268,7 @@ function renderLeaderboard() {
 
   const tbody = document.getElementById('lb-body');
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="lb-empty">No students found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="lb-empty">No students found.</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map((s,i) => {
@@ -1246,9 +1284,37 @@ function renderLeaderboard() {
       <td style="font-family:'Cinzel',serif;font-weight:700;color:var(--gold-text)">${s.xp.toLocaleString()}</td>
       <td>${bar}</td>
       <td style="font-size:12px;color:var(--dim)">${s.days}</td>
-      <td style="font-size:12px;color:${s.streak>0?'var(--emerald)':'var(--dim)'}">${s.streak>0?'🔥 '+s.streak:'—'}</td>
+      <td style="font-size:12px;color:${s.streak>0?'#0a8f63':'var(--dim)'}">${s.streak>0?'🔥 '+s.streak:'—'}</td>
+      <td>${petCell(s.pet)}</td>
+      <td style="font-size:12px;font-weight:700;color:var(--text);min-width:170px">${escapeHtml(nextStep(s))}</td>
     </tr>`;
   }).join('');
+}
+
+// ── Sprite column + next-step suggestion ──
+const PET_MOOD = { happy:'Happy', hungry:'Hungry', tired:'Tired', dirty:'Needs a bath', sad:'Sad', sick:'Sick', sugar:'Sugar crash', ghost:'Ghost' };
+function petScore(s){ return !s.pet ? -2 : !s.pet.alive ? -1 : s.pet.health; }
+function petCell(p){
+  if (!p) return '<span style="font-size:12px;color:var(--dim)">No sprite</span>';
+  const mood = !p.alive ? 'ghost' : p.stage === 'egg' ? null : p.mood_label;
+  const col = !p.alive ? '#9aa3b5' : p.health >= 60 ? '#0a8f63' : p.health >= 30 ? '#8a6d00' : '#c0213f';
+  const svg = window.petSpriteSVG ? petSpriteSVG(p, { tight: true }) : '';
+  return '<div style="display:flex;align-items:center;gap:8px;min-width:150px"><div style="width:36px;height:36px;flex-shrink:0">' + svg.replace('<svg ', '<svg width="36" height="36" ') + '</div>' +
+    '<div style="line-height:1.2"><div style="font-weight:800;font-size:13px">' + escapeHtml(p.name) + '</div>' +
+    '<div style="font-size:11px;color:' + col + ';font-weight:800">' + (p.alive ? '❤️ ' + p.health + ' · ' : '') + (mood ? PET_MOOD[mood] : 'Egg') + '</div></div></div>';
+}
+function nextStep(s){
+  const p = s.pet;
+  if (!p) return '🥚 Hatch a Wellness Sprite';
+  if (!p.alive) return '👻 Revive sprite: answer 10 chapter questions';
+  if (p.stage === 'egg') return '🐣 Hatch the egg: log one healthy habit';
+  if (p.mood_label === 'sick') return '🤒 Sprite is sick: log 3 healthy habits today';
+  if (s.tasks === 0) return '⚔ Start Quest tasks (+25 XP each)';
+  const fix = { hungry:'log a balanced meal', tired:'log 8+ hours of sleep', dirty:'log hygiene', sad:'log a de-stress activity', sugar:'skip the sugary treats' };
+  if (fix[p.mood_label]) return '😟 Sprite is ' + PET_MOOD[p.mood_label].toLowerCase() + ': ' + fix[p.mood_label];
+  if (s.streak === 0) return '📅 Mark today active on the Quest page';
+  if (s.tasks < TOTAL_TASKS) return '⚔ Keep going: ' + (TOTAL_TASKS - s.tasks) + ' Quest tasks left';
+  return '🌟 On track. Keep the streak going!';
 }
 
 function setLbFilter(val, el) {
