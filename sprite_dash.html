@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Dash — Dopp's Arcade</title>
+<meta name="description" content="Run, jump and duck past junk food with your Wellness Sprite.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:1000px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 8px}
+.pad{display:none;justify-content:center;gap:14px;padding:6px 0 16px}
+.pad button{font:900 18px Nunito,sans-serif;padding:16px 28px;border-radius:16px;border:3px solid #1A1030;background:#FFD700;color:#2a1d00;box-shadow:0 5px 0 #1A1030;touch-action:none}
+@media (hover:none){.pad{display:flex}}
+.rot{display:none;text-align:center;font-weight:800;color:#c9b8ff;padding:4px 16px}
+@media (hover:none) and (orientation:portrait){.rot{display:block}}
+</style>
+</head>
+<body>
+<div class="top"><a href="dopp_games.html">← Arcade</a><h1>Sprite Dash</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<div class="rot">📱 Tip: turn your phone sideways for a bigger screen. Tap the game to jump.</div>
+<div class="pad"><button id="padDuck">⬇ Duck</button><button id="padJump">⬆ Jump</button></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 800, H = 400, GROUND = 320;
+let hero, obs, items, speed, spawnD, dist, scrollX, nextMilestone, dayPhase, holdJump;
+const stars = Array.from({ length: 60 }, () => ({ x: Math.random() * W, y: Math.random() * 200, r: Math.random() * 1.5 + 0.4 }));
+
+function reset(A) {
+  hero = { x: 120, y: GROUND, vy: 0, duck: false, onGround: true, runT: 0, dead: false };
+  obs = []; items = []; speed = 340; spawnD = 500; dist = 0; scrollX = 0; nextMilestone = 100; dayPhase = 0; holdJump = false;
+}
+function jump(A) {
+  if (hero.dead) return;
+  holdJump = true;
+  if (hero.onGround) { hero.vy = -760; hero.onGround = false; hero.duck = false; A.sfx('jump'); A.particles.burst(hero.x, GROUND, 'rgba(255,240,200,.8)', 6, 80, 3); }
+}
+function input(type, A) {
+  if (type === 'tap' || type === 'up') jump(A);
+  else if (type === 'down') { hero.duck = true; if (!hero.onGround) hero.vy = Math.max(hero.vy, 700); }
+  else if (type === 'release-down') hero.duck = false;
+  else if (type === 'release-tap' || type === 'release-up') holdJump = false;
+}
+
+function heroBox() {
+  // forgiving hitbox
+  return hero.duck && hero.onGround
+    ? { x: hero.x - 22, y: hero.y - 30, w: 44, h: 28 }
+    : { x: hero.x - 18, y: hero.y - 52, w: 36, h: 48 };
+}
+
+const KINDS = [
+  { k: 'burger', w: 52, h: 40, y: 0 },
+  { k: 'soda', w: 34, h: 62, y: 0 },
+  { k: 'soda2', w: 64, h: 62, y: 0 },
+  { k: 'fries', w: 44, h: 54, y: 0 },
+  { k: 'donutbig', w: 58, h: 58, y: 0 }
+];
+
+function update(dt, A) {
+  const live = A.state === 'play' || A.state === 'dying';
+  dayPhase = (dist / 900) % 2;
+  if (!live) { scrollX += 60 * dt; hero.runT += dt; return; }
+  if (hero.dead) {
+    hero.vy += 2400 * dt; hero.y = Math.min(GROUND, hero.y + hero.vy * dt); return;
+  }
+  speed = Math.min(780, 340 + A.time * 11);
+  const dx = speed * dt; scrollX += dx; dist += dx / 10;
+  const pts = Math.floor(dist);
+  if (pts > A.score) A.setScore(pts), checkScore(A);
+
+  // hero physics (variable jump height)
+  hero.runT += dt * speed / 340;
+  if (!hero.onGround) {
+    hero.vy += (holdJump && hero.vy < 0 ? 1700 : 3000) * dt;
+    hero.y += hero.vy * dt;
+    if (hero.y >= GROUND) { hero.y = GROUND; hero.vy = 0; hero.onGround = true; A.particles.burst(hero.x, GROUND, 'rgba(255,240,200,.7)', 5, 60, 3); }
+  } else if (Math.random() < 0.35) A.particles.trail(hero.x - 16, GROUND - 4, 'rgba(255,240,200,.5)');
+
+  // spawn obstacles & items by distance
+  spawnD -= dx;
+  if (spawnD <= 0) {
+    const flyOK = A.score > 250;
+    if (flyOK && Math.random() < 0.28) {
+      const high = Math.random() < 0.45;
+      obs.push({ k: 'bat', x: W + 40, w: 54, h: 34, y: high ? GROUND - 112 : GROUND - 64, t: 0 });
+    } else {
+      const K = KINDS[Math.floor(Math.random() * (A.score > 120 ? KINDS.length : 2))];
+      obs.push({ k: K.k, x: W + 40, w: K.w, h: K.h, y: GROUND - K.h, t: 0 });
+    }
+    if (Math.random() < 0.55) items.push({ x: W + 40 + 160 + Math.random() * 120, y: GROUND - (Math.random() < 0.5 ? 40 : 140), kind: ['carrot', 'apple', 'broccoli'][Math.floor(Math.random() * 3)], t: 0 });
+    const minGap = 330 + speed * 0.5, extra = Math.random() * (420 - Math.min(250, A.time * 6));
+    spawnD = minGap + extra;
+  }
+  const hb = heroBox();
+  for (let i = obs.length - 1; i >= 0; i--) {
+    const o = obs[i]; o.x -= dx; o.t += dt;
+    if (o.x < -100) { obs.splice(i, 1); continue; }
+    const pad = 6;
+    if (hb.x < o.x + o.w - pad && hb.x + hb.w > o.x + pad && hb.y < o.y + o.h - pad && hb.y + hb.h > o.y + pad) { die(A); return; }
+  }
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i]; it.x -= dx; it.t += dt;
+    if (it.x < -40) { items.splice(i, 1); continue; }
+    if (Math.abs(it.x - hero.x) < 30 && Math.abs(it.y - (hero.y - 28)) < 38) {
+      items.splice(i, 1); dist += 25; A.setScore(Math.floor(dist)); checkScore(A); A.sfx('coin');
+      A.particles.burst(it.x, it.y, it.kind === 'apple' ? '#FF5C77' : it.kind === 'carrot' ? '#FF9F43' : '#3FCB6B', 14, 180, 4);
+      A.float('+25', it.x, it.y - 12, '#7CFFB2');
+    }
+  }
+}
+function checkScore(A) {
+  if (A.score >= nextMilestone) { nextMilestone += 100; A.sfx('point'); }
+  A.addScore(0);
+}
+function die(A) {
+  hero.dead = true; hero.vy = -500; hero.onGround = false;
+  A.particles.burst(hero.x, hero.y - 26, '#FFD700', 24, 260, 5);
+  A.gameOver();
+}
+
+// ---------- drawing ----------
+function lerpC(a, b, t) { const pa = a.match(/\w\w/g).map(h => parseInt(h, 16)), pb = b.match(/\w\w/g).map(h => parseInt(h, 16)); return 'rgb(' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t)).join(',') + ')'; }
+function draw(ctx, A) {
+  // 0–0.75 day, 0.75–1 dusk, 1–1.75 night, 1.75–2 dawn
+  const night = dayPhase < 0.75 ? 0 : dayPhase < 1 ? (dayPhase - 0.75) * 4 : dayPhase < 1.75 ? 1 : 1 - (dayPhase - 1.75) * 4;
+  const n = Math.min(1, Math.max(0, night));
+  const g = ctx.createLinearGradient(0, 0, 0, GROUND);
+  g.addColorStop(0, lerpC('#ff9a8b', '#140c36', n)); g.addColorStop(0.6, lerpC('#ffd28c', '#3b2a7a', n)); g.addColorStop(1, lerpC('#ffe9b0', '#2a5a7a', n));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (n > 0) { ctx.globalAlpha = n; ctx.fillStyle = '#fff'; stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }); ctx.globalAlpha = 1; }
+  // sun / moon
+  ctx.fillStyle = n > 0.5 ? '#FFF3C4' : '#FFE066';
+  ctx.beginPath(); ctx.arc(640, 80 + n * 10, 34, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(255,240,180,.2)'; ctx.beginPath(); ctx.arc(640, 80 + n * 10, 54, 0, 7); ctx.fill();
+  // parallax
+  hills(ctx, scrollX * 0.12, 250, 70, lerpC('c9708a', '2b2160', n), 220);
+  hills(ctx, scrollX * 0.3, 285, 45, lerpC('7fbf6a', '1f5b5a', n), 150);
+  // ground
+  ctx.fillStyle = lerpC('6fd16b', '2f8a5a', n); ctx.fillRect(0, GROUND, W, 16);
+  ctx.fillStyle = lerpC('c98f5a', '5a3f2c', n); ctx.fillRect(0, GROUND + 16, W, H - GROUND);
+  ctx.strokeStyle = A.INK; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, GROUND); ctx.lineTo(W, GROUND); ctx.stroke();
+  const off = scrollX % 60;
+  ctx.fillStyle = 'rgba(0,0,0,.12)';
+  for (let x = -off; x < W + 60; x += 60) { ctx.fillRect(x + 8, GROUND + 30, 18, 6); ctx.fillRect(x + 36, GROUND + 52, 12, 5); }
+  ctx.fillStyle = lerpC('4ab35a', '22704a', n);
+  for (let x = -off; x < W + 60; x += 30) { ctx.beginPath(); ctx.moveTo(x, GROUND + 16); ctx.lineTo(x + 6, GROUND + 4); ctx.lineTo(x + 12, GROUND + 16); ctx.fill(); }
+  // items + obstacles
+  items.forEach(it => item(ctx, A, it));
+  obs.forEach(o => obstacle(ctx, A, o));
+  // hero
+  const sh = hero.duck && hero.onGround;
+  ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(hero.x, GROUND + 4, 24 - (GROUND - hero.y) * 0.05, 5, 0, 0, 7); ctx.fill();
+  const bob = hero.onGround && !hero.dead ? Math.abs(Math.sin(hero.runT * 12)) * 4 : 0;
+  ctx.save(); ctx.translate(hero.x, hero.y - 30 - bob + (sh ? 10 : 0)); ctx.scale(sh ? 1.2 : 1, sh ? 0.68 : 1);
+  if (!hero.dead && hero.onGround) feet(ctx, A, hero.runT);
+  A.drawHero(0, 0, 66, hero.dead ? 0.5 : (hero.onGround ? 0 : -0.12), hero.dead ? 'ghost' : 'happy');
+  ctx.restore();
+}
+function feet(ctx, A, t) {
+  const s = Math.sin(t * 12) * 8;
+  ctx.fillStyle = '#1A1030';
+  ctx.beginPath(); ctx.ellipse(-8 + s, 30, 8, 5, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8 - s, 30, 8, 5, 0, 0, 7); ctx.fill();
+}
+function hills(ctx, off, base, amp, color, period) {
+  ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, GROUND);
+  for (let x = 0; x <= W; x += 10) { const t = (x + off) / period; ctx.lineTo(x, base - amp * (0.5 + 0.5 * Math.sin(t) * Math.cos(t * 0.43))); }
+  ctx.lineTo(W, GROUND); ctx.closePath(); ctx.fill();
+}
+function obstacle(ctx, A, o) {
+  const x = o.x, y = o.y;
+  if (o.k === 'burger') {
+    A.rr(x, y + 4, o.w, 14, 9); A.ink('#E9A44C', 3.5);
+    ctx.fillStyle = '#fff'; [8, 20, 32, 42].forEach(dx => { ctx.beginPath(); ctx.ellipse(x + dx, y + 9, 2, 1.2, 0, 0, 7); ctx.fill(); });
+    A.rr(x - 2, y + 17, o.w + 4, 7, 3); A.ink('#3FCB6B', 2.5);
+    A.rr(x + 1, y + 23, o.w - 2, 9, 4); A.ink('#7A3B1F', 3);
+    A.rr(x, y + 31, o.w, 9, 5); A.ink('#E9A44C', 3);
+  } else if (o.k === 'soda' || o.k === 'soda2') {
+    const n = o.k === 'soda2' ? 2 : 1;
+    for (let i = 0; i < n; i++) {
+      const cx = x + i * 32;
+      A.rr(cx, y, 32, o.h, 8); A.ink('#FF4D6D', 3.5);
+      ctx.fillStyle = '#fff'; ctx.fillRect(cx + 4, y + 22, 24, 14);
+      ctx.fillStyle = '#FF4D6D'; ctx.font = '900 9px Nunito'; ctx.textAlign = 'center'; ctx.fillText('SODA', cx + 16, y + 32);
+      ctx.fillStyle = '#c8c8d4'; ctx.fillRect(cx + 4, y + 1, 24, 5);
+      ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(cx + 5, y + 8, 4, o.h - 14);
+    }
+  } else if (o.k === 'fries') {
+    for (let i = 0; i < 5; i++) { ctx.fillStyle = '#FFD23F'; ctx.fillRect(x + 6 + i * 7, y + (i % 2) * 6, 6, 26); ctx.strokeStyle = A.INK; ctx.lineWidth = 2; ctx.strokeRect(x + 6 + i * 7, y + (i % 2) * 6, 6, 26); }
+    ctx.beginPath(); ctx.moveTo(x, y + 18); ctx.lineTo(x + o.w, y + 18); ctx.lineTo(x + o.w - 5, y + o.h); ctx.lineTo(x + 5, y + o.h); ctx.closePath(); A.ink('#E63946', 3.5);
+    ctx.fillStyle = '#FFD700'; ctx.font = '900 14px Nunito'; ctx.textAlign = 'center'; ctx.fillText('M', x + o.w / 2, y + 42);
+  } else if (o.k === 'donutbig') {
+    ctx.beginPath(); ctx.arc(x + 29, y + 29, 28, 0, 7); A.ink('#d9a066', 3.5);
+    ctx.beginPath(); ctx.arc(x + 29, y + 27, 23, 0, 7); ctx.fillStyle = '#ff8fc7'; ctx.fill();
+    ctx.beginPath(); ctx.arc(x + 29, y + 29, 9, 0, 7); ctx.fillStyle = lerpC('ffd28c', '3b2a7a', 0); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = A.INK; ctx.stroke();
+    ['#38BFFF', '#FFD700', '#00E5A0', '#fff'].forEach((c, i) => { ctx.save(); ctx.translate(x + 29 + Math.cos(i * 1.6) * 16, y + 27 + Math.sin(i * 1.6) * 14); ctx.rotate(i); ctx.fillStyle = c; ctx.fillRect(-4, -1.5, 8, 3); ctx.restore(); });
+  } else if (o.k === 'bat') {
+    const f = Math.sin(o.t * 18) * 10;
+    ctx.save(); ctx.translate(x + o.w / 2, y + o.h / 2);
+    ctx.beginPath(); ctx.moveTo(-6, 0); ctx.quadraticCurveTo(-24, -14 + f, -30, 4); ctx.quadraticCurveTo(-18, 0, -6, 8); A.ink('#9b5de5', 3);
+    ctx.beginPath(); ctx.moveTo(6, 0); ctx.quadraticCurveTo(24, -14 + f, 30, 4); ctx.quadraticCurveTo(18, 0, 6, 8); A.ink('#9b5de5', 3);
+    A.rr(-14, -9, 28, 18, 6); A.ink('#FFD23F', 3);
+    ctx.fillStyle = '#9b5de5'; ctx.font = '900 8px Nunito'; ctx.textAlign = 'center'; ctx.fillText('CANDY', 0, 3);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-5, -12, 3, 0, 7); ctx.arc(5, -12, 3, 0, 7); ctx.fill();
+    ctx.fillStyle = A.INK; ctx.beginPath(); ctx.arc(-5, -12, 1.5, 0, 7); ctx.arc(5, -12, 1.5, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+}
+function item(ctx, A, it) {
+  const y = it.y + Math.sin(it.t * 4) * 5;
+  ctx.save(); ctx.translate(it.x, y);
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(0, 0, 20, 0, 7); ctx.fill();
+  if (it.kind === 'carrot') {
+    ctx.beginPath(); ctx.moveTo(-8, -8); ctx.lineTo(8, -8); ctx.lineTo(0, 16); ctx.closePath(); A.ink('#FF9F43', 3);
+    ctx.fillStyle = '#3FCB6B'; [-5, 0, 5].forEach(dx => { ctx.beginPath(); ctx.ellipse(dx, -13, 2.5, 6, dx * 0.08, 0, 7); ctx.fill(); });
+  } else if (it.kind === 'apple') {
+    ctx.beginPath(); ctx.arc(0, 2, 12, 0, 7); A.ink('#FF5C77', 3);
+    ctx.beginPath(); ctx.ellipse(6, -12, 6, 3, -0.5, 0, 7); ctx.fillStyle = '#3FCB6B'; ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.beginPath(); ctx.ellipse(-4, -2, 3, 4, 0.3, 0, 7); ctx.fill();
+  } else {
+    ctx.fillStyle = '#6b8e23'; ctx.fillRect(-3, 2, 6, 12); ctx.strokeStyle = A.INK; ctx.lineWidth = 2; ctx.strokeRect(-3, 2, 6, 12);
+    [[-7, -2], [0, -7], [7, -2], [0, 1]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(dx, dy, 7, 0, 7); A.ink('#3FCB6B', 2.5); });
+  }
+  ctx.restore();
+}
+
+window.__dash = () => ({ hero, obs, items, speed });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Dash', subtitle: 'Outrun the junk food!', W, H, reserveH: 190,
+  storageKey: 'sprite_dash', winAt: 1000, winText: 'Your sprite is unstoppable!',
+  medals: [{ at: 300, name: 'Bronze', icon: '🥉' }, { at: 1000, name: 'Silver', icon: '🥈' }, { at: 2000, name: 'Gold', icon: '🥇' }, { at: 3500, name: 'Legend', icon: '💎' }],
+  howTo: '<b>Jump</b> over junk food. <b>Duck</b> under flying candy.<br>Hold jump to go higher. Grab veggies for +25.',
+  controls: 'Space / ↑ / tap = jump · ↓ = duck · P = pause',
+  overTitle: 'Splat!',
+  facts: [
+    'A fast-food burger, fries and soda can add up to over 1,200 calories, more than half a teen\'s daily needs.',
+    'Teens need about 60 minutes of physical activity every day.',
+    'Carrots are full of vitamin A, which helps your eyes and immune system.',
+    'Broccoli has more vitamin C per serving than an orange.',
+    'Running even 10 minutes a day is linked to a healthier heart.'
+  ],
+  reset, update, draw, input
+});
+const hold = (el, down, up) => { el.addEventListener('pointerdown', e => { e.preventDefault(); if (game.state === 'play') input(down, game); }); el.addEventListener('pointerup', e => { e.preventDefault(); if (game.state === 'play') input(up, game); }); el.addEventListener('pointerleave', () => { if (game.state === 'play') input(up, game); }); };
+hold(document.getElementById('padJump'), 'tap', 'release-tap');
+hold(document.getElementById('padDuck'), 'down', 'release-down');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Run — Dopp's Arcade</title>
+<meta name="description" content="A 3-lane temple runner starring your Wellness Sprite. Swipe to dodge junk food and grab fruit.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden;overscroll-behavior:none}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:1000px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px;touch-action:none}
+</style>
+</head>
+<body>
+<div class="top"><a href="dopp_games.html">← Arcade</a><h1>Sprite Run</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+// ---------- world & camera ----------
+// The road is drawn in fake 3D: z = metres ahead of the hero, x = metres left/right of centre.
+const W = 420, H = 680, HORIZON = 230, CX = W / 2;
+const F = 200, ZN = 4, CAM = 7.4;          // focal length, near offset, camera height
+const LANE = 2.2, ROAD = LANE * 1.5 + 0.3; // lane width, half road width
+const ZFAR = 95;
+const sc = z => F / (z + ZN);              // pixels per metre at depth z
+const gy = z => HORIZON + CAM * sc(z);     // screen y of the ground at depth z
+
+let hero, rows, fruit, travel, dist, bonus, speed, nextRow, curvePh, streak, nextMile;
+const mountains = Array.from({ length: 14 }, (_, i) => ({ x: i * 36 - 20, h: 30 + Math.random() * 55 }));
+
+function curve(z) { return Math.sin(curvePh) * 0.0022 * z * z; } // cosmetic bend of the path
+function sx(x, z) { return CX + (x + curve(z)) * sc(z); }
+
+function reset(A) {
+  hero = { lane: 1, laneF: 1, jy: 0, vy: 0, slide: 0, dead: false, runT: 0, tumble: 0 };
+  rows = []; fruit = []; travel = 0; dist = 0; bonus = 0; speed = 16; nextRow = 40; curvePh = 0; streak = 0; nextMile = 250;
+}
+
+function input(type, A) {
+  if (hero.dead || A.state !== 'play') return;
+  if (type === 'left' && hero.lane > 0) { hero.lane--; A.sfx('swipe'); }
+  else if (type === 'right' && hero.lane < 2) { hero.lane++; A.sfx('swipe'); }
+  else if (type === 'up' || type === 'tap') {
+    if (hero.jy <= 0.001) { hero.vy = 9.4; hero.slide = 0; A.sfx('jump'); }
+  } else if (type === 'down') {
+    if (hero.jy > 0.001) hero.vy = Math.min(hero.vy, -14);  // slam down, then slide
+    hero.slide = 0.75; A.sfx('swipe');
+  }
+}
+
+// ---------- spawning: every row always leaves at least one lane without a wall ----------
+function spawnRow(A, z) {
+  const t = A.time;
+  const types = [null, null, null];
+  const safe = Math.floor(Math.random() * 3);
+  const pickHard = () => { const r = Math.random(); return r < 0.4 ? 'wall' : r < 0.7 ? 'log' : 'bar'; };
+  if (t < 8) {                              // warm-up: one obstacle per row
+    const l = Math.floor(Math.random() * 3); types[l] = ['log', 'bar', 'wall'][Math.floor(Math.random() * 3)];
+  } else {
+    for (let l = 0; l < 3; l++) {
+      if (l === safe) types[l] = Math.random() < Math.min(0.5, t * 0.008) ? (Math.random() < 0.5 ? 'log' : 'bar') : null;
+      else types[l] = Math.random() < Math.min(0.85, 0.45 + t * 0.006) ? pickHard() : null;
+    }
+  }
+  types.forEach((k, l) => { if (k) rows.push({ k, lane: l, z, hit: false }); });
+  // a line of fruit in a lane that is clear at the next row is decided later; put it in a random lane now
+  if (Math.random() < 0.7) {
+    const fl = types[safe] ? Math.floor(Math.random() * 3) : safe;
+    const kind = ['apple', 'orange', 'grape', 'water'][Math.floor(Math.random() * 4)];
+    for (let i = 0; i < 4; i++) fruit.push({ lane: fl, z: z + 3 + i * 2.4, kind, h: 0.6 });
+  }
+}
+
+function update(dt, A) {
+  const live = A.state === 'play' || A.state === 'dying';
+  curvePh += dt * 0.25;
+  if (!live) { travel += 8 * dt; hero.runT += dt; return; }
+  if (hero.dead) {
+    hero.tumble += dt; hero.vy -= 22 * dt; hero.jy = Math.max(0, hero.jy + hero.vy * dt); return;
+  }
+  speed = Math.min(36, 16 + A.time * 0.33);
+  const dz = speed * dt; travel += dz; dist += dz;
+  hero.runT += dt * speed / 16;
+
+  // hero motion
+  hero.laneF += Math.sign(hero.lane - hero.laneF) * Math.min(Math.abs(hero.lane - hero.laneF), dt * 11);
+  if (hero.jy > 0 || hero.vy > 0) {
+    hero.vy -= 26 * dt; hero.jy += hero.vy * dt;
+    if (hero.jy <= 0) { hero.jy = 0; hero.vy = 0; A.particles.burst(sx((hero.laneF - 1) * LANE, 0), gy(0), 'rgba(255,240,200,.8)', 6, 90, 3); }
+  }
+  if (hero.slide > 0) hero.slide = Math.max(0, hero.slide - dt);
+
+  // spawn by distance
+  nextRow -= dz;
+  if (nextRow <= 0) {
+    spawnRow(A, ZFAR);
+    const gapSec = Math.max(0.68, 1.25 - A.time * 0.007);
+    nextRow = speed * gapSec + Math.random() * 6;
+  }
+
+  const myLane = Math.round(hero.laneF);
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const o = rows[i]; o.z -= dz;
+    if (o.z < -6) { rows.splice(i, 1); continue; }
+    if (!o.hit && o.z < 0.9 && o.z > -0.9 && o.lane === myLane) {
+      const ok = (o.k === 'log' && hero.jy > 0.75) || (o.k === 'bar' && hero.slide > 0 && hero.jy < 0.4);
+      if (!ok) { o.hit = true; die(A); return; }
+    }
+  }
+  for (let i = fruit.length - 1; i >= 0; i--) {
+    const f = fruit[i]; f.z -= dz;
+    if (f.z < -3) { fruit.splice(i, 1); streak = 0; continue; }
+    if (Math.abs(f.z) < 0.9 && f.lane === myLane && hero.jy < 2) {
+      fruit.splice(i, 1); streak++;
+      const pts = streak >= 8 ? 20 : 10; bonus += pts; A.sfx('coin');
+      const x = sx(f.lane === myLane ? (hero.laneF - 1) * LANE : (f.lane - 1) * LANE, 0), y = gy(0) - 70;
+      A.particles.burst(x, y, FRUIT[f.kind][0], 12, 170, 4);
+      A.float('+' + pts, x, y - 20, '#7CFFB2');
+      if (streak === 8) A.toast('🔥 Fruit streak! Double points');
+    }
+  }
+  const sc0 = Math.floor(dist) + bonus;
+  if (sc0 > A.score) A.setScore(sc0);
+  if (A.score >= nextMile) { nextMile += 250; A.sfx('point'); A.float(nextMile - 250 + 'm!', CX, 170, '#FFD700'); }
+}
+function die(A) {
+  hero.dead = true; hero.vy = 6;
+  const x = sx((hero.laneF - 1) * LANE, 0);
+  A.particles.burst(x, gy(0) - 50, '#FFD700', 26, 280, 5);
+  A.gameOver();
+}
+
+// ---------- drawing ----------
+const FRUIT = { apple: ['#FF5C77', '#3FCB6B'], orange: ['#FF9F43', '#3FCB6B'], grape: ['#9b5de5', '#3FCB6B'], water: ['#38BFFF', '#38BFFF'] };
+function draw(ctx, A) {
+  // sky
+  const g = ctx.createLinearGradient(0, 0, 0, HORIZON);
+  g.addColorStop(0, '#2b1660'); g.addColorStop(0.55, '#c8598a'); g.addColorStop(1, '#ffc27a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, HORIZON + 2);
+  ctx.fillStyle = '#FFE58A'; ctx.beginPath(); ctx.arc(CX + 90, HORIZON - 40, 30, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(255,229,138,.25)'; ctx.beginPath(); ctx.arc(CX + 90, HORIZON - 40, 50, 0, 7); ctx.fill();
+  // far temple mountains
+  ctx.fillStyle = '#6a3a7a';
+  ctx.beginPath(); ctx.moveTo(0, HORIZON);
+  mountains.forEach((m, i) => { const x = m.x - (curvePh * 40 % 36); ctx.lineTo(x, HORIZON - m.h); ctx.lineTo(x + 18, HORIZON - m.h * 0.7); });
+  ctx.lineTo(W, HORIZON); ctx.closePath(); ctx.fill();
+  temple(ctx, CX - 20 - Math.sin(curvePh) * 30, HORIZON);
+  // jungle floor
+  const jg = ctx.createLinearGradient(0, HORIZON, 0, H);
+  jg.addColorStop(0, '#1f5b4a'); jg.addColorStop(1, '#2f9a55');
+  ctx.fillStyle = jg; ctx.fillRect(0, HORIZON, W, H - HORIZON);
+
+  // road, far → near in 2m slices so the stripes scroll
+  const seg = 2, off = travel % seg, ZMIN = -ZN + 0.6;
+  for (let k = Math.ceil((ZFAR + off) / seg); k >= 0; k--) {
+    const zb = k * seg - off, za = Math.max(ZMIN, zb - seg);
+    if (zb <= ZMIN) continue;
+    const y0 = gy(za), y1 = gy(zb);
+    const band = (k + Math.floor(travel / seg)) % 2;
+    // stone edges, then the road surface
+    quad(ctx, sx(-ROAD - 0.5, za), sx(ROAD + 0.5, za), sx(ROAD + 0.5, zb), sx(-ROAD - 0.5, zb), y0, y1, band ? '#7a5a3a' : '#6a4c30');
+    quad(ctx, sx(-ROAD, za), sx(ROAD, za), sx(ROAD, zb), sx(-ROAD, zb), y0, y1, band ? '#e8c890' : '#d9b67a');
+    // lane dividers (dashed)
+    if (band) [-LANE / 2, LANE / 2].forEach(x => quad(ctx, sx(x - 0.06, za), sx(x + 0.06, za), sx(x + 0.06, zb), sx(x - 0.06, zb), y0, y1, 'rgba(120,80,40,.55)'));
+  }
+
+  // collect drawables: side props, obstacles, fruit, hero
+  const list = [];
+  const step = 7, base = travel % step;
+  for (let k = 0; k * step - base < ZFAR; k++) {
+    const z = k * step - base; if (z < -3) continue;
+    const id = Math.floor(travel / step) + k;
+    list.push({ z, d: () => prop(ctx, A, -ROAD - 1.6, z, id) });
+    list.push({ z, d: () => prop(ctx, A, ROAD + 1.6, z, id + 1) });
+  }
+  rows.forEach(o => list.push({ z: o.z, d: () => obstacle(ctx, A, o) }));
+  fruit.forEach(f => list.push({ z: f.z, d: () => fruitDraw(ctx, A, f) }));
+  list.push({ z: 0.01, d: () => heroDraw(ctx, A) });
+  list.sort((p, q) => q.z - p.z).forEach(it => it.d());
+
+  // haze at the horizon
+  const hz = ctx.createLinearGradient(0, HORIZON, 0, HORIZON + 50);
+  hz.addColorStop(0, 'rgba(255,194,122,.75)'); hz.addColorStop(1, 'rgba(255,194,122,0)');
+  ctx.fillStyle = hz; ctx.fillRect(0, HORIZON, W, 50);
+
+  // little HUD: distance and fruit streak
+  if (A.state === 'play' || A.state === 'dying') {
+    ctx.font = '900 14px Nunito'; ctx.textAlign = 'left';
+    pill(ctx, A, 12, H - 40, Math.floor(dist) + ' m');
+    if (streak >= 2) { ctx.textAlign = 'right'; pill(ctx, A, W - 12, H - 40, '🍎 x' + streak, true); }
+  }
+}
+function pill(ctx, A, x, y, text, right) {
+  const w = ctx.measureText(text).width + 22;
+  const left = right ? x - w : x;
+  A.rr(left, y, w, 28, 14); A.ink('rgba(26,16,48,.75)', 2);
+  ctx.fillStyle = '#FFD700'; ctx.textAlign = 'center'; ctx.fillText(text, left + w / 2, y + 19);
+}
+function quad(ctx, xa, xb, xc, xd, y0, y1, fill) {
+  ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(xa, y0); ctx.lineTo(xb, y0); ctx.lineTo(xc, y1); ctx.lineTo(xd, y1); ctx.closePath(); ctx.fill();
+}
+function temple(ctx, x, base) {
+  ctx.fillStyle = '#4a2560';
+  for (let i = 0; i < 4; i++) ctx.fillRect(x - 44 + i * 8, base - 14 - i * 12, 88 - i * 16, 13);
+  ctx.fillRect(x - 6, base - 70, 12, 14);
+  ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(x, base - 74, 3, 0, 7); ctx.fill();
+}
+function fade(z) { return Math.max(0, Math.min(1, (ZFAR - z) / 25)); }
+function prop(ctx, A, x, z, id) {
+  const s = sc(z), X = sx(x, z), Y = gy(z);
+  ctx.globalAlpha = fade(z);
+  if (id % 3 === 0) { // stone pillar with moss
+    const w = 0.9 * s, h = 3.6 * s;
+    A.rr(X - w / 2, Y - h, w, h, Math.max(1, w * 0.12)); A.ink('#b9a07a', Math.max(1, s * 0.03));
+    ctx.fillStyle = '#5fbf5a'; ctx.fillRect(X - w / 2, Y - h, w, h * 0.12);
+    ctx.fillStyle = 'rgba(0,0,0,.15)'; ctx.fillRect(X - w / 2, Y - h * 0.6, w, h * 0.06);
+  } else { // jungle tree
+    const tr = 0.35 * s, th = 2.2 * s;
+    ctx.fillStyle = '#6b4226'; ctx.fillRect(X - tr / 2, Y - th, tr, th);
+    const r = 1.2 * s;
+    [[0, -th - r * 0.4, 1], [-r * 0.7, -th, 0.8], [r * 0.7, -th, 0.8]].forEach(([dx, dy, m]) => {
+      ctx.beginPath(); ctx.arc(X + dx, Y + dy, r * m, 0, 7); A.ink(id % 2 ? '#2fae5a' : '#3fcb6b', Math.max(1, s * 0.03));
+    });
+  }
+  ctx.globalAlpha = 1;
+}
+function obstacle(ctx, A, o) {
+  if (o.z < -ZN + 1) return;
+  const s = sc(o.z), X = sx((o.lane - 1) * LANE, o.z), Y = gy(o.z), w = LANE * 0.86 * s, lw = Math.max(1, s * 0.035);
+  ctx.globalAlpha = fade(o.z);
+  if (o.k === 'log') {          // giant candy bar lying across the lane — jump it
+    const h = 0.7 * s;
+    A.rr(X - w / 2, Y - h, w, h, h * 0.3); A.ink('#7A3B1F', lw);
+    ctx.fillStyle = '#9b5de5'; ctx.fillRect(X - w * 0.22, Y - h, w * 0.44, h);
+    ctx.strokeStyle = A.INK; ctx.lineWidth = lw; ctx.strokeRect(X - w * 0.22, Y - h, w * 0.44, h);
+    if (s > 10) { ctx.fillStyle = '#FFD700'; ctx.font = '900 ' + Math.round(h * 0.42) + 'px Nunito'; ctx.textAlign = 'center'; ctx.fillText('CANDY', X, Y - h * 0.32); }
+  } else if (o.k === 'bar') {   // "sugar rush" banner on posts — slide under
+    const top = 2.5 * s, bot = 1.35 * s, pw = 0.16 * s;
+    ctx.fillStyle = '#7a5a3a';
+    ctx.fillRect(X - w / 2, Y - top, pw, top); ctx.fillRect(X + w / 2 - pw, Y - top, pw, top);
+    A.rr(X - w / 2, Y - top, w, top - bot, Math.max(2, s * 0.1)); A.ink('#FF4D9A', lw);
+    if (s > 10) { ctx.fillStyle = '#fff'; ctx.font = '900 ' + Math.round((top - bot) * 0.42) + 'px Nunito'; ctx.textAlign = 'center'; ctx.fillText('SUGAR', X, Y - bot - (top - bot) * 0.3); }
+  } else {                      // soda machine — change lanes
+    const h = 2.9 * s, d = sc(o.z + 0.9), Yb = gy(o.z + 0.9);
+    // top face
+    ctx.beginPath(); ctx.moveTo(X - w / 2, Y - h); ctx.lineTo(X + w / 2, Y - h);
+    ctx.lineTo(sx((o.lane - 1) * LANE, o.z + 0.9) + LANE * 0.43 * d, Yb - 2.9 * d); ctx.lineTo(sx((o.lane - 1) * LANE, o.z + 0.9) - LANE * 0.43 * d, Yb - 2.9 * d); ctx.closePath();
+    A.ink('#c9233f', lw);
+    A.rr(X - w / 2, Y - h, w, h, Math.max(2, s * 0.12)); A.ink('#FF3B5C', lw);
+    ctx.fillStyle = '#1A1030'; ctx.fillRect(X - w * 0.36, Y - h * 0.82, w * 0.5, h * 0.5);
+    ['#38BFFF', '#FFD700', '#00E5A0'].forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(X - w * 0.32, Y - h * (0.76 - i * 0.15), w * 0.42, h * 0.08); });
+    ctx.fillStyle = '#fff'; ctx.fillRect(X + w * 0.2, Y - h * 0.78, w * 0.12, h * 0.3);
+    if (s > 10) { ctx.fillStyle = '#fff'; ctx.font = '900 ' + Math.round(w * 0.2) + 'px Nunito'; ctx.textAlign = 'center'; ctx.fillText('SODA', X, Y - h * 0.15); }
+  }
+  ctx.globalAlpha = 1;
+}
+function fruitDraw(ctx, A, f) {
+  if (f.z < -ZN + 1) return;
+  const s = sc(f.z), X = sx((f.lane - 1) * LANE, f.z), Y = gy(f.z) - (f.h + Math.sin(travel * 0.6 + f.z) * 0.12) * s, r = 0.34 * s, lw = Math.max(1, s * 0.03);
+  const [c, leaf] = FRUIT[f.kind];
+  ctx.globalAlpha = fade(f.z);
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(X, gy(f.z), r, r * 0.3, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.beginPath(); ctx.arc(X, Y, r * 1.5, 0, 7); ctx.fill();
+  if (f.kind === 'water') {
+    ctx.beginPath(); ctx.moveTo(X, Y - r * 1.3); ctx.quadraticCurveTo(X + r, Y, X, Y + r); ctx.quadraticCurveTo(X - r, Y, X, Y - r * 1.3); A.ink(c, lw);
+  } else if (f.kind === 'grape') {
+    [[0, -0.5], [-0.45, 0], [0.45, 0], [0, 0.5]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(X + dx * r, Y + dy * r, r * 0.5, 0, 7); A.ink(c, lw); });
+  } else {
+    ctx.beginPath(); ctx.arc(X, Y, r, 0, 7); A.ink(c, lw);
+    ctx.fillStyle = leaf; ctx.beginPath(); ctx.ellipse(X + r * 0.4, Y - r * 1.05, r * 0.45, r * 0.22, -0.5, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.beginPath(); ctx.ellipse(X - r * 0.35, Y - r * 0.3, r * 0.18, r * 0.26, 0.3, 0, 7); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+function heroDraw(ctx, A) {
+  const s = sc(0), X = sx((hero.laneF - 1) * LANE, 0), Y = gy(0);
+  const size = 92, sl = hero.slide > 0 && hero.jy < 0.4;
+  ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(X, Y, 30 - hero.jy * 6, 8, 0, 0, 7); ctx.fill();
+  const bob = hero.jy === 0 && !hero.dead ? Math.abs(Math.sin(hero.runT * 11)) * 5 : 0;
+  const lean = (hero.lane - hero.laneF) * 0.35;
+  ctx.save();
+  ctx.translate(X, Y - hero.jy * s - size * 0.46 - bob + (sl ? size * 0.18 : 0));
+  if (sl) ctx.scale(1.25, 0.62);
+  if (!hero.dead && hero.jy === 0 && !sl) {
+    const k = Math.sin(hero.runT * 11) * 9;
+    ctx.fillStyle = '#1A1030';
+    ctx.beginPath(); ctx.ellipse(-12, size * 0.44 + k * 0.3, 10, 7, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(12, size * 0.44 - k * 0.3, 10, 7, 0, 0, 7); ctx.fill();
+  }
+  A.drawHero(0, 0, size, hero.dead ? hero.tumble * 6 : lean, hero.dead ? 'ghost' : 'happy');
+  ctx.restore();
+  if (sl && !hero.dead) for (let i = 0; i < 2; i++) A.particles.trail(X + (Math.random() - 0.5) * 50, Y - 4, 'rgba(255,230,180,.7)');
+}
+
+window.__run = () => ({ hero, rows, fruit, speed, dist });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Run', subtitle: 'Escape the Temple of Junk Food!', W, H, reserveH: 70,
+  storageKey: 'sprite_run', winAt: 1000, winText: 'You escaped the temple!', swipe: true, deathDelay: 900,
+  medals: [{ at: 300, name: 'Bronze', icon: '🥉' }, { at: 1000, name: 'Silver', icon: '🥈' }, { at: 2000, name: 'Gold', icon: '🥇' }, { at: 3500, name: 'Legend', icon: '💎' }],
+  howTo: '<b>Swipe left/right</b> to change lanes.<br><b>Swipe up</b> to jump candy bars, <b>swipe down</b> to slide under sugar banners.<br>Soda machines block the lane, so dodge them! Grab fruit for points.',
+  controls: '← → change lane · ↑ / Space jump · ↓ slide · P pause',
+  overTitle: 'Tripped up!',
+  facts: [
+    'One 20 oz soda has about 16 teaspoons of sugar, way over the daily limit of about 12.',
+    'Fruit gives you natural sugar plus fiber, which keeps your energy steady.',
+    'Drinking water before you feel thirsty helps your brain stay sharp.',
+    'Sprinting and changing direction builds agility, a key skill-related fitness component.',
+    'Grapes, apples and oranges count toward the 2 cups of fruit teens need each day.'
+  ],
+  reset, update, draw, input
+});
+})();
+</script>
+</body>
+</html>

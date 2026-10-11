@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Flap — Dopp's Arcade</title>
+<meta name="description" content="Flap your Wellness Sprite through towers of junk food and grab the water drops.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
+</style>
+</head>
+<body>
+<div class="top"><a href="dopp_games.html">← Arcade</a><h1>Sprite Flap</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 400, H = 640, GROUND = 560;
+let hero, pillars, drops, spawnT, speed, scrollX, wingT;
+const stars = Array.from({ length: 50 }, () => ({ x: Math.random() * W, y: Math.random() * 300, r: Math.random() * 1.6 + 0.4, tw: Math.random() * 6 }));
+const clouds = Array.from({ length: 5 }, (_, i) => ({ x: i * 110 + Math.random() * 40, y: 60 + Math.random() * 160, s: 0.7 + Math.random() * 0.6 }));
+const TYPES = ['soda', 'candy', 'fries', 'donut'];
+
+function reset(A) {
+  hero = { x: 110, y: 290, vy: 0, rot: 0, dead: false };
+  pillars = []; drops = []; spawnT = 0.9; speed = 150; scrollX = 0; wingT = 0;
+}
+
+function input(type, A) {
+  if (type !== 'tap' && type !== 'up') return;
+  if (hero.dead) return;
+  hero.vy = -400; wingT = 0.18; A.sfx('flap');
+  A.particles.burst(hero.x - 14, hero.y + 8, 'rgba(255,255,255,.8)', 4, 60, 3);
+}
+
+function gap(A) { return Math.max(140, 178 - A.score * 1.3); }
+
+function update(dt, A) {
+  const playing = A.state === 'play' || A.state === 'dying';
+  scrollX += (playing && !hero.dead ? speed : 40) * dt;
+  stars.forEach(s => s.tw += dt * 2);
+  clouds.forEach(c => { c.x -= (playing && !hero.dead ? 18 : 8) * c.s * dt; if (c.x < -80) { c.x = W + 40; c.y = 60 + Math.random() * 160; } });
+  if (A.state === 'menu' || A.state === 'over') { hero.y = 290 + Math.sin(Date.now() / 300) * 10; hero.rot = 0; return; }
+
+  // physics
+  hero.vy += 1350 * dt; hero.y += hero.vy * dt;
+  hero.rot = Math.max(-0.45, Math.min(1.3, hero.vy / 650));
+  wingT = Math.max(0, wingT - dt);
+  if (hero.y < 24) { hero.y = 24; hero.vy = 0; }
+  if (!hero.dead && hero.y > GROUND - 22) { hero.y = GROUND - 22; die(A); }
+  if (hero.dead) { if (hero.y > GROUND - 22) { hero.y = GROUND - 22; hero.vy = 0; } return; }
+  if (Math.random() < 0.5) A.particles.trail(hero.x - 18, hero.y + 6, 'rgba(255,255,255,.35)');
+
+  // spawn
+  speed = Math.min(235, 150 + A.score * 2.2);
+  spawnT -= dt;
+  if (spawnT <= 0) {
+    const g = gap(A), top = 70 + Math.random() * (GROUND - 140 - g);
+    pillars.push({ x: W + 40, top, g, w: 70, type: TYPES[Math.floor(Math.random() * TYPES.length)], passed: false });
+    if (Math.random() < 0.6) drops.push({ x: W + 40 + 35, y: top + g / 2, t: Math.random() * 6, got: false, kind: Math.random() < 0.7 ? 'water' : 'apple' });
+    spawnT = Math.max(1.15, 1.55 - A.score * 0.01);
+  }
+  // move + collide
+  const r = 17;
+  for (let i = pillars.length - 1; i >= 0; i--) {
+    const p = pillars[i]; p.x -= speed * dt;
+    if (p.x < -90) { pillars.splice(i, 1); continue; }
+    if (!p.passed && p.x + p.w < hero.x - r) { p.passed = true; A.addScore(1); A.sfx('point'); }
+    const inX = hero.x + r > p.x + 4 && hero.x - r < p.x + p.w - 4;
+    if (inX && (hero.y - r < p.top || hero.y + r > p.top + p.g)) { die(A); return; }
+  }
+  for (let i = drops.length - 1; i >= 0; i--) {
+    const d = drops[i]; d.x -= speed * dt; d.t += dt;
+    if (d.x < -30) { drops.splice(i, 1); continue; }
+    if (!d.got && Math.hypot(d.x - hero.x, d.y - hero.y) < 30) {
+      d.got = true; drops.splice(i, 1); A.addScore(1); A.sfx('coin');
+      A.particles.burst(d.x, d.y, d.kind === 'water' ? '#7FD3FF' : '#FF5C77', 14, 180, 4);
+      A.float(d.kind === 'water' ? '+1 💧' : '+1 🍎', d.x, d.y - 10, d.kind === 'water' ? '#7FD3FF' : '#FFB3C0');
+    }
+  }
+}
+
+function die(A) {
+  if (hero.dead) return;
+  hero.dead = true; hero.vy = -250;
+  A.particles.burst(hero.x, hero.y, '#FFD700', 22, 240, 5);
+  A.gameOver();
+}
+
+// ---------- drawing ----------
+function draw(ctx, A) {
+  // sky
+  const g = ctx.createLinearGradient(0, 0, 0, GROUND);
+  g.addColorStop(0, '#1b1046'); g.addColorStop(0.55, '#3b2a7a'); g.addColorStop(1, '#2a8a8a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  stars.forEach(s => { ctx.globalAlpha = 0.4 + 0.6 * Math.abs(Math.sin(s.tw)); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); });
+  ctx.globalAlpha = 1;
+  // moon
+  ctx.fillStyle = '#FFF3C4'; ctx.beginPath(); ctx.arc(320, 90, 30, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(255,243,196,.15)'; ctx.beginPath(); ctx.arc(320, 90, 48, 0, 7); ctx.fill();
+  // far mountains
+  layer(ctx, scrollX * 0.15, 420, 90, '#2b2160', 160);
+  // clouds
+  clouds.forEach(c => cloud(ctx, c.x, c.y, c.s));
+  // hills with trees
+  layer(ctx, scrollX * 0.35, 480, 60, '#1f6b5a', 120);
+  trees(ctx, scrollX * 0.35);
+  // pillars
+  pillars.forEach(p => pillar(ctx, A, p));
+  // drops
+  drops.forEach(d => drop(ctx, A, d));
+  // ground
+  ctx.fillStyle = '#5bd16b'; ctx.fillRect(0, GROUND, W, 14);
+  ctx.fillStyle = '#8a5a3b'; ctx.fillRect(0, GROUND + 14, W, H - GROUND);
+  ctx.strokeStyle = A.INK; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, GROUND); ctx.lineTo(W, GROUND); ctx.stroke();
+  const off = scrollX % 40;
+  for (let x = -off; x < W + 40; x += 40) {
+    ctx.fillStyle = '#4ab35a'; ctx.beginPath(); ctx.moveTo(x, GROUND + 14); ctx.lineTo(x + 20, GROUND + 14); ctx.lineTo(x + 10, GROUND + 4); ctx.fill();
+    ctx.fillStyle = '#74492f'; ctx.fillRect(x + 6, GROUND + 30, 14, 8); ctx.fillRect(x + 26, GROUND + 52, 10, 6);
+  }
+  // hero (with leaf wings)
+  const mood = hero.dead ? 'ghost' : 'happy';
+  if (!hero.dead) wings(ctx, A);
+  A.drawHero(hero.x, hero.y, 58, hero.rot, mood);
+}
+
+function layer(ctx, off, base, amp, color, period) {
+  ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, GROUND);
+  for (let x = 0; x <= W; x += 10) {
+    const t = (x + off) / period;
+    ctx.lineTo(x, base - amp * (0.55 + 0.45 * Math.sin(t) * Math.cos(t * 0.37)));
+  }
+  ctx.lineTo(W, GROUND); ctx.closePath(); ctx.fill();
+}
+function trees(ctx, off) {
+  for (let i = -1; i < 7; i++) {
+    const x = i * 70 - (off % 70) + 20, y = 470 + 10 * Math.sin((i + Math.floor(off / 70)) * 1.7);
+    ctx.fillStyle = '#5a3a28'; ctx.fillRect(x - 3, y, 6, 22);
+    ctx.fillStyle = '#2f9a6e'; ctx.beginPath(); ctx.arc(x, y, 16, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.beginPath(); ctx.arc(x - 5, y - 5, 6, 0, 7); ctx.fill();
+  }
+}
+function cloud(ctx, x, y, s) {
+  ctx.fillStyle = 'rgba(255,255,255,.18)';
+  [[0, 0, 22], [20, -8, 18], [38, 0, 20], [18, 6, 20]].forEach(([dx, dy, r]) => { ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, r * s, 0, 7); ctx.fill(); });
+}
+function wings(ctx, A) {
+  const flap = wingT > 0 ? -0.9 : Math.sin(Date.now() / 90) * 0.3;
+  ctx.save(); ctx.translate(hero.x - 6, hero.y - 2); ctx.rotate(hero.rot);
+  [[-1, 1], [1, 0.8]].forEach(([side, a]) => {
+    ctx.save(); ctx.rotate(flap * side * 0.6 - 0.4);
+    ctx.beginPath(); ctx.ellipse(-16, -6 * side, 16, 8, -0.3, 0, 7);
+    ctx.fillStyle = side < 0 ? '#3FCB6B' : '#2fa858'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = A.INK; ctx.stroke();
+    ctx.restore();
+  });
+  ctx.restore();
+}
+function pillar(ctx, A, p) {
+  const segH = 34;
+  // top tower hangs down, bottom tower stands up
+  drawTower(ctx, A, p, p.x, 0, p.top, true);
+  drawTower(ctx, A, p, p.x, p.top + p.g, GROUND - (p.top + p.g), false);
+}
+function drawTower(ctx, A, p, x, y, h, top) {
+  if (h <= 0) return;
+  const w = p.w;
+  ctx.save(); ctx.beginPath(); ctx.rect(x - 10, y, w + 20, h); ctx.clip();
+  if (p.type === 'soda') {
+    for (let yy = top ? y + h - 52 : y; top ? yy > y - 52 : yy < y + h; yy += top ? -52 : 52) {
+      A.rr(x + 4, yy + 2, w - 8, 48, 10); A.ink('#FF4D6D', 3.5);
+      ctx.fillStyle = '#fff'; ctx.fillRect(x + 10, yy + 18, w - 20, 14);
+      ctx.fillStyle = '#FF4D6D'; ctx.font = '900 11px Nunito'; ctx.textAlign = 'center'; ctx.fillText('SODA', x + w / 2, yy + 29);
+      ctx.fillStyle = '#c8c8d4'; ctx.fillRect(x + 8, yy + 2, w - 16, 5);
+      ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(x + 10, yy + 8, 6, 34);
+    }
+  } else if (p.type === 'candy') {
+    for (let yy = top ? y + h - 40 : y; top ? yy > y - 40 : yy < y + h; yy += top ? -40 : 40) {
+      A.rr(x + 2, yy + 3, w - 4, 34, 8); A.ink('#9b5de5', 3.5);
+      ctx.fillStyle = '#FFD23F'; ctx.fillRect(x + 14, yy + 8, w - 28, 24);
+      ctx.strokeStyle = A.INK; ctx.lineWidth = 2; ctx.strokeRect(x + 14, yy + 8, w - 28, 24);
+      ctx.fillStyle = '#9b5de5'; ctx.font = '900 10px Nunito'; ctx.textAlign = 'center'; ctx.fillText('CANDY', x + w / 2, yy + 24);
+    }
+  } else if (p.type === 'donut') {
+    for (let yy = top ? y + h - 30 : y; top ? yy > y - 30 : yy < y + h; yy += top ? -30 : 30) {
+      ctx.beginPath(); ctx.ellipse(x + w / 2, yy + 15, w / 2 - 2, 14, 0, 0, 7); A.ink('#d9a066', 3.5);
+      ctx.beginPath(); ctx.ellipse(x + w / 2, yy + 12, w / 2 - 6, 10, 0, 0, 7); ctx.fillStyle = '#ff8fc7'; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(x + w / 2, yy + 13, 9, 4, 0, 0, 7); ctx.fillStyle = '#5a3a28'; ctx.fill();
+      ['#38BFFF', '#FFD700', '#00E5A0'].forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(x + 14 + i * 14, yy + 8 + (i % 2) * 6, 6, 2.5); });
+    }
+  } else { // fries box tower
+    A.rr(x + 4, y - 4, w - 8, h + 8, 8); A.ink('#E63946', 4);
+    for (let yy = y + 16; yy < y + h; yy += 26) { ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x + 10, yy, w - 20, 8); }
+    ctx.fillStyle = '#FFD700'; ctx.font = '900 18px Nunito'; ctx.textAlign = 'center';
+    ctx.fillText('M', x + w / 2, top ? y + h - 46 : y + 52);
+    const fy = top ? y + h : y;
+    for (let i = 0; i < 6; i++) {
+      const fx = x + 10 + i * 9, fh = 16 + (i % 3) * 6;
+      ctx.fillStyle = '#FFD23F'; ctx.strokeStyle = A.INK; ctx.lineWidth = 2;
+      if (top) { ctx.fillRect(fx, fy - 2, 7, fh); ctx.strokeRect(fx, fy - 2, 7, fh); } else { ctx.fillRect(fx, fy - fh + 2, 7, fh); ctx.strokeRect(fx, fy - fh + 2, 7, fh); }
+    }
+  }
+  ctx.restore();
+  // tower cap (lip) for a clean edge
+  const capY = top ? y + h - 14 : y;
+  A.rr(x - 6, capY, w + 12, 14, 6); A.ink('#2a2050', 4);
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x - 2, capY + 3, w + 4, 3);
+}
+function drop(ctx, A, d) {
+  const y = d.y + Math.sin(d.t * 3) * 6;
+  ctx.save(); ctx.translate(d.x, y);
+  ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.arc(0, 2, 20, 0, 7); ctx.fill();
+  if (d.kind === 'water') {
+    ctx.beginPath(); ctx.moveTo(0, -16); ctx.bezierCurveTo(12, -2, 12, 12, 0, 12); ctx.bezierCurveTo(-12, 12, -12, -2, 0, -16);
+    A.ink('#4CC4FF', 3); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.beginPath(); ctx.ellipse(-4, 2, 3, 5, 0.3, 0, 7); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(0, 2, 12, 0, 7); A.ink('#FF5C77', 3);
+    ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(2, -15); ctx.strokeStyle = '#5a3a28'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(6, -13, 6, 3, -0.5, 0, 7); ctx.fillStyle = '#3FCB6B'; ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.beginPath(); ctx.ellipse(-4, -2, 3, 4, 0.3, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+}
+
+window.__flap = () => ({ hero, pillars });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Flap', subtitle: 'Flap past the junk food towers!', W, H,
+  storageKey: 'sprite_flap', winAt: 15, winText: 'Your sprite is soaring!',
+  medals: [{ at: 5, name: 'Bronze', icon: '🥉' }, { at: 15, name: 'Silver', icon: '🥈' }, { at: 30, name: 'Gold', icon: '🥇' }, { at: 50, name: 'Legend', icon: '💎' }],
+  howTo: 'Tap or press <b>Space</b> to flap.<br>Fly through the gaps. Grab 💧 water and 🍎 apples for bonus points.',
+  controls: 'Tap · Space · ↑ to flap · P to pause',
+  overTitle: 'Bonk!',
+  upIsTap: false,
+  facts: [
+    'One 20 oz soda has about 16 teaspoons of sugar, more than the daily limit for teens.',
+    'Water is the best drink for your body. Even mild dehydration can make it hard to focus.',
+    'An apple has about 4 grams of fiber, which helps you feel full longer.',
+    'Fried foods are high in saturated fat. Baked or grilled versions are a healthier swap.',
+    'Teens should limit added sugar to less than 10% of daily calories.'
+  ],
+  reset, update, draw, input
+});
+})();
+</script>
+</body>
+</html>

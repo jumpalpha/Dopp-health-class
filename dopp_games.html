@@ -159,6 +159,17 @@ footer{position:relative;z-index:1;text-align:center;padding:40px 24px 32px;bord
   </div>
 </div>
 
+<!-- ══ SECTION 0: SPRITE ARCADE (stars the student's Wellness Sprite) ══ -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="section-line"></div>
+    <div class="section-title emerald">🌱 Sprite Arcade</div>
+    <div class="section-line"></div>
+  </div>
+  <p style="text-align:center;opacity:.85;margin:-6px auto 14px;max-width:560px;font-weight:700">Your Wellness Sprite stars in these. Pick its color, chase medals, beat your best!</p>
+  <div class="grid" id="grid-sprite"></div>
+</div>
+
 <!-- ══ SECTION 1: DOPP ORIGINALS ══ -->
 <div class="section">
   <div class="section-hdr">
@@ -199,6 +210,12 @@ footer{position:relative;z-index:1;text-align:center;padding:40px 24px 32px;bord
 // To add a new game: add an entry to ORIGINALS or CLASSROOM arrays below.
 // status: 'live' | 'soon'
 // color: 'gold' | 'emerald' | 'sky' | 'crimson' | 'purple'
+
+const SPRITE_GAMES = [
+  { emoji:'🪽', title:'Sprite Flap',  desc:'Tap to flap through junk food towers. Can you pass 15?',      file:'sprite_flap.html', color:'sky',     status:'live', isNew:true },
+  { emoji:'🏃', title:'Sprite Dash',  desc:'Jump and duck past burgers, soda and candy bats. Day turns to night!', file:'sprite_dash.html', color:'gold',    status:'live', isNew:true },
+  { emoji:'🛕', title:'Sprite Run',   desc:'Swipe through the Temple of Junk Food in 3D. Grab fruit, dodge soda!', file:'sprite_run.html',  color:'emerald', status:'live', isNew:true },
+];
 
 const ORIGINALS = [
   { emoji:'🏀', title:'Dopp Dunk',           desc:'Shoot bad health habits into the trash can.',  file:'dopp_dunk.html',      color:'gold',    status:'live', isNew:true },
@@ -295,6 +312,7 @@ function renderSection(id, items, type) {
   document.getElementById(id).innerHTML = items.map(g => card(g, type)).join('');
 }
 
+renderSection('grid-sprite', SPRITE_GAMES, 'original');
 renderSection('grid-originals', ORIGINALS, 'original');
 renderSection('grid-classroom', CLASSROOM, 'classroom');
 
@@ -303,8 +321,8 @@ const soonCards = COMING_SOON.map(() => ({ }));
 document.getElementById('grid-soon').innerHTML = soonCards.map(() => card({}, 'mystery')).join('');
 
 // Stats
-const live = ORIGINALS.filter(g=>g.status==='live').length + CLASSROOM.filter(g=>g.status==='live').length;
-const total = ORIGINALS.length + CLASSROOM.length + COMING_SOON.length;
+const live = SPRITE_GAMES.length + ORIGINALS.filter(g=>g.status==='live').length + CLASSROOM.filter(g=>g.status==='live').length;
+const total = SPRITE_GAMES.length + ORIGINALS.length + CLASSROOM.length + COMING_SOON.length;
 document.getElementById('live-count').textContent = live;
 document.getElementById('total-count').textContent = total + '+';
 </script>
