@@ -2,326 +2,167 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
-<meta property="og:image" content="https://doppsclass.com/og-image.png">
-<title>Dopp Snake — Health Arcade</title>
-<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Snake — Dopp's Arcade</title>
+<meta name="description" content="Guide your Wellness Sprite through the garden. Eat fruit and veggies to grow, dodge the junk food.">
 <link rel="canonical" href="https://doppsclass.com/dopp_snake.html">
-<meta property="og:title" content="Dopp Snake — Health Arcade">
-<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://doppsclass.com/dopp_snake.html">
-<meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0618;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
-#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
-#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
-#back-btn:hover{opacity:1}
-#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(16px,3vw,22px);text-align:center}
-#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:90px}
-#main{display:flex;flex-direction:column;align-items:center;padding:12px 10px 30px;width:100%;max-width:820px}
-#tip-bar{width:560px;max-width:100%;min-height:28px;font-family:'Nunito',sans-serif;font-size:13px;color:#38BFFF;text-align:center;padding:4px 8px;margin-bottom:8px;opacity:0;transition:opacity .4s}
-#tip-bar.show{opacity:1}
-canvas{display:block;background:#0a0618;border:2px solid rgba(255,215,0,0.25);border-radius:8px;max-width:100%}
-#overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
-#overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(24px,5vw,36px);margin-bottom:16px}
-#overlay p{font-family:'Nunito',sans-serif;font-size:18px;color:#fff;margin-bottom:8px}
-#overlay .best{font-size:14px;color:#00E5A0;margin-bottom:28px}
-#play-btn{background:#FFD700;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 0 18px rgba(255,215,0,.4)}
-#play-btn:hover{transform:scale(1.05);box-shadow:0 0 28px rgba(255,215,0,.7)}
-#start-overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
-#start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,32px);margin-bottom:12px}
-#start-overlay p{font-family:'Nunito',sans-serif;color:#ccc;font-size:15px;margin-bottom:6px;max-width:380px;text-align:center}
-#start-btn{margin-top:20px;background:#00E5A0;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:16px;padding:12px 36px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(0,229,160,.4)}
-#start-btn:hover{transform:scale(1.05)}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
 </style>
-<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
-<div id="header">
-  <a id="back-btn" href="arcade.html">← Arcade</a>
-  <div id="game-title">Dopp Snake</div>
-  <div id="score-display">Score: <span id="score-val">0</span></div>
-</div>
-<div id="main">
-  <div id="tip-bar"></div>
-  <canvas id="gameCanvas" width="560" height="560"></canvas>
-</div>
-
-<div id="start-overlay">
-  <h2>Dopp Snake</h2>
-  <p>Eat healthy food sprites to reach 100 points and win!</p>
-  <p style="color:#FF3B5C">Avoid junk food — it shrinks you!</p>
-  <p style="color:#aaa;font-size:13px;margin-top:8px">Arrow keys / WASD to move</p>
-  <button id="start-btn">Start Game</button>
-</div>
-
-<div id="overlay" style="display:none">
-  <h2 id="overlay-title">Game Over</h2>
-  <p id="final-score">Score: 0</p>
-  <p class="best" id="best-score">Best: 0</p>
-  <button id="play-btn">Play Again</button>
-</div>
-
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Sprite Snake</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_art.js"></script>
+<script src="arcade_kit.js"></script>
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const CELL = 28, COLS = 20, ROWS = 20;
-const W = COLS * CELL, H = ROWS * CELL;
-const WIN_SCORE = 100;
+(() => {
+const COLS = 18, ROWS = 18, CELL = 24, OX = 4, OY = 72;
+const W = COLS * CELL + OX * 2, H = OY + ROWS * CELL + 8;
+const GOOD = ['apple', 'orange', 'grape', 'carrot', 'broccoli', 'banana', 'water', 'strawberry'];
+const BAD = ['soda', 'donut', 'candy', 'fries', 'cookie'];
+const TIPS = { apple: 'Apples are full of fiber.', orange: 'Oranges are packed with vitamin C.', grape: 'Grapes count toward your 2 cups of fruit a day.',
+  carrot: 'Carrots have vitamin A for healthy eyes.', broccoli: 'Broccoli is loaded with vitamins C and K.', banana: 'Bananas have potassium for your muscles.',
+  water: 'Water keeps your brain sharp.', strawberry: 'Strawberries are full of antioxidants.' };
 
-const TIPS = [
-  "💧 Drink 8 glasses of water daily!",
-  "🥦 Vegetables provide essential vitamins & minerals.",
-  "🍎 An apple a day keeps the doctor away!",
-  "🥕 Carrots are rich in beta-carotene for eye health.",
-  "🍌 Bananas are a great source of potassium.",
-  "🏃 Exercise for at least 60 minutes every day.",
-  "😴 Teens need 8–10 hours of sleep each night.",
-  "🥗 Half your plate should be fruits & vegetables!"
-];
+let snake, dir, queue, stepT, interval, food, junk, junkT, eaten, mood, moodT, grow, eatAnim;
 
-const FOODS = [
-  {emoji:'🍎', label:'Apple +10',    pts:10,  good:true},
-  {emoji:'🥦', label:'Broccoli +15', pts:15,  good:true},
-  {emoji:'💧', label:'Water +12',    pts:12,  good:true},
-  {emoji:'🍌', label:'Banana +10',   pts:10,  good:true},
-  {emoji:'🥕', label:'Carrot +12',   pts:12,  good:true},
-  {emoji:'🍔', label:'Burger -10',   pts:-10, good:false},
-  {emoji:'🥤', label:'Soda -10',     pts:-10, good:false},
-];
-
-let snake, dir, nextDir, foods, score, speed, foodCount, tipIndex, gameOver, wonGame, flashRed, flashTimer, animId;
-
-function initGame() {
-  snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
-  dir = {x:1, y:0};
-  nextDir = {x:1, y:0};
-  foods = [];
-  score = 0;
-  speed = 150;
-  foodCount = 0;
-  tipIndex = 0;
-  gameOver = false;
-  wonGame = false;
-  flashRed = false;
-  flashTimer = 0;
-  spawnFood();
-  spawnFood();
-  document.getElementById('score-val').textContent = '0';
-  document.getElementById('overlay-title').textContent = 'Game Over';
-}
-
-function rnd(n){return Math.floor(Math.random()*n)}
-
-function cellFree(x,y){
-  if(snake.some(s=>s.x===x&&s.y===y)) return false;
-  if(foods.some(f=>f.x===x&&f.y===y)) return false;
-  return true;
-}
-
-function spawnFood(){
-  if(foods.length >= 4) return;
-  let x,y,tries=0;
-  do{x=rnd(COLS);y=rnd(ROWS);tries++;}while(!cellFree(x,y)&&tries<200);
-  // 30% chance junk food
-  let pool = Math.random()<0.3 ? FOODS.filter(f=>!f.good) : FOODS.filter(f=>f.good);
-  let fd = pool[rnd(pool.length)];
-  foods.push({x,y,...fd});
-}
-
-function showTip(){
-  const bar = document.getElementById('tip-bar');
-  bar.textContent = TIPS[tipIndex % TIPS.length];
-  tipIndex++;
-  bar.classList.remove('show');
-  void bar.offsetWidth;
-  bar.classList.add('show');
-  clearTimeout(bar._t);
-  bar._t = setTimeout(()=>bar.classList.remove('show'), 3500);
-}
-
-let lastTime = 0;
-function gameLoop(ts){
-  if(gameOver) return;
-  animId = requestAnimationFrame(gameLoop);
-  if(ts - lastTime < speed) return;
-  lastTime = ts;
-  update();
-  draw();
-}
-
-function update(){
-  dir = nextDir;
-  const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
-  // wall collision
-  if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS){endGame();return;}
-  // self collision
-  if(snake.some(s=>s.x===head.x&&s.y===head.y)){endGame();return;}
-
-  snake.unshift(head);
-  let ate = false;
-  for(let i=0;i<foods.length;i++){
-    const f = foods[i];
-    if(f.x===head.x&&f.y===head.y){
-      score = Math.max(0, score + f.pts);
-      document.getElementById('score-val').textContent = score;
-      foods.splice(i,1);
-      ate = true;
-      foodCount++;
-      showTip();
-      if(score>=WIN_SCORE){winGame();return;}
-      if(!f.good){
-        // remove tail segments (shrink)
-        if(snake.length > 2){ snake.pop(); snake.pop(); }
-        flashRed = true; flashTimer = 6;
-      } else {
-        // don't pop — snake grows
-      }
-      // speed up every 5 good foods
-      if(foodCount % 5 === 0 && speed > 70) speed -= 12;
-      spawnFood();
-      break;
-    }
+function freeCell() {
+  for (let tries = 0; tries < 500; tries++) {
+    const x = Math.floor(Math.random() * COLS), y = Math.floor(Math.random() * ROWS);
+    if (snake.some(s => s.x === x && s.y === y)) continue;
+    if (food && food.x === x && food.y === y) continue;
+    if (junk && junk.x === x && junk.y === y) continue;
+    return { x, y };
   }
-  if(!ate) snake.pop();
-  if(snake.length <= 0){endGame();return;}
-
-  if(flashTimer > 0) flashTimer--;
-  else flashRed = false;
+  return { x: 0, y: 0 };
 }
+function reset(A) {
+  snake = [{ x: 6, y: 9 }, { x: 5, y: 9 }, { x: 4, y: 9 }];
+  dir = { x: 1, y: 0 }; queue = []; stepT = 0; interval = 0.16; grow = 0;
+  food = null; junk = null; food = { ...freeCell(), kind: GOOD[Math.floor(Math.random() * GOOD.length)], t: 0 };
+  junkT = 5; eaten = 0; mood = 'happy'; moodT = 0; eatAnim = 0;
+}
+function input(type, A) {
+  const D = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } }[type];
+  if (!D) return;
+  const lastD = queue.length ? queue[queue.length - 1] : dir;
+  if (D.x === -lastD.x && D.y === -lastD.y) return;      // can't reverse into yourself
+  if (D.x === lastD.x && D.y === lastD.y) return;
+  if (queue.length < 2) queue.push(D);
+}
+function update(dt, A) {
+  if (food) food.t += dt;
+  if (junk) junk.t += dt;
+  if (moodT > 0 && (moodT -= dt) <= 0) mood = 'happy';
+  eatAnim = Math.max(0, eatAnim - dt * 4);
+  if (A.state !== 'play') return;
+  // junk food pops up now and then and spoils after a while
+  junkT -= dt;
+  if (!junk && junkT <= 0 && eaten >= 2) { junk = { ...freeCell(), kind: BAD[Math.floor(Math.random() * BAD.length)], t: 0 }; junkT = 7; }
+  if (junk && junk.t > 8) { junk = null; junkT = 3 + Math.random() * 4; }
 
-function draw(){
-  ctx.clearRect(0,0,W,H);
-
-  // grid
-  ctx.strokeStyle='rgba(255,255,255,0.03)';
-  ctx.lineWidth=1;
-  for(let x=0;x<=W;x+=CELL){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-  for(let y=0;y<=H;y+=CELL){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-
-  // red flash
-  if(flashRed){
-    ctx.fillStyle='rgba(255,59,92,0.18)';
-    ctx.fillRect(0,0,W,H);
+  stepT += dt;
+  if (stepT < interval) return;
+  stepT -= interval;
+  if (queue.length) dir = queue.shift();
+  const head = snake[0], nx = head.x + dir.x, ny = head.y + dir.y;
+  const hitsSelf = snake.slice(0, snake.length - (grow > 0 ? 0 : 1)).some(s => s.x === nx && s.y === ny);
+  if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS || hitsSelf) {
+    mood = 'ghost'; A.particles.burst(cx(head.x), cy(head.y), '#FFD700', 22, 220, 5); A.gameOver(); return;
   }
+  snake.unshift({ x: nx, y: ny });
+  if (grow > 0) grow--; else snake.pop();
+
+  if (food && nx === food.x && ny === food.y) {
+    eaten++; grow += 1; eatAnim = 1;
+    A.addScore(10); A.sfx('coin');
+    A.particles.burst(cx(nx), cy(ny), '#7CFFB2', 14, 170, 4);
+    A.float('+10', cx(nx), cy(ny) - 14, '#7CFFB2');
+    if (eaten % 4 === 0) A.toast('💡 ' + TIPS[food.kind]);
+    food = { ...freeCell(), kind: GOOD[Math.floor(Math.random() * GOOD.length)], t: 0 };
+    interval = Math.max(0.075, 0.16 - eaten * 0.0035);
+  }
+  if (junk && nx === junk.x && ny === junk.y) {
+    A.sfx('hit'); A.shake(6, 0.2);
+    A.particles.burst(cx(nx), cy(ny), '#FF5C77', 14, 170, 4);
+    A.float('−2 length', cx(nx), cy(ny) - 14, '#FF8FA3');
+    A.toast('🍩 Junk food slows you down!');
+    for (let i = 0; i < 2 && snake.length > 3; i++) snake.pop();
+    mood = 'sugar'; moodT = 1.5; junk = null; junkT = 4 + Math.random() * 4;
+  }
+}
+const cx = x => OX + x * CELL + CELL / 2, cy = y => OY + y * CELL + CELL / 2;
+
+function draw(ctx, A) {
+  // sky band behind the score
+  const g = ctx.createLinearGradient(0, 0, 0, OY);
+  g.addColorStop(0, '#2b1660'); g.addColorStop(1, '#4a2a7a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // garden: checkerboard grass inside a hedge
+  ctx.fillStyle = '#1f6b3a'; ctx.fillRect(0, OY - 6, W, H - OY + 6);
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    ctx.fillStyle = (x + y) % 2 ? '#3f8f4c' : '#47a056';
+    ctx.fillRect(OX + x * CELL, OY + y * CELL, CELL, CELL);
+  }
+  ctx.strokeStyle = A.INK; ctx.lineWidth = 3; ctx.strokeRect(OX - 1.5, OY - 1.5, COLS * CELL + 3, ROWS * CELL + 3);
+  // little flowers on the top hedge
+  for (let i = 0; i < 9; i++) { ctx.fillStyle = ['#FFD700', '#FF8FC7', '#fff'][i % 3]; ctx.beginPath(); ctx.arc(20 + i * 50, OY - 14, 4, 0, 7); ctx.fill(); }
 
   // food
-  foods.forEach(f=>{
-    const px = f.x*CELL, py = f.y*CELL;
-    // background bubble
-    ctx.fillStyle = f.good ? 'rgba(0,229,160,0.12)' : 'rgba(255,59,92,0.15)';
-    ctx.beginPath();ctx.roundRect(px+1,py+1,CELL-2,CELL-2,6);ctx.fill();
-    ctx.font=`${CELL-6}px serif`;
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(f.emoji, px+CELL/2, py+CELL/2);
-    // label
-    ctx.font=`bold 8px Nunito`;
-    ctx.fillStyle = f.good ? '#00E5A0' : '#FF3B5C';
-    ctx.fillText(f.label, px+CELL/2, py+CELL-3);
-  });
-
-  // snake body
-  for(let i=snake.length-1;i>=1;i--){
-    const s=snake[i];
-    const t = i/snake.length;
-    ctx.fillStyle=`rgba(${Math.round(60+t*40)},${Math.round(180+t*30)},${Math.round(100+t*20)},0.9)`;
-    ctx.beginPath();ctx.roundRect(s.x*CELL+2,s.y*CELL+2,CELL-4,CELL-4,4);ctx.fill();
+  if (food) {
+    const b = Math.sin(food.t * 5) * 2;
+    ctx.fillStyle = 'rgba(0,0,0,.15)'; ctx.beginPath(); ctx.ellipse(cx(food.x), cy(food.y) + 9, 9, 3, 0, 0, 7); ctx.fill();
+    ART.draw(ctx, food.kind, cx(food.x), cy(food.y) - 1 + b, 26, food.t);
   }
-  // snake head
-  const h=snake[0];
-  ctx.fillStyle='#00E5A0';
-  ctx.beginPath();ctx.roundRect(h.x*CELL+1,h.y*CELL+1,CELL-2,CELL-2,7);ctx.fill();
-  // eyes
-  const ex = h.x*CELL+CELL/2, ey = h.y*CELL+CELL/2;
-  ctx.fillStyle='#1C1A2E';
-  if(dir.y===0){
-    ctx.beginPath();ctx.arc(ex+dir.x*3, ey-4, 2.5, 0, Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(ex+dir.x*3, ey+4, 2.5, 0, Math.PI*2);ctx.fill();
-  } else {
-    ctx.beginPath();ctx.arc(ex-4, ey+dir.y*3, 2.5, 0, Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(ex+4, ey+dir.y*3, 2.5, 0, Math.PI*2);ctx.fill();
+  if (junk) {
+    const blink = junk.t > 6 && Math.floor(junk.t * 8) % 2;
+    if (!blink) {
+      ctx.fillStyle = 'rgba(255,59,92,.25)'; ctx.beginPath(); ctx.arc(cx(junk.x), cy(junk.y), 14, 0, 7); ctx.fill();
+      ART.draw(ctx, junk.kind, cx(junk.x), cy(junk.y), 26, junk.t);
+    }
   }
-}
-
-
-function drawFoodSprite(f, px, py){
-  const good = f.good;
-  ctx.fillStyle = good ? 'rgba(0,229,160,0.12)' : 'rgba(255,59,92,0.15)';
-  ctx.beginPath();ctx.roundRect(px+1,py+1,CELL-2,CELL-2,6);ctx.fill();
-  ctx.save();ctx.translate(px+CELL/2,py+CELL/2-2);
-  if(f.label.includes('Apple')) drawAppleSprite(0,0,10);
-  else if(f.label.includes('Broccoli')) drawBroccoliSprite(0,0,10);
-  else if(f.label.includes('Water')) drawWaterSprite(0,0,11);
-  else if(f.label.includes('Banana')) drawBananaSprite(0,0,11);
-  else if(f.label.includes('Carrot')) drawCarrotSprite(0,0,11);
-  else drawJunkSprite(0,0,11);
-  ctx.restore();
-  ctx.font='bold 8px Nunito';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle = good ? '#00E5A0' : '#FF3B5C';
-  ctx.fillText(f.label, px+CELL/2, py+CELL-3);
-}
-function drawAppleSprite(x,y,r){ctx.fillStyle='#ff5b68';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6b3b18';ctx.fillRect(x-2,y-r-6,4,8);ctx.fillStyle='#00E5A0';ctx.beginPath();ctx.ellipse(x+6,y-r-5,7,3,-.4,0,Math.PI*2);ctx.fill();}
-function drawBroccoliSprite(x,y,r){ctx.fillStyle='#00E5A0';[-8,0,8].forEach(dx=>{ctx.beginPath();ctx.arc(x+dx,y-4,r*.65,0,Math.PI*2);ctx.fill();});ctx.fillStyle='#71c35a';ctx.beginPath();ctx.roundRect(x-4,y+2,8,14,4);ctx.fill();}
-function drawWaterSprite(x,y,r){ctx.fillStyle='#38BFFF';ctx.beginPath();ctx.moveTo(x,y-r);ctx.bezierCurveTo(x+r,y,x+r*.6,y+r,x,y+r);ctx.bezierCurveTo(x-r*.6,y+r,x-r,y,x,y-r);ctx.fill();ctx.fillStyle='rgba(255,255,255,.5)';ctx.beginPath();ctx.ellipse(x-3,y,3,6,.3,0,Math.PI*2);ctx.fill();}
-function drawBananaSprite(x,y,r){ctx.strokeStyle='#FFD700';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.arc(x,y-3,r,0.25*Math.PI,0.95*Math.PI);ctx.stroke();ctx.strokeStyle='#8a5a14';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-3,r,0.25*Math.PI,0.95*Math.PI);ctx.stroke();}
-function drawCarrotSprite(x,y,r){ctx.fillStyle='#ff8c2a';ctx.beginPath();ctx.moveTo(x-8,y-6);ctx.lineTo(x+8,y-6);ctx.lineTo(x,y+13);ctx.closePath();ctx.fill();ctx.fillStyle='#00E5A0';ctx.fillRect(x-2,y-15,4,10);ctx.fillRect(x-9,y-12,18,4);}
-function drawJunkSprite(x,y,r){ctx.fillStyle='#FF3B5C';ctx.beginPath();ctx.roundRect(x-r,y-r,r*2,r*2,4);ctx.fill();ctx.fillStyle='#FFD700';ctx.font='bold 13px Cinzel';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('!',x,y+1);}
-function winGame(){
-  wonGame = true;
-  endGame();
-  document.getElementById('overlay-title').textContent = 'You Win!';
-  document.getElementById('final-score').textContent = 'Wellness Score: ' + score + ' / ' + WIN_SCORE;
-}
-
-function endGame(){
-  gameOver = true;
-  cancelAnimationFrame(animId);
-  const best = Math.max(score, parseInt(localStorage.getItem('snakeBest')||'0'));
-  localStorage.setItem('snakeBest', best);
-  document.getElementById('final-score').textContent = 'Score: ' + score;
-  document.getElementById('best-score').textContent = 'Best: ' + best;
-  document.getElementById('overlay').style.display='flex';
-}
-
-// Controls
-document.addEventListener('keydown', e=>{
-  const map={'ArrowUp':{x:0,y:-1},'ArrowDown':{x:0,y:1},'ArrowLeft':{x:-1,y:0},'ArrowRight':{x:1,y:0},
-             'w':{x:0,y:-1},'s':{x:0,y:1},'a':{x:-1,y:0},'d':{x:1,y:0},
-             'W':{x:0,y:-1},'S':{x:0,y:1},'A':{x:-1,y:0},'D':{x:1,y:0}};
-  if(map[e.key]){
-    e.preventDefault();
-    const nd=map[e.key];
-    if(nd.x!==-dir.x||nd.y!==-dir.y) nextDir=nd;
+  // body: a chain of leafy green beads, tail to head
+  for (let i = snake.length - 1; i >= 1; i--) {
+    const s = snake[i], r = Math.max(6, 11 - i * 0.12);
+    const pal = (window.PET_PAL || {})[A.color] || { base: '#2EE6A6', dark: '#0A8F63' };
+    ctx.beginPath(); ctx.arc(cx(s.x), cy(s.y), r, 0, 7);
+    A.ink(i % 2 ? pal.base : pal.dark, 2.5);
+    ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(cx(s.x) - r * 0.3, cy(s.y) - r * 0.35, r * 0.3, 0, 7); ctx.fill();
   }
+  // head = your Wellness Sprite
+  const h = snake[0];
+  A.drawHero(cx(h.x), cy(h.y) - 2, 38 + eatAnim * 8, 0, mood);
+}
+
+window.__snake = () => ({ snake, dir, food, junk, COLS, ROWS });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Snake', subtitle: 'Grow strong in the garden!', W, H, reserveH: 70,
+  storageKey: 'sprite_snake', winAt: 150, winText: 'Your sprite is a garden giant!', swipe: true,
+  medals: [{ at: 50, name: 'Bronze', icon: '🥉' }, { at: 150, name: 'Silver', icon: '🥈' }, { at: 300, name: 'Gold', icon: '🥇' }, { at: 500, name: 'Legend', icon: '💎' }],
+  howTo: '<b>Eat fruit and veggies</b> to grow (+10).<br><b>Junk food</b> shrinks you. Don\'t hit the hedge or your own tail!',
+  controls: 'Arrow keys / WASD · swipe on phones · P = pause',
+  overTitle: 'Bonk!',
+  facts: [
+    'Teens should aim for about 2 cups of fruit and 3 cups of veggies a day.',
+    'Eating a rainbow of colors gives your body a wider mix of vitamins.',
+    'Fiber from fruits and veggies keeps you full longer than sugary snacks.',
+    'A medium donut can have around 10 grams of added sugar.',
+    'Snacking on fruit instead of candy helps keep your energy steady.'
+  ],
+  reset, update, draw, input,
+  pad: [{ label: '◀', type: 'left' }, { label: '▲', type: 'up' }, { label: '▼', type: 'down' }, { label: '▶', type: 'right' }]
 });
-
-// Touch swipe
-let tx0,ty0;
-canvas.addEventListener('touchstart',e=>{tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;},{passive:true});
-canvas.addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
-  if(Math.abs(dx)>Math.abs(dy)){nextDir=dx>0?{x:1,y:0}:{x:-1,y:0};}
-  else{nextDir=dy>0?{x:0,y:1}:{x:0,y:-1};}
-},{passive:true});
-
-document.getElementById('start-btn').addEventListener('click',()=>{
-  document.getElementById('start-overlay').style.display='none';
-  initGame(); draw();
-  requestAnimationFrame(gameLoop);
-});
-
-document.getElementById('play-btn').addEventListener('click',()=>{
-  document.getElementById('overlay').style.display='none';
-  initGame(); draw();
-  requestAnimationFrame(gameLoop);
-});
-
-// initial draw
-initGame(); draw();
+})();
 </script>
 </body>
 </html>

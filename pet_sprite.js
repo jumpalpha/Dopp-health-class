@@ -147,6 +147,7 @@
   }
 
   window.PET_COLORS = Object.keys(PAL);
+  window.PET_PAL = PAL;
   window.PET_PALETTE = PAL;
   window.petSpriteSVG = petSpriteSVG;
 })();

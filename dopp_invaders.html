@@ -2,404 +2,199 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
-<meta property="og:image" content="https://doppsclass.com/og-image.png">
-<title>Dopp Invaders — Health Arcade</title>
-<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Germ Invaders — Dopp's Arcade</title>
+<meta name="description" content="Defend your health! Your Wellness Sprite blasts germs, junk food and stress clouds with water.">
 <link rel="canonical" href="https://doppsclass.com/dopp_invaders.html">
-<meta property="og:title" content="Dopp Invaders — Health Arcade">
-<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://doppsclass.com/dopp_invaders.html">
-<meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0618;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
-#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
-#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
-#back-btn:hover{opacity:1}
-#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(15px,3vw,21px);text-align:center}
-#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:100px}
-#main{display:flex;flex-direction:column;align-items:center;padding:12px 10px 30px;width:100%;max-width:820px}
-#hud{width:640px;max-width:100%;display:flex;justify-content:space-between;align-items:center;padding:6px 4px;margin-bottom:6px}
-#lives-display{font-family:'Cinzel',sans-serif;font-size:15px;color:#FF3B5C}
-#wave-display{font-family:'Cinzel',sans-serif;font-size:13px;color:#a855f7}
-canvas{display:block;border:2px solid rgba(255,215,0,0.2);border-radius:8px;max-width:100%;background:#0a0618}
-#overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;display:none}
-#overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,34px);margin-bottom:14px}
-#overlay .stat{font-family:'Nunito',sans-serif;font-size:16px;color:#fff;margin-bottom:6px}
-#overlay .best{font-size:13px;color:#00E5A0;margin-bottom:24px}
-.play-btn{background:#FFD700;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:11px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
-.play-btn:hover{transform:scale(1.05)}
-#start-overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10}
-#start-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(20px,4vw,30px);margin-bottom:12px}
-#start-overlay p{font-family:'Nunito',sans-serif;color:#aaa;font-size:14px;margin-bottom:6px;text-align:center;max-width:380px}
-#mobile-controls{display:none;gap:12px;margin-top:10px}
-.mc-btn{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;font-family:'Nunito',sans-serif;touch-action:manipulation}
-@media(max-width:680px){#mobile-controls{display:flex}}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
 </style>
-<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
-<div id="header">
-  <a id="back-btn" href="arcade.html">← Arcade</a>
-  <span id="game-title">Dopp Invaders</span>
-  <span id="score-display">Score: <span id="scoreVal">0</span></span>
-</div>
-<div id="main">
-  <div id="hud">
-    <div id="lives-display">❤️❤️❤️</div>
-    <div id="wave-display">Wave 1</div>
-  </div>
-  <canvas id="c" width="640" height="500"></canvas>
-  <div id="mobile-controls">
-    <button class="mc-btn" id="mcLeft">◀</button>
-    <button class="mc-btn" id="mcFire">FIRE</button>
-    <button class="mc-btn" id="mcRight">▶</button>
-  </div>
-</div>
-<div id="start-overlay">
-  <h2>Dopp Invaders</h2>
-  <p>Defeat viruses, junk food, and stress!</p>
-  <p style="color:#FFD700;font-size:13px;margin-bottom:4px">Arrow Keys / A D = Move &nbsp;|&nbsp; Space = Shoot</p>
-  <p style="color:#00E5A0;font-size:12px;margin-bottom:16px">Gold stars = power-ups!</p>
-  <button class="play-btn" id="startBtn">Start Game</button>
-</div>
-<div id="overlay">
-  <h2 id="ovTitle">Game Over</h2>
-  <div class="stat">Score: <span id="ovScore"></span></div>
-  <div class="stat">Wave Reached: <span id="ovWave"></span></div>
-  <div class="best">Best: <span id="ovBest"></span></div>
-  <button class="play-btn" id="playAgain">Play Again</button>
-</div>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Germ Invaders</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_art.js"></script>
+<script src="arcade_kit.js"></script>
 <script>
-const canvas=document.getElementById('c');
-const ctx=canvas.getContext('2d');
-const W=640,H=500;
-let score,lives,wave,enemies,bullets,enemyBullets,powerUps,particles;
-let playerX,playerW=56,playerH=36;
-let dx=0,gameRunning=false,gameOver=false;
-let enemyDir=1,enemySpeed,enemyDropY=20;
-let lastShot=0,shotCooldown=350;
-let invincible=false,invincibleTimer=0;
-let waveTransitioning=false;
-let floatTexts=[];
-let bestScore=parseInt(localStorage.getItem('invadersBest')||'0');
-let animFrame;
-const ENEMY_TYPES=[
-  {emoji:'🦠',label:'Virus',pts:30,color:'#a855f7',row:0},
-  {emoji:'🍔',label:'Junk Food',pts:20,color:'#FF8C00',row:1},
-  {emoji:'💨',label:'Stress',pts:10,color:'#38BFFF',row:2},
-  {emoji:'💨',label:'Stress',pts:10,color:'#38BFFF',row:3},
+(() => {
+const W = 420, H = 640, PY = 584, COLS = 7, ROWS = 4, SX = 50, SY = 44;
+const ROW_KIND = [
+  { art: 'virus', pts: 30, name: 'germ' },
+  { art: 'stress', pts: 20, name: 'stress cloud' },
+  { art: 'soda', pts: 10, name: 'soda' },
+  { art: 'donut', pts: 10, name: 'donut' }
 ];
-const COLS=9,ENEMY_W=52,ENEMY_H=38,ENEMY_PAD_X=10,ENEMY_PAD_Y=12;
-const START_X=30,START_Y=60;
+const TIPS = ['Washing your hands for 20 seconds stops lots of germs.', 'Deep breathing can calm a stress cloud fast.',
+  'Water beats soda for hydration every time.', 'Sleep helps your immune system fight germs.', 'Exercise is a great stress buster.'];
+const POWERS = { shield: { art: 'shield', name: 'Immune shield!' }, spread: { art: 'water', name: 'Triple splash!' }, life: { art: 'heart', name: 'Extra life!' } };
 
-function initGame(){
-  score=0;lives=3;wave=1;
-  playerX=W/2-playerW/2;
-  bullets=[];enemyBullets=[];powerUps=[];particles=[];floatTexts=[];
-  invincible=false;invincibleTimer=0;waveTransitioning=false;
-  spawnEnemies();
-  updateHUD();
-  gameOver=false;
-  gameRunning=true;
-  document.getElementById('scoreVal').textContent=0;
-  if(animFrame) cancelAnimationFrame(animFrame);
-  loop();
+let hero, foes, shots, bombs, drops, fx, dir, stepT, wave, lives, keys, aimX, fireT, spreadT, shieldOn, invT, waveBanner, stars;
+
+function buildWave() {
+  foes = [];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+    foes.push({ c, r, x: 50 + c * SX, y: 104 + r * SY, kind: ROW_KIND[r], alive: true, t: Math.random() * 6 });
+  dir = 1; stepT = 0; waveBanner = 2;
+}
+function reset(A) {
+  hero = { x: W / 2, t: 0 }; shots = []; bombs = []; drops = [];
+  wave = 1; lives = 3; keys = { l: false, r: false }; aimX = null; fireT = 0; spreadT = 0; shieldOn = false; invT = 0;
+  stars = Array.from({ length: 60 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: 20 + Math.random() * 60, r: Math.random() * 1.6 + 0.3 }));
+  buildWave();
+}
+function input(type, A) {
+  if (type === 'left') keys.l = true; else if (type === 'release-left') keys.l = false;
+  else if (type === 'right') keys.r = true; else if (type === 'release-right') keys.r = false;
+}
+function pointer(type, x) { aimX = x; }
+
+function hurt(A) {
+  if (invT > 0) return;
+  if (shieldOn) { shieldOn = false; invT = 1; A.sfx('point'); A.toast('🛡 Shield blocked it!'); return; }
+  lives--; invT = 1.8; A.sfx('hit'); A.shake(10, 0.3); A.flash(0.15);
+  A.particles.burst(hero.x, PY - 10, '#FF8FA3', 18, 220, 4);
+  if (lives <= 0) { A.gameOver(); return; }
+  A.toast('💔 ' + lives + (lives === 1 ? ' life' : ' lives') + ' left');
 }
 
-function spawnEnemies(){
-  enemies=[];
-  enemySpeed=0.6+wave*0.2;
-  enemyDir=1;
-  for(let row=0;row<4;row++){
-    for(let col=0;col<COLS;col++){
-      const t=ENEMY_TYPES[row];
-      enemies.push({
-        x:START_X+col*(ENEMY_W+ENEMY_PAD_X),
-        y:START_Y+row*(ENEMY_H+ENEMY_PAD_Y),
-        type:t,alive:true,
-        shootChance:0.0003+wave*0.0001
-      });
+function update(dt, A) {
+  if (!hero) return;
+  hero.t += dt;
+  stars.forEach(s => { s.y += s.s * dt; if (s.y > H) { s.y = 0; s.x = Math.random() * W; } });
+  foes.forEach(f => f.t += dt);
+  if (A.state !== 'play') { if (A.state === 'menu') hero.x = W / 2 + Math.sin(hero.t) * 90; return; }
+  invT = Math.max(0, invT - dt); spreadT = Math.max(0, spreadT - dt); waveBanner = Math.max(0, waveBanner - dt);
+
+  // move
+  if (keys.l) { hero.x -= 300 * dt; aimX = null; }
+  if (keys.r) { hero.x += 300 * dt; aimX = null; }
+  if (aimX != null) hero.x += (aimX - hero.x) * Math.min(1, dt * 14);
+  hero.x = Math.max(24, Math.min(W - 24, hero.x));
+
+  // auto-fire water drops
+  fireT -= dt;
+  if (fireT <= 0 && waveBanner < 1.2) {
+    fireT = 0.32;
+    const spread = spreadT > 0 ? [-0.22, 0, 0.22] : [0];
+    spread.forEach(a => shots.push({ x: hero.x, y: PY - 30, vx: Math.sin(a) * 520, vy: -Math.cos(a) * 520 }));
+    A.sfx('flap');
+  }
+  for (let i = shots.length - 1; i >= 0; i--) {
+    const s = shots[i]; s.x += s.vx * dt; s.y += s.vy * dt;
+    if (s.y < 50 || s.x < 0 || s.x > W) { shots.splice(i, 1); continue; }
+    const hit = foes.find(f => f.alive && Math.abs(f.x - s.x) < 18 && Math.abs(f.y - s.y) < 18);
+    if (hit) {
+      hit.alive = false; shots.splice(i, 1);
+      A.addScore(hit.kind.pts * wave); A.sfx('coin');
+      A.particles.burst(hit.x, hit.y, hit.kind.art === 'virus' ? '#B8F15A' : hit.kind.art === 'stress' ? '#b9b0d6' : '#FF8FC7', 14, 200, 4);
+      if (Math.random() < 0.09) { const k = Object.keys(POWERS); let p = k[Math.floor(Math.random() * k.length)]; if (p === 'life' && lives >= 5) p = 'spread'; drops.push({ x: hit.x, y: hit.y, k: p, t: 0 }); }
+    }
+  }
+
+  // formation marches, speeding up as it thins out
+  const alive = foes.filter(f => f.alive);
+  if (!alive.length) {
+    A.addScore(200 * wave); A.sfx('win');
+    A.float('Wave ' + wave + ' cleared! +' + 200 * wave, W / 2, 320, '#FFD700');
+    if (wave === 3) A.win('Three waves defeated!');
+    else A.toast('💡 ' + TIPS[wave % TIPS.length], 2400);
+    wave++; bombs = []; buildWave(); return;
+  }
+  const speed = (18 + (COLS * ROWS - alive.length) * 2.2) * (1 + (wave - 1) * 0.25);
+  let edge = false;
+  alive.forEach(f => { f.x += dir * speed * dt; if (f.x < 22 || f.x > W - 22) edge = true; });
+  if (edge) { dir = -dir; alive.forEach(f => { f.x += dir * speed * dt * 2; f.y += 16; }); }
+  if (alive.some(f => f.y > PY - 40)) { lives = 0; hurt(A); A.gameOver(); return; }
+
+  // bombs from the lowest foe in a random column
+  const rate = 0.6 + wave * 0.35;
+  if (Math.random() < rate * dt && waveBanner < 1) {
+    const cols = [...new Set(alive.map(f => f.c))], c = cols[Math.floor(Math.random() * cols.length)];
+    const low = alive.filter(f => f.c === c).sort((a, b) => b.y - a.y)[0];
+    bombs.push({ x: low.x, y: low.y + 16, vy: 170 + wave * 25, kind: low.kind.art === 'virus' ? 'germ' : 'sugar', t: 0 });
+  }
+  for (let i = bombs.length - 1; i >= 0; i--) {
+    const b = bombs[i]; b.y += b.vy * dt; b.t += dt;
+    if (b.y > H) { bombs.splice(i, 1); continue; }
+    if (Math.abs(b.x - hero.x) < 20 && Math.abs(b.y - (PY - 14)) < 20) { bombs.splice(i, 1); hurt(A); if (A.state !== 'play') return; }
+  }
+  for (let i = drops.length - 1; i >= 0; i--) {
+    const d = drops[i]; d.y += 120 * dt; d.t += dt;
+    if (d.y > H) { drops.splice(i, 1); continue; }
+    if (Math.abs(d.x - hero.x) < 26 && Math.abs(d.y - (PY - 14)) < 26) {
+      drops.splice(i, 1); A.sfx('medal'); A.toast(POWERS[d.k].name);
+      if (d.k === 'shield') shieldOn = true; if (d.k === 'spread') spreadT = 10; if (d.k === 'life') lives++;
     }
   }
 }
 
-function updateHUD(){
-  const h=document.getElementById('lives-display');
-  h.textContent='❤️'.repeat(lives)+' '.repeat(3-lives);
-  document.getElementById('wave-display').textContent='Wave '+wave;
-  document.getElementById('scoreVal').textContent=score;
-}
+function draw(ctx, A) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0d0626'); g.addColorStop(0.7, '#1f1050'); g.addColorStop(1, '#3a1f6e');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (!hero) return;
+  stars.forEach(s => { ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + s.r / 3) + ')'; ctx.fillRect(s.x, s.y, s.r, s.r * 2); });
+  // ground: a healthy planet horizon
+  ctx.fillStyle = '#2f9a55'; ctx.beginPath(); ctx.ellipse(W / 2, H + 300, 420, 340, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = A.INK; ctx.lineWidth = 3; ctx.stroke();
+  // HUD
+  for (let i = 0; i < lives; i++) ART.draw(ctx, 'heart', 70 + i * 22, 74, 18);
+  ctx.fillStyle = '#b9b0d6'; ctx.font = '900 14px Nunito,sans-serif'; ctx.textAlign = 'right'; ctx.fillText('Wave ' + wave + (wave <= 3 ? ' / 3' : ''), W - 64, 79);
+  if (spreadT > 0) { ctx.textAlign = 'left'; ctx.fillStyle = '#7fd5ff'; ctx.fillText('💧×3 ' + Math.ceil(spreadT) + 's', 14, H - 12); }
 
-const keys={};
-document.addEventListener('keydown',e=>{
-  keys[e.key]=true;
-  if(e.key===' '){e.preventDefault();tryShoot();}
-});
-document.addEventListener('keyup',e=>{keys[e.key]=false;});
-
-let mcLH=false,mcRH=false;
-document.getElementById('mcLeft').addEventListener('pointerdown',()=>mcLH=true);
-document.getElementById('mcLeft').addEventListener('pointerup',()=>mcLH=false);
-document.getElementById('mcRight').addEventListener('pointerdown',()=>mcRH=true);
-document.getElementById('mcRight').addEventListener('pointerup',()=>mcRH=false);
-document.getElementById('mcFire').addEventListener('pointerdown',tryShoot);
-
-function tryShoot(){
-  const now=Date.now();
-  if(now-lastShot<shotCooldown||!gameRunning) return;
-  lastShot=now;
-  bullets.push({x:playerX+playerW/2-3,y:H-playerH-20,w:6,h:16,speed:9});
-}
-
-function loop(){
-  if(!gameRunning){return;}
-  update();
-  draw();
-  animFrame=requestAnimationFrame(loop);
-}
-
-function update(){
-  // player move
-  let speed=4.5;
-  if(keys['ArrowLeft']||keys['a']||keys['A']||mcLH) playerX=Math.max(0,playerX-speed);
-  if(keys['ArrowRight']||keys['d']||keys['D']||mcRH) playerX=Math.min(W-playerW,playerX+speed);
-
-  // bullets
-  bullets=bullets.filter(b=>b.y>0);
-  bullets.forEach(b=>b.y-=b.speed);
-
-  // enemy movement
-  const alive=enemies.filter(e=>e.alive);
-  if(alive.length===0){
-    if(!waveTransitioning){waveTransitioning=true;nextWave();}
-    return;
-  }
-  const factor=1+(1-alive.length/(COLS*4))*2;
-  const spd=enemySpeed*factor;
-  let hitEdge=false;
-  alive.forEach(e=>{
-    e.x+=enemyDir*spd;
-    if(e.x<=0||e.x+ENEMY_W>=W) hitEdge=true;
-  });
-  if(hitEdge){
-    enemyDir*=-1;
-    alive.forEach(e=>e.y+=enemyDropY);
-  }
-
-  // enemy shoot
-  alive.forEach(e=>{
-    if(Math.random()<e.shootChance+0.0001){
-      enemyBullets.push({x:e.x+ENEMY_W/2-3,y:e.y+ENEMY_H,w:6,h:14,speed:3.5+wave*0.3,color:'#FF3B5C'});
-    }
-  });
-  enemyBullets=enemyBullets.filter(b=>b.y<H);
-  enemyBullets.forEach(b=>b.y+=b.speed);
-
-  // power-ups
-  powerUps=powerUps.filter(p=>p.y<H);
-  powerUps.forEach(p=>p.y+=1.5);
-
-  // bullets hit enemies
-  bullets.forEach((b,bi)=>{
-    enemies.forEach((e,ei)=>{
-      if(!e.alive) return;
-      if(b.x<e.x+ENEMY_W&&b.x+b.w>e.x&&b.y<e.y+ENEMY_H&&b.y+b.h>e.y){
-        e.alive=false;
-        b.dead=true;
-        score+=e.type.pts;
-        document.getElementById('scoreVal').textContent=score;
-        spawnParticles(e.x+ENEMY_W/2,e.y+ENEMY_H/2,e.type.color,8);
-        floatTexts.push({x:e.x+ENEMY_W/2,y:e.y,text:'+'+e.type.pts,color:'#FFD700',life:60});
-        if(Math.random()<0.12){
-          powerUps.push({x:e.x+ENEMY_W/2-12,y:e.y,w:24,h:24,type:'star'});
-        }
-      }
-    });
-  });
-  bullets=bullets.filter(b=>!b.dead);
-
-  // enemy bullets hit player
-  if(!invincible){
-    enemyBullets.forEach((b,bi)=>{
-      const px=playerX,py=H-playerH-10;
-      if(b.x<px+playerW&&b.x+b.w>px&&b.y<py+playerH&&b.y+b.h>py){
-        b.dead=true;
-        lives=Math.max(0,lives-1);
-        updateHUD();
-        flashInvincible();
-        if(lives<=0){endGame();}
-      }
-    });
-    enemyBullets=enemyBullets.filter(b=>!b.dead);
-  }
-
-  // power-up collect
-  powerUps.forEach((p,pi)=>{
-    const px=playerX,py=H-playerH-10;
-    if(p.x<px+playerW&&p.x+p.w>px&&p.y<py+playerH&&p.y+p.h>py){
-      p.dead=true;
-      score+=50;
-      document.getElementById('scoreVal').textContent=score;
-      flashInvincible(3000);
-      floatTexts.push({x:p.x,y:p.y,text:'+50 ⭐',color:'#FFD700',life:90});
-    }
-  });
-  powerUps=powerUps.filter(p=>!p.dead);
-
-  // particles
-  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;p.vy+=0.1;});
-  particles=particles.filter(p=>p.life>0);
-  floatTexts.forEach(f=>{f.y-=0.6;f.life--;});
-  floatTexts=floatTexts.filter(f=>f.life>0);
-
-  // invincible timer
-  if(invincible){
-    invincibleTimer--;
-    if(invincibleTimer<=0) invincible=false;
-  }
-
-  // enemy reached bottom
-  alive.forEach(e=>{if(e.y+ENEMY_H>=H-playerH-15){endGame();}});
-}
-
-function flashInvincible(dur=120){invincible=true;invincibleTimer=typeof dur==='number'&&dur>200?dur/16:dur;}
-function spawnParticles(x,y,color,n){
-  for(let i=0;i<n;i++){
-    const ang=Math.random()*Math.PI*2;
-    const spd=1+Math.random()*3;
-    particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,color,life:25+Math.random()*20,size:2+Math.random()*3});
-  }
-}
-
-function nextWave(){
-  wave++;
-  updateHUD();
-  bullets=[];enemyBullets=[];powerUps=[];
-  floatTexts.push({x:W/2,y:H/2,text:'Wave '+wave+'!',color:'#00E5A0',life:120,big:true});
-  setTimeout(()=>{spawnEnemies();waveTransitioning=false;},1200);
-}
-
-function endGame(){
-  gameRunning=false;
-  if(score>bestScore){bestScore=score;localStorage.setItem('invadersBest',bestScore);}
-  document.getElementById('ovTitle').textContent=lives<=0?'Game Over':'Victory!';
-  document.getElementById('ovScore').textContent=score;
-  document.getElementById('ovWave').textContent=wave;
-  document.getElementById('ovBest').textContent=bestScore;
-  document.getElementById('overlay').style.display='flex';
-}
-
-function draw(){
-  ctx.clearRect(0,0,W,H);
-  // stars bg
-  ctx.fillStyle='rgba(255,255,255,0.03)';
-  for(let i=0;i<40;i++){
-    const sx=(i*137.5)%W;
-    const sy=(i*97.3+(Date.now()*0.01))%H;
-    ctx.fillRect(sx,sy,1,1);
-  }
-  // enemies
-  enemies.forEach(e=>{
-    if(!e.alive) return;
-    ctx.fillStyle=e.type.color+'33';
-    ctx.strokeStyle=e.type.color;
-    ctx.lineWidth=1.5;
-    ctx.beginPath();
-    ctx.roundRect(e.x,e.y,ENEMY_W,ENEMY_H,6);
-    ctx.fill();ctx.stroke();
-    ctx.font='20px serif';
-    ctx.textAlign='center';
-    ctx.fillText(e.type.emoji,e.x+ENEMY_W/2,e.y+ENEMY_H*0.6);
-    ctx.font='bold 8px Cinzel, sans-serif';
-    ctx.fillStyle=e.type.color;
-    ctx.fillText(e.type.pts+'pts',e.x+ENEMY_W/2,e.y+ENEMY_H-4);
-  });
-  // player
-  const py=H-playerH-10;
-  if(!invincible||Math.floor(Date.now()/100)%2===0){
-    ctx.fillStyle='#00E5A0';
-    ctx.beginPath();
-    ctx.roundRect(playerX,py,playerW,playerH,6);
-    ctx.fill();
-    // cross
-    ctx.fillStyle='#1C1A2E';
-    ctx.fillRect(playerX+playerW/2-4,py+6,8,playerH-12);
-    ctx.fillRect(playerX+8,py+playerH/2-4,playerW-16,8);
-  }
-  // bullets
-  bullets.forEach(b=>{
-    ctx.fillStyle='#00E5A0';
-    ctx.shadowColor='#00E5A0';
-    ctx.shadowBlur=8;
-    ctx.fillRect(b.x,b.y,b.w,b.h);
-    ctx.shadowBlur=0;
-  });
-  // enemy bullets
-  enemyBullets.forEach(b=>{
-    ctx.fillStyle='#FF3B5C';
-    ctx.shadowColor='#FF3B5C';
-    ctx.shadowBlur=6;
-    ctx.fillRect(b.x,b.y,b.w,b.h);
-    ctx.shadowBlur=0;
+  // foes
+  foes.forEach(f => { if (f.alive) ART.draw(ctx, f.kind.art, f.x, f.y + Math.sin(f.t * 3) * 2, 34, f.t); });
+  // bombs
+  bombs.forEach(b => {
+    if (b.kind === 'germ') { ctx.beginPath(); ctx.arc(b.x, b.y, 7, 0, 7); A.ink('#B8F15A', 2); }
+    else { ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.t * 6); A.rr(-6, -6, 12, 12, 2); A.ink('#fff', 2); ctx.restore(); }
   });
   // power-ups
-  powerUps.forEach(p=>{
-    const cx=p.x+p.w/2,cy=p.y+p.h/2;
-    ctx.fillStyle='#FFD700';
-    ctx.shadowColor='#FFD700';
-    ctx.shadowBlur=10;
-    drawStar(ctx,cx,cy,10,5,0.45);
-    ctx.shadowBlur=0;
-  });
-  // particles
-  particles.forEach(p=>{
-    ctx.globalAlpha=p.life/45;
-    ctx.fillStyle=p.color;
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-    ctx.fill();
-  });
-  ctx.globalAlpha=1;
-  // float texts
-  floatTexts.forEach(f=>{
-    ctx.globalAlpha=Math.min(1,f.life/30);
-    ctx.font=f.big?'bold 28px Cinzel Decorative, sans-serif':'bold 14px Cinzel, sans-serif';
-    ctx.fillStyle=f.color;
-    ctx.textAlign='center';
-    ctx.fillText(f.text,f.x,f.y);
-  });
-  ctx.globalAlpha=1;
-  // ground line
-  ctx.strokeStyle='rgba(0,229,160,0.3)';
-  ctx.lineWidth=1;
-  ctx.beginPath();
-  ctx.moveTo(0,H-8);ctx.lineTo(W,H-8);
-  ctx.stroke();
-}
-
-function drawStar(ctx,cx,cy,r,points,inner){
-  ctx.beginPath();
-  for(let i=0;i<points*2;i++){
-    const ang=-Math.PI/2+i*Math.PI/points;
-    const radius=i%2===0?r:r*inner;
-    ctx.lineTo(cx+Math.cos(ang)*radius,cy+Math.sin(ang)*radius);
+  drops.forEach(d => { ctx.fillStyle = 'rgba(124,255,178,.25)'; ctx.beginPath(); ctx.arc(d.x, d.y, 18, 0, 7); ctx.fill(); ART.draw(ctx, POWERS[d.k].art, d.x, d.y, 24, d.t); });
+  // shots
+  shots.forEach(s => ART.draw(ctx, 'water', s.x, s.y, 13));
+  // hero
+  const blink = invT > 0 && Math.floor(invT * 12) % 2;
+  if (!blink) {
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(hero.x, PY + 18, 22, 5, 0, 0, 7); ctx.fill();
+    A.drawHero(hero.x, PY - 8, 56, (keys.l ? -0.12 : keys.r ? 0.12 : 0), A.state === 'dying' || A.state === 'over' ? 'ghost' : 'happy');
+    if (shieldOn) { ctx.strokeStyle = 'rgba(127,213,255,.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(hero.x, PY - 8, 36 + Math.sin(hero.t * 6) * 2, 0, 7); ctx.stroke(); }
   }
-  ctx.closePath();ctx.fill();
+  if (waveBanner > 0 && A.state === 'play') {
+    ctx.globalAlpha = Math.min(1, waveBanner); ctx.textAlign = 'center';
+    ctx.font = '900 34px Cinzel,serif'; ctx.lineWidth = 6; ctx.strokeStyle = A.INK; ctx.strokeText('WAVE ' + wave, W / 2, 330); ctx.fillStyle = '#FFD700'; ctx.fillText('WAVE ' + wave, W / 2, 330);
+    ctx.globalAlpha = 1;
+  }
 }
 
-document.getElementById('startBtn').addEventListener('click',()=>{
-  document.getElementById('start-overlay').style.display='none';
-  initGame();
+window.__inv = () => ({ hero, foes, bombs, drops, lives, wave, aim: x => { aimX = x; } });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Germ Invaders', subtitle: 'Defend your health!', W, H, reserveH: 70,
+  storageKey: 'germ_invaders', winText: 'Three waves defeated!', deathDelay: 900,
+  medals: [{ at: 800, name: 'Bronze', icon: '🥉' }, { at: 2500, name: 'Silver', icon: '🥈' }, { at: 5000, name: 'Gold', icon: '🥇' }, { at: 9000, name: 'Legend', icon: '💎' }],
+  howTo: 'Your sprite sprays water automatically.<br><b>Move</b> to aim and dodge. <b>Beat 3 waves</b> to win!',
+  controls: 'Move mouse / drag finger · or ← → · P pause',
+  overTitle: 'Overrun!',
+  facts: [
+    'Handwashing with soap is one of the best ways to stop germs from spreading.',
+    'Vaccines train your immune system to recognize germs before you get sick.',
+    'Chronic stress can weaken your immune system, so take time to recharge.',
+    'Covering coughs and sneezes protects the people around you.',
+    'Getting 8 to 10 hours of sleep helps your body fight infections.'
+  ],
+  reset, update, draw, input, pointer,
+  pad: [{ label: '◀', type: 'left', wide: true }, { label: '▶', type: 'right', wide: true }]
 });
-document.getElementById('playAgain').addEventListener('click',()=>{
-  document.getElementById('overlay').style.display='none';
-  initGame();
-});
+})();
 </script>
 </body>
 </html>

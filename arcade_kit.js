@@ -43,7 +43,8 @@
     let scale = 1;
     function resize() {
       const maxW = root.clientWidth || window.innerWidth;
-      const maxH = Math.max(320, window.innerHeight - (cfg.reserveH || 150));
+      const padH = cfg.pad && (cfg.padAlways || matchMedia('(hover:none)').matches) ? 74 : 0;
+      const maxH = Math.max(320, window.innerHeight - (cfg.reserveH || 150) - padH);
       scale = Math.min(maxW / A.W, maxH / A.H);
       const cw = Math.floor(A.W * scale), ch = Math.floor(A.H * scale);
       stage.style.width = cw + 'px'; stage.style.height = ch + 'px';
@@ -137,11 +138,14 @@
     function checkMilestones() {
       const m = medalFor(A.score);
       if (m && m !== lastMedal){ lastMedal = m; A.sfx('medal'); A.toast(m.icon + ' ' + m.name + ' medal!'); }
-      if (!A.won && cfg.winAt && A.score >= cfg.winAt){
-        A.won = true; A.sfx('win'); A.flash(0.25);
-        A.toast('🏆 <b>Quest Complete!</b> ' + (cfg.winText || 'Keep going for a new best!'), 2800);
-        const wins = store.get(cfg.storageKey + '_wins', 0); store.set(cfg.storageKey + '_wins', wins + 1);
-      }
+      if (!A.won && cfg.winAt && A.score >= cfg.winAt) A.win();
+    }
+    // A.win(text): mark the quest complete (score-based games call it automatically via winAt)
+    A.win = function (text) {
+      if (A.won) return;
+      A.won = true; A.sfx('win'); A.flash(0.25);
+      A.toast('🏆 <b>Quest Complete!</b> ' + (text || cfg.winText || 'Keep going for a new best!'), 2800);
+      const wins = store.get(cfg.storageKey + '_wins', 0); store.set(cfg.storageKey + '_wins', wins + 1);
     };
     A.setScore = n => { A.score = n; scoreEl.textContent = n.toLocaleString(); checkMilestones(); };
 
@@ -219,12 +223,20 @@
       if (e.code === 'KeyP' || e.code === 'Escape'){ A.state === 'paused' ? resume() : pause(); return; }
       if (e.code === 'Enter' && (A.state === 'menu' || (A.state === 'over' && Date.now() > overLock))){ start(); return; }
       const t = KEYS[e.code]; if (!t) return;
-      e.preventDefault(); if (e.repeat) return;
+      e.preventDefault(); if (e.repeat && !cfg.repeatKeys) return;
       send(t);
       if (t === 'up' && cfg.upIsTap) send('tap');
     });
     document.addEventListener('keyup', e => { const t = KEYS[e.code]; if (t) send('release-' + t); });
     let sx = 0, sy = 0, st = 0, swiped = false;
+    function logical(e) { const r = canvas.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * A.W, (e.clientY - r.top) / r.height * A.H]; }
+    let ptrDown = false;
+    // cfg.pointer(type, x, y, A): optional raw pointer feed in game coordinates ('down' | 'move' | 'up')
+    if (cfg.pointer) {
+      stage.addEventListener('pointerdown', e => { if (e.target.closest('button,a') || A.state !== 'play') return; ptrDown = true; cfg.pointer('down', ...logical(e), A); });
+      stage.addEventListener('pointermove', e => { if (A.state === 'play' && (ptrDown || e.pointerType === 'mouse')) cfg.pointer(ptrDown ? 'drag' : 'move', ...logical(e), A); });
+      window.addEventListener('pointerup', e => { if (ptrDown && A.state === 'play') cfg.pointer('up', ...logical(e), A); ptrDown = false; });
+    }
     stage.addEventListener('pointerdown', e => {
       if (e.target.closest('button,a')) return;
       sx = e.clientX; sy = e.clientY; st = Date.now(); swiped = false;
@@ -284,6 +296,17 @@
     A.INK = INK;
     A.store = store;
 
+    if (cfg.pad) {
+      const pad = document.createElement('div'); pad.className = 'ak-pad' + (cfg.padAlways ? ' always' : '');
+      cfg.pad.forEach(b => {
+        const el = document.createElement('button'); el.type = 'button'; el.innerHTML = b.label; if (b.wide) el.className = 'wide';
+        el.addEventListener('pointerdown', e => { e.preventDefault(); el.setPointerCapture && el.setPointerCapture(e.pointerId); send(b.type); if (b.type === 'up' && cfg.upIsTap) send('tap'); });
+        const up = e => { e.preventDefault(); send('release-' + b.type); };
+        el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+        pad.appendChild(el);
+      });
+      root.appendChild(pad);
+    }
     buildHero(); drawMute(); renderMenu(); resize();
     cfg.reset && cfg.reset(A);
     requestAnimationFrame(frame);
@@ -292,7 +315,7 @@
 
   // ---------- shared page styles ----------
   const css = `
-  .ak-root{display:flex;justify-content:center;width:100%;user-select:none;-webkit-user-select:none;touch-action:none}
+  .ak-root{display:flex;flex-direction:column;align-items:center;width:100%;user-select:none;-webkit-user-select:none;touch-action:none}
   .ak-stage{position:relative;border-radius:18px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 0 3px #1A1030,0 0 0 6px rgba(255,215,0,.35)}
   .ak-canvas{display:block}
   .ak-hud{position:absolute;top:10px;left:0;right:0;text-align:center;pointer-events:none}
@@ -325,6 +348,12 @@
   .ak-medal.dim{background:#2a2050;color:#b9b0d6}
   .ak-fact{margin-top:12px;background:#0f0a22;border:1px solid #3b2f66;border-radius:12px;padding:10px;font-size:14px;line-height:1.4;text-align:left}
   .ak-link{display:block;margin-top:10px;color:#FFD700;font-weight:800;text-decoration:none}
+  .ak-pad{display:none;gap:10px;justify-content:center;padding:10px 0 4px;width:100%}
+  .ak-pad.always{display:flex}
+  @media (hover:none){.ak-pad{display:flex}}
+  .ak-pad button{flex:1;max-width:96px;height:58px;font:900 20px Nunito,sans-serif;border-radius:16px;border:3px solid #1A1030;background:#FFD700;color:#2a1d00;box-shadow:0 5px 0 #1A1030;touch-action:none;-webkit-user-select:none;user-select:none}
+  .ak-pad button.wide{max-width:150px}
+  .ak-pad button:active{transform:translateY(3px);box-shadow:0 2px 0 #1A1030}
   @media (prefers-reduced-motion: reduce){.ak-bob,.ak-score.pop{animation:none}}
   `;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);

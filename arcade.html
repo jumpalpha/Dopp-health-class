@@ -245,7 +245,7 @@ footer a{color:var(--dim)}
 
   <section class="panel" id="stats" role="tabpanel" aria-labelledby="tab-stats" hidden>
     <h2 class="sec">🏆 My Stats</h2>
-    <p class="sec-sub">Your best scores and medals in the Sprite Arcade.</p>
+    <p class="sec-sub">Your best scores and medals in the Sprite Arcade and Sprite Classics.</p>
     <div class="stats" id="statGrid"></div>
     <p class="note">Scores are saved on this device and browser only. If you switch Chromebooks, your bests start fresh there. Verified XP for the Hall of Heroes comes from <a href="mastery.html" style="color:var(--emerald);font-weight:800">Chapter Mastery Checks</a> and live class games.</p>
   </section>
@@ -273,25 +273,29 @@ const SPRITE = [
     desc:'Swipe through the Temple of Junk Food in 3D.',
     medals:[[300,'🥉 Bronze'],[1000,'🥈 Silver'],[2000,'🥇 Gold'],[3500,'💎 Legend']], goal:1000, unit:'points' }
 ];
+// Classic arcade games rebuilt with the Sprite (medals + My Stats). winBy:'wins' = quest is a goal, not a score
+const CLASSICS = [
+  { key:'germ_invaders', title:'Germ Invaders', file:'dopp_invaders.html', icon:'🦠', desc:'Spray germs, junk food and stress clouds. Beat 3 waves!',
+    medals:[[800,'🥉 Bronze'],[2500,'🥈 Silver'],[5000,'🥇 Gold'],[9000,'💎 Legend']], goal:'Beat 3 waves', winBy:'wins' },
+  { key:'sprite_maze', title:'Sprite Maze', file:'dopp_pacman.html', icon:'🍎', desc:'Collect water drops, dodge junk-food monsters. Apples turn the tables!',
+    medals:[[1000,'🥉 Bronze'],[2500,'🥈 Silver'],[5000,'🥇 Gold'],[9000,'💎 Legend']], goal:'Clear the maze', winBy:'wins' },
+  { key:'habit_breaker', title:'Habit Breaker', file:'dopp_breakout.html', icon:'🧱', desc:'Bounce the energy orb and smash a wall of bad habits.',
+    medals:[[400,'🥉 Bronze'],[1000,'🥈 Silver'],[2000,'🥇 Gold'],[3500,'💎 Legend']], goal:'Clear 2 walls', winBy:'wins' },
+  { key:'sprite_snake', title:'Sprite Snake', file:'dopp_snake.html', icon:'🐍', desc:'Grow strong on fruit and veggies. Junk food shrinks you!',
+    medals:[[50,'🥉 Bronze'],[150,'🥈 Silver'],[300,'🥇 Gold'],[500,'💎 Legend']], goal:150, unit:'points' },
+  { key:'snack_stack', title:'Snack Stack', file:'dopp_tetris.html', icon:'🟦', desc:'Stack falling healthy snacks and clear 10 lines.',
+    medals:[[500,'🥉 Bronze'],[1500,'🥈 Silver'],[4000,'🥇 Gold'],[8000,'💎 Legend']], goal:'Clear 10 lines', winBy:'wins' }
+];
 const GROUPS = [
+  { name:'⭐ Sprite Classics', sub:'Arcade favorites, rebuilt with your sprite. Earn medals!', color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },
   { name:'🕹 Action', sub:'Fast hands, quick reflexes.', color:'#FF3B5C', games:[
-    ['🚀','Dopp Invaders','Shoot down viruses, junk food, and stress.','dopp_invaders.html'],
-    ['🟡','Dopp-Man','Eat health dots, dodge the ghosts.','dopp_pacman.html'],
     ['🦍','Donkey Dopp','Climb the girders, dodge junk food barrels.','dopp_kong.html'],
-    ['🧱','Dopp Breakout','Smash bad habits with a bouncing ball.','dopp_breakout.html'],
-    ['🐍','Dopp Snake','Eat healthy foods, dodge the junk.','dopp_snake.html'],
     ['🏍️','Dopp Motomania','Gas, brake, lean and flip through obstacles.','dopp_motomania.html'],
-    ['🏃','Dopp Runner','Jump over junk food, collect vitamins.','dopp_runner.html'],
     ['🪣','Dopp Drop','Catch healthy items, dodge the junk.','dopp_drop.html'],
-    ['🏀','Dopp Bounce',"Bounce Dopp to a healthy weight. Don't let him fall!",'dopp_bounce.html'],
     ['😤',"Dopp's Corner","Dodge Dopp's sweeps. Be the last one standing!",'dopp_corner.html'],
-    ['🤗','Dopp Hugs','Collect hugs to make Dopp happy.','dopp_hugs.html'],
     ['🏀','Dopp Dunk','Shoot bad health habits into the trash can.','dopp_dunk.html'],
-    ['🎯','Dopp Darts','Hit the bullseye and earn health points.','dopp_darts.html'],
-    ['🏹','Dopp Launch','Power up and launch toward your health goals.','dopp_launch.html']
   ]},
   { name:'🧩 Puzzle & Brain', sub:'Think it through.', color:'#38BFFF', games:[
-    ['🟦','Dopp Tetris','Stack food groups and clear the lines.','dopp_tetris.html'],
     ['🔢','Dopp 2048','Combine tiles to reach Peak Health.','dopp_2048.html'],
     ['🔤','Dopp Wordle','Guess the 5-letter health word in 6 tries.','dopp_wordle.html'],
     ['🧠','Dopp Memory Match','Flip cards and find the health pairs.','dopp_match.html']
@@ -313,8 +317,6 @@ const GROUPS = [
     ['💘',"Dopp's Dating Game",'Swipe left or right on health habits.','dopp_dating.html'],
     ['🔥',"Dopp's Hot Take Stand",'Agree or disagree with health hot takes.','dopp_hottake.html'],
     ['🌀','Dopp Spin','Spin the wheel for a health challenge.','dopp_spin.html'],
-    ['🥠',"Dopp's Fortune Cookie",'Crack open a health fortune.','dopp_fortune.html'],
-    ['🔮',"Dopp's Health Horoscope",'Discover your health destiny.','dopp_horoscope.html']
   ]}
 ];
 const CLASSROOM = [
@@ -401,14 +403,15 @@ renderClass();
 
 // ── My Stats tab ──
 function renderStats() {
-  $('statGrid').innerHTML = SPRITE.map(g => {
+  $('statGrid').innerHTML = [...SPRITE, ...CLASSICS].map(g => {
     const best = get(g.key + '_best', 0), wins = get(g.key + '_wins', 0);
-    const pct = Math.min(100, Math.round(best / g.goal * 100));
+    const done = g.winBy === 'wins' ? wins > 0 : best >= g.goal;
+    const pct = g.winBy === 'wins' ? (done ? 100 : 0) : Math.min(100, Math.round(best / g.goal * 100));
     return `<div class="scard">
       <div class="hd"><span style="font-size:24px">${g.icon}</span>${g.title}</div>
       <div><div class="big">${best.toLocaleString()}</div><div class="lbl">Best score</div></div>
       <div><div class="bar"><i style="width:${pct}%"></i></div>
-        <div class="lbl" style="margin-top:5px">${best >= g.goal ? '✅ Quest complete' : `Goal: ${g.goal.toLocaleString()} ${g.unit}`}${wins ? ` · won ${wins}×` : ''}</div></div>
+        <div class="lbl" style="margin-top:5px">${done ? '✅ Quest complete' : `Goal: ${g.winBy === 'wins' ? g.goal : g.goal.toLocaleString() + ' ' + g.unit}`}${wins ? ` · won ${wins}×` : ''}</div></div>
       <div class="medals">${g.medals.map(([at, n]) => `<span class="medal${best >= at ? ' got' : ''}" title="${at.toLocaleString()}+">${n}</span>`).join('')}</div>
       <a class="play" href="${g.file}">${best ? 'Beat your best' : 'Play now'}</a></div>`;
   }).join('');
