@@ -1,5 +1,6 @@
 -- ============================================================
 -- Live class games (Pick a Side Live, Vocab Showdown, Realm Raid)
+-- + substitute day-pass codes (start games only; expire automatically)
 -- Paste into Supabase > SQL Editor > New query > Run.
 -- Safe to re-run. Does not touch existing tables.
 -- All tables are locked (RLS on, no policies); everything goes
@@ -62,6 +63,81 @@ create table if not exists public.live_answers (
 alter table public.live_answers enable row level security;
 create index if not exists live_answers_session_q on public.live_answers (session_id, q_index);
 
+-- ---------- Substitute codes ----------
+-- Day-pass codes that can start live games only. Stored scrambled (bcrypt).
+create table if not exists public.live_sub_codes (
+  id         bigserial primary key,
+  code_hash  text not null,
+  label      text,
+  expires_at timestamptz not null,
+  revoked    boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table public.live_sub_codes enable row level security;
+alter table public.live_sessions add column if not exists started_by text not null default 'teacher';
+
+-- Who is this? 'teacher' (passphrase), 'sub' (valid, unexpired sub code) or null.
+create or replace function public._host_auth(p_pass text)
+returns text language sql stable security definer set search_path = public as $$
+  select case
+    when exists (select 1 from public.live_teacher_key k
+                 where k.pass_hash = extensions.crypt(coalesce(p_pass, ''), k.pass_hash)) then 'teacher'
+    when exists (select 1 from public.live_sub_codes c
+                 where not c.revoked and c.expires_at > now()
+                   and c.code_hash = extensions.crypt(upper(btrim(coalesce(p_pass, ''))), c.code_hash)) then 'sub'
+  end;
+$$;
+revoke execute on function public._host_auth(text) from public, anon, authenticated;
+
+-- Teacher only: make a sub code good through the end of p_until (Idaho time).
+create or replace function public.create_sub_code(p_teacher_pass text, p_until date, p_label text default null)
+returns table(code text, expires_at timestamptz)
+language plpgsql security definer set search_path = public as $$
+#variable_conflict use_column
+declare
+  words text[] := array['FALCON','CEDAR','HARBOR','MAPLE','SUMMIT','EMBER','CANYON','WILLOW','COPPER','MEADOW',
+                        'LANTERN','RAVEN','ORCHARD','PEBBLE','THUNDER','PRAIRIE','GLACIER','TIMBER','JUNIPER','COBALT'];
+  v_code text; v_exp timestamptz;
+  today date := (now() at time zone 'America/Denver')::date;
+begin
+  if public._host_auth(p_teacher_pass) is distinct from 'teacher' then
+    raise exception 'Wrong teacher passphrase';
+  end if;
+  if p_until is null or p_until < today then raise exception 'Pick today or a later date'; end if;
+  if p_until > today + 14 then raise exception 'Sub codes can last at most 14 days'; end if;
+  delete from public.live_sub_codes c where c.expires_at < now() - interval '30 days';
+  v_code := words[1 + floor(random() * array_length(words, 1))::int] || '-' || lpad((floor(random() * 1000))::int::text, 3, '0');
+  v_exp := ((p_until + 1)::timestamp at time zone 'America/Denver');
+  insert into public.live_sub_codes (code_hash, label, expires_at)
+  values (extensions.crypt(v_code, extensions.gen_salt('bf')), left(btrim(coalesce(p_label, '')), 60), v_exp);
+  return query select v_code, v_exp;
+end $$;
+
+-- Teacher only: list codes (never shows the codes themselves).
+create or replace function public.list_sub_codes(p_teacher_pass text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+begin
+  if public._host_auth(p_teacher_pass) is distinct from 'teacher' then
+    raise exception 'Wrong teacher passphrase';
+  end if;
+  return (select coalesce(jsonb_agg(jsonb_build_object(
+            'id', c.id, 'label', c.label, 'expires_at', c.expires_at, 'created_at', c.created_at,
+            'active', not c.revoked and c.expires_at > now(), 'revoked', c.revoked)
+          order by c.created_at desc), '[]'::jsonb)
+          from public.live_sub_codes c where c.expires_at > now() - interval '7 days');
+end $$;
+
+-- Teacher only: cancel a code early.
+create or replace function public.revoke_sub_code(p_teacher_pass text, p_id bigint)
+returns boolean language plpgsql security definer set search_path = public as $$
+begin
+  if public._host_auth(p_teacher_pass) is distinct from 'teacher' then
+    raise exception 'Wrong teacher passphrase';
+  end if;
+  update public.live_sub_codes set revoked = true where id = p_id;
+  return found;
+end $$;
+
 -- ---------- Teacher (host) functions ----------
 
 -- Start a game. Needs the teacher passphrase. Returns a host_token
@@ -75,9 +151,10 @@ declare
   v_token text := gen_random_uuid()::text;
   v_code  text;
   v_id    uuid;
+  v_role  text;
 begin
-  if not exists (select 1 from public.live_teacher_key k
-                 where k.pass_hash = extensions.crypt(p_teacher_pass, k.pass_hash)) then
+  v_role := public._host_auth(p_teacher_pass);   -- teacher passphrase or valid sub code
+  if v_role is null then
     raise exception 'Wrong teacher passphrase';
   end if;
 
@@ -91,10 +168,10 @@ begin
                           where s.join_code = v_code and s.phase <> 'ended');
   end loop;
 
-  insert into public.live_sessions (join_code, game_type, host_token_hash, settings)
+  insert into public.live_sessions (join_code, game_type, host_token_hash, settings, started_by)
   values (v_code, p_game_type,
           encode(extensions.digest(v_token, 'sha256'), 'hex'),
-          coalesce(p_settings, '{}'::jsonb))
+          coalesce(p_settings, '{}'::jsonb), v_role)
   returning id into v_id;
 
   return query select v_id, v_code, v_token;
