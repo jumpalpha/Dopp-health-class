@@ -313,3 +313,25 @@ begin
   join public.students s on s.id = d.student_id;
   return out;
 end $$;
+
+-- Teacher only: every student's sprite by student id (for the Class Progress page).
+create or replace function public.pet_teacher_summary(p_teacher_pass text, p_trimester text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare sid uuid; out jsonb;
+begin
+  if not exists (select 1 from public.live_teacher_key k
+                 where k.pass_hash = extensions.crypt(coalesce(p_teacher_pass, ''), k.pass_hash)) then
+    raise exception 'Wrong teacher passphrase';
+  end if;
+  for sid in select p.student_id from public.student_pets p where p.trimester = p_trimester loop
+    perform public._pet_tick(sid);
+  end loop;
+  select coalesce(jsonb_agg(public._pet_view(p, false) || jsonb_build_object(
+           'student_id', p.student_id, 'care_points', p.care_points, 'deaths', p.deaths,
+           'last_care', p.updated_at,
+           'food', round(p.food::numeric), 'energy', round(p.energy::numeric),
+           'mood', round(p.mood::numeric), 'clean', round(p.clean::numeric))), '[]'::jsonb)
+    into out
+  from public.student_pets p where p.trimester = p_trimester;
+  return out;
+end $$;
