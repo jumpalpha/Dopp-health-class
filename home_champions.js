@@ -62,14 +62,16 @@
   // ---------- data ----------
   async function getData() {
     if (!db) return { heroes: [], sprites: [], fallen: [] };
-    const [lb, gal, fal] = await Promise.all([
+    const [lb, gal, fal, vxr] = await Promise.all([
       db.rpc('get_leaderboard_data', { p_trimester: TRIMESTER }),
       db.rpc('pet_gallery', { p_trimester: TRIMESTER }),
-      db.rpc('pet_fallen', { p_trimester: TRIMESTER, p_days: 7 })
+      db.rpc('pet_fallen', { p_trimester: TRIMESTER, p_days: 7 }),
+      db.rpc('get_verified_xp', { p_trimester: TRIMESTER })
     ]);
+    const vx = {}; (vxr.data || []).forEach(v => { vx[v.student_id] = v.verified_xp; });
     const heroes = (lb.data || [])
-      .filter(s => !/test/i.test(s.class_code || '') && Number(s.task_count) > 0)
-      .map(s => ({ name: s.display_name, avatar: s.avatar, period: periodLabel(s.class_code), xp: Number(s.task_count) * XP_PER_TASK }))
+      .filter(s => !/test/i.test(s.class_code || '') && (vx[s.id] || 0) > 0)
+      .map(s => ({ name: s.display_name, avatar: s.avatar, period: periodLabel(s.class_code), xp: vx[s.id] || 0 }))
       .sort((a, b) => b.xp - a.xp);
     const sprites = (gal.data || []).filter(p => p.alive && p.stage !== 'egg')
       .sort((a, b) => b.health - a.health || b.streak - a.streak);
@@ -93,7 +95,7 @@
       '<div class="champ-wrap"><div class="champ-head"><div><div class="section-label">This Week</div>' +
       '<div class="section-title" style="margin-bottom:0">Champions of Wellness</div></div></div>' +
       '<div class="champ-grid">' +
-      '<div class="champ-card"><h3>🏆 Top Heroes <a href="leaderboard.html">Hall →</a></h3>' + (heroes || '<div class="champ-empty">No quests completed yet. Be the first!</div>') + '</div>' +
+      '<div class="champ-card"><h3>🏆 Top Heroes <a href="leaderboard.html">Hall →</a></h3>' + (heroes || '<div class="champ-empty">No verified XP yet. <a href="mastery.html">Pass a Mastery Check →</a></div>') + '</div>' +
       '<div class="champ-card"><h3>🌱 Healthiest Sprites <a href="pets.html">Gallery →</a></h3>' + (sprites || '<div class="champ-empty">No sprites hatched yet. <a href="pet.html">Get your egg →</a></div>') + '</div>' +
       '<div class="champ-card"><h3>🪦 Recently Fallen <a href="pets.html">All →</a></h3>' + (fallen || '<div class="champ-empty">No sprites have fallen this week. 🎉</div>') + '</div>' +
       '</div></div>';
@@ -156,7 +158,7 @@
       petHtml +
       '<ul class="dq-list">' +
       '<li><a href="pet.html"><span class="ic">🌱</span><span>Feed your Wellness Sprite<small>Log today\'s healthy habits and answer chapter questions</small></span></a></li>' +
-      '<li><a href="quest.html"><span class="ic">⚔</span><span>Do today\'s Quest tasks<small>Earn XP and climb the Hall of Heroes</small></span></a></li>' +
+      '<li><a href="mastery.html"><span class="ic">🎓</span><span>Pass a Chapter Mastery Check<small>+50 verified XP and a climb up the Hall of Heroes</small></span></a></li>' +
       '<li><a href="chapters.html"><span class="ic">📚</span><span>Keep up with your chapter<small>Read, review vocab and play the games</small></span></a></li>' +
       '</ul>' + warn +
       '<button class="dq-go">Let\'s go! ⚔</button></div>';

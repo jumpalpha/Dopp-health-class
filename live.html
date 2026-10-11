@@ -203,6 +203,8 @@ function render(){
           '<div class="pill">Your score: ' + s.me.score.toLocaleString() + '</div>';
       } else {
         scr.innerHTML = '<div class="emoji">' + (c ? '🎉' : mine ? '💥' : '⏰') + '</div><div class="big">' + (c ? 'Correct!' : mine ? 'Not this time' : 'Time\'s up') + '</div>' +
+          (c && s.me.signed_in ? '<div class="pill" style="border-color:#00E5A0;color:#00E5A0">+5 Verified XP</div>' : '') +
+          (c && !s.me.signed_in ? '<p class="dim" style="margin-top:8px;font-size:13px">Join with your Quest login to earn XP.</p>' : '') +
           (!c && right ? '<p class="dim" style="margin-top:10px">The answer was</p><div class="pill">' + esc(right) + '</div>' : '') +
           '<div class="pill" style="margin-top:12px">Score: ' + s.me.score.toLocaleString() + '</div>' +
           (s.game_type === 'raid' && s.me.team && s.teams ? '<p class="dim" style="margin-top:12px">' + (c ? '⚔️ You hit the boss! ' : '') + 'Your team: <b style="color:' + TEAMS[s.me.team].col + '">' + (s.teams[s.me.team] || 0) + ' hits</b></p>' : '');

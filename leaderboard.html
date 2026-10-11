@@ -127,7 +127,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
   <div class="hero">
     <div class="hero-icon">🏆</div>
     <h1 class="hero-title">Hall of Heroes</h1>
-    <div class="hero-sub">The greatest wellness warriors of Legend of Wellness.<br>Complete quests, earn XP, and claim your place on the leaderboard.</div>
+    <div class="hero-sub">The greatest wellness warriors of Legend of Wellness.<br>Earn <b>Verified XP</b> by passing <a href="mastery.html" style="color:#6b5400;font-weight:800">Chapter Mastery Checks</a> and answering right in live class games.</div>
   </div>
 
   <!-- TOP 3 PODIUM -->
@@ -174,8 +174,8 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
           <th style="width:40px"></th>
           <th>Hero</th>
           <th>Period</th>
-          <th>XP</th>
-          <th>Progress</th>
+          <th title="From Mastery Checks and live class games">Verified XP</th>
+          <th title="Self-checked Quest tasks">Quest XP</th>
           <th>Streak</th>
         </tr>
       </thead>
@@ -221,7 +221,12 @@ async function loadData(showLoading) {
   if (showLoading || !allData.length)
     document.getElementById('lb-body').innerHTML = '<tr><td colspan="7" class="lb-empty">⏳ Summoning heroes…</td></tr>';
 
-  const { data, error } = await db.rpc('get_leaderboard_data', { p_trimester: TRIMESTER });
+  const [lbRes, vxRes] = await Promise.all([
+    db.rpc('get_leaderboard_data', { p_trimester: TRIMESTER }),
+    db.rpc('get_verified_xp', { p_trimester: TRIMESTER })
+  ]);
+  const { data, error } = lbRes;
+  const vx = {}; (vxRes.data || []).forEach(v => { vx[v.student_id] = v; });
   if (error) {
     if (!allData.length) document.getElementById('lb-body').innerHTML =
       '<tr><td colspan="7" class="lb-empty">Could not load data. Try refreshing.</td></tr>';
@@ -234,9 +239,10 @@ async function loadData(showLoading) {
     const tasks = Number(s.task_count || 0);
     return {
       id: s.id, display_name: s.display_name, avatar: s.avatar, class_code: s.class_code,
-      tasks, xp: tasks * XP_PER_TASK, days: daySet.size, streak: streakFrom(daySet)
+      tasks, xp: tasks * XP_PER_TASK, days: daySet.size, streak: streakFrom(daySet),
+      vxp: vx[s.id] ? vx[s.id].verified_xp : 0, mastered: vx[s.id] ? vx[s.id].mastery_passed : 0
     };
-  }).sort((a, b) => b.xp - a.xp || b.streak - a.streak || b.days - a.days);
+  }).sort((a, b) => b.vxp - a.vxp || b.xp - a.xp || b.streak - a.streak || b.days - a.days);
 
   buildFilters();
   render();
@@ -265,7 +271,7 @@ function buildFilters(){
 function render() {
   const showAll = document.getElementById('show-all').checked;
   let rows = lbFilter === 'all' ? allData : allData.filter(s => periodKey(s.class_code) === lbFilter);
-  if (!showAll) rows = rows.filter(s => s.tasks > 0 || s.days > 0);
+  if (!showAll) rows = rows.filter(s => s.vxp > 0 || s.tasks > 0 || s.days > 0);
   renderPodium(rows);
   renderTable(rows);
 }
@@ -276,8 +282,8 @@ function renderPodium(rows) {
     document.getElementById(`pod-${pos}-avatar`).textContent = s ? s.avatar || '⚔' : '—';
     document.getElementById(`pod-${pos}-name`).textContent   = s ? s.display_name : '—';
     document.getElementById(`pod-${pos}-period`).textContent = s ? periodLabel(s.class_code) : '—';
-    document.getElementById(`pod-${pos}-xp`).textContent     = s ? s.xp.toLocaleString() + ' XP' : '—';
-    document.getElementById(`pod-${pos}-tasks`).textContent  = s ? s.tasks + ' tasks done' : '';
+    document.getElementById(`pod-${pos}-xp`).textContent     = s ? s.vxp.toLocaleString() + ' XP' : '—';
+    document.getElementById(`pod-${pos}-tasks`).textContent  = s ? (s.mastered ? '🎓 ' + s.mastered + ' chapter' + (s.mastered === 1 ? '' : 's') + ' mastered' : s.tasks + ' quest tasks') : '';
   });
 }
 
@@ -292,19 +298,14 @@ function renderTable(rows) {
   const rankIcon = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':
     `<span style="font-family:'Cinzel',serif;color:var(--dim)">${i+1}</span>`;
   tbody.innerHTML = rows.map((s,i) => {
-    const pct = Math.min(100, Math.round(s.tasks / TOTAL_TASKS * 100));
+
     return `<tr>
       <td style="text-align:center">${rankIcon(i)}</td>
       <td style="font-size:20px">${esc(s.avatar || '⚔')}</td>
       <td style="font-weight:700;color:var(--text)">${esc(s.display_name)}</td>
       <td style="font-size:12px;color:var(--dim)">${esc(periodLabel(s.class_code))}</td>
-      <td style="font-family:'Cinzel',serif;font-weight:700;color:#8a6d00">${s.xp.toLocaleString()}</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div class="progress-mini"><div class="progress-mini-fill" style="width:${pct}%"></div></div>
-          <span style="font-size:11px;color:var(--dim)">${pct}%</span>
-        </div>
-      </td>
+      <td style="font-family:'Cinzel',serif;font-weight:700;color:#0a7a55">${s.vxp.toLocaleString()}${s.mastered ? ' <span style="font-family:Nunito,sans-serif;font-size:11px;color:var(--dim)">🎓' + s.mastered + '</span>' : ''}</td>
+      <td style="font-size:13px;color:var(--dim)">${s.xp.toLocaleString()}</td>
       <td style="color:${s.streak>0?'#0a8f63':'var(--dim)'};font-weight:700">${s.streak>0?'🔥 '+s.streak:'—'}</td>
     </tr>`;
   }).join('');

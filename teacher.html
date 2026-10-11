@@ -612,7 +612,8 @@ input, select, textarea { color: var(--text); }
               <th style="width:40px"></th>
               <th onclick="setLbSort('name',this)">Name</th>
               <th onclick="setLbSort('period',this)">Period</th>
-              <th class="sorted" onclick="setLbSort('xp',this)">XP ↓</th>
+              <th class="sorted" onclick="setLbSort('vxp',this)" title="Mastery Checks + live games">Verified XP ↓</th>
+              <th onclick="setLbSort('xp',this)" title="Self-checked Quest tasks">Quest XP</th>
               <th onclick="setLbSort('tasks',this)">Tasks</th>
               <th onclick="setLbSort('days',this)">Active Days</th>
               <th onclick="setLbSort('streak',this)">Streak</th>
@@ -621,22 +622,20 @@ input, select, textarea { color: var(--text); }
             </tr>
           </thead>
           <tbody id="lb-body">
-            <tr><td colspan="10" class="lb-empty">Click the page to load leaderboard data.</td></tr>
+            <tr><td colspan="11" class="lb-empty">Click the page to load leaderboard data.</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title">💡 Ways to Earn More XP</div>
-      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Right now XP comes only from Quest tasks (25 XP each, up to 2,250). Sprite care, live games and the Weight Control Quest don't add XP yet. Ideas that would reward the work students already do:</div>
+      <div class="card-title">💡 Verified XP: How Students Earn It</div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Verified XP comes only from work the server checks itself, so it can't be faked. Quest XP still shows, but it's self-checked.</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;font-size:14px">
-        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>🔥 Sprite streak bonus</b><br>+25 XP each time a student logs 3+ healthy habits for 7 days in a row.</div>
-        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>📚 Sprite knowledge snacks</b><br>+10 XP for every 10 correct chapter questions answered on the sprite page.</div>
-        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>⚡ Live game rewards</b><br>+25 XP for playing a Showdown or Raid, +50 for a podium finish or the boss-slaying team.</div>
-        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>⚖ Pick a Side voice</b><br>+5 XP for voting in a live Pick a Side, so quiet students still earn credit for taking part.</div>
-        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>⚖ Weight Control Quest</b><br>+50 XP per stage finished, +100 for submitting the final plan.</div>
-        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>🎖 Teacher bonus</b><br>A button here to award XP by hand for participation, helping others or great discussion.</div>
+        <div style="padding:10px 12px;border:1px solid rgba(0,229,160,0.5);border-radius:10px;background:rgba(0,229,160,0.06)"><b>🎓 Chapter Mastery Checks · ON</b><br>10 random vocab questions graded on the server. 8/10 passes for +50 XP, once per chapter (up to 1,400). 10-minute wait after a miss. Page: <a href="mastery.html" target="_blank">mastery.html</a></div>
+        <div style="padding:10px 12px;border:1px solid rgba(0,229,160,0.5);border-radius:10px;background:rgba(0,229,160,0.06)"><b>⚡ Live game answers · ON</b><br>+5 XP per correct answer in Vocab Showdown or Realm Raid (students must join with their Quest login).</div>
+        <div style="padding:10px 12px;border:1px solid rgba(0,229,160,0.5);border-radius:10px;background:rgba(0,229,160,0.06)"><b>🏆 Live game bonuses · ON</b><br>+25 XP for a Showdown top-3 finish, or for the top team when a Raid boss falls. Awarded when you press <b>End game</b>.</div>
+        <div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px"><b>✋ Teacher-approved tasks · not yet</b><br>Quest tasks or the Weight Control Quest could count once you approve them here.</div>
       </div>
     </div>
 
@@ -1171,7 +1170,7 @@ let lbFilter     = 'all';
 // "2627T1P4" -> "P4" / "Period 4"
 const periodKey = code => { const m = String(code || '').match(/P(\d+)$/i); return m ? 'P' + m[1] : null; };
 const periodLabel = code => { const k = periodKey(code); return k ? 'Period ' + k.slice(1) : String(code || ''); };
-let lbSort       = 'xp';
+let lbSort = 'vxp';
 let lbLoading    = false;
 let wqData       = null;
 let wqLoading    = false;
@@ -1209,7 +1208,11 @@ async function loadProgressData() {
 
   // sprites (teacher-only server function)
   const pets = {};
-  const petRes = await db.rpc('pet_teacher_summary', { p_teacher_pass: teacherPass(), p_trimester: TRIMESTER });
+  const [petRes, vxRes] = await Promise.all([
+    db.rpc('pet_teacher_summary', { p_teacher_pass: teacherPass(), p_trimester: TRIMESTER }),
+    db.rpc('get_verified_xp', { p_trimester: TRIMESTER })
+  ]);
+  const vx = {}; (vxRes.data || []).forEach(v => { vx[v.student_id] = v; });
   const note = document.getElementById('pet-note');
   if (petRes.error){ note.style.display = 'block'; note.textContent = 'Sprite info could not load: ' + petRes.error.message; }
   else { note.style.display = 'none'; (petRes.data || []).forEach(p => { pets[p.student_id] = p; }); }
@@ -1231,6 +1234,8 @@ async function loadProgressData() {
       days: daySet.size,
       streak,
       pet: pets[s.id] || null,
+      vxp: vx[s.id] ? vx[s.id].verified_xp : 0,
+      mastered: vx[s.id] ? vx[s.id].mastery_passed : 0,
     };
   });
   lbLoading = false;
@@ -1240,7 +1245,7 @@ function renderLeaderboard() {
   if (!lbData) return;
   let rows = lbFilter === 'all' ? [...lbData] : lbData.filter(s => lbFilter === 'TEST' ? /test/i.test(s.class_code || '') : periodKey(s.class_code) === lbFilter);
 
-  const sortMap = { xp:'xp', tasks:'tasks', name:'display_name', period:'class_code', days:'days', streak:'streak' };
+  const sortMap = { vxp:'vxp', xp:'xp', tasks:'tasks', name:'display_name', period:'class_code', days:'days', streak:'streak' };
   if (lbSort === 'pet') rows.sort((a,b) => petScore(b) - petScore(a));
   else {
     const key = sortMap[lbSort] || 'xp';
@@ -1253,8 +1258,8 @@ function renderLeaderboard() {
   document.getElementById('pet-stat-ghost').textContent = withPet.filter(s => !s.pet.alive).length;
 
   const total   = rows.length;
-  const avgXP   = total ? Math.round(rows.reduce((s,x)=>s+x.xp,0)/total) : 0;
-  const topXP   = total ? rows[0].xp : 0;
+  const avgXP   = total ? Math.round(rows.reduce((s,x)=>s+x.vxp,0)/total) : 0;
+  const topXP   = total ? Math.max(...rows.map(x => x.vxp)) : 0;
   const active  = rows.filter(s=>s.tasks>0).length;
 
   document.getElementById('lb-stat-total').textContent     = total;
@@ -1268,7 +1273,7 @@ function renderLeaderboard() {
 
   const tbody = document.getElementById('lb-body');
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="lb-empty">No students found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="lb-empty">No students found.</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map((s,i) => {
@@ -1281,7 +1286,8 @@ function renderLeaderboard() {
       <td class="lb-avatar">${escapeHtml(s.avatar || '⚔')}</td>
       <td style="font-weight:700;color:var(--text)">${escapeHtml(s.display_name)}</td>
       <td style="font-size:12px;color:var(--dim)">${escapeHtml(periodLabel(s.class_code))}</td>
-      <td style="font-family:'Cinzel',serif;font-weight:700;color:var(--gold-text)">${s.xp.toLocaleString()}</td>
+      <td style="font-family:'Cinzel',serif;font-weight:700;color:#0a7a55">${s.vxp.toLocaleString()}${s.mastered ? ' <span style="font-family:Nunito,sans-serif;font-size:11px;color:var(--dim)">🎓' + s.mastered + '</span>' : ''}</td>
+      <td style="font-size:12px;color:var(--dim)">${s.xp.toLocaleString()}</td>
       <td>${bar}</td>
       <td style="font-size:12px;color:var(--dim)">${s.days}</td>
       <td style="font-size:12px;color:${s.streak>0?'#0a8f63':'var(--dim)'}">${s.streak>0?'🔥 '+s.streak:'—'}</td>
@@ -1309,11 +1315,11 @@ function nextStep(s){
   if (!p.alive) return '👻 Revive sprite: answer 10 chapter questions';
   if (p.stage === 'egg') return '🐣 Hatch the egg: log one healthy habit';
   if (p.mood_label === 'sick') return '🤒 Sprite is sick: log 3 healthy habits today';
-  if (s.tasks === 0) return '⚔ Start Quest tasks (+25 XP each)';
+  if (s.mastered === 0) return '🎓 Pass a Chapter Mastery Check (+50 verified XP)';
   const fix = { hungry:'log a balanced meal', tired:'log 8+ hours of sleep', dirty:'log hygiene', sad:'log a de-stress activity', sugar:'skip the sugary treats' };
   if (fix[p.mood_label]) return '😟 Sprite is ' + PET_MOOD[p.mood_label].toLowerCase() + ': ' + fix[p.mood_label];
   if (s.streak === 0) return '📅 Mark today active on the Quest page';
-  if (s.tasks < TOTAL_TASKS) return '⚔ Keep going: ' + (TOTAL_TASKS - s.tasks) + ' Quest tasks left';
+  if (s.mastered < 28) return '🎓 Next Mastery Check: ' + (28 - s.mastered) + ' chapters left (+50 XP each)';
   return '🌟 On track. Keep the streak going!';
 }
 
