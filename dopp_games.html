@@ -18,7 +18,9 @@
 :root{
   --gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--purple:#a855f7;
   --bg:#FDFAF2;--card:rgba(28,26,46,0.05);--border:rgba(28,26,46,0.12);
-  --text:#1C1A2E;--dim:rgba(28,26,46,0.65);
+  --text:#1C1A2E;
+  /* darker text versions of the theme colors so they read on the cream background */
+  --gold-text:#8a6400;--emerald-text:#00805a;--sky-text:#0b6fa8;--dim:rgba(28,26,46,0.65);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
@@ -39,20 +41,21 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* ── NAV ── */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(248,244,232,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
-.nav-logo{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);text-decoration:none}
+.nav-logo{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold-text);text-decoration:none}
 .nav-logo span{color:var(--dim);font-weight:400}
 .nav-back{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:700;color:var(--dim);text-decoration:none;border:1px solid var(--border);background:var(--card);transition:all .2s}
 .nav-back:hover{color:var(--text);border-color:var(--gold)}
 
 /* ── HERO ── */
 .hero{position:relative;z-index:1;padding:110px 32px 50px;text-align:center;max-width:900px;margin:0 auto}
-.hero-eyebrow{font-family:'Cinzel',serif;font-size:12px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;opacity:.8}
+.hero-eyebrow{font-family:'Cinzel',serif;font-size:12px;letter-spacing:4px;color:var(--gold-text);text-transform:uppercase;margin-bottom:16px}
 .hero-title{font-family:'Cinzel Decorative',serif;font-size:clamp(32px,6vw,64px);font-weight:900;color:var(--gold);line-height:1.1;margin-bottom:14px;
-  text-shadow:0 0 40px rgba(255,215,0,0.3)}
+  -webkit-text-stroke:1.5px #3a2a00;paint-order:stroke fill;
+  text-shadow:0 3px 0 #3a2a00,0 6px 18px rgba(58,42,0,0.25)}
 .hero-sub{font-size:16px;color:var(--dim);max-width:560px;margin:0 auto 28px;line-height:1.6}
 .hero-stats{display:flex;gap:32px;justify-content:center;flex-wrap:wrap}
 .stat{text-align:center}
-.stat-n{font-family:'Cinzel',serif;font-size:28px;font-weight:700;color:var(--gold)}
+.stat-n{font-family:'Cinzel',serif;font-size:28px;font-weight:700;color:var(--gold-text)}
 .stat-l{font-size:12px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
 
 /* ── SECTION ── */
@@ -60,9 +63,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .section-hdr{display:flex;align-items:center;gap:16px;margin-bottom:28px}
 .section-line{flex:1;height:1px;background:var(--border)}
 .section-title{font-family:'Cinzel',serif;font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;white-space:nowrap}
-.section-title.gold{color:var(--gold)}
-.section-title.emerald{color:var(--emerald)}
-.section-title.sky{color:var(--sky)}
+.section-title.gold{color:var(--gold-text)}
+.section-title.emerald{color:var(--emerald-text)}
+.section-title.sky{color:var(--sky-text)}
 .section-title.dim{color:var(--dim)}
 
 /* ── GAME GRID ── */
@@ -116,10 +119,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .card-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.3}
 .card-desc{font-size:11px;color:var(--dim);line-height:1.5}
 .card-badge{display:inline-block;margin-top:10px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
-.badge-live{background:rgba(0,229,160,0.15);color:var(--emerald);border:1px solid rgba(0,229,160,0.3)}
-.badge-new{background:rgba(255,215,0,0.15);color:var(--gold);border:1px solid rgba(255,215,0,0.3);animation:pulse 2s ease-in-out infinite}
+.badge-live{background:rgba(0,229,160,0.15);color:var(--emerald-text);border:1px solid rgba(0,229,160,0.3)}
+.badge-new{background:rgba(255,215,0,0.15);color:var(--gold-text);border:1px solid rgba(255,215,0,0.3);animation:pulse 2s ease-in-out infinite}
 .badge-soon{background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}
-.badge-classroom{background:rgba(56,191,255,0.12);color:var(--sky);border:1px solid rgba(56,191,255,0.25)}
+.badge-classroom{background:rgba(56,191,255,0.12);color:var(--sky-text);border:1px solid rgba(56,191,255,0.25)}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 
@@ -128,7 +131,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 
 /* ── FOOTER ── */
 footer{position:relative;z-index:1;text-align:center;padding:40px 24px 32px;border-top:1px solid var(--border);margin-top:32px}
-.footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600;margin-bottom:6px}
+.footer-brand{font-family:'Cinzel',serif;font-size:13px;color:var(--gold-text);font-weight:600;margin-bottom:6px}
 .footer-tags{font-size:13px;color:var(--dim)}
 
 @media(max-width:600px){
@@ -231,7 +234,6 @@ const ORIGINALS = [
   { emoji:'🏀', title:'Dopp Bounce',         desc:'Bounce Dopp to a healthy weight — don\'t let him fall!', file:'dopp_bounce.html',  color:'emerald', status:'live', isNew:true },
   { emoji:'🐍', title:'Dopp Snake',          desc:'Eat healthy foods, dodge the junk.',                    file:'dopp_snake.html',   color:'emerald', status:'live', isNew:true },
   { emoji:'🟦', title:'Dopp Tetris',         desc:'Stack food groups and clear the lines.',                 file:'dopp_tetris.html',  color:'gold',    status:'live', isNew:true },
-  { emoji:'🐤', title:'Dopp Flap',           desc:'Flap through junk food towers, collect vitamins.',       file:'dopp_flap.html',    color:'sky',     status:'live', isNew:true },
   { emoji:'🔢', title:'Dopp 2048',           desc:'Combine tiles to reach Peak Health.',                    file:'dopp_2048.html',    color:'purple',  status:'live', isNew:true },
   { emoji:'🔤', title:'Dopp Wordle',         desc:'Guess the 5-letter health word in 6 tries.',             file:'dopp_wordle.html',  color:'gold',    status:'live', isNew:true },
   { emoji:'🚀', title:'Dopp Invaders',       desc:'Shoot down viruses, junk food, and stress.',             file:'dopp_invaders.html', color:'crimson', status:'live', isNew:true },
