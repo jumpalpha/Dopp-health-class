@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Slingshot — Dopp's Arcade</title>
+<meta name="description" content="Launch your Wellness Sprite at towers full of junk-food monsters. Topple wood, stone and glass, and set off fizz barrels and bombs!">
+<link rel="canonical" href="https://doppsclass.com/sprite_sling.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto;padding:8px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 12px}
+#rotate{display:none;position:fixed;inset:0;z-index:99;background:rgba(10,6,24,.96);color:#fff;text-align:center;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-weight:900;font-size:20px;padding:24px}
+#rotate .ph{font-size:64px;animation:rot 1.8s ease-in-out infinite}
+#rotate button{font:900 16px Nunito,sans-serif;background:none;border:2px solid #FFD700;color:#FFD700;border-radius:12px;padding:10px 16px}
+@keyframes rot{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+@media (orientation:portrait) and (hover:none){#rotate.on{display:flex}}
+@media (max-height:500px){.top{display:none}}
+</style>
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Sprite Slingshot</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<div id="rotate" class="on"><div class="ph">📱</div>Turn your phone sideways to play!<div style="font-size:14px;font-weight:700;color:#b9b0d6">This game is made for landscape.</div><button onclick="this.parentNode.classList.remove('on')">Play anyway</button></div>
+<script src="vendor/matter.min.js"></script>
+<script src="pet_sprite.js"></script>
+<script src="arcade_art.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const { Engine, Bodies, Body, Composite, Events, Sleeping } = Matter;
+const W = 1000, H = 560, G = 512;                 // G = ground top
+const ANCHOR = { x: 170, y: 392 }, MAXPULL = 105, POWER = 0.145, PR = 20;
+const MAT = {
+  wood:  { density: 0.0018, hp: 70,  color: '#C98B4E', dark: '#8a5a2b', pts: 100, friction: 0.7 },
+  stone: { density: 0.0035, hp: 170, color: '#A7A3B8', dark: '#6b6680', pts: 150, friction: 0.8 },
+  glass: { density: 0.0012, hp: 22,  color: '#BFEFFF', dark: '#6fc3e0', pts: 50,  friction: 0.3 }
+};
+const MONSTERS = ['soda', 'burger', 'donut', 'candy', 'fries', 'cookie'];
+const TIPS = ['Fizz barrels are full of sugar and gas. Boom!', 'Physical activity builds strong bones and muscles.', 'Junk food is fine sometimes, but it shouldn\'t be every meal.',
+  'Sugary drinks are the #1 source of added sugar for teens.', 'Swap fries for a side salad or fruit once in a while.'];
+
+let toRemove = [], engine, bodies, monsters, shots, shotsLeft, level, retries, proj, drag, phase, phaseT, settleT, boosted, trail, fx, boomRings, msg, levelScore, sceneT, popped;
+
+// ---------- building helpers ----------
+function addBlock(x, y, w, h, mat, angle) {
+  const M = MAT[mat];
+  const b = Bodies.rectangle(x, y, w, h, { density: M.density, friction: M.friction, restitution: 0.05, angle: angle || 0, sleepThreshold: 40 });
+  b.kind = 'block'; b.mat = mat; b.hp = M.hp * (w * h) / 1600 * 0.6 + M.hp * 0.4; b.maxHp = b.hp; b.w = w; b.h = h;
+  bodies.push(b); return b;
+}
+function addMonster(x, y, r) {
+  const b = Bodies.circle(x, y, r || 19, { density: 0.0014, friction: 0.6, restitution: 0.15, sleepThreshold: 40 });
+  b.kind = 'monster'; b.art = MONSTERS[monsters.length % MONSTERS.length]; b.hp = 26; b.r = r || 19; b.blink = Math.random() * 5;
+  bodies.push(b); monsters.push(b); return b;
+}
+function addBarrel(x, y) {        // fizz barrel: explodes when hit hard enough
+  const b = Bodies.rectangle(x, y, 32, 40, { density: 0.0015, friction: 0.6, chamfer: { radius: 6 }, sleepThreshold: 40 });
+  b.kind = 'tnt'; b.hp = 14; b.radius = 170; b.power = 14; bodies.push(b); return b;
+}
+function addBomb(x, y) {          // big bomb: wider blast
+  const b = Bodies.circle(x, y, 20, { density: 0.0022, friction: 0.5, restitution: 0.1, sleepThreshold: 40 });
+  b.kind = 'bomb'; b.hp = 18; b.radius = 210; b.power = 17; b.r = 20; bodies.push(b); return b;
+}
+// one "story": two pillars and a plank across the top. Returns the plank's top y.
+function story(cx, baseY, width, mat, pillarH, plankMat) {
+  const ph = pillarH || 80;
+  addBlock(cx - width / 2 + 10, baseY - ph / 2, 20, ph, mat);
+  addBlock(cx + width / 2 - 10, baseY - ph / 2, 20, ph, mat);
+  addBlock(cx, baseY - ph - 10, width + 10, 20, plankMat || mat);
+  return baseY - ph - 20;
+}
+
+// ---------- levels ----------
+const LEVELS = [
+  { name: 'Snack Shack', shots: 3, build() {
+      let y = story(720, G, 110, 'wood');
+      addMonster(720, G - 20);
+      addMonster(720, y - 19);
+      addBarrel(810, G - 20);
+      addBlock(870, G - 30, 20, 60, 'glass'); addMonster(905, G - 20, 17);
+  } },
+  { name: 'Burger Towers', shots: 5, build() {
+      let a = story(640, G, 100, 'wood'); a = story(640, a, 100, 'glass');
+      addMonster(640, G - 20); addMonster(640, a - 19);
+      addBarrel(735, G - 20); addBarrel(735, G - 60);
+      let b = story(840, G, 110, 'wood'); b = story(840, b, 110, 'wood', 70, 'stone');
+      addMonster(840, G - 20); addMonster(840, b - 19, 21);
+  } },
+  { name: 'Stone Fort', shots: 5, build() {
+      const f1 = story(700, G, 150, 'stone', 70);
+      addBlock(700, G - 35, 20, 70, 'glass');
+      addMonster(658, G - 20); addMonster(742, G - 20);
+      const f2 = story(700, f1, 150, 'wood', 70, 'stone');
+      addBomb(700, f1 - 21);
+      addMonster(700, f2 - 19, 21);
+      addBarrel(820, G - 20);
+      let z = story(900, G, 80, 'glass', 90); addMonster(900, G - 20, 17); addMonster(900, z - 18, 17);
+  } },
+  { name: 'Soda Skyscraper', shots: 6, build() {
+      let y = G;
+      ['stone', 'wood', 'glass', 'wood'].forEach((m, i) => {
+        const top = story(760, y, 120, m, 75, i === 3 ? 'stone' : 'wood');
+        if (i === 1) addBarrel(760, y - 20);
+        else addMonster(760, y - 20, 19);
+        y = top;
+      });
+      addMonster(760, y - 19, 22);
+      addBomb(640, G - 20); addBlock(640, G - 60, 70, 20, 'wood'); addMonster(640, G - 89, 18);
+      addBarrel(880, G - 20); addMonster(925, G - 20, 17);
+  } },
+  { name: 'Junk Food Castle', shots: 6, build() {
+      let l = story(600, G, 90, 'stone', 80); l = story(600, l, 90, 'wood', 70);
+      let r = story(880, G, 90, 'stone', 80); r = story(880, r, 90, 'wood', 70);
+      addBlock(740, l - 10, 210, 20, 'wood');                        // bridge between towers
+      addMonster(740, l - 39, 20); addBarrel(700, l - 40); addBarrel(780, l - 40);
+      addMonster(600, G - 20); addMonster(880, G - 20); addMonster(600, l - 59, 18); addMonster(880, l - 59, 18);
+      addBomb(740, G - 20); addBlock(740, G - 60, 20, 40, 'glass');
+      addBlock(600, l - 30, 20, 20, 'glass'); addBlock(880, l - 30, 20, 20, 'glass');
+  } },
+  { name: 'Sugar Factory', shots: 7, build() {
+      // left: three-story stone and wood tower
+      const a1 = story(540, G, 90, 'stone', 70), a2 = story(540, a1, 90, 'wood', 70), a3 = story(540, a2, 90, 'wood', 60, 'stone');
+      addMonster(540, G - 20); addMonster(540, a1 - 19, 18); addBarrel(540, a2 - 20); addMonster(540, a3 - 19, 20);
+      // middle: glass bomb vault with a bomb stacked on a barrel
+      const v = story(705, G, 130, 'glass', 90, 'stone');
+      addBarrel(705, G - 20); addBomb(705, G - 61);
+      addMonster(705, v - 19, 21); addBlock(660, v - 25, 20, 30, 'glass'); addBlock(750, v - 25, 20, 30, 'glass');
+      // right: tall four-story tower of glass and wood with fizz inside
+      let c = G;
+      ['wood', 'glass', 'wood', 'glass'].forEach((m, i) => { const top = story(885, c, 90, m, 66, i % 2 ? 'wood' : 'stone'); if (i === 2) addBarrel(885, c - 20); else addMonster(885, c - 19, 17); c = top; });
+      addMonster(885, c - 19, 19);
+  } }
+];
+
+function buildLevel(n) {
+  engine = Engine.create({ enableSleeping: true }); toRemove = [];
+  engine.gravity.y = 1;
+  bodies = []; monsters = []; fx = []; boomRings = []; trail = [];
+  const ground = Bodies.rectangle(W / 2, G + 40, W * 3, 80, { isStatic: true, friction: 0.9 }); ground.kind = 'ground';
+  const wallR = Bodies.rectangle(W + 60, H / 2, 120, H * 3, { isStatic: true }); wallR.kind = 'ground';
+  LEVELS[n].build();
+  Composite.add(engine.world, [ground, wallR, ...bodies]);
+  // let the towers settle before damage counts
+  for (let i = 0; i < 90; i++) Engine.update(engine, 1000 / 60);
+  Events.on(engine, 'collisionStart', onCollide);
+  shotsLeft = LEVELS[n].shots; proj = null; drag = null; phase = 'aim'; phaseT = 0; settleT = 0; levelScore = 0; popped = 0;
+  sceneT = 0;
+}
+
+// ---------- damage & explosions ----------
+function flushRemovals() { if (toRemove.length) { toRemove.forEach(b => Composite.remove(engine.world, b)); toRemove = []; } }
+function damage(b, amt) {
+  if (!b || b.dead || b.kind === 'ground' || b.kind === 'proj') return;
+  b.hp -= amt;
+  if (b.hp <= 0) destroy(b);
+}
+function destroy(b) {
+  if (b.dead) return; b.dead = true;
+  const A = game, p = b.position;
+  if (b.kind === 'monster') {
+    A.addScore(500); levelScore += 500; popped++;
+    A.sfx('coin'); A.float('+500', p.x, p.y - 20, '#7CFFB2');
+    A.particles.burst(p.x, p.y, '#FF8FC7', 22, 260, 5);
+  } else if (b.kind === 'block') {
+    const M = MAT[b.mat]; A.addScore(M.pts); levelScore += M.pts;
+    A.particles.burst(p.x, p.y, M.color, b.mat === 'glass' ? 16 : 10, 200, b.mat === 'glass' ? 3 : 4);
+    if (b.mat === 'glass') A.sfx('point');
+  } else if (b.kind === 'tnt' || b.kind === 'bomb') { explode(b); }
+  toRemove.push(b);
+}
+function explode(b) {
+  const A = game, p = b.position, R = b.radius;
+  A.sfx('hit'); A.shake(b.kind === 'bomb' ? 16 : 11, 0.45); A.flash(0.12);
+  A.addScore(200); levelScore += 200;
+  A.particles.burst(p.x, p.y, '#FFD23F', 34, 380, 6); A.particles.burst(p.x, p.y, '#FF5C5C', 24, 300, 5); A.particles.burst(p.x, p.y, '#ffffff', 14, 240, 4);
+  boomRings.push({ x: p.x, y: p.y, r: 10, R, t: 0 });
+  A.float(b.kind === 'bomb' ? 'KA-BOOM!' : 'FIZZ BOOM!', p.x, p.y - 30, '#FFD23F');
+  Composite.allBodies(engine.world).forEach(o => {
+    if (o === b || o.isStatic || o.dead) return;
+    const dx = o.position.x - p.x, dy = o.position.y - p.y, d = Math.hypot(dx, dy) || 1;
+    if (d > R) return;
+    const k = 1 - d / R;
+    Sleeping.set(o, false);
+    Body.setVelocity(o, { x: o.velocity.x + dx / d * b.power * k, y: o.velocity.y + (dy / d - 0.35) * b.power * k });
+    Body.setAngularVelocity(o, o.angularVelocity + (Math.random() - 0.5) * 0.4 * k);
+    // chain reactions are delayed a moment so they ripple outward
+    if (o.kind === 'tnt' || o.kind === 'bomb') { const eng = engine; setTimeout(() => { if (engine === eng && !o.dead) damage(o, 999); }, 120 + d); }
+    else damage(o, (o.kind === 'monster' ? 90 : 160) * k);
+  });
+}
+function onCollide(ev) {
+  if (phase === 'done') return;
+  ev.pairs.forEach(pr => {
+    const a = pr.bodyA, b = pr.bodyB;
+    const vrel = Math.hypot(a.velocity.x - b.velocity.x, a.velocity.y - b.velocity.y);
+    if (vrel < 1.6) return;
+    const base = (vrel - 1.4) * (vrel - 1.4) * 6;
+    const ma = a.isStatic ? 8 : Math.min(a.mass, 8), mb = b.isStatic ? 8 : Math.min(b.mass, 8);
+    damage(a, base * Math.max(0.35, mb / 2));
+    damage(b, base * Math.max(0.35, ma / 2));
+    if (vrel > 4 && (a.kind === 'proj' || b.kind === 'proj')) game.sfx('point');
+  });
+}
+
+// ---------- shooting ----------
+function pullVec() { if (!drag) return { x: 0, y: 0 }; let dx = drag.x - ANCHOR.x, dy = drag.y - ANCHOR.y; const d = Math.hypot(dx, dy); if (d > MAXPULL) { dx *= MAXPULL / d; dy *= MAXPULL / d; } return { x: dx, y: dy }; }
+function launch(A) {
+  const pv = pullVec(); if (Math.hypot(pv.x, pv.y) < 18) { drag = null; return; }
+  proj = Bodies.circle(ANCHOR.x + pv.x, ANCHOR.y + pv.y, PR, { density: 0.005, friction: 0.5, restitution: 0.3, frictionAir: 0.002 });
+  proj.kind = 'proj'; proj.hp = 1e9;
+  Composite.add(engine.world, proj);
+  Body.setVelocity(proj, { x: -pv.x * POWER, y: -pv.y * POWER });
+  shotsLeft--; drag = null; phase = 'fly'; phaseT = 0; settleT = 0; boosted = false; trail = [];
+  A.sfx('flap'); setTimeout(() => A.sfx('jump'), 60);
+}
+function pointer(type, x, y, A) {
+  if (phase === 'aim') {
+    if (type === 'down' && Math.hypot(x - ANCHOR.x, y - ANCHOR.y) < 120) drag = { x, y };
+    else if ((type === 'drag' || type === 'move') && drag) drag = { x, y };
+    else if (type === 'up' && drag) launch(A);
+  } else if (phase === 'fly' && type === 'down' && proj && !boosted && phaseT < 4) {
+    // tap mid-air: sprite boost!
+    boosted = true; Body.setVelocity(proj, { x: proj.velocity.x * 1.7 + 2, y: proj.velocity.y * 1.2 });
+    A.sfx('medal'); A.particles.burst(proj.position.x, proj.position.y, '#7CFFB2', 18, 200, 4); A.float('BOOST!', proj.position.x, proj.position.y - 30, '#7CFFB2');
+  }
+}
+function input(type, A) {}   // all control is by mouse / finger
+
+function trajectory() {
+  const pv = pullVec(); let x = ANCHOR.x + pv.x, y = ANCHOR.y + pv.y, vx = -pv.x * POWER, vy = -pv.y * POWER;
+  const g = engine.gravity.y * 0.001 * (1000 / 60) * (1000 / 60), pts = [];
+  for (let i = 0; i < 70; i++) { vy += g; x += vx; y += vy; if (i % 3 === 0) pts.push([x, y]); if (y > G) break; }
+  return pts;
+}
+
+// ---------- flow ----------
+function reset(A) { level = 0; retries = 3; msg = null; buildLevel(0); }
+function nextShotOrResult(A) {
+  const left = monsters.filter(m => !m.dead).length;
+  if (left === 0) {
+    const bonus = shotsLeft * 1000;
+    if (bonus) { A.addScore(bonus); }
+    A.sfx('win');
+    msg = { title: LEVELS[level].name + ' cleared!', sub: (bonus ? 'Unused sprites bonus +' + bonus.toLocaleString() + ' · ' : '') + '⭐'.repeat(Math.min(3, 1 + shotsLeft)), t: 0, next: 'next' };
+    if (level === 2) A.win('You cleared 3 levels!');
+    phase = 'done';
+  } else if (shotsLeft <= 0) {
+    retries--;
+    A.sfx('hit');
+    if (retries <= 0) { phase = 'done'; A.gameOver(); return; }
+    msg = { title: 'So close!', sub: left + ' junk monster' + (left > 1 ? 's' : '') + ' left. Retries: ' + '❤'.repeat(retries), t: 0, next: 'retry' };
+    phase = 'done';
+  } else { proj = null; phase = 'aim'; }
+}
+function update(dt, A) {
+  if (!engine) return;
+  sceneT += dt;
+  if (A.state === 'menu') return;
+  if (msg) {
+    msg.t += dt;
+    if (msg.t > 2.4) {
+      const n = msg.next; msg = null;
+      if (n === 'next') {
+        if (level + 1 >= LEVELS.length) { A.toast('🏆 All 5 levels beaten!', 2600); phase = 'done'; setTimeout(() => { if (A.state === 'play') { A.gameOver(); } }, 1200); return; }
+        level++; A.toast('💡 ' + TIPS[level % TIPS.length], 2400);
+      }
+      buildLevel(level);
+    }
+  }
+  if (A.state !== 'play' && A.state !== 'dying') return;
+  // fixed-step physics
+  let steps = Math.min(4, Math.round(dt * 60)) || 1;
+  for (let i = 0; i < steps; i++) { Engine.update(engine, 1000 / 60); flushRemovals(); }
+  // anything that falls off the world is gone
+  bodies.forEach(b => { if (!b.dead && (b.position.y > H + 80 || b.position.x < -100 || b.position.x > W + 100)) destroy(b); });
+  if (phase === 'fly') {
+    phaseT += dt;
+    if (proj) { trail.push([proj.position.x, proj.position.y]); if (trail.length > 40) trail.shift(); }
+    const moving = Composite.allBodies(engine.world).some(b => !b.isStatic && !b.isSleeping && b.speed > 0.25);
+    const projGone = !proj || proj.position.x > W + 50 || proj.position.x < -50 || proj.position.y > H + 50;
+    if (projGone && proj) { Composite.remove(engine.world, proj); proj = null; }
+    settleT = moving ? 0 : settleT + dt;
+    if (settleT > 0.6 || phaseT > 9 || (monsters.every(m => m.dead) && phaseT > 1.2)) {
+      if (proj) { const p = proj.position; A.particles.burst(p.x, p.y, '#ffffff', 10, 120, 3); Composite.remove(engine.world, proj); proj = null; }
+      nextShotOrResult(A);
+    }
+  }
+  fx = fx.filter(f => (f.t += dt) < 1);
+  boomRings = boomRings.filter(r => (r.t += dt) < 0.45);
+}
+
+// ---------- drawing ----------
+const clouds = [[120, 90, 1], [420, 60, 0.8], [700, 110, 1.2], [930, 70, 0.7]];
+function draw(ctx, A) {
+  // sky + sun + hills
+  const g = ctx.createLinearGradient(0, 0, 0, G);
+  g.addColorStop(0, '#5fb6ff'); g.addColorStop(0.7, '#bfe8ff'); g.addColorStop(1, '#ffe9b8');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#FFE066'; ctx.beginPath(); ctx.arc(860, 90, 42, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(255,240,180,.35)'; ctx.beginPath(); ctx.arc(860, 90, 66, 0, 7); ctx.fill();
+  clouds.forEach(([x, y, s]) => { const cx = (x + sceneT * 8 * s) % (W + 160) - 80; ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.beginPath(); ctx.arc(cx, y, 22 * s, 0, 7); ctx.arc(cx + 26 * s, y - 10 * s, 26 * s, 0, 7); ctx.arc(cx + 54 * s, y, 20 * s, 0, 7); ctx.fill(); });
+  hills(ctx, 430, 70, '#9bd77a', 0.007, 1.3); hills(ctx, 470, 45, '#6fc56a', 0.011, 0.4);
+  // ground
+  ctx.fillStyle = '#5cbf5a'; ctx.fillRect(0, G, W, 14);
+  ctx.fillStyle = '#b07a48'; ctx.fillRect(0, G + 14, W, H - G);
+  ctx.strokeStyle = A.INK; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, G); ctx.lineTo(W, G); ctx.stroke();
+  ctx.fillStyle = 'rgba(0,0,0,.1)'; for (let x = 10; x < W; x += 48) ctx.fillRect(x, G + 26, 16, 5);
+  if (!engine) return;
+
+  // slingshot back arm + band
+  const pv = pullVec(), loaded = phase === 'aim';
+  const hx = loaded ? ANCHOR.x + pv.x : ANCHOR.x, hy = loaded ? ANCHOR.y + pv.y : ANCHOR.y;
+  slingArm(ctx, A, ANCHOR.x + 10, '#8a5a2b');
+  ctx.strokeStyle = '#5a2d18'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(ANCHOR.x + 14, ANCHOR.y - 6); ctx.lineTo(hx, hy); ctx.stroke();
+
+  // trajectory preview
+  if (drag) { trajectory().forEach(([x, y], i) => { ctx.fillStyle = 'rgba(255,255,255,' + (0.9 - i * 0.03) + ')'; ctx.beginPath(); ctx.arc(x, y, 4 - i * 0.08, 0, 7); ctx.fill(); }); }
+  // flight trail
+  trail.forEach(([x, y], i) => { if (i % 3) return; ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill(); });
+
+  // world bodies
+  bodies.forEach(b => { if (!b.dead) drawBody(ctx, A, b); });
+  // sling front arm + front band, then the sprite on top
+  slingArm(ctx, A, ANCHOR.x - 10, '#a8703c', true);
+  ctx.strokeStyle = '#5a2d18'; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(ANCHOR.x - 14, ANCHOR.y - 4); ctx.lineTo(hx, hy); ctx.stroke();
+  if (loaded && shotsLeft > 0 && A.state !== 'over') A.drawHero(hx, hy, PR * 2.4, 0, 'happy');
+  if (proj) A.drawHero(proj.position.x, proj.position.y, PR * 2.4, proj.angle, boosted ? 'sugar' : 'happy');
+
+  // waiting sprites
+  for (let i = 0; i < shotsLeft - (loaded ? 1 : 0); i++) A.drawHero(120 - i * 34, G - 16, 32, 0, 'happy');
+
+  // explosion rings
+  boomRings.forEach(r => { const k = r.t / 0.45; ctx.strokeStyle = 'rgba(255,210,63,' + (1 - k) + ')'; ctx.lineWidth = 10 * (1 - k) + 2; ctx.beginPath(); ctx.arc(r.x, r.y, r.R * k, 0, 7); ctx.stroke(); });
+
+  // HUD
+  ctx.textAlign = 'left'; ctx.font = '900 16px Nunito,sans-serif';
+  pill(ctx, A, 100, 14, 'Level ' + (level + 1) + ' · ' + LEVELS[level].name);
+  ctx.textAlign = 'left';
+  pill(ctx, A, 100, 50, '👾 ' + monsters.filter(m => !m.dead).length + '   ❤ ' + retries);
+  if (phase === 'aim' && !drag && A.state === 'play' && sceneT < 9 && level === 0 && shotsLeft === LEVELS[0].shots) {
+    ctx.fillStyle = '#fff'; ctx.font = '900 18px Nunito,sans-serif'; ctx.textAlign = 'center';
+    ctx.globalAlpha = 0.65 + Math.sin(sceneT * 5) * 0.35;
+    ctx.lineWidth = 4; ctx.strokeStyle = A.INK; ctx.strokeText('Drag the sprite back, aim, and let go!', ANCHOR.x + 60, ANCHOR.y - 110); ctx.fillText('Drag the sprite back, aim, and let go!', ANCHOR.x + 60, ANCHOR.y - 110);
+    ctx.globalAlpha = 1;
+  }
+  if (phase === 'fly' && proj && !boosted && phaseT < 4) { ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.font = '800 14px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Tap for BOOST!', proj.position.x, proj.position.y - 34); }
+  if (msg) {
+    const a = Math.min(1, msg.t * 4);
+    ctx.globalAlpha = a; ctx.fillStyle = 'rgba(10,6,24,.55)'; ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center'; ctx.font = '900 44px Cinzel,serif'; ctx.lineWidth = 8; ctx.strokeStyle = A.INK;
+    ctx.strokeText(msg.title, W / 2, H / 2 - 10); ctx.fillStyle = '#FFD700'; ctx.fillText(msg.title, W / 2, H / 2 - 10);
+    ctx.font = '800 20px Nunito,sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText(msg.sub, W / 2, H / 2 + 30);
+    ctx.globalAlpha = 1;
+  }
+}
+function pill(ctx, A, x, y, text) {
+  const w = ctx.measureText(text).width + 24;
+  A.rr(x, y, w, 30, 15); A.ink('rgba(26,16,48,.75)', 2);
+  ctx.fillStyle = '#FFD700'; ctx.textAlign = 'center'; ctx.fillText(text, x + w / 2, y + 21);
+}
+function hills(ctx, base, amp, color, f, ph) {
+  ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, G);
+  for (let x = 0; x <= W; x += 10) ctx.lineTo(x, base - amp * (0.5 + 0.5 * Math.sin(x * f + ph) * Math.cos(x * f * 0.37)));
+  ctx.lineTo(W, G); ctx.closePath(); ctx.fill();
+}
+function slingArm(ctx, A, x, color, front) {
+  ctx.save(); ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(ANCHOR.x - 6, G); ctx.lineTo(ANCHOR.x - 6, ANCHOR.y + 40); ctx.lineTo(x - 6, ANCHOR.y - 10); ctx.lineTo(x + 6, ANCHOR.y - 10); ctx.lineTo(ANCHOR.x + 6, ANCHOR.y + 40); ctx.lineTo(ANCHOR.x + 6, G); ctx.closePath();
+  A.ink(color, 3); ctx.restore();
+}
+function drawBody(ctx, A, b) {
+  const p = b.position;
+  if (b.kind === 'block') {
+    const M = MAT[b.mat];
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(b.angle);
+    ctx.globalAlpha = b.mat === 'glass' ? 0.85 : 1;
+    A.rr(-b.w / 2, -b.h / 2, b.w, b.h, 4); A.ink(M.color, 2.5);
+    ctx.globalAlpha = 1;
+    if (b.mat === 'wood') { ctx.strokeStyle = M.dark; ctx.lineWidth = 1.5; const long = b.w > b.h; for (let i = 1; i < 3; i++) { ctx.beginPath(); if (long) { ctx.moveTo(-b.w / 2 + 4, -b.h / 2 + b.h * i / 3); ctx.lineTo(b.w / 2 - 4, -b.h / 2 + b.h * i / 3); } else { ctx.moveTo(-b.w / 2 + b.w * i / 3, -b.h / 2 + 4); ctx.lineTo(-b.w / 2 + b.w * i / 3, b.h / 2 - 4); } ctx.stroke(); } }
+    if (b.mat === 'stone') { ctx.fillStyle = M.dark; ctx.globalAlpha = 0.5; ctx.fillRect(-b.w / 2 + 4, -b.h / 2 + 4, Math.min(8, b.w / 3), Math.min(6, b.h / 3)); ctx.globalAlpha = 1; }
+    if (b.mat === 'glass') { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-b.w / 2 + 4, b.h / 2 - 6); ctx.lineTo(-b.w / 2 + Math.min(b.w, b.h) * 0.5, -b.h / 2 + 4); ctx.stroke(); }
+    if (b.hp < b.maxHp * 0.55) { ctx.strokeStyle = 'rgba(26,16,48,.7)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-b.w * 0.3, -b.h * 0.35); ctx.lineTo(0, 0); ctx.lineTo(-b.w * 0.1, b.h * 0.3); ctx.moveTo(0, 0); ctx.lineTo(b.w * 0.3, -b.h * 0.1); ctx.stroke(); }
+    ctx.restore();
+  } else if (b.kind === 'monster') {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(b.angle * 0.5);
+    ART.draw(ctx, b.art, 0, 0, b.r * 2.1, sceneT);
+    const blink = (sceneT + b.blink) % 4 < 0.12;
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-6, -b.r * 0.45, 4.5, 0, 7); ctx.arc(6, -b.r * 0.45, 4.5, 0, 7); ctx.fill(); ctx.strokeStyle = A.INK; ctx.lineWidth = 1.5; ctx.stroke();
+    if (!blink) { ctx.fillStyle = A.INK; ctx.beginPath(); ctx.arc(-5, -b.r * 0.42, 2.2, 0, 7); ctx.arc(7, -b.r * 0.42, 2.2, 0, 7); ctx.fill(); }
+    ctx.strokeStyle = A.INK; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-11, -b.r * 0.75); ctx.lineTo(-3, -b.r * 0.6); ctx.moveTo(11, -b.r * 0.75); ctx.lineTo(3, -b.r * 0.6); ctx.stroke();
+    ctx.restore();
+  } else if (b.kind === 'tnt') {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(b.angle);
+    A.rr(-16, -20, 32, 40, 7); A.ink('#FF3B5C', 2.5);
+    ctx.fillStyle = '#fff'; ctx.fillRect(-16, -6, 32, 12);
+    ctx.fillStyle = '#FF3B5C'; ctx.font = '900 9px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('FIZZ', 0, 0.5);
+    ctx.fillStyle = '#c8c8d4'; ctx.fillRect(-12, -22, 24, 4);
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; [[-8, -13], [6, 12], [9, -12]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, 2, 0, 7); ctx.fill(); });
+    ctx.restore();
+  } else if (b.kind === 'bomb') {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(b.angle);
+    ctx.beginPath(); ctx.arc(0, 0, 20, 0, 7); A.ink('#2a2240', 3);
+    ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(-7, -7, 5, 0, 7); ctx.fill();
+    A.rr(-6, -26, 12, 8, 2); A.ink('#6b6680', 2);
+    ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(0, -26); ctx.quadraticCurveTo(8, -36, 4, -40); ctx.stroke();
+    ctx.fillStyle = Math.floor(sceneT * 10) % 2 ? '#FFD23F' : '#FF7A3B'; ctx.beginPath(); ctx.arc(4, -41, 3.5, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+}
+
+window.__sling = () => ({ engine, bodies, monsters, shotsLeft, level, retries, phase, proj, msg, aimAt: (x, y) => { drag = { x, y }; }, fire: () => launch(game), goto: n => { level = n; buildLevel(n); }, LEVELS });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Slingshot', subtitle: 'Topple the Junk Food Towers!', W, H, reserveH: 70,
+  storageKey: 'sprite_sling', winText: 'You cleared 3 levels!', deathDelay: 900,
+  medals: [{ at: 5000, name: 'Bronze', icon: '🥉' }, { at: 12000, name: 'Silver', icon: '🥈' }, { at: 22000, name: 'Gold', icon: '🥇' }, { at: 32000, name: 'Legend', icon: '💎' }],
+  howTo: '<b>Drag</b> your sprite back and <b>let go</b> to launch.<br>Pop every junk monster. Hit 🧨 fizz barrels and 💣 bombs for big blasts! Tap mid-air to <b>BOOST</b>.',
+  controls: 'Mouse or finger · P pause · best in landscape',
+  overTitle: 'Out of retries!',
+  facts: [
+    'A 20 oz soda can have about 16 teaspoons of sugar, more than a whole day\'s limit.',
+    'Throwing and launching uses your core, shoulders and legs together.',
+    'Fast food is often high in salt, which can raise blood pressure over time.',
+    'Choosing water instead of soda is one of the easiest healthy swaps.',
+    'Planning ahead, like a good slingshot shot, makes healthy choices easier.'
+  ],
+  reset, update, draw, input, pointer
+});
+})();
+</script>
+</body>
+</html>

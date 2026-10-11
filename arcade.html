@@ -79,7 +79,7 @@ h2.sec:first-child{margin-top:4px}
 .sec-sub{color:var(--dim);font-size:14px;margin-bottom:14px}
 
 /* featured sprite posters */
-.posters{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.posters{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
 .poster{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:270px;border-radius:22px;overflow:hidden;text-decoration:none;border:3px solid var(--ink);box-shadow:0 6px 0 var(--ink),0 14px 30px rgba(0,0,0,.4);transition:transform .18s}
 .poster:hover,.poster:focus-visible{transform:translateY(-5px) rotate(-.4deg)}
 .poster .scene{position:absolute;inset:0}
@@ -92,6 +92,7 @@ h2.sec:first-child{margin-top:4px}
 .poster .best{font-size:12px;font-weight:800;color:#fff;background:rgba(255,255,255,.14);padding:5px 10px;border-radius:999px}
 .scene-flap{background:linear-gradient(#5fd0ff,#bdeeff 70%,#7ad36a 70%)}
 .scene-dash{background:linear-gradient(#ff9a8b,#ffd28c 62%,#6fd16b 62%,#6fd16b 66%,#c98f5a 66%)}
+.scene-sling{background:linear-gradient(#5fb6ff,#bfe8ff 62%,#5cbf5a 62%,#5cbf5a 66%,#b07a48 66%)}
 .scene-run{background:linear-gradient(#2b1660,#c8598a 38%,#ffc27a 50%,#2f9a55 50%)}
 .scene-run::after{content:'';position:absolute;left:50%;bottom:0;width:70%;height:50%;transform:translateX(-50%);background:#e8c890;clip-path:polygon(44% 0,56% 0,100% 100%,0 100%)}
 .cloud{position:absolute;background:#fff;border-radius:40px;opacity:.9}
@@ -271,7 +272,10 @@ const SPRITE = [
     medals:[[300,'🥉 Bronze'],[1000,'🥈 Silver'],[2000,'🥇 Gold'],[3500,'💎 Legend']], goal:1000, unit:'points' },
   { key:'sprite_run', title:'Sprite Run', file:'sprite_run.html', icon:'🛕', scene:'run',
     desc:'Swipe through the Temple of Junk Food in 3D.',
-    medals:[[300,'🥉 Bronze'],[1000,'🥈 Silver'],[2000,'🥇 Gold'],[3500,'💎 Legend']], goal:1000, unit:'points' }
+    medals:[[300,'🥉 Bronze'],[1000,'🥈 Silver'],[2000,'🥇 Gold'],[3500,'💎 Legend']], goal:1000, unit:'points' },
+  { key:'sprite_sling', title:'Sprite Slingshot', file:'sprite_sling.html', icon:'🎯', scene:'sling',
+    desc:'Launch your sprite at junk-food towers. Fizz barrels go BOOM!',
+    medals:[[5000,'🥉 Bronze'],[12000,'🥈 Silver'],[22000,'🥇 Gold'],[32000,'💎 Legend']], goal:'Clear 3 levels', winBy:'wins' }
 ];
 // Classic arcade games rebuilt with the Sprite (medals + My Stats). winBy:'wins' = quest is a goal, not a score
 const CLASSICS = [
@@ -367,11 +371,13 @@ function sceneHTML(s) {
     <div class="tower" style="right:-8px;top:0;height:16%;background:#FFD23F"></div><div class="tower" style="right:-8px;bottom:30%;height:26%;background:#FFD23F"></div></div>`;
   if (s === 'dash') return `<div class="scene scene-dash"><div style="position:absolute;right:16%;top:12%;width:44px;height:44px;border-radius:50%;background:#FFE066;box-shadow:0 0 0 12px rgba(255,240,180,.3)"></div>
     <div class="tower" style="right:20%;bottom:34%;height:44px;width:30px;background:#FF4D6D"></div><div class="tower" style="right:36%;bottom:34%;height:26px;width:46px;background:#E9A44C;border-radius:14px"></div></div>`;
+  if (s === 'sling') return `<div class="scene scene-sling"><div class="tower" style="right:16%;bottom:34%;height:70px;width:16px;background:#C98B4E"></div><div class="tower" style="right:30%;bottom:34%;height:70px;width:16px;background:#C98B4E"></div>
+    <div class="tower" style="right:13%;bottom:calc(34% + 70px);height:14px;width:96px;background:#A7A3B8"></div><div class="tower" style="right:5%;bottom:34%;height:40px;width:30px;background:#FF3B5C"></div></div>`;
   return `<div class="scene scene-run"><div style="position:absolute;left:50%;top:22%;transform:translateX(-50%);width:0;height:0;border-left:44px solid transparent;border-right:44px solid transparent;border-bottom:46px solid #4a2560"></div></div>`;
 }
 $('posters').innerHTML = SPRITE.map(g => {
   const best = get(g.key + '_best', 0), m = medalOf(g, best);
-  const pos = g.scene === 'flap' ? 'left:20%;top:16%' : g.scene === 'dash' ? 'left:14%;top:14%' : 'left:50%;top:30%;transform:translateX(-50%)';
+  const pos = g.scene === 'sling' ? 'left:10%;top:16%' : g.scene === 'flap' ? 'left:20%;top:16%' : g.scene === 'dash' ? 'left:14%;top:14%' : 'left:50%;top:20%;transform:translateX(-50%)';
   return `<a class="poster" href="${g.file}">
     ${sceneHTML(g.scene)}<span class="newtag">NEW</span>
     ${sprURL ? `<img class="spr" src="${sprURL}" alt="" style="${pos}">` : ''}
