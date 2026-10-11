@@ -18,7 +18,7 @@
 :root {
   --gold:#FFD700; --gold-dim:#8a6d00; --emerald:#00E5A0; --sky:#38BFFF;
   --crimson:#FF3B5C; --purple:#a855f7; --orange:#FF8C00;
-  --bg:#07090F; --surface:#0d1018; --card:rgba(28,26,46,0.05);
+  --bg:#F6F3EA; --surface:#FFFFFF; --gold-text:#7a5c00; --card:rgba(28,26,46,0.05);
   --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.65);
 }
 * { box-sizing:border-box; margin:0; padding:0; }
@@ -29,7 +29,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .sidebar { background:var(--surface); border-right:1px solid var(--border);
   display:flex; flex-direction:column; padding:20px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
 .sb-logo { padding:0 18px 20px; border-bottom:1px solid var(--border); margin-bottom:16px; }
-.sb-logo-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--gold); }
+.sb-logo-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--gold-text); }
 .sb-logo-sub { font-size:11px; color:var(--dim); margin-top:2px; }
 .sb-section { padding:0 12px; margin-bottom:8px; }
 .sb-section-label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--gold-dim);
@@ -38,7 +38,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
   font-size:13px; font-weight:700; color:var(--dim); cursor:pointer; transition:all .15s;
   border:none; background:none; width:100%; text-align:left; font-family:'Nunito',sans-serif; }
 .sb-btn:hover { background:var(--card); color:var(--text); }
-.sb-btn.active { background:rgba(255,215,0,0.08); color:var(--gold); }
+.sb-btn.active { background:rgba(255,215,0,0.22); color:var(--gold-text); }
 .sb-btn-icon { font-size:16px; flex-shrink:0; }
 .sb-divider { border:none; border-top:1px solid var(--border); margin:12px 12px; }
 .sb-bottom { margin-top:auto; padding:0 12px; }
@@ -58,13 +58,13 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:28px; }
 .stat-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; }
 .stat-card.highlight { border-color:rgba(255,215,0,0.25); background:rgba(255,215,0,0.04); }
-.sc-num { font-family:'Cinzel',serif; font-size:30px; font-weight:700; color:var(--gold); margin-bottom:4px; }
+.sc-num { font-family:'Cinzel',serif; font-size:30px; font-weight:700; color:var(--gold-text); margin-bottom:4px; }
 .sc-label { font-size:12px; color:var(--dim); font-weight:600; }
 .sc-sub { font-size:11px; color:var(--dim); margin-top:4px; }
 
 /* CARDS */
 .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; }
-.card-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--gold); margin-bottom:14px; letter-spacing:.3px; }
+.card-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--gold-text); margin-bottom:14px; letter-spacing:.3px; }
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
 @media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
 .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px; }
@@ -80,20 +80,20 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .gi-type { font-size:10px; font-weight:700; padding:3px 8px; border-radius:5px; }
 .type-boss { background:rgba(255,59,92,0.15); color:#FF3B5C; }
 .type-team { background:rgba(56,191,255,0.15); color:#38BFFF; }
-.type-daily { background:rgba(255,215,0,0.15); color:#FFD700; }
+.type-daily { background:rgba(255,215,0,0.15); color:var(--gold-text); }
 .type-wild { background:rgba(168,85,247,0.15); color:#a855f7; }
 .type-solo { background:rgba(0,229,160,0.15); color:#00E5A0; }
 .gi-title { font-size:13px; font-weight:800; color:var(--text); }
 .gi-desc { font-size:11px; color:var(--dim); line-height:1.4; flex:1; }
 .gi-btn { display:block; text-align:center; padding:8px; border-radius:8px; font-size:12px; font-weight:700;
-  background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.25); color:var(--gold);
+  background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.25); color:var(--gold-text);
   text-decoration:none; transition:all .15s; cursor:pointer; }
 .gi-btn:hover { background:rgba(255,215,0,0.2); }
 
 /* WEEK PLANNER */
 .week-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
 .day-col { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; }
-.day-title { font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:var(--gold); margin-bottom:8px; text-align:center; }
+.day-title { font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:var(--gold-text); margin-bottom:8px; text-align:center; }
 .day-slot { background:rgba(255,255,255,0.03); border-radius:7px; padding:7px 8px; margin-bottom:6px;
   font-size:11px; color:var(--dim); border-left:2px solid var(--slot-color,var(--border)); min-height:32px; cursor:pointer; }
 .day-slot:hover { background:rgba(255,255,255,0.06); }
@@ -101,7 +101,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .slot-time { font-size:10px; color:var(--dim); margin-bottom:2px; }
 .day-add { font-size:11px; color:var(--dim); text-align:center; cursor:pointer; padding:5px;
   border:1px dashed var(--border); border-radius:6px; opacity:.5; }
-.day-add:hover { opacity:1; border-color:rgba(255,215,0,0.3); color:var(--gold); }
+.day-add:hover { opacity:1; border-color:rgba(255,215,0,0.3); color:var(--gold-text); }
 
 /* REALM TRACKER TABLE */
 .realm-table { width:100%; border-collapse:collapse; }
@@ -116,7 +116,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .progress-mini { height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; width:100px; }
 .progress-mini-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--gold),#FF8C00); }
 .badge-pill { display:inline-block; font-size:10px; font-weight:700; padding:3px 8px; border-radius:10px;
-  background:rgba(255,215,0,0.1); color:var(--gold); border:1px solid rgba(255,215,0,0.2); }
+  background:rgba(255,215,0,0.1); color:var(--gold-text); border:1px solid rgba(255,215,0,0.2); }
 
 /* NOTES */
 .notes-area { width:100%; min-height:200px; background:rgba(255,255,255,0.03); border:1px solid var(--border);
@@ -130,9 +130,9 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .btn { padding:9px 20px; border-radius:9px; border:none; font-size:13px; font-weight:700;
   cursor:pointer; font-family:'Nunito',sans-serif; transition:all .15s; }
 .btn:hover { opacity:.85; }
-.btn-gold { background:rgba(255,215,0,0.12); color:var(--gold); border:1px solid rgba(255,215,0,0.25); }
+.btn-gold { background:rgba(255,215,0,0.28); color:var(--gold-text); border:1px solid rgba(255,215,0,0.25); }
 .btn-primary { background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.15));
-  border:1px solid rgba(255,215,0,0.35); color:var(--gold); }
+  border:1px solid rgba(255,215,0,0.35); color:var(--gold-text); }
 .btn-sm { padding:6px 14px; font-size:12px; }
 .btn-danger { background:rgba(255,59,92,0.1); color:var(--crimson); border:1px solid rgba(255,59,92,0.2); }
 
@@ -144,7 +144,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .tag-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
 .tag { font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px;
   background:var(--card); border:1px solid var(--border); color:var(--dim); cursor:pointer; transition:all .15s; }
-.tag:hover,.tag.sel { background:rgba(255,215,0,0.1); border-color:rgba(255,215,0,0.35); color:var(--gold); }
+.tag:hover,.tag.sel { background:rgba(255,215,0,0.1); border-color:rgba(255,215,0,0.35); color:var(--gold-text); }
 
 /* CHAPTER FILTER */
 .ch-select { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px;
@@ -164,7 +164,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
   padding:8px 12px; border-bottom:1px solid var(--border); letter-spacing:.5px;
   text-transform:uppercase; cursor:pointer; user-select:none; white-space:nowrap; }
 .lb-table th:hover { color:var(--text); }
-.lb-table th.sorted { color:var(--gold); }
+.lb-table th.sorted { color:var(--gold-text); }
 .lb-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04);
   font-size:13px; vertical-align:middle; }
 .lb-table tr:last-child td { border:none; }
@@ -175,9 +175,9 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
   border:1px solid var(--border); background:var(--card); color:var(--dim);
   cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif; }
 .lb-filter-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.18); }
-.lb-filter-btn.active { background:rgba(255,215,0,0.1); border-color:rgba(255,215,0,0.35); color:var(--gold); }
+.lb-filter-btn.active { background:rgba(255,215,0,0.1); border-color:rgba(255,215,0,0.35); color:var(--gold-text); }
 .lb-empty { text-align:center; padding:48px 0; color:var(--dim); font-size:14px; }
-.lb-rank-1 { color:#FFD700; font-family:'Cinzel',serif; font-weight:700; }
+.lb-rank-1 { color:var(--gold-text); font-family:'Cinzel',serif; font-weight:700; }
 .lb-rank-2 { color:#C0C0C0; font-family:'Cinzel',serif; font-weight:700; }
 .lb-rank-3 { color:#CD7F32; font-family:'Cinzel',serif; font-weight:700; }
 .lb-rank-n { color:var(--dim); font-family:'Cinzel',serif; }
@@ -198,6 +198,14 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
   .week-grid { grid-template-columns:1fr; }
   .game-launcher { grid-template-columns:1fr 1fr; }
 }
+
+/* ── readability pass (light theme) ── */
+.sidebar { box-shadow: 1px 0 0 rgba(28,26,46,0.06); }
+.sb-btn { color: rgba(28,26,46,0.78); }
+.card, .stat-card { background:#FFFFFF; box-shadow:0 2px 10px rgba(28,26,46,0.05); }
+.card-title { font-size:14px; }
+.sc-label { color: var(--text); }
+input, select, textarea { color: var(--text); }
 </style>
 <link rel="stylesheet" href="shared.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -370,7 +378,7 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
     </div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn btn-gold btn-sm" onclick="prevWeek()">← Previous Week</button>
-      <span id="week-label" style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold)"></span>
+      <span id="week-label" style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold-text)"></span>
       <button class="btn btn-gold btn-sm" onclick="nextWeek()">Next Week →</button>
       <button class="btn btn-sm" style="background:var(--card);border:1px solid var(--border);color:var(--dim)" onclick="clearWeek()">Clear Week</button>
     </div>
@@ -565,12 +573,12 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 
       <div class="lb-filter" id="lb-filter">
         <button class="lb-filter-btn active" onclick="setLbFilter('all',this)">All Periods</button>
-        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD1',this)">Period 1</button>
-        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD2',this)">Period 2</button>
-        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD3',this)">Period 3</button>
-        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD4',this)">Period 4</button>
-        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD5',this)">Period 5</button>
-        <button class="lb-filter-btn" onclick="setLbFilter('PERIOD6',this)">Period 6</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('P1',this)">Period 1</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('P2',this)">Period 2</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('P3',this)">Period 3</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('P4',this)">Period 4</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('P5',this)">Period 5</button>
+        <button class="lb-filter-btn" onclick="setLbFilter('P6',this)">Period 6</button>
         <button class="lb-filter-btn" onclick="setLbFilter('TEST',this)">Test</button>
       </div>
 
@@ -1075,6 +1083,9 @@ function printVocab() {
 // ═══════════════════════════════════════════════════════════
 let lbData       = null;
 let lbFilter     = 'all';
+// "2627T1P4" -> "P4" / "Period 4"
+const periodKey = code => { const m = String(code || '').match(/P(\d+)$/i); return m ? 'P' + m[1] : null; };
+const periodLabel = code => { const k = periodKey(code); return k ? 'Period ' + k.slice(1) : String(code || ''); };
 let lbSort       = 'xp';
 let lbLoading    = false;
 let wqData       = null;
@@ -1136,7 +1147,7 @@ async function loadProgressData() {
 }
 function renderLeaderboard() {
   if (!lbData) return;
-  let rows = lbFilter === 'all' ? [...lbData] : lbData.filter(s => s.class_code === lbFilter);
+  let rows = lbFilter === 'all' ? [...lbData] : lbData.filter(s => lbFilter === 'TEST' ? /test/i.test(s.class_code || '') : periodKey(s.class_code) === lbFilter);
 
   const sortMap = { xp:'xp', tasks:'tasks', name:'display_name', period:'class_code', days:'days', streak:'streak' };
   const key = sortMap[lbSort] || 'xp';
@@ -1168,10 +1179,10 @@ function renderLeaderboard() {
       <span style="font-size:11px;color:var(--dim)">${s.tasks}/${TOTAL_TASKS}</span></div>`;
     return `<tr>
       <td style="text-align:center">${rankLabel(i)}</td>
-      <td class="lb-avatar">${s.avatar || '⚔'}</td>
-      <td style="font-weight:700;color:var(--text)">${s.display_name}</td>
-      <td style="font-size:12px;color:var(--dim)">${s.class_code}</td>
-      <td style="font-family:'Cinzel',serif;font-weight:700;color:var(--gold)">${s.xp.toLocaleString()}</td>
+      <td class="lb-avatar">${escapeHtml(s.avatar || '⚔')}</td>
+      <td style="font-weight:700;color:var(--text)">${escapeHtml(s.display_name)}</td>
+      <td style="font-size:12px;color:var(--dim)">${escapeHtml(periodLabel(s.class_code))}</td>
+      <td style="font-family:'Cinzel',serif;font-weight:700;color:var(--gold-text)">${s.xp.toLocaleString()}</td>
       <td>${bar}</td>
       <td style="font-size:12px;color:var(--dim)">${s.days}</td>
       <td style="font-size:12px;color:${s.streak>0?'var(--emerald)':'var(--dim)'}">${s.streak>0?'🔥 '+s.streak:'—'}</td>
@@ -1254,7 +1265,7 @@ function renderWeightQuest() {
     const submittedColor = row.is_submitted ? 'var(--emerald)' : 'var(--dim)';
     return `<tr>
       <td style="font-weight:700;color:var(--text)">${escapeHtml(row.student_name || 'Unknown')}</td>
-      <td style="font-size:12px;color:var(--dim)">${escapeHtml(row.class_code || '—')}</td>
+      <td style="font-size:12px;color:var(--dim)">${escapeHtml(periodLabel(row.class_code) || '—')}</td>
       <td>${formatWeightQuestStage(stage)}</td>
       <td style="font-size:12px;font-weight:800;color:${submittedColor}">${submitted}</td>
       <td style="font-size:12px;color:var(--dim)">${formatDateTime(row.submitted_at)}</td>
