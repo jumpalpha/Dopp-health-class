@@ -68,6 +68,40 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .check input{width:20px;height:20px}
 .tiny{font-size:14px;color:var(--dim)}
 a{color:var(--gold)}
+/* ===== Vocab Showdown ===== */
+.sd-settings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.sd-settings label{font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:40px}
+.pchip{background:#0f0a22;border:1px solid #3b2f66;border-radius:99px;padding:6px 12px;font-weight:800;font-size:16px}
+.sd-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.timer{font-family:Cinzel,serif;font-weight:900;font-size:56px;color:var(--gold);text-shadow:0 3px 0 #000;min-width:90px;text-align:center}
+.timer.low{color:var(--crimson)}
+.sd-def{font-size:clamp(24px,3.6vw,42px);font-weight:900;line-height:1.2;margin:14px 0 20px;text-shadow:0 2px 0 #000}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.tiles{grid-template-columns:1fr}}
+.tile{position:relative;border-radius:16px;padding:18px 20px;min-height:86px;display:flex;align-items:center;gap:14px;font-size:clamp(20px,2.6vw,30px);font-weight:900;color:#fff;text-shadow:0 2px 3px rgba(0,0,0,.6);border:4px solid transparent;transition:opacity .3s}
+.tile .shape{font-size:30px;width:34px;text-align:center}
+.tile .cnt{margin-left:auto;font-family:Cinzel,serif;font-size:26px}
+.tile.c0{background:linear-gradient(135deg,#1d7fb0,#38BFFF)}
+.tile.c1{background:linear-gradient(135deg,#b0213c,#FF3B5C)}
+.tile.c2{background:linear-gradient(135deg,#a88a00,#FFD700);color:#1c1400;text-shadow:none}
+.tile.c3{background:linear-gradient(135deg,#00875e,#00E5A0);color:#02251a;text-shadow:none}
+.tile.right{border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.4),0 0 30px rgba(255,255,255,.4)}
+.tile.dim{opacity:.35}
+.sd-answer{margin-top:16px;font-size:24px;font-weight:900;text-align:center;color:var(--emerald)}
+.board{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.brow{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:14px;background:#0f0a22;border:1px solid #3b2f66;border-radius:14px;padding:12px 18px;font-size:clamp(20px,2.4vw,28px);font-weight:900}
+.brow .rk{font-family:Cinzel,serif;color:var(--dim);text-align:center}
+.brow:nth-child(1) .rk{color:var(--gold)}.brow:nth-child(2) .rk{color:#d9d9e6}.brow:nth-child(3) .rk{color:#e09a5a}
+.brow .pts{font-family:Cinzel,serif;color:var(--gold)}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin-top:20px}
+.pod{flex:1;max-width:240px;text-align:center}
+.pod .nm{font-weight:900;font-size:clamp(18px,2.4vw,28px);margin-bottom:8px;word-break:break-word}
+.pod .blk{border-radius:14px 14px 0 0;font-family:Cinzel,serif;font-weight:900;font-size:40px;padding-top:12px;color:#1a1030}
+.pod.p1 .blk{height:170px;background:linear-gradient(180deg,#FFE680,#FFD700)}
+.pod.p2 .blk{height:120px;background:linear-gradient(180deg,#f2f2f8,#c9c9d6)}
+.pod.p3 .blk{height:90px;background:linear-gradient(180deg,#f0b07a,#c97a3a)}
+.pod .pt{font-family:Cinzel,serif;font-size:20px;margin-top:6px;color:var(--gold)}
 </style>
 </head>
 <body>
@@ -81,7 +115,17 @@ a{color:var(--gold)}
     <label for="game">Game</label>
     <select id="game">
       <option value="pick_a_side">Pick a Side Live: class vote</option>
+      <option value="showdown">⚡ Vocab Showdown: speed quiz with scores</option>
     </select>
+    <div id="sdSetup" class="hidden">
+      <div class="sd-settings">
+        <div><label for="sdFrom">From chapter</label><select id="sdFrom"></select></div>
+        <div><label for="sdTo">To chapter</label><select id="sdTo"></select></div>
+        <div><label for="sdCount">Questions</label><select id="sdCount"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
+        <div><label for="sdSecs">Seconds each</label><select id="sdSecs"><option>10</option><option selected>20</option><option>30</option></select></div>
+      </div>
+      <label class="check" style="margin-top:12px"><input type="checkbox" id="sdLogin" checked> Students must use their Quest login (scores saved with real names)</label>
+    </div>
     <div style="height:14px"></div>
     <label for="pass">Teacher passphrase</label>
     <input type="password" id="pass" autocomplete="current-password" placeholder="The phrase you set in Supabase">
@@ -152,6 +196,42 @@ a{color:var(--gold)}
       <button class="btn-red" id="endBtn2">End game</button>
     </div>
   </div>
+  <!-- ===== Vocab Showdown ===== -->
+  <div class="panel hidden" id="sd">
+    <div id="sdLobby">
+      <h2 style="color:var(--gold)">⚡ Vocab Showdown</h2>
+      <p class="tiny" id="sdInfo"></p>
+      <div class="chips" id="sdPlayers"><span class="tiny">Waiting for players to join…</span></div>
+      <div class="row controls">
+        <button class="btn-em" id="sdStart" disabled>Start the Showdown ▶</button>
+        <span style="flex:1"></span>
+        <button class="btn-red sdEnd">End game</button>
+      </div>
+    </div>
+    <div id="sdQ" class="hidden">
+      <div class="sd-top"><div class="stage-label" id="sdQLabel"></div><div class="timer" id="sdTimer">20</div></div>
+      <div class="sd-def" id="sdDef"></div>
+      <div class="tiles" id="sdTiles"></div>
+      <div class="sd-answer" id="sdAnswer"></div>
+      <div class="row controls">
+        <button class="btn-gold" id="sdClose">Close now</button>
+        <button class="btn-sky hidden" id="sdShowBoard">Leaderboard ▶</button>
+        <span class="tiny" id="sdCount2"></span>
+        <span style="flex:1"></span>
+        <button class="btn-red sdEnd">End game</button>
+      </div>
+    </div>
+    <div id="sdBoard" class="hidden">
+      <h2 style="color:var(--gold)" id="sdBoardTitle">🏆 Leaderboard</h2>
+      <div class="board" id="sdBoardList"></div>
+      <div class="podium hidden" id="sdPodium"></div>
+      <div class="row controls">
+        <button class="btn-em" id="sdNext">Next question ▶</button>
+        <span style="flex:1"></span>
+        <button class="btn-red sdEnd">End game</button>
+      </div>
+    </div>
+  </div>
   <div class="err" id="gameErr"></div>
 </section>
 
@@ -159,6 +239,7 @@ a{color:var(--gold)}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="pet_vocab.js"></script>
 <script>
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
@@ -235,7 +316,7 @@ const QUESTIONS = [
 {"id":"bg-jealousy","light":"yellow","q":"Is a little jealousy a sign that someone cares about you?","a":"Yes, it shows they care","b":"No, it's a warning sign","series":"bg"},
 {"id":"bg-equal-today","light":"yellow","q":"Are boys and girls treated equally today?","a":"Yes, mostly equal","b":"No, not yet","series":"bg"}
 ];
-const RED_BLOB = "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";
+const RED_BLOB = "XFOFQPU4QxjprMQA4mx99aVJCzfZLePXjDlGwBU/TXJuUidvJap1JevJPGjoE4KeLgI80PFtjQrHD5hY+3ZKh8ag+FFeOBevwBYnKC8HpoKcPgevOO1WhRoFMQRFBGe8zAsiAokKeYZlvIRA4L3HYK96Ab3eq/YxeSdgHEmH6FnLORNov0ps/hLfYDGPMmYRV4LtrXTQHgUkQ1w97aXk/01YOq0noh5RFbYC0H1QYGjuBWNe4415o0SlFJvWvITyBJHwQL5bf7Q3Qv6qQW2Ux6cu6uYhpUeXoOEA1w3BL25rBwA+j3zTQFZnsWx8oqPOIetb0W2n9y8q9Mlf7IbzPdwmK64I5ZDRonM7YsjPFx4KN/+fbIqRtLkU73AX0jEUaBMxVpJVuQ2hwvPfOVr0k4hD5fToCCbL1ERTmqbJAHN0mZRs6NsYivOSaBLM6F2ksPaqTAK3Jcf3x5QG3nCuaufLYOBVz5ymkRqWANZuYvo3PhtLxrt5DAHLL7O+b66Pn2+/r0BuiLMmSsUZRmN3CATvvm58t2jXbJCBTl90VIgZlQ6q4lsDbDfp6vE2X27u2mpDCxVCivRe5y5A7hCuA0wLQ9zXLabKQDvU88EkZNkVPP6cvecgiHtz8ulubiC/lns2Kyn5a7MxR9jGM8xJf7s67q0wSght+0zovVsxpqjE2Kgzse5Xn+oIHV+GibH3IEol9JBesF4CDNuTuAzuzwsnd6sQOJCd9Hn6sP6oQbrmpnjmI8zqhpsOicEJ1DthLUofctEIU88eLb7sfKN8LubyQH9Afsd0QeNbqxyWSBg1jZLqOcSZ9wrS9I2OX5o0sZxiTngQL9u3pp0jMXAfHC1b3xOeWK/CAjU8VzDux2NvcF6vquoImIzgIZaS+rWJuK+/yedvVte3geGZR+7ybZkKcmHTYyg+Kf8slOfmz+QwYYIjja2l7YDYDr3YFPWPfZYrOKT+/CRzEzM38knu7DSX6spiD6G91x+LyvtbGKkNGwnUZ0vI2RkeBTUknvW6rqVG6NqR6osS/OdLgVx5+5KGjfVuA6RgcM3Rwk8cfk/7wioChh9pKUtCfcuCWBrW87O3Xhs3hdBivTHt+Fdj2Bf1i8SGCnputMq/7K4yWK1sbhZqqRxWGPvRl+I3k3SVDWClnWyB89WoXwFU7U4bNl9v3ZlNac9Rr1inirUPWOyNQMVJm8FiaBVQ1rf18fhQ3VFuEfDk8TUSyNoNmhss6/A7Q9VHULTMyWk4WTCCGSywchMck4Rtza85fLdMbvga24SH/CwEXW5EL5Z2Jf66xZavwQP3MjDfbAOqFC9tWZHyCPKbIsaJDwW4ReV0wAyJue7mLuCv4MOtgIQPeiuKlA3gxRZEECf8yN4Ov0g0Ruz3qqDaW4MZs/GOW4kh9METOc9RoPyatOfhrcmcnp/NXKNlh26ZPi2qQYBFFbQJcn/nI/r6quIDZXbsk3/I7I6HAHDB4mWwk7yerthgsujv1D/h9ghheUJYrt6Bn0AAYXeA6wsbDIcHpIoMfKIaPN9ee09Tni/Gl0wSJZhPaYwZ9q4Bh7E08M6Y3ZHUbCD3JmqFeJpckmn72ydEOeQxsTlcTGa0CiWXIsJvce3h9+b95ofQjoSh/H6lrElgrCm7wYRBfihFB53oEJi14Zn6laiZRNVafRZPnaMV5NKO5EltioJIYLE+3cMg1M+hGrFPhtElCNNf1R5+KmtyAY7C0rVnmfS2oC9h7ZOLUX08NLmXAkIfqFqkrPxKa2bFe1eDWu1xmQ3mfGCXCySUDfwmnYO8zLaQYTuKmEhi/l3tuvHGCGsIpvKwwDX20QS+hqwsYHNK9B/65prh5yHox2XX3zTGS9fCXALg3PdRXqDJmWifEGWi5uOxmQmUUqD7zjex/iko399A9GFuNFkynVJBePrDUDscXsS4/LObFv/TK1/kYFvHDlVOeZeCzi43gze41N4aPb0k7FncPcqvEF0m2Zj/EKkenfaPw0xh2nynTjaSmP1SaH4OrbpoMzGf8/SdukpC7Rk4EDd0wq3qG162SMCxzXIJKa2JsRiizScPesOD9ZNtNVNmpMncklloIxKO8+qqtTguyitoxOnhA+LVimnZOfM1UDP2jbuODTzu/pJuFYGmsr2oCeyomjFZbUd+P8KAL1BC+lHqoh7vxo6eoS3gCt0fwENtKg10oMB/qwOeHvPFlxIQmfYtofMYQ91HKDc/uLzp2UwbTu/mXKOmCaCdqDF55wOgAZuu50x0chOCqro4Q4zgXuQRaq9SphS4/iCoJ3zyuaYIcRPe6G6HB2bFXrxUDSrv+Sb2uvaIt31wIhRayaQLzTsCP/2GlBFMDcIsqpBFJVOb/SY7eriTfQKc1amVfV1HNx2/ke4QYvl5ltE6GJcw2u2HYBFL/smzecXZQ0CqcYqT8zl/w1jJUGeUcPv6+ZUhTWr0qBOD4yDB7Uca8PfJBqFl9ehNT/U8Rddt/eAVQ4C5q1GXPFf6x9al0kD4xhfllzvSMCTR2SdMggCHsqyFnbC7OFAlcCtZO707Vi76iwAG8sCIFN7WGuf2j9zmy+bBrC/WBJOIWOpf039JfSH3ApamiSnA0Dco0yUOG32Uu9vLmVyLarwvUFGSQPaWpqoK1t63XRxpFo+lPPdnjVAEPeEqtmvhGGeCWnHy/70O/ps39+kxbyARZ8qiHlBsGTa8q/2T8fIDuSn8mmfoGyxZPgkSlCBuf2Cv/J259+0Zaun6vAVZXyZNYWZY+nzrSodW3o9t67S3IHAryHr/jPyVSf9U4PCHAgVwCjMx0mLCZHXHYrf69JhDdPJj8vZwrJUoJaWnA1WVez1BB39k34jOBEH+y1Y8gXWxcDJBYdxMuaCya3t0q3o74RjoAUX+1+09omtv729EpOsfzJTI1rCgsB1yHZoLbGCM9v+SDSbd3F7o8GbfCHHWRIHCnGU/C5dcymyE/yGzditWsxdgsHwMX+eSUpWoB3092mT+EDXnB5axUr/zBJSmcRQUuoMLjEH0nSArbktlceJR6Dlq01VGlnX4p2Tk1De00kR5rEItYtfU/LwspTmMIvqyBX0MHCiE6XBbUifbEhy/6+tvOvLxk8QIxDTV0j/ui7UoIc7jB4hOiYaML+Bx6MNRy/6MEVjLvhB94dBEPJXuTN2sQkDCeM+kuTxxDfllMNuaomh65GG73C3k9e4zTXyulcyvNVN5ccByX/sZcf06LgQ+LKEDoLXzFHSl4vXpGWsHg91XYpIihSfZLM4q14Zc/xTM6bxIqAQmCLhyOlaOt2aXDichvox/9bH3rERgQeF+05LcEU83cURrDlKzrkQclxRXlPDAvQQNQaJk+9XPCiyXNVn1w6VM8Y7bofabhctL/PDZ+ck8CrUAeH4mBVjbTPkr0KkY3pr93oFI1BjiraCMeUXNuMyrWmT57YxovrGVj2/fiWWUf+wROKbxHE4Y2yvxOkxnLNqrWeT4ojwPCZFL0JyRbovJ8ZMYcF6S/j6JrdwvGV4g/+hj+5TNDx9Nmstiyy7ebyzer4n3QcCL8LHQxaxqHCkIm2iaa5Pc1WaXnlQxBhTIMtVVwgRq256qVaYsIO3m49DigPPpviQShwhbLxxTm5k02z3iTZbMPjxinolZaLh034q73TYUen3uP+CzeAk8TERo/NtvLVhGQWwoy8rlqNVRxQ86QfJs1mRKpaPQzQErTbHmZnLRrpomz6CWsn7Nj/A7of0+BkXP8RyiifUDCpViTtNruje1rdQcURvhgt4d4PCpCqxxv/Kb2m44r/7MZQJ0RwrNpU0w0t87vuby4M/lg+AsYdf7QY5cNjUazDfJOW4lVVg8ruKXK4E0KCn4vADL5aQMkYEabsP5r2UE8glOJ5iOAxuZzVeTzCextTQu7wBQT0dEcGb7sJt7ls6bJxIps4sYkeDP3vdjQP+t0DJpfpzVDuMBtP+jtBxqGUO6syejl7dOBpzrKGO2N19q0lNgsVRWssy2up4nvtUPe1R2y4qRBTHjzurS0m/eFuo4MGXEoSc0LX+qUk+MQhHIDU2D7C8WbvPLfX0iyzeuCrz79w/4Whma3NjhJ+pNAH4imCVEaglMFFnsmFYMmAfzDSAMNWe3zNR7sWj7+oqjWkcXW8ozqs8s9l+4lThetFvp7eDksUt4UH9W7cDGu1g6cWt/sNNGkorIXmn5nCFesWauE++I5jcfFQ7S+4zF+RdIn0W5Wq8k4T5YVhBgJH+C79w6iw1iryGGTNjPyKd/DT/8o1xJ+cnteM+kE7VjR5KxQPlw4UY4aaXZrz2LTcEwirzn9bhfCJGC7zkxSBa+6vz+IwyStAk6ZglBNRiWVYX/XLN+sH5VMI4N9V4inzC3Z6glXg8/Pvuc9ikz61AgArcfoILsQa+O8Hc1emKL+pjnqLR890zreqBF2otGXhtJloGWdv0mXrffIzeT7HABvoPjan83JQRZiCRGJ3cay1mm3JRdnLPS4zT9fjy0vTsWqe9w/w0gSo8qBeWXOp3pnHJjupooyAMIGa7VstSQVaTIfVsaiEcHP+jBSfObXL4TbXn+aWXLfEn6ilZ44of7I6rAR5gjVu38l91gXNWZdES4MNO3NbEa6jfyiGGvT8gPx3HTlC+32biBlQ1JeDiXwwEmag7ah4YshTsG41MSpWdvYeONKzohYHIk3WnHQuKwdd3rfeHMIGTRu+ZodHssWgmxjM/Kmo/n1sOth/vJ2++SJSLs5/1kEIXLntIoZERfGy/nv4ZNSPD9XO28CSFvjJa12R8/0gyMpdKEG59Ezk97fBZDij8D8Tjk4DP9F527ZXxDle+kKVdaHfrULE3E71oTVSgxSVzaSDPzVFwTCPPXcEltJsvSqSjVEHKoaJfHC+vLSYMA+kQX/3Dcsk4cvQZ0VYiUH3t9UalMS6vUzQOWxiKb8wvduVv7mS0gU27dRUWIz+tHzZ4iI3GNesLatITYabMlwLSY+7Lsyj2HyHJQVw86AMsqg+1+nSWzHaun330kxtzZmDmWK+0BiDppunHEsiVpruCWzWDB/BXuPyRQbFaOgmcVA5mBJR3SItcw6aru4iCnRGUa1u7oY+u+KwcWFmdVUNbfSPIH83GYN3bqaYZYJkHxv8Q9fRPCeS1EF6L+s3xVvCaAuLgsbwA+5U1wJ3UH/9D/oQgYEULyJMg6VvDxbQZv+W4yiputO8Nm8UIqC8eNfK5DdTiG+ZkIz3uhSPN/W3y4W1+4cPl1Jdb1CkH95sqO7MkWFju5IZLQupSY9GXJpWaFYp79L2oV6XMnvqSEAoz29n9mWcyrpLME4iVQu5GB+j8lZOfcc0x/hzjzat3a1zPhl2860Yj2nWQX4EuPQln7RX+f9coXTFApe4B24LM/OHH1h51IjkyP8kac9nJgaV1rznggqAYP/0GsLTGa44cJWW3LLCjnNu3XFgbqfPKebPzE9mVw28N3xyF7hQFgkWdac64fqVBpXEsY2eNSoIDkE9XZ1oa33opiFQggl+8aRDcaleiDe8bpSOkEvDAWprPV6aEYDNPftdWVa8U6fq8THPfa5lO9wx+fqvKatRAx2am540YHN2PteSgJmCKwfEGXEjElyF4NTuY1ulGcz09CGGOxJUWL0Ae0WWD/7m22qlS8rVwqSfP6xZtV4zKaVqh4ewtQGU25KAoA/l3mzXxmIez6s44pnhZyFHtWg+pW1NmciJyrDLv3pvqbHt3BIGhCD1v83HbgCn+AFdZpmO/1uAIXJLS53wyVjQ4JiQVMUqk4I3UDgzm92xpVNreHZqe4ov7lrYTUTjxrk3YPuBPQ/lCMVgkYntEhHXSiaR7NeJY=";
 const RED_ITER = 200000;
 let RED = null;
 
@@ -309,9 +390,16 @@ async function startGame(){
   if (!pass){ $('setupErr').textContent = 'Enter your teacher passphrase.'; return; }
   $('startBtn').disabled = true;
   try {
-    const rows = await rpc('create_live_session', { p_teacher_pass: pass, p_game_type: $('game').value, p_settings: {} });
+    const game = $('game').value;
+    let sd = null, settings = {};
+    if (game === 'showdown'){
+      sd = buildShowdown();
+      if (!sd.questions.length){ $('setupErr').textContent = 'No vocab found for those chapters.'; return; }
+      settings = { require_login: $('sdLogin').checked ? 'true' : 'false' };
+    }
+    const rows = await rpc('create_live_session', { p_teacher_pass: pass, p_game_type: game, p_settings: settings });
     const r = rows[0];
-    clearS(); S = { sid: r.session_id, tok: r.host_token, code: r.join_code };
+    clearS(); S = { sid: r.session_id, tok: r.host_token, code: r.join_code, game, sd };
     $('pass').value = '';
     saveS(); enterGame();
   } catch(e){
@@ -332,8 +420,11 @@ function enterGame(){
   if (window.QRCode) new QRCode($('qr'), { text: joinUrl(), width: 132, height: 132, colorDark:'#000', colorLight:'#fff' });
   else $('qr').classList.add('hidden');
   renderList(); updateVoteBtn();
+  const isSd = S.game === 'showdown';
+  $('picker').classList.toggle('hidden', isSd); $('stage').classList.add('hidden'); $('sd').classList.toggle('hidden', !isSd);
+  $('votedLine').classList.add('hidden');
   showView();
-  poll(); clearInterval(pollTimer); pollTimer = setInterval(poll, 1500);
+  poll(); clearInterval(pollTimer); pollTimer = setInterval(poll, isSd ? 1000 : 1500);
 }
 
 async function poll(){
@@ -369,6 +460,7 @@ function barsHTML(q, t){
 function pctA(t){ const n = t.A + t.B; return n ? Math.round(100*t.A/n) : null; }
 
 function showView(){
+  if (S && S.game === 'showdown') return sdView();
   const phase = lastState ? lastState.phase : 'lobby';
   const onStage = current && (phase === 'question' || phase === 'reveal');
   $('picker').classList.toggle('hidden', !!onStage);
@@ -465,15 +557,149 @@ let endArmed = 0;
 function confirmEnd(){
   const now = Date.now();
   if (now - endArmed < 4000) return true;
-  endArmed = now; ['endBtn','endBtn2'].forEach(id => { $(id).textContent = 'Tap again to end'; });
-  setTimeout(() => ['endBtn','endBtn2'].forEach(id => { $(id).textContent = 'End game'; }), 4000);
+  const btns = () => [$('endBtn'), $('endBtn2')].concat([...document.querySelectorAll('.sdEnd')]);
+  endArmed = now; btns().forEach(b => { b.textContent = 'Tap again to end'; });
+  setTimeout(() => btns().forEach(b => { b.textContent = 'End game'; }), 4000);
   return false;
 }
 $('endBtn').onclick = endGame; $('endBtn2').onclick = endGame;
+document.querySelectorAll('.sdEnd').forEach(b => b.onclick = endGame);
 $('hideLive').onchange = showView;
 
-buildSets(); renderList();
+// =====================================================================
+// VOCAB SHOWDOWN
+// =====================================================================
+const LETTERS = ['A','B','C','D'], SHAPES = ['▲','◆','●','■'];
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function buildSdSetup(){
+  const o = []; for (let n = 1; n <= 28; n++) o.push('<option value="'+n+'">'+n+': '+esc(CHAPTERS[n])+'</option>');
+  $('sdFrom').innerHTML = o.join(''); $('sdTo').innerHTML = o.join('');
+  $('sdFrom').value = '1'; $('sdTo').value = '1';
+  $('game').onchange = () => $('sdSetup').classList.toggle('hidden', $('game').value !== 'showdown');
+}
+function buildShowdown(){
+  let a = +$('sdFrom').value, b = +$('sdTo').value; if (a > b) [a, b] = [b, a];
+  const count = +$('sdCount').value, seconds = +$('sdSecs').value;
+  const V = window.PET_VOCAB || {};
+  const pool = [];
+  for (let ch = a; ch <= b; ch++) if (V[ch]) V[ch].terms.forEach(t => pool.push({ ch, t }));
+  const picks = shuffle(pool).slice(0, count);
+  const questions = picks.map(({ ch, t }) => {
+    const others = shuffle(V[ch].terms.filter(x => x[0] !== t[0])).slice(0, 3).map(x => x[0]);
+    const opts = shuffle([t[0]].concat(others));
+    const re = new RegExp(t[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    return { ch, term: t[0], def: t[1].replace(re, '_____'), opts, key: LETTERS[opts.indexOf(t[0])] };
+  });
+  return { questions, seconds, from: a, to: b, idx: -1, stage: 'lobby', tallies: {}, qStart: 0 };
+}
+
+let sdTick = null;
+function sdTimeLeft(){
+  const sd = S.sd; if (!sd || sd.stage !== 'question') return 0;
+  return Math.max(0, Math.ceil(sd.seconds - (Date.now() - sd.qStart) / 1000));
+}
+function tilesHTML(q, counts, reveal){
+  return q.opts.map((o, i) =>
+    '<div class="tile c' + i + (reveal ? (LETTERS[i] === q.key ? ' right' : ' dim') : '') + '"><span class="shape">' + SHAPES[i] + '</span><span>' + esc(o) + '</span>' +
+    (counts ? '<span class="cnt">' + (counts[LETTERS[i]] || 0) + '</span>' : '') + '</div>').join('');
+}
+function sdShow(id){ ['sdLobby','sdQ','sdBoard'].forEach(x => $(x).classList.toggle('hidden', x !== id)); }
+
+function sdView(){
+  const sd = S.sd, st = lastState || {}, res = lastRes || {};
+  const players = res.players || [];
+  if (sd.stage === 'lobby'){
+    sdShow('sdLobby');
+    $('sdInfo').textContent = 'Chapters ' + sd.from + (sd.to !== sd.from ? '–' + sd.to : '') + ' · ' + sd.questions.length + ' questions · ' + sd.seconds + ' seconds each';
+    $('sdPlayers').innerHTML = players.length ? players.map(p => '<span class="pchip">' + esc(p.nickname) + '</span>').join('') : '<span class="tiny">Waiting for players to join…</span>';
+    $('sdStart').disabled = !players.length;
+    return;
+  }
+  const q = sd.questions[sd.idx];
+  if (sd.stage === 'question' || sd.stage === 'reveal'){
+    sdShow('sdQ');
+    $('sdQLabel').textContent = 'Question ' + (sd.idx + 1) + ' of ' + sd.questions.length + ' · Chapter ' + q.ch;
+    $('sdDef').textContent = '“' + q.def + '”';
+    const reveal = sd.stage === 'reveal';
+    $('sdTiles').innerHTML = tilesHTML(q, reveal ? (sd.tallies[sd.idx] || {}) : null, reveal);
+    $('sdAnswer').textContent = reveal ? '✅ ' + q.term : '';
+    $('sdTimer').classList.toggle('hidden', reveal);
+    $('sdClose').classList.toggle('hidden', reveal);
+    $('sdShowBoard').classList.toggle('hidden', !reveal);
+    const answered = st.answer_count || 0, total = st.player_count || 0;
+    $('sdCount2').textContent = reveal ? '' : answered + ' of ' + total + ' answered';
+    return;
+  }
+  // board or final
+  sdShow('sdBoard');
+  const final = sd.stage === 'final';
+  $('sdBoardTitle').textContent = final ? '🏆 Final Results' : '🏆 Leaderboard';
+  const ranked = players.slice().sort((a, b) => b.score - a.score);
+  $('sdBoardList').innerHTML = ranked.slice(final ? 3 : 0, final ? 10 : 5).map((p, i) =>
+    '<div class="brow"><span class="rk">' + (i + 1 + (final ? 3 : 0)) + '</span><span>' + esc(p.nickname) + '</span><span class="pts">' + p.score.toLocaleString() + '</span></div>').join('') ||
+    (final ? '' : '<p class="tiny">No points yet.</p>');
+  $('sdPodium').classList.toggle('hidden', !final);
+  if (final){
+    const pod = (p, cls, n) => p ? '<div class="pod ' + cls + '"><div class="nm">' + esc(p.nickname) + '</div><div class="blk">' + n + '</div><div class="pt">' + p.score.toLocaleString() + '</div></div>' : '<div class="pod ' + cls + '"></div>';
+    $('sdPodium').innerHTML = pod(ranked[1], 'p2', 2) + pod(ranked[0], 'p1', 1) + pod(ranked[2], 'p3', 3);
+  }
+  $('sdNext').classList.toggle('hidden', final);
+  $('sdNext').textContent = sd.idx + 1 >= sd.questions.length ? 'Final results 🏆' : 'Next question ▶';
+}
+
+async function sdAsk(){
+  const sd = S.sd, idx = sd.idx + 1, q = sd.questions[idx];
+  const ok = await rpc('host_set_question', { p_session_id: S.sid, p_host_token: S.tok, p_q_index: idx,
+    p_question: { prompt: q.def, choices: q.opts, chapter: q.ch }, p_answer_key: q.key, p_seconds: sd.seconds });
+  if (!ok) throw new Error('The server did not accept that. The game may have ended.');
+  sd.idx = idx; sd.stage = 'question'; sd.qStart = Date.now();
+  lastState = Object.assign({}, lastState, { phase:'question', q_index: idx, answer_count: 0 });
+  saveS(); sdView(); sdStartTick();
+}
+function sdStartTick(){
+  clearInterval(sdTick);
+  sdTick = setInterval(() => {
+    if (!S || !S.sd || S.sd.stage !== 'question'){ clearInterval(sdTick); return; }
+    const left = sdTimeLeft();
+    $('sdTimer').textContent = left; $('sdTimer').classList.toggle('low', left <= 5);
+    const st = lastState || {};
+    const allIn = st.phase === 'question' && st.q_index === S.sd.idx && st.player_count > 0 && st.answer_count >= st.player_count;
+    if (left <= 0 || allIn) sdCloseQ();
+  }, 250);
+}
+let sdClosing = false;
+async function sdCloseQ(){
+  if (sdClosing || !S.sd || S.sd.stage !== 'question') return;
+  sdClosing = true; clearInterval(sdTick);
+  try {
+    await act(async () => {
+      const res = await rpc('host_get_results', { p_session_id: S.sid, p_host_token: S.tok });
+      S.sd.tallies[S.sd.idx] = (res && res.tally) || {};
+      lastRes = res;
+      await rpc('host_set_phase', { p_session_id: S.sid, p_host_token: S.tok, p_phase: 'reveal' });
+      S.sd.stage = 'reveal'; lastState = Object.assign({}, lastState, { phase:'reveal' });
+      saveS(); sdView();
+    });
+  } finally {
+    sdClosing = false;
+    if (S && S.sd && S.sd.stage === 'question') sdStartTick();  // retry if the close didn't go through
+  }
+}
+$('sdStart').onclick = () => act(sdAsk);
+$('sdClose').onclick = sdCloseQ;
+$('sdShowBoard').onclick = () => act(async () => {
+  await rpc('host_set_phase', { p_session_id: S.sid, p_host_token: S.tok, p_phase: 'leaderboard' });
+  S.sd.stage = S.sd.idx + 1 >= S.sd.questions.length ? 'final' : 'board';
+  lastState = Object.assign({}, lastState, { phase:'leaderboard' }); saveS(); sdView();
+});
+$('sdNext').onclick = () => act(async () => {
+  if (S.sd.idx + 1 >= S.sd.questions.length){ S.sd.stage = 'final'; saveS(); sdView(); return; }
+  await sdAsk();
+});
+
+buildSets(); renderList(); buildSdSetup();
 loadS();
+if (S && S.sd && S.sd.stage === 'question') sdStartTick();
 if (S) enterGame();
 </script>
 </body>

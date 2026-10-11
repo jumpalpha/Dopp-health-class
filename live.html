@@ -41,6 +41,9 @@ button:disabled{opacity:.5}
 .choice.c1{background:linear-gradient(135deg,#b0213c,var(--crimson))}
 .choice.c2{background:linear-gradient(135deg,#a88a00,var(--gold));color:#1c1400;text-shadow:none}
 .choice.c3{background:linear-gradient(135deg,#00875e,var(--emerald));color:#02251a;text-shadow:none}
+.choice .shp{display:inline-block;width:30px;margin-right:6px;opacity:.9}
+.cd{font-family:Cinzel,serif;font-weight:900;font-size:40px;color:var(--gold);text-shadow:0 2px 0 #000;text-align:center;margin-top:4px}
+.cd.low{color:var(--crimson)}
 .choice.picked{border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.35),0 0 24px rgba(255,255,255,.35)}
 .choice.faded{opacity:.45}
 .hint{text-align:center;color:var(--dim);margin-top:14px;font-weight:700}
@@ -87,7 +90,8 @@ const TRIMESTER = '2026-T1';
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const LETTERS = ['A','B','C','D'];
+const LETTERS = ['A','B','C','D'], SHAPES = ['▲','◆','●','■'];
+let deadline = 0, cdTimer = null;
 
 let P = null;          // {sid, pid, tok, code, name}
 let st = null, timer = null, sending = false, pendingPick = null, lastKey = '';
@@ -147,7 +151,7 @@ function startGame(){
   $('v-join').classList.add('hidden'); $('v-game').classList.remove('hidden');
   $('meName').textContent = P.name || '…';
   lastKey = ''; st = null;
-  poll(); clearInterval(timer); timer = setInterval(poll, 1500);
+  poll(); clearInterval(timer); timer = setInterval(poll, 1000);
 }
 
 async function poll(){
@@ -158,7 +162,8 @@ async function poll(){
     if (!s){ showJoin('That game is over.'); return; }
     if (!s.me){ showJoin('You were signed in on another device. Join again here.'); return; }
     st = s; P.name = s.me.nickname; $('meName').textContent = s.me.nickname + (s.me.team ? ' · Team ' + s.me.team : '');
-    render();
+    deadline = (s.phase === 'question' && s.seconds_left != null) ? Date.now() + s.seconds_left * 1000 : 0;
+    render(); tickCountdown();
   } catch(e){ $('gameErr').textContent = 'Connection trouble… retrying'; }
 }
 
@@ -175,10 +180,11 @@ function render(){
   } else if (s.phase === 'question'){
     const choices = q.choices || [];
     scr.innerHTML = (q.revote ? '<div class="pill">🔁 Revote: did the discussion change your mind?</div>' : '') +
+      (!isPoll ? '<div class="cd" id="cd"></div>' : '') +
       '<div class="prompt">' + esc(q.prompt) + '</div>' +
       '<div class="choices">' + choices.map((c, i) =>
         '<button class="choice c' + i + (mine === LETTERS[i] ? ' picked' : mine ? ' faded' : '') + '" data-a="' + LETTERS[i] + '"' +
-        (!isPoll && mine ? ' disabled' : '') + '>' + esc(c) + '</button>').join('') + '</div>' +
+        (!isPoll && mine ? ' disabled' : '') + '>' + (isPoll ? '' : '<span class="shp">' + SHAPES[i] + '</span>') + esc(c) + '</button>').join('') + '</div>' +
       '<p class="hint">' + (mine ? (isPoll ? '✅ Vote in! You can change it until voting closes.' : '✅ Answer locked in!') : 'Tap your answer') + '</p>';
     scr.querySelectorAll('.choice').forEach(b => b.onclick = () => vote(b.dataset.a));
   } else if (s.phase === 'reveal' || s.phase === 'leaderboard'){
@@ -188,9 +194,15 @@ function render(){
         (pick ? '<p class="dim" style="margin-top:10px">You picked</p><div class="pill">' + esc(pick) + '</div>' : '<p class="dim" style="margin-top:10px">You didn\'t vote this time.</p>') +
         '<p class="dim" style="margin-top:16px">Look at the screen to see how the class voted.</p>';
     } else {
-      const c = s.me.my_correct;
-      scr.innerHTML = '<div class="emoji">' + (c ? '🎉' : mine ? '💥' : '⏰') + '</div><div class="big">' + (c ? 'Correct!' : mine ? 'Not this time' : 'Time\'s up') + '</div>' +
-        '<div class="pill">Score: ' + s.me.score + '</div>';
+      const c = s.me.my_correct, ki = LETTERS.indexOf(s.answer_key), right = ki >= 0 && q.choices ? q.choices[ki] : null;
+      if (s.phase === 'leaderboard'){
+        scr.innerHTML = '<div class="emoji">🏆</div><div class="big">Check the screen!</div><p class="dim" style="margin-top:8px">The leaderboard is up.</p>' +
+          '<div class="pill">Your score: ' + s.me.score.toLocaleString() + '</div>';
+      } else {
+        scr.innerHTML = '<div class="emoji">' + (c ? '🎉' : mine ? '💥' : '⏰') + '</div><div class="big">' + (c ? 'Correct!' : mine ? 'Not this time' : 'Time\'s up') + '</div>' +
+          (!c && right ? '<p class="dim" style="margin-top:10px">The answer was</p><div class="pill">' + esc(right) + '</div>' : '') +
+          '<div class="pill" style="margin-top:12px">Score: ' + s.me.score.toLocaleString() + '</div>';
+      }
     }
   } else {
     scr.innerHTML = '<div class="emoji">🏁</div><div class="big">Game over</div><p class="dim" style="margin-top:8px">Thanks for playing!</p>';
@@ -198,12 +210,23 @@ function render(){
   }
 }
 
+function tickCountdown(){
+  clearInterval(cdTimer);
+  const upd = () => {
+    const el = document.getElementById('cd');
+    if (!el || !deadline){ clearInterval(cdTimer); return; }
+    const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    el.textContent = left; el.classList.toggle('low', left <= 5);
+  };
+  upd(); cdTimer = setInterval(upd, 250);
+}
+
 async function vote(letter){
   if (!st || st.phase !== 'question' || sending) return;
   sending = true; pendingPick = letter; lastKey = ''; render();
   try {
     const ok = await rpc('submit_live_answer', { p_player_id: P.pid, p_player_token: P.tok, p_q_index: st.q_index, p_answer: letter });
-    if (!ok) $('gameErr').textContent = 'Voting is closed for that one.';
+    if (!ok) $('gameErr').textContent = st.game_type === 'pick_a_side' ? 'Voting is closed for that one.' : 'Time\'s up! That one already closed.';
     else st.me.my_answer = letter;
   } catch(e){ $('gameErr').textContent = 'Did not send. Tap again.'; }
   finally { pendingPick = null; sending = false; lastKey = ''; poll(); }
