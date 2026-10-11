@@ -301,6 +301,19 @@ input, select, textarea { color: var(--text); }
       </div>
     </div>
 
+    <div class="card" id="sub-card" style="border-color:rgba(56,191,255,0.45)">
+      <div class="card-title" style="margin-bottom:4px">🧑‍🏫 Substitute Access</div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:12px">Make a day-pass code so a sub can run the live games. It can't open this dashboard or see student data, and it expires on its own.</div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div><label class="form-label" for="sub-until">Good through</label><input type="date" id="sub-until" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></div>
+        <div style="flex:1;min-width:180px"><label class="form-label" for="sub-label">Sub's name (optional)</label><input type="text" id="sub-label" maxlength="60" placeholder="e.g. Mrs. Smith" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></div>
+        <button class="btn btn-gold" id="sub-create" onclick="subCreate()">Create sub code</button>
+      </div>
+      <div id="sub-new" style="display:none;margin-top:14px;padding:14px;border-radius:12px;background:rgba(56,191,255,0.1);border:1px solid rgba(56,191,255,0.4)"></div>
+      <div id="sub-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
+      <div id="sub-list" style="margin-top:12px;font-size:14px"></div>
+    </div>
+
     <div class="stat-row">
       <div class="stat-card highlight">
         <div class="sc-num">28</div>
@@ -695,6 +708,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
+    setTimeout(() => { subInit(); subLoad(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -707,6 +721,52 @@ function lockDashboard() {
   document.getElementById('pin-input').value = '';
   document.getElementById('pin-error').textContent = '';
   document.getElementById('pin-gate').style.display = 'flex';
+}
+
+// ── SUBSTITUTE CODES ──
+const idahoToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver' }).format(new Date());
+function subFmt(iso){ return new Date(iso).toLocaleString([], { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }); }
+function subInit(){
+  const el = document.getElementById('sub-until'); if (!el) return;
+  const t = idahoToday(); const max = new Date(t + 'T12:00:00'); max.setDate(max.getDate() + 14);
+  el.min = t; el.max = max.toISOString().slice(0, 10); if (!el.value) el.value = t;
+}
+async function subLoad(){
+  const box = document.getElementById('sub-list'); if (!box || !teacherPass()) return;
+  const { data, error } = await db.rpc('list_sub_codes', { p_teacher_pass: teacherPass() });
+  if (error){ box.textContent = ''; return; }
+  const rows = (data || []).filter(c => c.active);
+  box.innerHTML = rows.length ? '<div style="font-weight:800;margin-bottom:6px">Active sub codes</div>' + rows.map(c =>
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border)">' +
+    '<span>' + escapeHtml(c.label || 'Sub code') + ' · works until ' + escapeHtml(subFmt(c.expires_at)) + '</span>' +
+    '<button class="btn btn-sm" style="color:var(--crimson);border:1px solid rgba(255,59,92,0.4);background:transparent" onclick="subRevoke(' + Number(c.id) + ')">Cancel code</button></div>').join('')
+    : '<div style="color:var(--dim)">No active sub codes.</div>';
+}
+async function subCreate(){
+  const err = document.getElementById('sub-err'); err.textContent = '';
+  const until = document.getElementById('sub-until').value, label = document.getElementById('sub-label').value.trim();
+  if (!until){ err.textContent = 'Pick the last day the sub will be there.'; return; }
+  const btn = document.getElementById('sub-create'); btn.disabled = true;
+  const { data, error } = await db.rpc('create_sub_code', { p_teacher_pass: teacherPass(), p_until: until, p_label: label || null });
+  btn.disabled = false;
+  if (error){
+    if (/passphrase/i.test(error.message)){ lockDashboard(); document.getElementById('pin-error').textContent = 'Please enter your teacher passphrase again.'; return; }
+    err.textContent = error.message; return;
+  }
+  const r = data[0];
+  const guide = 'sub_guide.html#' + new URLSearchParams({ code: r.code, until: until, name: label }).toString();
+  const box = document.getElementById('sub-new');
+  box.style.display = 'block';
+  box.innerHTML = '<div style="font-size:13px;color:var(--dim);font-weight:700">New sub code (write it down now; it is only shown once)</div>' +
+    '<div style="font-family:Cinzel,serif;font-size:30px;font-weight:700;letter-spacing:2px;color:var(--text);margin:4px 0">' + escapeHtml(r.code) + '</div>' +
+    '<div style="font-size:13px;color:var(--dim);margin-bottom:10px">Works until ' + escapeHtml(subFmt(r.expires_at)) + '</div>' +
+    '<a class="btn btn-gold" href="' + guide + '" target="_blank" rel="noopener">🖨 Open printable Sub Guide</a>';
+  subLoad();
+}
+async function subRevoke(id){
+  const { error } = await db.rpc('revoke_sub_code', { p_teacher_pass: teacherPass(), p_id: id });
+  if (error){ document.getElementById('sub-err').textContent = error.message; return; }
+  subLoad();
 }
 
 // Already unlocked this session?
@@ -722,6 +782,7 @@ const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
 const TRIMESTER    = '2026-T1';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+subInit(); if (teacherPass()) subLoad();
 const XP_PER_TASK  = 25;
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task
 

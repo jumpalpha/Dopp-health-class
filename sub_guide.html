@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Sub Guide — Dopp's Class</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1C1A2E;--dim:#55516b;--gold:#7a5c00;--line:#d9d3c2;--sky:#1676a8;--paper:#fffdf7}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#ece7da;color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-size:14px;line-height:1.45}
+.toolbar{max-width:8.5in;margin:16px auto 0;padding:0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolbar button{font:inherit;font-weight:900;font-size:15px;padding:10px 18px;border-radius:10px;border:0;background:#FFD700;color:#2a1d00;cursor:pointer}
+.toolbar span{color:var(--dim);font-size:13px}
+.page{max-width:8.5in;margin:12px auto 24px;background:var(--paper);padding:0.5in 0.55in;box-shadow:0 4px 20px rgba(0,0,0,.12)}
+h1{font-family:Cinzel,serif;font-size:26px;color:var(--ink)}
+.sub{color:var(--dim);font-weight:700}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin:14px 0 12px;align-items:stretch}
+@media(max-width:640px){.hero,.cols{grid-template-columns:1fr!important}}
+.codebox{border:3px dashed var(--gold);border-radius:12px;padding:12px 14px;background:#fff8d6}
+.codebox .lab{font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--gold)}
+.codebox input{width:100%;border:0;background:transparent;font-family:Cinzel,serif;font-weight:900;font-size:32px;letter-spacing:3px;color:var(--ink);outline:none;padding:2px 0}
+.codebox .until{font-weight:800;color:var(--dim)}
+.codebox .until input{font:inherit;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);width:150px}
+.start{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.start ol{padding-left:20px}
+.start li{margin:3px 0}
+.url{font-weight:900;color:var(--sky)}
+h2{font-family:Cinzel,serif;font-size:16px;margin-bottom:6px;color:var(--ink)}
+.cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.game{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.game .tag{font-size:12px;font-weight:900;color:var(--dim)}
+.game ol{padding-left:18px;margin-top:4px}
+.game li{margin:3px 0}
+.students{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#f3fbff}
+.help{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.help ul{padding-left:18px}
+.help li{margin:2px 0}
+.box{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.foot{margin-top:12px;font-size:12px;color:var(--dim);text-align:center}
+b{font-weight:900}
+@media print{
+  body{background:#fff}
+  .toolbar{display:none}
+  .page{box-shadow:none;margin:0;max-width:none;padding:0}
+  body{font-size:12px;line-height:1.35}
+  h1{font-size:22px} h2{font-size:14px;margin-bottom:4px}
+  .hero{margin:8px 0;gap:10px} .cols,.help{gap:8px} .students,.help{margin-top:8px}
+  .codebox input{font-size:26px}
+  .game,.box,.start,.students,.codebox{padding:8px 10px}
+  .foot{margin-top:6px}
+  @page{size:letter;margin:0.3in}
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button onclick="window.print()">🖨 Print this guide</button>
+  <span>Check the code and dates below, then print. You can type in the boxes.</span>
+</div>
+
+<div class="page">
+  <h1>⚔️ Sub Guide: Live Class Games</h1>
+  <div class="sub">Dopp's Health Class · doppsclass.com · <span id="nameLine"></span></div>
+
+  <div class="hero">
+    <div class="codebox">
+      <div class="lab">Your sub code</div>
+      <input id="code" aria-label="Sub code" placeholder="CODE-123" maxlength="20">
+      <div class="until">Works through: <input id="until" type="date" aria-label="Works through"></div>
+    </div>
+    <div class="start">
+      <h2>Start a game (1 minute)</h2>
+      <ol>
+        <li>On the classroom computer, go to<br><span class="url">doppsclass.com/live_host.html</span></li>
+        <li>Pick a game from the list.</li>
+        <li>Type the <b>sub code</b> and press <b>Start game</b>.</li>
+        <li>Put that screen on the projector.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="game">
+      <h2>⚖ Pick a Side</h2>
+      <div class="tag">Class vote + discussion · 10–20 min</div>
+      <ol>
+        <li>Choose a <b>chapter</b> and click a question.</li>
+        <li>Press <b>Start vote</b>. Students vote on phones.</li>
+        <li>Press <b>Close voting</b> to show the split.</li>
+        <li>Let students discuss, then press <b>Revote</b> to see who changed their mind.</li>
+        <li><b>Next question</b> or <b>End game</b>.</li>
+      </ol>
+    </div>
+    <div class="game">
+      <h2>⚡ Vocab Showdown</h2>
+      <div class="tag">Speed quiz with scores · 10–15 min</div>
+      <ol>
+        <li>Pick the <b>chapters</b>, 10 questions, 20 seconds.</li>
+        <li>Wait for names to appear, then press <b>Start</b>.</li>
+        <li>Each question closes by itself when time runs out.</li>
+        <li>Press <b>Leaderboard</b>, then <b>Next question</b>.</li>
+        <li>The last screen shows the winners' podium.</li>
+      </ol>
+    </div>
+    <div class="game">
+      <h2>🐉 Realm Raid</h2>
+      <div class="tag">Teams vs. a boss · 15 min</div>
+      <ol>
+        <li>Pick the <b>chapters</b> and <b>3 teams</b>.</li>
+        <li>Students are put on teams automatically.</li>
+        <li>Press <b>Start</b>. Every right answer hits the boss.</li>
+        <li>After each question: <b>Leaderboard</b>, then <b>Next</b>.</li>
+        <li>Defeat the boss to win!</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="students">
+    <h2>📲 How students join</h2>
+    Students go to <span class="url">doppsclass.com/live.html</span> (or tap <b>Join Live Game</b> on the home page, or scan the QR code on the screen), then type the <b>6-digit game code</b> shown on the projector.
+    For Showdown and Raid they sign in with their <b>Quest login</b> first, so scores are saved with their names.
+  </div>
+
+  <div class="help">
+    <div class="box">
+      <h2>🛠 If something goes wrong</h2>
+      <ul>
+        <li><b>Page froze or closed?</b> Reopen the same page. The game comes back.</li>
+        <li><b>A student can't join?</b> Check the 6-digit code, or have them refresh.</li>
+        <li><b>"Needs your Quest login"?</b> The student signs in at doppsclass.com/quest.html first.</li>
+        <li><b>Code not accepted?</b> Check spelling. Codes stop working after the last day above.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>✅ Good to know</h2>
+      <ul>
+        <li>Students may use phones <b>only</b> for the game.</li>
+        <li>Votes in Pick a Side are anonymous on the screen.</li>
+        <li>Always press <b>End game</b> when you're done.</li>
+        <li>The sub code only runs games. It doesn't show grades or student records.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot">Thank you for covering my class! — Mr. Dopp</div>
+</div>
+
+<script>
+(function(){
+  const p = new URLSearchParams(location.hash.slice(1));
+  const code = p.get('code') || '', until = p.get('until') || '', name = p.get('name') || '';
+  document.getElementById('code').value = code;
+  document.getElementById('until').value = until;
+  document.getElementById('nameLine').textContent = name ? 'For: ' + name : 'Substitute teacher';
+  // keep the code out of the browser history once it's on the page
+  if (location.hash) history.replaceState(null, '', location.pathname);
+})();
+</script>
+</body>
+</html>
