@@ -92,6 +92,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LETTERS = ['A','B','C','D'], SHAPES = ['▲','◆','●','■'];
 let deadline = 0, cdTimer = null;
+const TEAMS = { 1:{ name:'Sky Knights', col:'#38BFFF' }, 2:{ name:'Crimson Guard', col:'#FF3B5C' }, 3:{ name:'Gold Lions', col:'#FFD700' }, 4:{ name:'Emerald Rangers', col:'#00E5A0' } };
+const teamPill = t => t && TEAMS[t] ? '<div class="pill" style="border-color:' + TEAMS[t].col + ';color:' + TEAMS[t].col + '">⚔️ ' + TEAMS[t].name + '</div>' : '';
 
 let P = null;          // {sid, pid, tok, code, name}
 let st = null, timer = null, sending = false, pendingPick = null, lastKey = '';
@@ -161,7 +163,7 @@ async function poll(){
     $('gameErr').textContent = '';
     if (!s){ showJoin('That game is over.'); return; }
     if (!s.me){ showJoin('You were signed in on another device. Join again here.'); return; }
-    st = s; P.name = s.me.nickname; $('meName').textContent = s.me.nickname + (s.me.team ? ' · Team ' + s.me.team : '');
+    st = s; P.name = s.me.nickname; $('meName').textContent = s.me.nickname + (s.me.team && TEAMS[s.me.team] ? ' · ' + TEAMS[s.me.team].name : '');
     deadline = (s.phase === 'question' && s.seconds_left != null) ? Date.now() + s.seconds_left * 1000 : 0;
     render(); tickCountdown();
   } catch(e){ $('gameErr').textContent = 'Connection trouble… retrying'; }
@@ -171,12 +173,13 @@ function render(){
   const s = st, q = s.question || {}, mine = pendingPick != null ? pendingPick : s.me.my_answer;
   const isPoll = s.game_type === 'pick_a_side';
   // only rebuild when something visible changed
-  const key = [s.phase, s.q_index, mine, s.me.my_correct, s.me.score].join('|');
+  const key = [s.phase, s.q_index, mine, s.me.my_correct, s.me.score, s.teams ? JSON.stringify(s.teams) : ''].join('|');
   if (key === lastKey) return; lastKey = key;
   const scr = $('screen');
 
   if (s.phase === 'lobby'){
-    scr.innerHTML = '<div class="emoji">🛡️</div><div class="big">You\'re in!</div><p class="dim" style="margin-top:8px">Watch the screen. The question will pop up here.</p>';
+    scr.innerHTML = '<div class="emoji">' + (s.game_type === 'raid' ? '🐉' : '🛡️') + '</div><div class="big">You\'re in!</div>' + teamPill(s.me.team) +
+      '<p class="dim" style="margin-top:10px">' + (s.game_type === 'raid' ? 'Your team is raiding a boss. Every right answer is a hit!' : 'Watch the screen. The question will pop up here.') + '</p>';
   } else if (s.phase === 'question'){
     const choices = q.choices || [];
     scr.innerHTML = (q.revote ? '<div class="pill">🔁 Revote: did the discussion change your mind?</div>' : '') +
@@ -201,7 +204,8 @@ function render(){
       } else {
         scr.innerHTML = '<div class="emoji">' + (c ? '🎉' : mine ? '💥' : '⏰') + '</div><div class="big">' + (c ? 'Correct!' : mine ? 'Not this time' : 'Time\'s up') + '</div>' +
           (!c && right ? '<p class="dim" style="margin-top:10px">The answer was</p><div class="pill">' + esc(right) + '</div>' : '') +
-          '<div class="pill" style="margin-top:12px">Score: ' + s.me.score.toLocaleString() + '</div>';
+          '<div class="pill" style="margin-top:12px">Score: ' + s.me.score.toLocaleString() + '</div>' +
+          (s.game_type === 'raid' && s.me.team && s.teams ? '<p class="dim" style="margin-top:12px">' + (c ? '⚔️ You hit the boss! ' : '') + 'Your team: <b style="color:' + TEAMS[s.me.team].col + '">' + (s.teams[s.me.team] || 0) + ' hits</b></p>' : '');
       }
     }
   } else {
