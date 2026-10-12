@@ -315,7 +315,7 @@ function finish() {
     '<div class="rv"><div class="rq">' + esc(q.q) + '</div><div class="ra">✔ ' + esc(q.right) + '</div><div class="rx">' + esc(q.why) + '</div>' +
     (q.ch ? '<a href="chapter' + String(q.ch).padStart(2, '0') + '.html">Learn more in Chapter ' + q.ch + ' →</a>' : '') + '</div>').join('') : '';
   // remember what was asked so next climb uses fresh questions first
-  const seen = store.get('how_smart_seen', []).concat(hist.map(h => h.id)); store.set('how_smart_seen', seen.slice(-120));
+  const seen = store.get('how_smart_seen', []).concat(hist.map(h => h.id)); store.set('how_smart_seen', seen.slice(-300));
   showBest(); post(lvl);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
