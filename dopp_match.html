@@ -2,176 +2,168 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
-<meta property="og:image" content="https://doppsclass.com/og-image.png">
-<title>Dopp Memory Match — Health Arcade</title>
-<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Memory — Dopp's Arcade</title>
+<meta name="description" content="Flip cards and match the healthy pairs before time runs out. Three levels of memory fun with your Wellness Sprite.">
 <link rel="canonical" href="https://doppsclass.com/dopp_match.html">
-<meta property="og:title" content="Dopp Memory Match — Health Arcade">
-<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://doppsclass.com/dopp_match.html">
-<meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0618;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
-#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
-#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
-#back-btn:hover{opacity:1}
-#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(15px,3vw,21px);text-align:center}
-#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:100px}
-#main{display:flex;flex-direction:column;align-items:center;padding:16px 10px 30px;width:100%;max-width:820px}
-#stats-bar{display:flex;gap:24px;margin-bottom:14px;font-family:'Cinzel',sans-serif;font-size:14px}
-#stats-bar span{color:#aaa}
-#stats-bar b{color:#FFD700}
-#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:460px}
-.card{aspect-ratio:1;cursor:pointer;perspective:600px}
-.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.5s ease;border-radius:10px}
-.card.flipped .card-inner{transform:rotateY(180deg)}
-.card-front,.card-back{position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
-.card-back{background:#1a1a2e;border:2px solid rgba(255,215,0,0.3);font-family:'Cinzel Decorative',cursive;font-size:clamp(22px,5vw,32px);color:#FFD700}
-.card-front{background:#0d1530;border:2px solid #38BFFF;transform:rotateY(180deg);flex-direction:column;gap:6px;overflow:hidden}.card-front:before{content:"";position:absolute;inset:7px;border-radius:8px;background:radial-gradient(circle at 50% 36%,rgba(56,191,255,.16),transparent 42%);z-index:-1}
-.card-front .card-label{font-family:'Cinzel',sans-serif;font-size:clamp(8px,2vw,11px);color:#38BFFF;text-align:center;padding:0 4px}.match-sprite{position:relative;width:52%;aspect-ratio:1;min-width:42px;max-width:62px}.match-sprite:before,.match-sprite:after{content:"";position:absolute}.sprite-apple{border-radius:52% 48% 48% 52%;background:linear-gradient(135deg,#ff5b68,#c91f3f);box-shadow:inset -8px -8px 0 rgba(90,0,20,.18),0 0 16px rgba(255,91,104,.28)}.sprite-apple:before{width:10px;height:14px;background:#6b3b18;border-radius:6px;left:50%;top:-9px;transform:translateX(-50%) rotate(12deg)}.sprite-apple:after{width:22px;height:12px;background:#00E5A0;border-radius:90% 20% 90% 20%;right:2px;top:-7px;transform:rotate(-22deg)}.sprite-water{border-radius:55% 55% 62% 62%;background:linear-gradient(145deg,#38BFFF,#0d78d6);clip-path:polygon(50% 0,84% 42%,70% 92%,30% 92%,16% 42%);box-shadow:0 0 18px rgba(56,191,255,.34)}.sprite-water:after{width:13px;height:22px;border-radius:50%;background:rgba(255,255,255,.45);left:32%;top:24%;transform:rotate(24deg)}.sprite-runner{border-radius:50%;background:#00E5A0;box-shadow:0 0 16px rgba(0,229,160,.35)}.sprite-runner:before{width:46px;height:8px;background:#FFD700;left:7px;top:34px;transform:rotate(-24deg);border-radius:8px;box-shadow:-8px 16px 0 #38BFFF,17px 20px 0 #38BFFF}.sprite-runner:after{width:18px;height:18px;background:#f2bc91;border-radius:50%;left:21px;top:8px;box-shadow:0 17px 0 4px #00E5A0}.sprite-sleep{border-radius:14px;background:linear-gradient(145deg,#7d5cff,#312073);box-shadow:0 0 16px rgba(125,92,255,.35)}.sprite-sleep:before{width:42px;height:22px;background:#f2bc91;border-radius:22px 22px 10px 10px;left:9px;top:24px}.sprite-sleep:after{content:"Z";font:bold 24px Cinzel;color:#FFD700;right:5px;top:0}.sprite-yoga{border-radius:50%;background:#38BFFF;box-shadow:0 0 16px rgba(56,191,255,.3)}.sprite-yoga:before{width:18px;height:18px;background:#f2bc91;border-radius:50%;left:21px;top:7px;box-shadow:0 18px 0 7px #00E5A0}.sprite-yoga:after{width:50px;height:8px;background:#FFD700;border-radius:8px;left:5px;bottom:12px;box-shadow:12px -12px 0 -1px #FFD700,-12px -12px 0 -1px #FFD700}.sprite-broccoli{border-radius:50%;background:#00E5A0;box-shadow:-14px 4px 0 #13b877,14px 4px 0 #13b877,0 0 16px rgba(0,229,160,.32)}.sprite-broccoli:after{width:15px;height:29px;background:#71c35a;border-radius:8px;left:22px;top:30px}.sprite-heart{background:#FF3B5C;transform:rotate(-45deg);border-radius:8px;box-shadow:0 0 16px rgba(255,59,92,.34)}.sprite-heart:before,.sprite-heart:after{width:100%;height:100%;background:#FF3B5C;border-radius:50%}.sprite-heart:before{left:0;top:-50%}.sprite-heart:after{left:50%;top:0}.sprite-brain{border-radius:45% 55% 50% 50%;background:linear-gradient(145deg,#ff9ed0,#c764ff);box-shadow:0 0 16px rgba(199,100,255,.32)}.sprite-brain:before{inset:11px;border:3px solid rgba(28,26,46,.55);border-left:0;border-right:0;border-radius:50%}.sprite-brain:after{width:3px;height:44px;background:rgba(28,26,46,.55);left:50%;top:8px;border-radius:3px}
-.card.matched .card-inner{border-radius:10px}
-.card.matched .card-front{border:2px solid #00E5A0;box-shadow:0 0 16px rgba(0,229,160,0.5);background:#0a2a1a}
-#win-overlay{position:fixed;inset:0;background:rgba(10,6,24,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;display:none}
-#win-overlay h2{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(22px,5vw,34px);margin-bottom:16px}
-.win-stat{font-family:'Nunito',sans-serif;font-size:16px;color:#fff;margin-bottom:6px}
-#win-rating{font-size:28px;margin:10px 0}
-.play-btn{background:#FFD700;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:11px 32px;border:none;border-radius:8px;cursor:pointer;margin-top:16px;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
-.play-btn:hover{transform:scale(1.05)}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
 </style>
-<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
-<div id="header">
-  <a id="back-btn" href="arcade.html">← Arcade</a>
-  <span id="game-title">Dopp Memory Match</span>
-  <span id="score-display">Matches: <span id="matchCount">0</span>/8</span>
-</div>
-<div id="main">
-  <div id="stats-bar">
-    <div><span>Moves: </span><b id="movesVal">0</b></div>
-    <div><span>Time: </span><b id="timeVal">0:00</b></div>
-    <div><span>Matches: </span><b id="matchVal">0</b></div>
-  </div>
-  <div id="grid"></div>
-</div>
-<div id="win-overlay">
-  <h2>All Matched! 🎉</h2>
-  <div class="win-stat">Time: <b id="winTime"></b></div>
-  <div class="win-stat">Moves: <b id="winMoves"></b></div>
-  <div id="win-rating"></div>
-  <button class="play-btn" id="playAgain">Play Again</button>
-</div>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Sprite Memory</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_art.js"></script>
+<script src="arcade_kit.js"></script>
 <script>
-const CARDS=[
-  {sprite:'apple',label:'Apple'},
-  {sprite:'water',label:'Water'},
-  {sprite:'runner',label:'Runner'},
-  {sprite:'sleep',label:'Sleep'},
-  {sprite:'yoga',label:'Yoga'},
-  {sprite:'broccoli',label:'Broccoli'},
-  {sprite:'heart',label:'Heart'},
-  {sprite:'brain',label:'Brain'},
+(() => {
+const W = 420, H = 640;
+const LEVELS = [{ cols: 4, rows: 4, time: 75 }, { cols: 4, rows: 5, time: 95 }, { cols: 5, rows: 6, time: 140 }];
+const ITEMS = [
+  ['apple', 'Apple', 'Apples are full of fiber.'], ['water', 'Water', 'Water helps your brain focus.'], ['carrot', 'Carrot', 'Carrots help keep your eyes healthy.'],
+  ['broccoli', 'Broccoli', 'Broccoli is loaded with vitamin C.'], ['banana', 'Banana', 'Bananas have potassium for your muscles.'], ['grape', 'Grapes', 'Grapes count toward your daily fruit.'],
+  ['orange', 'Orange', 'Oranges are packed with vitamin C.'], ['strawberry', 'Berry', 'Berries are full of antioxidants.'], ['heart', 'Heart', 'Exercise makes your heart stronger.'],
+  ['star', 'Star', 'Small healthy habits make you a star.'], ['shield', 'Shield', 'Sleep and handwashing help shield you from germs.'], ['soda', 'Soda', 'Soda has lots of added sugar. Save it for once in a while.'],
+  ['burger', 'Burger', 'Fast food is fine sometimes; balance is key.'], ['donut', 'Donut', 'Donuts are a "sometimes" food.'], ['candy', 'Candy', 'Candy can spike and crash your energy.']
 ];
-let moves,matched,firstCard,secondCard,canFlip,timerInt,seconds,gameStarted;
+let cards, open, lock, level, timeLeft, combo, cursor, flips, phase, phaseT, host, layout;
 
-function shuffle(arr){
-  const a=[...arr];
-  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
-  return a;
+function buildLevel(n) {
+  const L = LEVELS[n], pairs = L.cols * L.rows / 2;
+  const pick = ITEMS.slice().sort(() => Math.random() - 0.5).slice(0, pairs);
+  const deck = pick.concat(pick).map((it, i) => ({ art: it[0], name: it[1], fact: it[2], up: 0, target: 0, matched: false, shake: 0 }))
+    .sort(() => Math.random() - 0.5);
+  const gap = 8, top = 112, avail = H - top - 30, cw = Math.min((W - 24 - gap * (L.cols - 1)) / L.cols, (avail - gap * (L.rows - 1)) / L.rows / 1.15);
+  const ch = cw * 1.15, gx = (W - (L.cols * cw + gap * (L.cols - 1))) / 2;
+  deck.forEach((c, i) => { const col = i % L.cols, row = Math.floor(i / L.cols); c.x = gx + col * (cw + gap); c.y = top + row * (ch + gap); c.w = cw; c.h = ch; });
+  cards = deck; open = []; lock = 0; timeLeft = L.time; combo = 0; cursor = 0; flips = 0; phase = 'play'; phaseT = 0;
+  // quick peek at the start of each level
+  cards.forEach(c => c.target = 1); lock = 1.3; setTimeout(() => { if (cards === deck) deck.forEach(c => { if (!c.matched) c.target = 0; }); }, 1100);
 }
-
-function init(){
-  moves=0;matched=0;firstCard=null;secondCard=null;canFlip=true;seconds=0;gameStarted=false;
-  clearInterval(timerInt);
-  document.getElementById('movesVal').textContent=0;
-  document.getElementById('timeVal').textContent='0:00';
-  document.getElementById('matchVal').textContent=0;
-  document.getElementById('matchCount').textContent=0;
-  document.getElementById('win-overlay').style.display='none';
-  buildGrid();
+function reset(A) { level = 0; host = { t: 0, mood: 'happy', jump: 0 }; buildLevel(0); }
+function flip(i, A) {
+  if (phase !== 'play' || lock > 0 || A.state !== 'play') return;
+  const c = cards[i]; if (!c || c.matched || c.target === 1) return;
+  c.target = 1; open.push(c); flips++; A.sfx('swipe');
+  if (open.length === 2) {
+    const [a, b] = open; lock = 0.6;
+    setTimeout(() => {
+      if (a.art === b.art) {
+        a.matched = b.matched = true; combo++;
+        const pts = 100 + (combo - 1) * 50; A.addScore(pts); A.sfx(combo > 2 ? 'medal' : 'coin');
+        A.float('+' + pts + (combo > 1 ? ' combo ×' + combo : ''), (a.x + b.x) / 2 + a.w / 2, Math.min(a.y, b.y), '#7CFFB2');
+        A.particles.burst(a.x + a.w / 2, a.y + a.h / 2, '#FFD700', 10, 160, 3); A.particles.burst(b.x + b.w / 2, b.y + b.h / 2, '#FFD700', 10, 160, 3);
+        if (Math.random() < 0.4) A.toast('💡 ' + a.fact, 2200);
+        host.mood = 'happy'; host.jump = 1;
+        if (cards.every(c => c.matched)) levelClear(A);
+      } else {
+        combo = 0; a.shake = b.shake = 0.35; host.mood = 'tired';
+        setTimeout(() => { a.target = 0; b.target = 0; }, 350);
+      }
+      open = [];
+    }, 450);
+  }
 }
-
-function buildGrid(){
-  const grid=document.getElementById('grid');
-  grid.innerHTML='';
-  const deck=shuffle([...CARDS,...CARDS]);
-  deck.forEach((card,i)=>{
-    const div=document.createElement('div');
-    div.className='card';
-    div.dataset.id=i;
-    div.dataset.sprite=card.sprite;
-    div.dataset.key=card.label;
-    div.dataset.label=card.label;
-    div.innerHTML=`<div class="card-inner">
-      <div class="card-back">?</div>
-      <div class="card-front"><span class="match-sprite sprite-${card.sprite}"></span><span class="card-label">${card.label}</span></div>
-    </div>`;
-    div.addEventListener('click',()=>flipCard(div));
-    grid.appendChild(div);
+function levelClear(A) {
+  const bonus = Math.round(timeLeft) * 10;
+  A.addScore(250 + bonus); A.sfx('win');
+  phase = 'clear'; phaseT = 0;
+  if (level === 1) A.win('You cleared 2 memory levels!');
+  A.float('Level clear! +' + (250 + bonus), W / 2, 330, '#FFD700');
+}
+function input(type, A) {
+  if (!cards) return;
+  const L = LEVELS[level];
+  if (phase === 'clear' && phaseT > 1.2 && (type === 'tap' || type === 'up')) { nextLevel(A); return; }
+  if (type === 'left') cursor = Math.max(0, cursor - 1);
+  else if (type === 'right') cursor = Math.min(cards.length - 1, cursor + 1);
+  else if (type === 'up') cursor = Math.max(0, cursor - L.cols);
+  else if (type === 'down') cursor = Math.min(cards.length - 1, cursor + L.cols);
+  else if (type === 'tap' && !pointerTap) flip(cursor, A);
+  pointerTap = false;
+}
+let pointerTap = false;
+function pointer(t, x, y, A) {
+  if (t !== 'down') return;
+  pointerTap = true;   // the matching 'tap' event from this touch is ignored by input()
+  if (phase === 'clear' && phaseT > 1.2) { nextLevel(A); return; }
+  const i = cards.findIndex(c => x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h);
+  if (i >= 0) { cursor = i; flip(i, A); }
+}
+function nextLevel(A) { if (level + 1 >= LEVELS.length) { A.gameOver(true); return; } level++; buildLevel(level); A.toast('Level ' + (level + 1) + ': ' + LEVELS[level].cols * LEVELS[level].rows / 2 + ' pairs!'); }
+function update(dt, A) {
+  if (!cards) return;
+  host.t += dt; host.jump = Math.max(0, host.jump - dt * 2);
+  cards.forEach(c => { c.up += (c.target - c.up) * Math.min(1, dt * 14); c.shake = Math.max(0, c.shake - dt); });
+  if (A.state !== 'play') return;
+  phaseT += dt; lock = Math.max(0, lock - dt);
+  if (phase === 'play') { timeLeft -= dt; if (timeLeft <= 0) { timeLeft = 0; phase = 'out'; host.mood = 'tired'; A.gameOver(); } }
+}
+function draw(ctx, A) {
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2b1660'); g.addColorStop(1, '#140c36');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (!cards) return;
+  const L = LEVELS[level];
+  ctx.font = '900 14px Nunito,sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#b9b0d6';
+  ctx.fillText('Level ' + (level + 1) + '/3 · ' + cards.filter(c => c.matched).length / 2 + '/' + cards.length / 2 + ' pairs', 62, 80);
+  // timer bar
+  const tp = timeLeft / L.time;
+  A.rr(20, 92, W - 40, 10, 5); A.ink('#1f1640', 2);
+  if (tp > 0) { A.rr(20, 92, (W - 40) * tp, 10, 5); A.ink(tp > 0.5 ? '#3FCB6B' : tp > 0.25 ? '#FFD23F' : '#FF5C77', 2); }
+  ctx.textAlign = 'right'; ctx.fillStyle = tp < 0.25 ? '#FF8FA3' : '#fff'; ctx.fillText(Math.ceil(timeLeft) + 's', W - 62, 80);
+  cards.forEach((c, i) => {
+    const sx = Math.cos(c.up * Math.PI), front = c.up > 0.5, sh = c.shake ? Math.sin(c.shake * 60) * 4 : 0;
+    ctx.save(); ctx.translate(c.x + c.w / 2 + sh, c.y + c.h / 2); ctx.scale(Math.max(0.02, Math.abs(sx)), 1);
+    A.rr(-c.w / 2, -c.h / 2, c.w, c.h, 12);
+    if (front) {
+      A.ink(c.matched ? '#1f6b4a' : '#2a1f55', 2.5);
+      ART.draw(ctx, c.art, 0, -c.h * 0.08, c.w * 0.58, host.t);
+      ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.round(c.w * 0.16) + 'px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText(c.name, 0, c.h / 2 - c.h * 0.1);
+    } else {
+      A.ink('#6a3fd1', 2.5);
+      ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 2; A.rr(-c.w / 2 + 6, -c.h / 2 + 6, c.w - 12, c.h - 12, 8); ctx.stroke();
+      A.drawHero(0, 0, c.w * 0.5, 0, 'happy');
+    }
+    ctx.restore();
+    if (i === cursor && kbUsed) { ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 3; A.rr(c.x - 4, c.y - 4, c.w + 8, c.h + 8, 14); ctx.stroke(); }
   });
-}
-
-function flipCard(div){
-  if(!canFlip) return;
-  if(div.classList.contains('flipped')||div.classList.contains('matched')) return;
-  if(!gameStarted){
-    gameStarted=true;
-    timerInt=setInterval(()=>{
-      seconds++;
-      const m=Math.floor(seconds/60);
-      const s=seconds%60;
-      document.getElementById('timeVal').textContent=m+':'+(s<10?'0':'')+s;
-    },1000);
-  }
-  div.classList.add('flipped');
-  if(!firstCard){firstCard=div;return;}
-  secondCard=div;
-  moves++;
-  document.getElementById('movesVal').textContent=moves;
-  canFlip=false;
-  checkMatch();
-}
-
-function checkMatch(){
-  const match=firstCard.dataset.key===secondCard.dataset.key;
-  if(match){
-    firstCard.classList.add('matched');
-    secondCard.classList.add('matched');
-    matched++;
-    document.getElementById('matchVal').textContent=matched;
-    document.getElementById('matchCount').textContent=matched;
-    firstCard=null;secondCard=null;canFlip=true;
-    if(matched===8) setTimeout(winGame,500);
-  } else {
-    setTimeout(()=>{
-      firstCard.classList.remove('flipped');
-      secondCard.classList.remove('flipped');
-      firstCard=null;secondCard=null;canFlip=true;
-    },800);
+  if (phase === 'clear' && phaseT > 0.5) {
+    ctx.fillStyle = 'rgba(10,6,24,.6)'; ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center'; ctx.font = '900 32px Cinzel,serif'; ctx.lineWidth = 6; ctx.strokeStyle = A.INK;
+    const t = level + 1 >= LEVELS.length ? 'All levels cleared!' : 'Level ' + (level + 1) + ' cleared!';
+    ctx.strokeText(t, W / 2, 300); ctx.fillStyle = '#FFD700'; ctx.fillText(t, W / 2, 300);
+    A.drawHero(W / 2, 370 + Math.sin(host.t * 4) * 6, 80, 0, 'happy');
+    if (phaseT > 1.2) { ctx.fillStyle = '#7CFFB2'; ctx.font = '900 17px Nunito,sans-serif'; ctx.fillText('Tap to continue →', W / 2, 450); }
   }
 }
+let kbUsed = false; window.addEventListener('keydown', e => { if (/Arrow/.test(e.key)) kbUsed = true; });
 
-function winGame(){
-  clearInterval(timerInt);
-  const m=Math.floor(seconds/60);
-  const s=seconds%60;
-  document.getElementById('winTime').textContent=m+':'+(s<10?'0':'')+s;
-  document.getElementById('winMoves').textContent=moves;
-  // rating based on moves
-  let stars='⭐⭐⭐';
-  if(moves>20) stars='⭐⭐';
-  if(moves>30) stars='⭐';
-  document.getElementById('win-rating').textContent=stars;
-  document.getElementById('win-overlay').style.display='flex';
-}
-
-document.getElementById('playAgain').addEventListener('click',init);
-init();
+window.__mem = () => ({ cards, level, phase, timeLeft, lock, flip: i => flip(i, game) });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Memory', subtitle: 'Match the pairs before time runs out!', W, H, reserveH: 70,
+  storageKey: 'sprite_memory', winText: 'You cleared 2 memory levels!', deathDelay: 600, overTitle: 'Time\'s up!',
+  medals: [{ at: 2000, name: 'Bronze', icon: '🥉' }, { at: 5000, name: 'Silver', icon: '🥈' }, { at: 9000, name: 'Gold', icon: '🥇' }, { at: 13000, name: 'Legend', icon: '💎' }],
+  howTo: 'Tap two cards to flip them. Match the pairs!<br>Matches in a row build a <b>combo</b>. Leftover time is bonus points. <b>Clear 2 levels</b> to win!',
+  controls: 'Tap or click cards · or arrows + Space · P pause',
+  facts: [
+    'Getting enough sleep helps your brain store memories.',
+    'Memory games give your working memory a workout.',
+    'Exercise increases blood flow to the brain and can help memory.',
+    'Learning in short sessions spread out over time helps you remember more.',
+    'Hydration helps your brain focus and remember.'
+  ],
+  reset, update, draw, input, pointer
+});
+})();
 </script>
 </body>
 </html>

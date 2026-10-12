@@ -2,313 +2,231 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
-<meta property="og:image" content="https://doppsclass.com/og-image.png">
-<title>Dopp Wordle — Health Arcade</title>
-<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Word Quest — Dopp's Arcade</title>
+<meta name="description" content="Guess the 5-letter health word in 6 tries. Solve words in a row with your Wellness Sprite cheering you on.">
 <link rel="canonical" href="https://doppsclass.com/dopp_wordle.html">
-<meta property="og:title" content="Dopp Wordle — Health Arcade">
-<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://doppsclass.com/dopp_wordle.html">
-<meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0618;color:#fff;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
-#header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,215,0,0.18)}
-#back-btn{color:#FFD700;font-family:'Cinzel',sans-serif;font-size:14px;text-decoration:none;opacity:.85;transition:opacity .2s}
-#back-btn:hover{opacity:1}
-#game-title{font-family:'Cinzel Decorative',cursive;color:#FFD700;font-size:clamp(16px,3vw,22px);text-align:center}
-#score-display{font-family:'Cinzel',sans-serif;font-size:14px;color:#00E5A0;text-align:right;min-width:90px}
-#main{display:flex;flex-direction:column;align-items:center;padding:16px 10px 30px;width:100%;max-width:820px}.sprite-panel{width:min(420px,100%);min-height:76px;display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:10px 14px;border:1px solid rgba(56,191,255,.24);border-radius:8px;background:linear-gradient(135deg,rgba(13,21,48,.88),rgba(28,26,46,.92))}.dopp-sprite{position:relative;width:54px;height:58px;flex:0 0 54px}.dopp-sprite:before{content:"";position:absolute;left:14px;top:3px;width:26px;height:26px;border-radius:50%;background:#f2bc91;box-shadow:0 22px 0 6px #00E5A0}.dopp-sprite:after{content:"";position:absolute;left:9px;top:33px;width:36px;height:12px;border-radius:12px;background:#FFD700;box-shadow:-9px 14px 0 -3px #38BFFF,9px 14px 0 -3px #38BFFF}.sprite-copy{font-family:'Nunito',sans-serif;font-size:13px;line-height:1.35;color:#d8f7ff}.sprite-copy b{font-family:'Cinzel',sans-serif;color:#FFD700}.word-sprite{display:none;position:relative;width:54px;height:54px;margin:-2px 0 9px;border-radius:50%;background:#00E5A0;box-shadow:0 0 22px rgba(0,229,160,.35)}.word-sprite:before{content:"";position:absolute;inset:13px;border-radius:4px;background:#FFD700;box-shadow:0 0 0 5px rgba(28,26,46,.2)}.word-sprite:after{content:"OK";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:bold 13px Cinzel;color:#1C1A2E}body.solved .word-sprite{display:block;animation:pop .45s ease}@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
-#grid{display:grid;grid-template-rows:repeat(6,1fr);gap:6px;margin-bottom:16px}
-.tile-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.tile{width:58px;height:58px;border:2px solid rgba(255,255,255,0.2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',sans-serif;font-size:26px;font-weight:600;text-transform:uppercase;color:#fff;transition:border-color .1s;user-select:none;transform-style:preserve-3d;position:relative}
-.tile.filled{border-color:rgba(255,255,255,0.5)}
-.tile.flip{animation:flip .5s ease forwards}
-.tile.flip-delay-1{animation-delay:0.1s}
-.tile.flip-delay-2{animation-delay:0.2s}
-.tile.flip-delay-3{animation-delay:0.3s}
-.tile.flip-delay-4{animation-delay:0.4s}
-@keyframes flip{
-  0%{transform:rotateX(0)}
-  50%{transform:rotateX(90deg)}
-  100%{transform:rotateX(0)}
-}
-.tile.correct{background:#FFD700;border-color:#FFD700;color:#1C1A2E}
-.tile.present{background:#38BFFF;border-color:#38BFFF;color:#1C1A2E}
-.tile.absent{background:#2a2a3a;border-color:#2a2a3a;color:#888}
-.tile.shake{animation:shake .4s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
-#keyboard{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:12px}
-.kb-row{display:flex;gap:5px}
-.key{padding:0;width:36px;height:46px;border:none;border-radius:5px;background:#3a3a4a;color:#fff;font-family:'Cinzel',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s,color .2s;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
-.key.wide{width:54px;font-size:11px}
-.key:hover{background:#4a4a5a}
-.key.correct{background:#FFD700;color:#1C1A2E}
-.key.present{background:#38BFFF;color:#1C1A2E}
-.key.absent{background:#222230;color:#A79FC4}
-#message{min-height:28px;font-family:'Nunito',sans-serif;font-size:15px;color:#FFD700;text-align:center;margin-bottom:8px;font-weight:700}
-#fact-box{max-width:420px;text-align:center;font-size:14px;color:#00E5A0;padding:10px 14px;border:1px solid rgba(0,229,160,0.3);border-radius:8px;margin-bottom:12px;display:none;line-height:1.5}
-#play-again{display:none;background:#FFD700;color:#1C1A2E;font-family:'Cinzel',sans-serif;font-weight:600;font-size:15px;padding:10px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 18px rgba(255,215,0,.4);transition:transform .15s}
-#play-again:hover{transform:scale(1.05)}
-@media(max-width:420px){
-  .tile{width:48px;height:48px;font-size:20px}
-  .key{width:29px;height:40px;font-size:11px}
-  .key.wide{width:44px}
-}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
 </style>
-<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
-<div id="header">
-  <a id="back-btn" href="arcade.html">← Arcade</a>
-  <span id="game-title">Dopp Wordle</span>
-  <span id="score-display">Wins: <span id="wins">0</span></span>
-</div>
-<div id="main">
-  <div class="sprite-panel"><span class="dopp-sprite"></span><div class="sprite-copy"><b>Dopp Decoder</b><br>Find the 5-letter health word and unlock the sprite badge.</div></div>
-  <div class="word-sprite" aria-hidden="true"></div>
-  <div id="message"></div>
-  <div id="grid"></div>
-  <div id="fact-box"></div>
-  <button id="play-again">Play Again</button>
-  <div id="keyboard"></div>
-</div>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Word Quest</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
 <script>
-const WORDS = ["SLEEP","HEART","FIBER","WATER","SUGAR","LUNGS","SWEAT","BRAIN","BONES","CELLS","VIRUS","DETOX","HERBS","BLOOD","NERVE","PULSE","TONIC","VEINS","LIVER","TEETH","COUGH","ACHES","JOINT","TOXIN","GLAND","FLUSH","REPEL","CLEAN","FOCUS","MOVED","CALMS","VIGOR","BURNS","TENSE","RELAX","FOODS","GAINS","RESET","WHOLE","PHASE"];
-const FACTS = {
-  SLEEP:"Deep sleep is when your brain flushes out toxins and consolidates memories.",
-  HEART:"Your heart beats about 100,000 times per day, pumping 2,000 gallons of blood.",
-  FIBER:"Dietary fiber feeds beneficial gut bacteria and helps regulate blood sugar levels.",
-  WATER:"Drinking enough water improves focus, energy, and kidney function.",
-  SUGAR:"Excess sugar consumption is linked to inflammation and increased disease risk.",
-  LUNGS:"Regular aerobic exercise increases your lungs' oxygen capacity over time.",
-  SWEAT:"Sweating helps regulate body temperature and releases trace amounts of toxins.",
-  BRAIN:"The brain uses about 20% of your body's total energy despite being only 2% of body weight.",
-  BONES:"Weight-bearing exercise strengthens bones and reduces osteoporosis risk.",
-  CELLS:"Your body replaces roughly 3.8 million cells every second.",
-  VIRUS:"Washing hands for 20 seconds is one of the most effective ways to prevent viral spread.",
-  DETOX:"Your liver and kidneys naturally detoxify your blood every single day.",
-  HERBS:"Many herbs like turmeric and ginger have documented anti-inflammatory properties.",
-  BLOOD:"Blood carries oxygen, nutrients, and immune cells to every tissue in the body.",
-  NERVE:"Your nervous system can transmit signals at up to 268 miles per hour.",
-  PULSE:"A healthy resting pulse is 60–100 beats per minute; athletes often run lower.",
-  TONIC:"Bitter tonics have been used for centuries to stimulate digestion and liver health.",
-  VEINS:"Veins carry deoxygenated blood back to the heart and contain one-way valves.",
-  LIVER:"The liver performs over 500 vital functions including detoxification and protein synthesis.",
-  TEETH:"Brushing twice daily and flossing reduces risk of heart disease linked to gum bacteria.",
-  COUGH:"A cough can expel air at up to 60 mph, helping clear the airways of irritants.",
-  ACHES:"Muscle aches after exercise (DOMS) are caused by microscopic tears that heal stronger.",
-  JOINT:"Staying hydrated keeps joint cartilage lubricated, reducing wear and pain.",
-  TOXIN:"Your kidneys filter about 200 liters of blood daily to remove waste and toxins.",
-  GLAND:"Endocrine glands like the thyroid regulate metabolism, growth, and mood.",
-  FLUSH:"Flushing your system with water helps kidneys remove waste products efficiently.",
-  REPEL:"Insect repellents help prevent mosquito-borne diseases like malaria and dengue.",
-  CLEAN:"Regular handwashing prevents the spread of 80% of common infectious diseases.",
-  FOCUS:"Mindfulness and meditation measurably improve focus and reduce cortisol levels.",
-  MOVED:"Regular movement, even walking, significantly reduces risk of chronic disease.",
-  CALMS:"Deep breathing activates the parasympathetic system and calms the stress response.",
-  VIGOR:"Physical vigor is maintained by consistent sleep, nutrition, and exercise habits.",
-  BURNS:"Muscle tissue burns more calories at rest than fat tissue, boosting metabolism.",
-  TENSE:"Chronic muscle tension can lead to headaches, back pain, and poor circulation.",
-  RELAX:"Regular relaxation lowers blood pressure and improves immune system function.",
-  FOODS:"Whole foods rich in micronutrients support every system in the human body.",
-  GAINS:"Muscle gains from resistance training improve bone density and metabolic rate.",
-  RESET:"A digital detox and screen break can reset your sleep cycle and reduce eye strain.",
-  WHOLE:"Eating whole grains instead of refined carbs lowers heart disease risk by 20%.",
-  PHASE:"Sleep cycles occur in phases; REM phase is critical for emotional regulation."
+(() => {
+const W = 420, H = 660;
+const WORDS = {
+  SLEEP: 'Teens need 8 to 10 hours of sleep. Deep sleep helps store memories.',
+  HEART: 'Your heart beats about 100,000 times a day.',
+  FIBER: 'Fiber from fruits, veggies and whole grains keeps digestion healthy and you full longer.',
+  WATER: 'Water helps your brain focus and keeps your body cool.',
+  SUGAR: 'Teens should keep added sugar under about 12 teaspoons a day.',
+  LUNGS: 'Aerobic exercise helps your lungs and heart use oxygen better.',
+  SWEAT: 'Sweat cools your body as it evaporates off your skin.',
+  BRAIN: 'Your brain uses about 20% of your body\'s energy.',
+  BONES: 'Running and jumping help build strong bones during your teen years.',
+  CELLS: 'Your body is made of trillions of cells working together.',
+  VIRUS: 'Washing hands for 20 seconds helps stop viruses from spreading.',
+  BLOOD: 'Blood carries oxygen and nutrients to every part of your body.',
+  NERVE: 'Nerves send signals between your brain and body in a fraction of a second.',
+  PULSE: 'A typical resting pulse is 60 to 100 beats per minute.',
+  VEINS: 'Veins carry blood back to your heart.',
+  LIVER: 'Your liver filters your blood and helps digest fats.',
+  TEETH: 'Brushing twice a day and flossing protects your teeth and gums.',
+  COUGH: 'Cover your cough with your elbow to protect others.',
+  JOINT: 'Stretching helps keep your joints moving well.',
+  GLAND: 'Glands make hormones that control growth, mood and energy.',
+  FOCUS: 'Sleep, water and breakfast all help you focus in class.',
+  RELAX: 'Slow, deep breathing helps your body relax under stress.',
+  FRUIT: 'Teens need about 2 cups of fruit a day.',
+  SALAD: 'Leafy greens add vitamins A, C and K.',
+  STEPS: 'Walking more steps each day is good for your heart.',
+  SPORT: 'Team sports build fitness and friendships.',
+  HABIT: 'Small daily habits add up to big health changes.',
+  GERMS: 'Germs spread through touch, so wash your hands often.',
+  SPINE: 'Good posture helps protect your spine.',
+  ORGAN: 'Your skin is your body\'s largest organ.',
+  SMILE: 'Smiling and laughing can lower stress.',
+  HAPPY: 'Exercise releases endorphins that boost your mood.',
+  PEACE: 'Quiet time and mindfulness help calm your mind.',
+  TRUST: 'Talking to a trusted adult helps when you\'re struggling.',
+  CHEST: 'Your ribs protect your heart and lungs.',
+  ANKLE: 'Warming up helps prevent ankle sprains.',
+  WRIST: 'Wrist guards help protect you when skating.',
+  KNEES: 'Strong leg muscles help protect your knees.',
+  SMOKE: 'Smoking and vaping damage your lungs. There\'s no safe amount.',
+  ALERT: 'Enough sleep keeps you alert and safe when driving.',
+  VITAL: 'Vital signs include heart rate, breathing and temperature.',
+  CARBS: 'Carbohydrates are your body\'s main source of energy.',
+  SKULL: 'Helmets protect your skull and brain.'
 };
-const KEYBOARD_ROWS = [
-  ['Q','W','E','R','T','Y','U','I','O','P'],
-  ['A','S','D','F','G','H','J','K','L'],
-  ['ENTER','Z','X','C','V','B','N','M','⌫']
-];
-let target, guesses, currentGuess, gameOver, wins;
-wins = parseInt(localStorage.getItem('wordleWins')||'0');
-document.getElementById('wins').textContent = wins;
+const LIST = Object.keys(WORDS).filter(w => w.length === 5);
+const ROWS = 6, TILE = 56, GAP = 7, GX = (W - (5 * TILE + 4 * GAP)) / 2, GY = 92;
+const KB = ['QWERTYUIOP', 'ASDFGHJKL', '⏎ZXCVBNM⌫'];
+const ROUNDS = 5;
 
-function init(){
-  document.body.classList.remove('solved');
-  target = WORDS[Math.floor(Math.random()*WORDS.length)];
-  guesses = [];
-  currentGuess = '';
-  gameOver = false;
-  buildGrid();
-  buildKeyboard();
-  document.getElementById('message').textContent = '';
-  document.getElementById('fact-box').style.display='none';
-  document.getElementById('play-again').style.display='none';
+let word, guesses, cur, row, keyState, lives, solved, roundNo, phase, phaseT, shakeT, revealT, used, msg, host;
+
+function pickWord() { const pool = LIST.filter(w => !used.includes(w)); const w = pool[Math.floor(Math.random() * pool.length)]; used.push(w); return w; }
+function startRound() { word = pickWord(); guesses = []; cur = ''; row = 0; keyState = {}; phase = 'play'; phaseT = 0; revealT = 0; msg = null; }
+function reset(A) { lives = 3; solved = 0; roundNo = 1; used = []; host = { mood: 'happy', t: 0, jump: 0 }; startRound(); }
+
+function score(g) {   // Wordle colouring with duplicate letters handled
+  const res = Array(5).fill('absent'), left = {};
+  for (let i = 0; i < 5; i++) { if (g[i] === word[i]) res[i] = 'correct'; else left[word[i]] = (left[word[i]] || 0) + 1; }
+  for (let i = 0; i < 5; i++) if (res[i] !== 'correct' && left[g[i]]) { res[i] = 'present'; left[g[i]]--; }
+  return res;
 }
-
-function buildGrid(){
-  const grid = document.getElementById('grid');
-  grid.innerHTML='';
-  for(let r=0;r<6;r++){
-    const row = document.createElement('div');
-    row.className='tile-row';
-    row.id='row-'+r;
-    for(let c=0;c<5;c++){
-      const tile = document.createElement('div');
-      tile.className='tile';
-      tile.id=`t-${r}-${c}`;
-      row.appendChild(tile);
-    }
-    grid.appendChild(row);
-  }
+function type(ch, A) {
+  if (phase !== 'play' || revealT > 0 || A.state !== 'play') return;
+  if (ch === '⌫') { cur = cur.slice(0, -1); return; }
+  if (ch === '⏎') { submit(A); return; }
+  if (cur.length < 5 && /^[A-Z]$/.test(ch)) { cur += ch; A.sfx('point'); }
 }
-
-function buildKeyboard(){
-  const kb = document.getElementById('keyboard');
-  kb.innerHTML='';
-  KEYBOARD_ROWS.forEach(row=>{
-    const div = document.createElement('div');
-    div.className='kb-row';
-    row.forEach(k=>{
-      const btn = document.createElement('button');
-      btn.className='key'+(k.length>1?' wide':'');
-      btn.textContent=k;
-      btn.id='key-'+k;
-      btn.addEventListener('click',()=>handleKey(k));
-      div.appendChild(btn);
-    });
-    kb.appendChild(div);
+function submit(A) {
+  if (cur.length < 5) { shakeT = 0.4; msg = { t: 0, text: 'Need 5 letters' }; return; }
+  const res = score(cur);
+  guesses.push({ w: cur, res }); revealT = 1.1;
+  res.forEach((r, i) => { const k = cur[i], rank = { absent: 1, present: 2, correct: 3 }; if (!keyState[k] || rank[r] > rank[keyState[k]]) keyState[k] = r; });
+  const g = cur; cur = '';
+  setTimeout(() => {
+    if (A.state !== 'play') return;
+    if (g === word) {
+      solved++; const pts = (7 - guesses.length) * 100 + (solved >= 2 ? 100 : 0);
+      A.addScore(pts); A.sfx('win'); host.mood = 'happy'; host.jump = 1;
+      A.particles.burst(W / 2, GY + guesses.length * (TILE + GAP), '#FFD700', 30, 280, 5);
+      A.float('+' + pts, W / 2, GY + 170, '#7CFFB2');
+      if (solved === 3) A.win('3 health words solved!');
+      phase = 'done'; phaseT = 0; msg = { t: 0, text: ['Genius!', 'Amazing!', 'Great!', 'Nice!', 'Phew!', 'Just made it!'][guesses.length - 1] };
+    } else if (guesses.length >= ROWS) {
+      lives--; A.sfx('hit'); host.mood = 'tired';
+      phase = 'done'; phaseT = 0; msg = { t: 0, text: 'The word was ' + word };
+    } else A.sfx('swipe');
+  }, 1000);
+}
+function nextRound(A) {
+  if (lives <= 0) { A.gameOver(); return; }
+  if (roundNo >= ROUNDS) { A.gameOver(true); return; }
+  roundNo++; host.mood = 'happy'; startRound();
+}
+function input(type_, A) {
+  if (phase === 'done' && phaseT > 1.2 && (type_ === 'tap' || type_ === 'up')) nextRound(A);
+}
+// typing on a real keyboard
+window.addEventListener('keydown', e => {
+  if (!window.game || game.state !== 'play') return;
+  if (phase === 'done') { if (e.key === 'Enter' && phaseT > 1.2) { e.preventDefault(); e.stopPropagation(); nextRound(game); } return; }
+  if (/^[a-zA-Z]$/.test(e.key)) { e.preventDefault(); e.stopPropagation(); type(e.key.toUpperCase(), game); }
+  else if (e.key === 'Backspace') { e.preventDefault(); type('⌫', game); }
+  else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); type('⏎', game); }
+}, true);
+// tapping the on-screen keyboard
+function keyRects() {
+  const rects = [], top = 476, kh = 50, kg = 5;
+  KB.forEach((r, ri) => {
+    const keys = r.split(''), wide = ri === 2;
+    const unit = (W - 16 - kg * 9) / 10;
+    const widths = keys.map(k => (k === '⏎' || k === '⌫') ? unit * 1.5 : unit);
+    const total = widths.reduce((a, b) => a + b, 0) + kg * (keys.length - 1);
+    let x = (W - total) / 2;
+    keys.forEach((k, i) => { rects.push({ k, x, y: top + ri * (kh + kg), w: widths[i], h: kh }); x += widths[i] + kg; });
   });
+  return rects;
 }
-
-function updateCurrentRow(){
-  const row = guesses.length;
-  for(let c=0;c<5;c++){
-    const tile = document.getElementById(`t-${row}-${c}`);
-    tile.textContent = currentGuess[c]||'';
-    tile.className = 'tile'+(currentGuess[c]?' filled':'');
-  }
+function pointer(t, x, y, A) {
+  if (t !== 'down') return;
+  if (phase === 'done' && phaseT > 1.2) { nextRound(A); return; }
+  const k = keyRects().find(r => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h);
+  if (k) type(k.k, A);
 }
-
-function handleKey(k){
-  if(gameOver) return;
-  if(k==='⌫'||k==='BACKSPACE'){
-    if(currentGuess.length>0) currentGuess=currentGuess.slice(0,-1);
-    updateCurrentRow();
-  } else if(k==='ENTER'){
-    submitGuess();
-  } else if(/^[A-Z]$/.test(k) && currentGuess.length<5){
-    currentGuess+=k;
-    updateCurrentRow();
-  }
+function update(dt, A) {
+  if (!host) return;
+  host.t += dt; host.jump = Math.max(0, host.jump - dt * 2);
+  if (A.state !== 'play') return;
+  phaseT += dt; revealT = Math.max(0, revealT - dt); shakeT = Math.max(0, (shakeT || 0) - dt);
+  if (msg) { msg.t += dt; if (msg.t > 2.2 && phase === 'play') msg = null; }
 }
-
-function submitGuess(){
-  if(currentGuess.length<5){
-    showMsg('Need 5 letters!');
-    shakeRow(guesses.length);
-    return;
-  }
-  const row = guesses.length;
-  const result = evaluate(currentGuess, target);
-  guesses.push({word:currentGuess, result});
-  animateRow(row, currentGuess, result, ()=>{
-    updateKeyboard(currentGuess, result);
-    if(currentGuess===target){
-      wins++;
-      localStorage.setItem('wordleWins',wins);
-      document.getElementById('wins').textContent=wins;
-      showMsg('Excellent! You got it!');
-      document.body.classList.add('solved');
-      showFact();
-      endGame();
-    } else if(guesses.length===6){
-      showMsg('The word was: '+target);
-      showFact();
-      endGame();
+const COL = { correct: '#3FCB6B', present: '#FFD23F', absent: '#3a3360' };
+function draw(ctx, A) {
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2b1660'); g.addColorStop(1, '#140c36');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (!word) return;
+  ctx.font = '900 14px Nunito,sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#FF5C77'; ctx.fillText('❤'.repeat(Math.max(0, lives)), 58, 80);
+  ctx.textAlign = 'right'; ctx.fillStyle = '#b9b0d6'; ctx.fillText('Word ' + roundNo + '/' + ROUNDS + ' · ' + solved + ' solved', W - 62, 80);
+  // grid
+  for (let r = 0; r < ROWS; r++) {
+    const sx = r === guesses.length && shakeT > 0 ? Math.sin(shakeT * 60) * 6 : 0;
+    for (let c = 0; c < 5; c++) {
+      const x = GX + c * (TILE + GAP) + sx, y = GY + r * (TILE + GAP);
+      let ch = '', st = null;
+      if (r < guesses.length) { ch = guesses[r].w[c]; st = guesses[r].res[c]; }
+      else if (r === guesses.length) ch = cur[c] || '';
+      // flip reveal on the newest row
+      let sy = 1;
+      if (r === guesses.length - 1 && revealT > 0) { const p = 1.1 - revealT - c * 0.18; if (p < 0) st = null; else if (p < 0.2) { sy = Math.abs(Math.cos(p / 0.2 * Math.PI)); if (p < 0.1) st = null; } }
+      ctx.save(); ctx.translate(x + TILE / 2, y + TILE / 2); ctx.scale(1, sy);
+      A.rr(-TILE / 2, -TILE / 2, TILE, TILE, 10);
+      if (st) A.ink(COL[st], 2.5); else { ctx.fillStyle = '#1a1238'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = ch ? '#8f86b3' : '#3a3360'; ctx.stroke(); }
+      if (ch) { ctx.fillStyle = st === 'present' ? '#2a1d00' : '#fff'; ctx.font = '900 28px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ch, 0, 2); ctx.textBaseline = 'alphabetic'; }
+      ctx.restore();
     }
-    currentGuess='';
+  }
+  // keyboard
+  keyRects().forEach(r => {
+    const st = keyState[r.k];
+    A.rr(r.x, r.y, r.w, r.h, 8);
+    if (st) A.ink(COL[st], 2); else { ctx.fillStyle = '#4a4078'; ctx.fill(); }
+    ctx.fillStyle = st === 'present' ? '#2a1d00' : '#fff'; ctx.font = '900 ' + (r.k.length > 1 || r.k === '⏎' || r.k === '⌫' ? 18 : 17) + 'px Nunito,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(r.k, r.x + r.w / 2, r.y + r.h / 2 + 6);
   });
-}
-
-function evaluate(guess, target){
-  const result = Array(5).fill('absent');
-  const targetArr = target.split('');
-  const guessArr = guess.split('');
-  // first pass: correct
-  for(let i=0;i<5;i++){
-    if(guessArr[i]===targetArr[i]){result[i]='correct';targetArr[i]=null;guessArr[i]=null;}
+  // host sprite + message
+  // little sprite cheering next to the hearts
+  A.drawHero(40, 74 + Math.sin(host.t * 3) * 2 - host.jump * 8, 26, 0, host.mood);
+  if (msg) {
+    ctx.globalAlpha = Math.min(1, msg.t * 5);
+    ctx.font = '900 16px Nunito,sans-serif'; const w = ctx.measureText(msg.text).width + 26;
+    A.rr(W / 2 - w / 2, 440, w, 30, 15); A.ink('#FFD700', 2.5); ctx.fillStyle = '#2a1d00'; ctx.textAlign = 'center'; ctx.fillText(msg.text, W / 2, 460);
+    ctx.globalAlpha = 1;
   }
-  // second pass: present
-  for(let i=0;i<5;i++){
-    if(guessArr[i]===null) continue;
-    const idx=targetArr.indexOf(guessArr[i]);
-    if(idx>=0){result[i]='present';targetArr[idx]=null;}
-  }
-  return result;
-}
-
-function animateRow(row, word, result, cb){
-  const delays = [0,100,200,300,400];
-  for(let c=0;c<5;c++){
-    const tile = document.getElementById(`t-${row}-${c}`);
-    const delay = delays[c];
-    setTimeout(()=>{
-      tile.style.animation='none';
-      tile.offsetHeight;
-      tile.style.animation='flip .5s ease forwards';
-      setTimeout(()=>{
-        tile.className='tile '+result[c];
-        tile.style.animation='';
-      },250);
-    },delay);
-  }
-  setTimeout(cb, 500+400);
-}
-
-function shakeRow(row){
-  for(let c=0;c<5;c++){
-    const tile=document.getElementById(`t-${row}-${c}`);
-    tile.style.animation='shake .4s ease';
-    setTimeout(()=>tile.style.animation='',400);
+  if (phase === 'done' && phaseT > 0.3) {
+    ctx.globalAlpha = Math.min(1, (phaseT - 0.3) * 4);
+    ctx.fillStyle = 'rgba(10,6,24,.82)'; ctx.fillRect(0, 470, W, H - 470);
+    ctx.textAlign = 'center'; ctx.fillStyle = '#FFD700'; ctx.font = '900 26px Cinzel,serif'; ctx.fillText(word, W / 2, 510);
+    ctx.fillStyle = '#fff'; ctx.font = '700 15px Nunito,sans-serif'; wrap(ctx, '💡 ' + (WORDS[word] || ''), W / 2, 540, W - 50, 20);
+    if (phaseT > 1.2) { ctx.fillStyle = '#7CFFB2'; ctx.font = '900 16px Nunito,sans-serif'; ctx.fillText(lives <= 0 ? 'Tap to finish' : roundNo >= ROUNDS ? 'Tap to see your score' : 'Tap or press Enter for the next word →', W / 2, 630); }
+    ctx.globalAlpha = 1;
   }
 }
+function wrap(ctx, text, x, y, maxW, lh) { const words = text.split(' '); let line = '', yy = y; words.forEach(w => { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, yy); line = w; yy += lh; } else line = t; }); if (line) ctx.fillText(line, x, yy); }
 
-function updateKeyboard(word, result){
-  const priority = {correct:3,present:2,absent:1};
-  for(let i=0;i<5;i++){
-    const k = word[i];
-    const btn = document.getElementById('key-'+k);
-    if(!btn) continue;
-    const cur = btn.dataset.state||'';
-    const curP = priority[cur]||0;
-    if(priority[result[i]]>curP){
-      btn.dataset.state=result[i];
-      btn.className='key'+(k.length>1?' wide':'')+' '+result[i];
-    }
-  }
-}
-
-function showMsg(m){
-  const el=document.getElementById('message');
-  el.textContent=m;
-  setTimeout(()=>{if(el.textContent===m)el.textContent='';},2000);
-}
-
-function showFact(){
-  const fb=document.getElementById('fact-box');
-  fb.textContent = FACTS[target]||'Stay healthy and keep learning!';
-  fb.style.display='block';
-}
-
-function endGame(){
-  gameOver=true;
-  setTimeout(()=>{document.getElementById('play-again').style.display='block';},600);
-}
-
-document.addEventListener('keydown',e=>{
-  const k=e.key.toUpperCase();
-  if(k==='BACKSPACE'||k==='ENTER'||/^[A-Z]$/.test(k)) handleKey(k==='BACKSPACE'?'⌫':k);
+window.__wq = () => ({ word, guesses, phase, lives, solved, roundNo, type: c => type(c, game) });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Word Quest', subtitle: 'Guess the health word!', W, H, reserveH: 70,
+  storageKey: 'word_quest', winText: '3 health words solved!', deathDelay: 600, overTitle: 'Quest over!',
+  medals: [{ at: 600, name: 'Bronze', icon: '🥉' }, { at: 1400, name: 'Silver', icon: '🥈' }, { at: 2200, name: 'Gold', icon: '🥇' }, { at: 2900, name: 'Legend', icon: '💎' }],
+  howTo: 'Guess the 5-letter health word in 6 tries.<br>🟩 right spot · 🟨 in the word · ⬛ not in it.<br>Up to 5 words, 3 hearts. <b>Solve 3</b> to win!',
+  controls: 'Type on your keyboard or tap the letters · Enter to guess',
+  facts: [
+    'Word games help build vocabulary and memory.',
+    'Learning health vocabulary helps you understand doctors and health news.',
+    'Your brain keeps forming new connections when you learn something new.',
+    'Getting enough sleep helps you remember what you learned today.',
+    'Puzzles are a great way to give your brain a workout.'
+  ],
+  reset, update, draw, input, pointer
 });
-document.getElementById('play-again').addEventListener('click',init);
-init();
+})();
 </script>
 </body>
 </html>
