@@ -40,7 +40,10 @@ insert into public.arcade_games (key, title, max_score, medals) values
   ('sprite_rider',   'Sprite Rider',     30000,  '{2500,5000,8500,12000}'),
   ('word_quest',     'Word Quest',       4000,   '{600,1400,2200,2900}'),
   ('snack_2048',     'Snack 2048',       200000, '{2000,6000,12000,22000}'),
-  ('sprite_memory',  'Sprite Memory',    30000,  '{2000,5000,9000,13000}')
+  ('sprite_memory',  'Sprite Memory',    30000,  '{2000,5000,9000,13000}'),
+  ('sprite_catch',   'Sprite Catch',     100000, '{400,1000,2200,4000}'),
+  ('sprite_dodge',   'Sprite Dodge',     50000,  '{300,700,1200,2000}'),
+  ('sprite_hoops',   'Sprite Hoops',     3000,   '{300,700,1100,1600}')
 on conflict (key) do update set title = excluded.title, max_score = excluded.max_score, medals = excluded.medals;
 
 create table if not exists public.arcade_scores (

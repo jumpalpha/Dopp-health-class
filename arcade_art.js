@@ -75,7 +75,7 @@
       case 'fries':
         for (let i = 0; i < 5; i++) { ctx.beginPath(); rr(ctx, -11 + i * 4.5, -18 + (i % 2) * 4, 4, 18, 1); ink(ctx, '#FFD23F', 1.5); }
         ctx.beginPath(); ctx.moveTo(-14, -4); ctx.lineTo(14, -4); ctx.lineTo(11, 18); ctx.lineTo(-11, 18); ctx.closePath(); ink(ctx, '#E63946', L);
-        ctx.fillStyle = '#FFD700'; ctx.font = '900 10px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('M', 0, 8); break;
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-5, 7, 2.2, 0, 7); ctx.arc(5, 7, 2.2, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(0, 11, 2.2, 0, 7); ctx.fill(); break;
       case 'cookie':
         ctx.beginPath(); ctx.arc(0, 0, 16, 0, 7); ink(ctx, '#D9A066', L);
         ctx.fillStyle = '#5a3420'; [[-6, -6], [6, -3], [-2, 6], [8, 8], [-9, 4]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(a, b, 2.4, 0, 7); ctx.fill(); }); break;

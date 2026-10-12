@@ -2,405 +2,237 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
-<meta property="og:image" content="https://doppsclass.com/og-image.png">
-<title>🏀 Dopp Dunk — Legend of Wellness</title>
-<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Hoops — Dopp's Arcade</title>
+<meta name="description" content="Pull back and shoot bad habits into the trash with your Wellness Sprite. Dunk 7 of 10 to win, and learn why each habit is worth tossing.">
 <link rel="canonical" href="https://doppsclass.com/dopp_dunk.html">
-<meta property="og:title" content="🏀 Dopp Dunk — Legend of Wellness">
-<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://doppsclass.com/dopp_dunk.html">
-<meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0618;color:#F4EFFF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
-header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(10,6,24,0.94);border-bottom:1px solid rgba(255,215,0,0.2)}
-.back-btn{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
-.hdr-title{font-family:'Cinzel Decorative',serif;font-size:20px;color:#FFD700;letter-spacing:1px}
-.hdr-score{font-family:'Cinzel',serif;font-size:14px;color:#F4EFFF;min-width:90px;text-align:right}
-#wrap{position:relative;width:100%;max-width:820px;margin-top:18px;padding:0 12px}
-canvas{display:block;width:100%;cursor:crosshair;border-radius:14px;border:1px solid rgba(255,215,0,0.1)}
-#tip{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(0,229,160,0.15);border:1px solid rgba(0,229,160,0.35);border-radius:10px;padding:10px 22px;font-size:13px;font-weight:700;color:#00E5A0;text-align:center;max-width:560px;white-space:nowrap;opacity:0;transition:opacity .35s;pointer-events:none}
-#tip.show{opacity:1}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
 </style>
-<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
-<header>
-  <a class="back-btn" href="arcade.html">← Arcade</a>
-  <div class="hdr-title">🏀 Dopp Dunk</div>
-  <div class="hdr-score" id="hdr-score">0 / 0</div>
-</header>
-<div id="wrap">
-  <canvas id="c" width="820" height="510"></canvas>
-  <div id="tip"></div>
-</div>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Sprite Hoops</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
 <script>
-const cv = document.getElementById('c');
-const cx = cv.getContext('2d');
-const W = 820, H = 510;
-
-const GOLD = '#FFD700', EMERALD = '#00E5A0', CRIMSON = '#FF3B5C', SKY = '#38BFFF';
-
-// Can position
-const CAN = { x: 660, y: 185, w: 96, h: 115 };
-// Ball home
-const HOME = { x: 120, y: 390 };
-const BR = 38; // ball radius
-
-const habits = [
-  { name:"All-Nighter",      emoji:"😴", tip:"Sleep is when your brain locks in memories. Missing it = slower recall tomorrow." },
-  { name:"Energy Drink #4",  emoji:"⚡", tip:"Caffeine spikes crash hard. 4 drinks = ~400mg caffeine. Teen max = 100mg." },
-  { name:"Doomscrolling",    emoji:"📱", tip:"Blue light blocks melatonin. Your brain thinks it's noon at midnight." },
-  { name:"Skipping Breakfast",emoji:"🍳",tip:"Your brain uses 20% of your body's energy. Feed it before school." },
-  { name:"Zero Water Today", emoji:"💧", tip:"Even 2% dehydration cuts focus and memory. Drink up." },
-  { name:"Screen at Bedtime",emoji:"🌙", tip:"Darkness = melatonin release. Light = stay awake. It's chemistry." },
-  { name:"Stress Snacking",  emoji:"🍟", tip:"Cortisol triggers cravings for sugar and fat. It's biological, not weakness." },
-  { name:"No Sunscreen",     emoji:"☀️", tip:"UV damage is cumulative. Every burn adds up over a lifetime." },
-  { name:"Ghosting Friends", emoji:"👻", tip:"Loneliness activates the same brain regions as physical pain. Seriously." },
-  { name:"Vaping",           emoji:"💨", tip:"'Just water vapor' is a marketing lie. It's nicotine + chemicals." },
-  { name:"No Sleep Schedule",emoji:"⏰", tip:"Your circadian rhythm needs consistency more than total hours." },
-  { name:"Zero Vegetables",  emoji:"🥦", tip:"Your gut bacteria literally die without fiber. Feed them." },
-  { name:"Skipping Lunch",   emoji:"😶", tip:"Blood sugar crashes at period 5 and your brain checks out." },
-  { name:"6 Hours = Fine",   emoji:"🛌", tip:"Teens need 8–10 hrs. Running on 6 is like being mildly drunk, cognitively." },
-  { name:"Toxic Positivity",  emoji:"😁", tip:"Suppressing emotions doesn't erase them — it just delays the crash." },
+(() => {
+const W = 420, H = 640, FLOOR = 596, BR = 16, G = 900, SHOTS = 10, NEED = 7;
+const HOME = { x: 104, y: 528 };
+const HABITS = [
+  { name: 'All-Nighter', tip: 'Sleep is when your brain saves what you learned. Skipping it makes recall harder tomorrow.' },
+  { name: 'Energy Drink #3', tip: 'Doctors advise teens to keep caffeine to about 100 mg a day or less. One big energy drink can be double that.' },
+  { name: 'Doomscrolling', tip: 'Screen light late at night delays melatonin, the hormone that makes you sleepy.' },
+  { name: 'Skipping Breakfast', tip: 'Your brain runs on glucose. Breakfast helps focus and mood in morning classes.' },
+  { name: 'Zero Water', tip: 'Even mild dehydration can cause headaches and make it harder to focus.' },
+  { name: 'Phone in Bed', tip: 'Keeping the phone out of the bedroom is one of the easiest ways to sleep better.' },
+  { name: 'Stress Snacking', tip: 'Stress hormones can trigger cravings for sugar and fat. A walk or deep breaths can help instead.' },
+  { name: 'No Sunscreen', tip: 'Sun damage adds up over a lifetime. Sunscreen helps prevent skin cancer.' },
+  { name: 'Ghosting Friends', tip: 'Strong friendships are linked to better mood and less stress. Reach out!' },
+  { name: 'Vaping', tip: 'Most vapes contain nicotine, which is highly addictive and harms the developing teen brain.' },
+  { name: 'No Sleep Schedule', tip: 'Going to bed and waking at the same times helps your body clock and your energy.' },
+  { name: 'Zero Veggies', tip: 'Vegetables give you fiber and vitamins your gut and immune system need.' },
+  { name: 'Skipping Lunch', tip: 'An empty tank by afternoon makes it harder to focus and easier to get cranky.' },
+  { name: '6 Hours of Sleep', tip: 'Teens need about 8–10 hours of sleep a night to feel and perform their best.' },
+  { name: 'Bottling It Up', tip: 'Talking about feelings with someone you trust helps you handle stress.' },
+  { name: 'All-Day Sitting', tip: 'Teens need about 60 minutes of movement a day. Even short walks count.' }
 ];
+const results = [];   // each shot's result, for the dots
+let shot, made, streak, pool, ball, phase, bin, drag, aim, ptrTap, endT, touched, t, msg, msgT, trail;
 
-let pool = [], idx = 0, score = 0;
-let ball = { x: HOME.x, y: HOME.y };
-let phase = 'aim'; // aim | fly | result | over
-let arcPts = [];
-let arcT = 0;
-let willHit = false;
-let resultMsg = '', resultClr = GOLD, resultTimer = 0;
-let confetti = [];
-let mouse = { x: 400, y: 260 };
-
-function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
-
-function start(){
-  pool = shuffle(habits).slice(0,10);
-  idx=0; score=0; phase='aim';
-  ball={x:HOME.x,y:HOME.y};
-  confetti=[];
-  updateHdr();
+function newBin(i) {
+  const hard = i >= 7, med = i >= 3;
+  return { x0: 250 + Math.random() * 90, y: 300 + Math.random() * 150, amp: hard ? 70 : med ? 40 : 0, spd: hard ? 1.6 : 1.1, ph: Math.random() * 6, x: 0, half: 36 };
 }
-
-function updateHdr(){
-  document.getElementById('hdr-score').textContent = score+' / '+Math.min(idx,10);
+function reset() {
+  results.length = 0; shot = 0; made = 0; streak = 0; t = 0; msg = ''; msgT = 0; trail = [];
+  pool = HABITS.slice().sort(() => Math.random() - 0.5).slice(0, SHOTS);
+  aim = { a: -0.95, p: 640 }; drag = null; ptrTap = false;
+  nextShot(true);
 }
-
-// Arc: from ball to top of can, height controlled by mouseY
-function arcHeight(){ return (1 - mouse.y/H) * 360 + 60; }
-
-function buildArc(ah){
-  const pts=[], sx=HOME.x, sy=HOME.y, ex=CAN.x+CAN.w/2, ey=CAN.y+6;
-  for(let t=0;t<=1.001;t+=0.022){
-    pts.push({ x: sx+(ex-sx)*t, y: sy+(ey-sy)*t - ah*Math.sin(Math.PI*t) });
-  }
-  return pts;
+function nextShot(first) {
+  if (!first) shot++;
+  ball = { x: HOME.x, y: HOME.y, vx: 0, vy: 0 }; phase = 'aim'; touched = false; endT = 0; trail = [];
+  bin = newBin(shot); bin.x = bin.x0;
 }
-
-function aimGrade(ah){
-  if(ah>=145 && ah<=295) return 2;
-  if(ah>=95  && ah<=345) return 1;
-  return 0;
+function launch(vx, vy, A) {
+  const sp = Math.hypot(vx, vy), k = sp > 980 ? 980 / sp : 1;
+  ball.vx = vx * k; ball.vy = vy * k; phase = 'fly'; endT = 0; A.sfx('swipe');
 }
-
-function shoot(){
-  if(phase!=='aim') return;
-  const ah = arcHeight();
-  arcPts = buildArc(ah);
-  arcT = 0;
-  phase = 'fly';
-  const g = aimGrade(ah), r = Math.random();
-  willHit = g===2 ? r<0.84 : g===1 ? r<0.46 : r<0.10;
+function input(type, A) {
+  if (phase !== 'aim') return;
+  if (type === 'tap') { if (ptrTap) { ptrTap = false; return; } launch(Math.cos(aim.a) * aim.p, Math.sin(aim.a) * aim.p, A); return; }
+  if (type === 'left') aim.a = Math.max(-1.45, aim.a - 0.06);
+  if (type === 'right') aim.a = Math.min(-0.15, aim.a + 0.06);
+  if (type === 'up') aim.p = Math.min(980, aim.p + 25);
+  if (type === 'down') aim.p = Math.max(300, aim.p - 25);
+  if (['left', 'right', 'up', 'down'].includes(type)) drag = null;
 }
-
-function spawnConfetti(x,y){
-  for(let i=0;i<50;i++){
-    confetti.push({
-      x,y,
-      vx:(Math.random()-.5)*10,
-      vy:(Math.random()-1.6)*9,
-      sz:Math.random()*9+4,
-      color:[GOLD,EMERALD,SKY,CRIMSON,'#a855f7'][Math.floor(Math.random()*5)],
-      life:1, dec:Math.random()*.018+.012, rot:Math.random()*360, vr:(Math.random()-.5)*8
-    });
+// pull back anywhere and let go — like a slingshot
+function pointer(type, x, y, A) {
+  if (type === 'down') { ptrTap = true; if (phase === 'aim') drag = { sx: x, sy: y, x, y }; }
+  else if (type === 'drag' && drag) { drag.x = x; drag.y = y; }
+  else if (type === 'up' && drag) {
+    const dx = drag.sx - drag.x, dy = drag.sy - drag.y; drag = null;
+    if (Math.hypot(dx, dy) > 18 && phase === 'aim') launch(dx * 4.4, dy * 4.4, A);
   }
 }
-
-function showTip(t){
-  const el=document.getElementById('tip');
-  el.textContent='💡 '+t;
-  el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),3800);
+function curVel() {
+  if (drag) return { vx: (drag.sx - drag.x) * 4.4, vy: (drag.sy - drag.y) * 4.4 };
+  return { vx: Math.cos(aim.a) * aim.p, vy: Math.sin(aim.a) * aim.p };
 }
-
-// ── DRAW HELPERS ──────────────────────────────────
-function drawBg(){
-  cx.fillStyle='#1C1A2E'; cx.fillRect(0,0,W,H);
-  // Court line
-  cx.strokeStyle='rgba(255,255,255,0.05)'; cx.lineWidth=2;
-  cx.beginPath(); cx.moveTo(0,H-55); cx.lineTo(W,H-55); cx.stroke();
-  // Subtle gradient glow left
-  const g=cx.createRadialGradient(HOME.x,HOME.y,10,HOME.x,HOME.y,200);
-  g.addColorStop(0,'rgba(255,215,0,0.06)'); g.addColorStop(1,'transparent');
-  cx.fillStyle=g; cx.fillRect(0,0,W,H);
+// collision helpers
+function hitPoint(px, py, pr, bounce, A) {
+  const dx = ball.x - px, dy = ball.y - py, d = Math.hypot(dx, dy), m = BR + pr;
+  if (d >= m || d === 0) return false;
+  const nx = dx / d, ny = dy / d; ball.x = px + nx * m; ball.y = py + ny * m;
+  const vn = ball.vx * nx + ball.vy * ny; if (vn < 0) { ball.vx -= (1 + bounce) * vn * nx; ball.vy -= (1 + bounce) * vn * ny; if (Math.abs(vn) > 120) A.sfx('pop'); }
+  touched = true; return true;
 }
-
-function drawCan(){
-  const {x,y,w,h}=CAN;
-  // Shadow
-  cx.fillStyle='rgba(0,0,0,0.35)';
-  cx.beginPath(); cx.ellipse(x+w/2,y+h+8,w/2,10,0,0,Math.PI*2); cx.fill();
-  // Body gradient
-  const grad=cx.createLinearGradient(x,y,x+w,y);
-  grad.addColorStop(0,'#2c2c2c'); grad.addColorStop(.5,'#383838'); grad.addColorStop(1,'#222');
-  cx.fillStyle=grad;
-  cx.beginPath();
-  cx.moveTo(x+8,y); cx.lineTo(x+w-8,y);
-  cx.lineTo(x+w+2,y+h); cx.lineTo(x-2,y+h);
-  cx.closePath(); cx.fill();
-  // Stripe lines
-  cx.strokeStyle='rgba(255,255,255,0.07)'; cx.lineWidth=1;
-  for(let i=1;i<4;i++){
-    cx.beginPath(); cx.moveTo(x,y+h/4*i); cx.lineTo(x+w,y+h/4*i); cx.stroke();
-  }
-  // Label
-  cx.font='bold 11px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(255,255,255,0.18)';
-  cx.fillText('BAD HABITS',x+w/2,y+h*.55);
-  // Rim glow
-  cx.save();
-  cx.shadowColor=GOLD; cx.shadowBlur=14;
-  cx.strokeStyle=GOLD; cx.lineWidth=3.5;
-  cx.beginPath(); cx.ellipse(x+w/2,y,w/2,9,0,0,Math.PI*2); cx.stroke();
-  cx.restore();
-  // Rim top
-  cx.strokeStyle='rgba(255,215,0,0.4)'; cx.lineWidth=1.5;
-  cx.beginPath(); cx.ellipse(x+w/2,y,w/2,9,0,0,Math.PI*2); cx.stroke();
+function hitSeg(x1, y1, x2, y2, A) {
+  const lx = x2 - x1, ly = y2 - y1, L2 = lx * lx + ly * ly;
+  const u = Math.max(0, Math.min(1, ((ball.x - x1) * lx + (ball.y - y1) * ly) / L2));
+  return hitPoint(x1 + lx * u, y1 + ly * u, 3, 0.45, A);
 }
-
-let ballRot=0;
-function drawBall(x,y,spinning){
-  const h=pool[idx]; if(!h) return;
-  if(spinning) ballRot+=0.18;
-  cx.save();
-  cx.translate(x,y); cx.rotate(ballRot); cx.translate(-x,-y);
-  // Shadow
-  cx.fillStyle='rgba(0,0,0,0.3)';
-  cx.beginPath(); cx.ellipse(x,y+BR+4,BR*.7,8,0,0,Math.PI*2); cx.fill();
-  // Paper base
-  cx.fillStyle='#e8dfc8';
-  cx.beginPath(); cx.arc(x,y,BR,0,Math.PI*2); cx.fill();
-  // Crumple texture shading
-  cx.fillStyle='#d4c9ac';
-  cx.beginPath(); cx.arc(x-10,y-12,BR*.58,0,Math.PI*2); cx.fill();
-  cx.fillStyle='rgba(255,255,255,0.25)';
-  cx.beginPath(); cx.arc(x+8,y-14,BR*.3,0,Math.PI*2); cx.fill();
-  cx.fillStyle='rgba(0,0,0,0.1)';
-  cx.beginPath(); cx.arc(x+12,y+10,BR*.45,0,Math.PI*2); cx.fill();
-  cx.restore();
-  // Habit text (no rotation)
-  cx.save();
-  cx.font='bold 10px Nunito'; cx.textAlign='center'; cx.fillStyle='#333';
-  const words=h.name.split(' '), lines=[];
-  let cur='';
-  words.forEach(w=>{ const t=cur+(cur?' ':'')+w; cx.measureText(t).width>BR*1.55?(lines.push(cur),cur=w):cur=t; });
-  lines.push(cur);
-  const lh=13, sy2=y-(lines.length-1)*lh/2;
-  lines.forEach((l,i)=>cx.fillText(l,x,sy2+i*lh));
-  cx.restore();
+function binWalls() {
+  const b = bin, top = b.y, bot = b.y + 92;
+  return [[b.x - b.half, top, b.x - b.half + 6, bot], [b.x + b.half, top, b.x + b.half - 6, bot]];
 }
-
-function drawArcPreview(){
-  if(phase!=='aim') return;
-  const ah=arcHeight(), pts=buildArc(ah), grade=aimGrade(ah);
-  const colors=['rgba(255,59,92,0.7)','rgba(255,215,0,0.7)','rgba(0,229,160,0.7)'];
-  const clr=colors[grade];
-  cx.strokeStyle=clr; cx.lineWidth=2.5; cx.setLineDash([7,9]);
-  cx.beginPath(); pts.forEach((p,i)=>i?cx.lineTo(p.x,p.y):cx.moveTo(p.x,p.y)); cx.stroke();
-  cx.setLineDash([]);
-  pts.filter((_,i)=>i%5===0).forEach(p=>{
-    cx.fillStyle=clr; cx.beginPath(); cx.arc(p.x,p.y,3.5,0,Math.PI*2); cx.fill();
-  });
-  // Aim label
-  const labels=['❌ Too Flat — Aim Higher','⚠️ Risky Shot','✅ Sweet Spot!'];
-  cx.font='bold 13px Nunito'; cx.textAlign='left';
-  cx.fillStyle=colors[grade]; cx.fillText(labels[grade],18,32);
-}
-
-function drawHUD(){
-  if(phase==='over') return;
-  const h=pool[idx]; if(!h) return;
-  // Habit name above ball
-  if(phase==='aim'){
-    cx.font='bold 13px Nunito'; cx.textAlign='center';
-    cx.fillStyle='rgba(255,100,100,0.85)';
-    cx.fillText('🚮 '+h.name, HOME.x, HOME.y-BR-14);
-    // Instruction
-    cx.font='13px Nunito'; cx.fillStyle='rgba(255,215,0,0.5)';
-    cx.fillText('Move up/down to aim · Click or tap to dunk!',W/2,H-16);
-  }
-  // Round counter
-  cx.font='13px Nunito'; cx.textAlign='left'; cx.fillStyle='rgba(240,244,255,0.35)';
-  cx.fillText('Habit '+(idx+1)+' of 10',18,H-16);
-}
-
-function drawResult(){
-  if(phase!=='result') return;
-  const alpha=Math.min(1,resultTimer/15);
-  cx.globalAlpha=alpha;
-  cx.font='bold 42px Nunito'; cx.textAlign='center';
-  cx.fillStyle=resultClr;
-  cx.fillText(resultMsg, W/2, H/2-30);
-  cx.globalAlpha=1;
-  resultTimer--;
-  if(resultTimer<=0){
-    idx++;
-    updateHdr();
-    phase = idx>=pool.length ? 'over' : 'aim';
-    ball={x:HOME.x,y:HOME.y};
-    ballRot=0;
+function finish(A, dunk) {
+  phase = 'done'; endT = 0; results[shot] = dunk;
+  const h = pool[shot];
+  if (dunk) {
+    made++; streak++;
+    const swish = !touched, pts = 100 + (swish ? 50 : 0) + 25 * (streak - 1);
+    A.addScore(pts); A.sfx('coin'); A.particles.burst(bin.x, bin.y, '#7CFFB2', 22, 220, 4);
+    A.float((swish ? 'Swish! ' : 'Dunk! ') + '+' + pts, bin.x, bin.y - 30, swish ? '#FFD700' : '#7CFFB2');
+    msg = '🗑 Trashed: ' + h.name + ' — ' + h.tip; msgT = 3.2;
+    if (made === NEED) A.win('You trashed ' + NEED + ' bad habits!');
+  } else {
+    streak = 0; A.sfx('hit'); A.float('Miss!', ball.x < 0 ? 40 : ball.x > W ? W - 40 : ball.x, Math.min(FLOOR - 30, Math.max(200, ball.y)), '#FF8FA3');
+    msg = '😬 ' + h.name + ' got away. ' + h.tip; msgT = 3.2;
   }
 }
-
-function drawConfetti(){
-  confetti=confetti.filter(c=>c.life>0);
-  confetti.forEach(c=>{
-    cx.globalAlpha=c.life;
-    cx.save(); cx.translate(c.x,c.y); cx.rotate(c.rot*Math.PI/180);
-    cx.fillStyle=c.color; cx.fillRect(-c.sz/2,-c.sz/4,c.sz,c.sz/2); cx.restore();
-    c.x+=c.vx; c.y+=c.vy; c.vy+=0.25; c.life-=c.dec; c.rot+=c.vr;
-  });
-  cx.globalAlpha=1;
-}
-
-function drawGameOver(){
-  cx.fillStyle='rgba(5,7,15,0.88)'; cx.fillRect(0,0,W,H);
-  const pct=Math.round(score/10*100);
-  const [icon,msg] = pct>=80?['🏆','Wellness MVP!']:pct>=60?['⭐','Nice Work!']:pct>=40?['💪','Keep Practicing!']:['📚','Try Again!'];
-  cx.textAlign='center';
-  cx.font='bold 72px Nunito'; cx.fillStyle=GOLD;
-  cx.fillText(score+'/10',W/2,H/2-55);
-  cx.font='bold 28px Nunito'; cx.fillStyle='#F0F4FF';
-  cx.fillText(icon+' '+msg,W/2,H/2-10);
-  cx.font='16px Nunito'; cx.fillStyle='rgba(240,244,255,0.5)';
-  cx.fillText('You dunked '+score+' bad habits out of 10',W/2,H/2+30);
-  // Play again button
-  const bx=W/2-90, by=H/2+65, bw=180, bh=44;
-  cx.fillStyle='rgba(255,215,0,0.15)';
-  roundRect(bx,by,bw,bh,10); cx.fill();
-  cx.strokeStyle='rgba(255,215,0,0.4)'; cx.lineWidth=1.5;
-  roundRect(bx,by,bw,bh,10); cx.stroke();
-  cx.font='bold 15px Nunito'; cx.fillStyle=GOLD;
-  cx.fillText('▶ Play Again',W/2,by+bh/2+5);
-}
-
-function roundRect(x,y,w,h,r){
-  cx.beginPath();
-  cx.moveTo(x+r,y); cx.lineTo(x+w-r,y); cx.quadraticCurveTo(x+w,y,x+w,y+r);
-  cx.lineTo(x+w,y+h-r); cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  cx.lineTo(x+r,y+h); cx.quadraticCurveTo(x,y+h,x,y+h-r);
-  cx.lineTo(x,y+r); cx.quadraticCurveTo(x,y,x+r,y); cx.closePath();
-}
-
-// ── LOOP ──────────────────────────────────────────
-function loop(){
-  cx.clearRect(0,0,W,H);
-  drawBg(); updateConfetti_(); drawConfetti();
-
-  if(phase==='over'){
-    drawGameOver(); requestAnimationFrame(loop); return;
-  }
-  drawCan(); drawArcPreview();
-
-  if(phase==='aim'){
-    drawBall(ball.x,ball.y,false);
-  } else if(phase==='fly'){
-    arcT+=0.026;
-    if(arcT>1) arcT=1;
-    const i=Math.min(Math.floor(arcT*(arcPts.length-1)),arcPts.length-1);
-    ball.x=arcPts[i].x; ball.y=arcPts[i].y;
-    drawBall(ball.x,ball.y,true);
-    if(arcT>=1){
-      if(willHit){
-        score++; updateHdr();
-        resultMsg='🏀 DUNKED!'; resultClr=EMERALD;
-        spawnConfetti(CAN.x+CAN.w/2, CAN.y);
-        showTip(pool[idx].tip);
-      } else {
-        resultMsg='😬 Miss! Try Again'; resultClr=CRIMSON;
-      }
-      resultTimer=85; phase='result';
+function update(dt, A) {
+  if (!ball) return;
+  t += dt; msgT = Math.max(0, msgT - dt);
+  if (bin.amp) bin.x = bin.x0 + Math.sin(t * bin.spd + bin.ph) * bin.amp;
+  bin.x = Math.max(bin.half + 12, Math.min(W - bin.half - 12, bin.x));
+  if (A.state !== 'play') return;
+  if (phase === 'fly') {
+    const steps = 4, h = dt / steps;
+    for (let s = 0; s < steps && phase === 'fly'; s++) {
+      ball.vy += G * h; ball.x += ball.vx * h; ball.y += ball.vy * h;
+      const b = bin;
+      // rim posts + can walls
+      hitPoint(b.x - b.half, b.y, 5, 0.55, A); hitPoint(b.x + b.half, b.y, 5, 0.55, A);
+      binWalls().forEach(w => hitSeg(...w, A));
+      // inside the can and falling = dunk
+      if (Math.abs(ball.x - b.x) < b.half - 8 && ball.y > b.y + 14 && ball.y < b.y + 92 && ball.vy > 0) { finish(A, true); break; }
+      // shelf under the can
+      if (ball.y + BR > b.y + 98 && ball.y < b.y + 112 && Math.abs(ball.x - b.x) < b.half + 22 && ball.vy > 0) { ball.y = b.y + 98 - BR; ball.vy *= -0.45; ball.vx *= 0.8; touched = true; }
+      if (ball.y + BR > FLOOR) { ball.y = FLOOR - BR; ball.vy *= -0.5; ball.vx *= 0.75; }
+      if (ball.x - BR < 0 && ball.vx < 0) { ball.x = BR; ball.vx *= -0.6; touched = true; }
     }
-  } else if(phase==='result'){
-    if(willHit && resultTimer>50){
-      // Ball sinking into can
-      const sink=Math.max(0,(85-resultTimer)/35);
-      drawBall(ball.x, ball.y+sink*40, false);
-    } else if(!willHit){
-      // Ball rolled away
-      ball.x-=2; ball.y+=1;
-      drawBall(ball.x,ball.y,true);
+    if (phase === 'fly') {
+      trail.push({ x: ball.x, y: ball.y }); if (trail.length > 14) trail.shift();
+      endT += dt;
+      const resting = ball.y > FLOOR - BR - 2 && Math.abs(ball.vy) < 60 && Math.abs(ball.vx) < 40;
+      if (ball.x > W + 40 || endT > 4.5 || resting) finish(A, false);
     }
-    drawResult();
+  } else if (phase === 'done') {
+    endT += dt;
+    if (endT > 1.1) { if (shot + 1 >= SHOTS) { phase = 'over'; A.gameOver(true); } else nextShot(); }
   }
-  drawHUD();
-  requestAnimationFrame(loop);
 }
 
-function updateConfetti_(){
-  confetti=confetti.filter(c=>c.life>0);
-  confetti.forEach(c=>{ c.x+=c.vx; c.y+=c.vy; c.vy+=0.22; c.life-=c.dec; c.rot+=c.vr; });
+function drawBall(ctx, A, x, y, r) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); A.ink('#FF6B3D', 3);
+  ctx.strokeStyle = A.INK; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x + r, y); ctx.moveTo(x, y - r); ctx.lineTo(x, y + r); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x - r * 1.3, y, r * 0.9, -0.9, 0.9); ctx.stroke(); ctx.beginPath(); ctx.arc(x + r * 1.3, y, r * 0.9, Math.PI - 0.9, Math.PI + 0.9); ctx.stroke();
+}
+function tag(ctx, A, text, x, y, col) {
+  ctx.font = '900 13px Nunito,sans-serif'; const w = ctx.measureText(text).width + 16;
+  const bx = Math.max(6, Math.min(W - w - 6, x - w / 2));
+  A.rr(bx, y - 12, w, 24, 10); A.ink(col || '#fff', 2.5); ctx.fillStyle = A.INK; ctx.textAlign = 'center'; ctx.fillText(text, bx + w / 2, y + 5);
+}
+function wrap(ctx, text, maxW) {
+  const words = text.split(' '), lines = []; let line = '';
+  words.forEach(w => { const test = line ? line + ' ' + w : w; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test; });
+  if (line) lines.push(line); return lines;
+}
+function draw(ctx, A) {
+  // gym at dusk
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2b1c55'); g.addColorStop(1, '#4a2f7a'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,255,255,.05)'; for (let x = 0; x < W; x += 60) ctx.fillRect(x, 0, 30, FLOOR);
+  ctx.fillStyle = '#c98b4e'; ctx.fillRect(0, FLOOR, W, H - FLOOR); ctx.fillStyle = '#b07640'; for (let x = 0; x < W; x += 42) ctx.fillRect(x, FLOOR, 2, H - FLOOR);
+  ctx.fillStyle = '#FFD700'; ctx.fillRect(0, FLOOR, W, 4);
+  if (!ball) return;
+  // shot dots
+  for (let i = 0; i < SHOTS; i++) {
+    const x = W / 2 - (SHOTS - 1) * 13 + i * 26, y = 94;
+    ctx.beginPath(); ctx.arc(x, y, 8, 0, 7);
+    A.ink(results[i] === true ? '#00E5A0' : results[i] === false ? '#FF3B5C' : i === shot ? '#FFD700' : '#5b4a8a', 2.5);
+  }
+  ctx.font = '900 14px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
+  ctx.fillText('Dunked ' + made + ' / ' + NEED + ' to win', W / 2, 124);
+  // can + shelf
+  const b = bin;
+  ctx.fillStyle = '#7a5230'; A.rr(b.x - b.half - 22, b.y + 98, (b.half + 22) * 2, 12, 4); A.ink('#8a5a2b', 2.5);
+  if (b.y + 110 < FLOOR) { ctx.fillStyle = '#5a3a20'; ctx.fillRect(b.x - 3, b.y + 110, 6, FLOOR - b.y - 110); }
+  ctx.beginPath(); ctx.moveTo(b.x - b.half, b.y); ctx.lineTo(b.x + b.half, b.y); ctx.lineTo(b.x + b.half - 6, b.y + 98); ctx.lineTo(b.x - b.half + 6, b.y + 98); ctx.closePath(); A.ink('#3a9c6a', 3);
+  ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 3; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(b.x + i * 14, b.y + 14); ctx.lineTo(b.x + i * 12, b.y + 88); ctx.stroke(); }
+  A.rr(b.x - b.half - 6, b.y - 6, (b.half + 6) * 2, 10, 5); A.ink('#2c7a52', 3);
+  if (b.amp) { ctx.fillStyle = '#FFD700'; ctx.font = '900 12px Nunito,sans-serif'; ctx.fillText('◀ moving ▶', b.x, b.y + 128 > FLOOR - 8 ? b.y - 16 : b.y + 128); }
+  // aim preview (first part of the arc only)
+  if (phase === 'aim' && A.state === 'play') {
+    const v = curVel(), sp = Math.hypot(v.vx, v.vy), k = sp > 980 ? 980 / sp : 1;
+    if (drag ? Math.hypot(drag.sx - drag.x, drag.sy - drag.y) > 18 : true) {
+      ctx.fillStyle = 'rgba(255,255,255,.85)';
+      for (let i = 1; i <= 9; i++) { const tt = i * 0.045; ctx.beginPath(); ctx.arc(ball.x + v.vx * k * tt, ball.y + v.vy * k * tt + 0.5 * G * tt * tt, 4 - i * 0.25, 0, 7); ctx.fill(); }
+    }
+    if (drag) { ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.setLineDash([6, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(drag.sx, drag.sy); ctx.lineTo(drag.x, drag.y); ctx.stroke(); ctx.setLineDash([]); }
+  }
+  // sprite
+  ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(70, FLOOR - 2, 30, 6, 0, 0, 7); ctx.fill();
+  A.drawHero(70, FLOOR - 40, 100, 0, phase === 'done' ? (results[shot] ? 'happy' : 'tired') : 'happy');
+  // trail + ball
+  trail.forEach((p, i) => { ctx.fillStyle = 'rgba(255,140,90,' + (i / trail.length * 0.35) + ')'; ctx.beginPath(); ctx.arc(p.x, p.y, BR * i / trail.length, 0, 7); ctx.fill(); });
+  if (!((phase === 'done' || phase === 'over') && results[shot])) drawBall(ctx, A, ball.x, ball.y, BR);
+  if (phase === 'aim' || phase === 'fly') tag(ctx, A, pool[shot].name, Math.min(W - 60, Math.max(60, ball.x)), Math.max(150, ball.y - 34), '#FFB3C1');
+  // message
+  if (msgT > 0) {
+    ctx.font = '800 14px Nunito,sans-serif'; const lines = wrap(ctx, msg, W - 60), hh = lines.length * 19 + 16;
+    ctx.globalAlpha = Math.min(1, msgT * 2); A.rr(16, 146, W - 32, hh, 12); A.ink('rgba(20,12,44,.92)', 2.5);
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; lines.forEach((l, i) => ctx.fillText(l, 30, 168 + i * 19)); ctx.globalAlpha = 1;
+  }
 }
 
-// ── EVENTS ──────────────────────────────────────
-cv.addEventListener('mousemove',e=>{
-  const r=cv.getBoundingClientRect();
-  mouse.x=(e.clientX-r.left)*(W/r.width);
-  mouse.y=(e.clientY-r.top)*(H/r.height);
+window.__hoops = () => ({ t, ball, bin, phase, shot, made, G, BR, launch: (vx, vy) => launch(vx, vy, window.game || { sfx() {} }) });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Hoops', subtitle: 'Trash those bad habits!', W, H, reserveH: 70,
+  storageKey: 'sprite_hoops', winText: 'You trashed 7 bad habits!', deathDelay: 600, overTitle: 'Season Over!',
+  medals: [{ at: 300, name: 'Bronze', icon: '🥉' }, { at: 700, name: 'Silver', icon: '🥈' }, { at: 1100, name: 'Gold', icon: '🥇' }, { at: 1600, name: 'Legend', icon: '💎' }],
+  howTo: '<b>Pull back</b> anywhere and let go to shoot each bad habit into the trash can. No rim = <b>Swish +50</b>. Dunks in a row earn a streak bonus.<br>10 shots — <b>dunk 7</b> to win. The can starts moving later!',
+  controls: 'Drag back & release · or ← → aim, ↑ ↓ power, Space shoot · P pause',
+  facts: [
+    'Swapping one bad habit for a better one works better than just trying to stop.',
+    'Habits are easier to change when you change your surroundings, like charging your phone outside your room.',
+    'It takes many weeks of repeating a new habit before it feels automatic.',
+    'Teens need about 8–10 hours of sleep each night.',
+    'Small, specific goals ("drink a water bottle at lunch") stick better than big vague ones.'
+  ],
+  reset, update, draw, input, pointer
 });
-cv.addEventListener('click',e=>{
-  if(phase==='aim') shoot();
-  else if(phase==='over'){
-    const r=cv.getBoundingClientRect();
-    const mx=(e.clientX-r.left)*(W/r.width), my=(e.clientY-r.top)*(H/r.height);
-    const bx=W/2-90, by=H/2+65, bw=180, bh=44;
-    if(mx>=bx&&mx<=bx+bw&&my>=by&&my<=by+bh) start();
-  }
-});
-
-// Touch: dragging updates mouse.x/y just like mousemove (so the same
-// arcHeight()/aimGrade() aiming logic works), and lifting the finger
-// shoots — mirroring "move mouse to aim, click to dunk" for mobile.
-function updatePointerFromTouch(t){
-  const r=cv.getBoundingClientRect();
-  mouse.x=(t.clientX-r.left)*(W/r.width);
-  mouse.y=(t.clientY-r.top)*(H/r.height);
-}
-cv.addEventListener('touchstart',e=>{
-  e.preventDefault();
-  if(e.touches[0]) updatePointerFromTouch(e.touches[0]);
-},{passive:false});
-cv.addEventListener('touchmove',e=>{
-  e.preventDefault();
-  if(e.touches[0]) updatePointerFromTouch(e.touches[0]);
-},{passive:false});
-cv.addEventListener('touchend',e=>{
-  e.preventDefault();
-  if(phase==='aim'){
-    shoot();
-  } else if(phase==='over'){
-    const bx=W/2-90, by=H/2+65, bw=180, bh=44;
-    if(mouse.x>=bx&&mouse.x<=bx+bw&&mouse.y>=by&&mouse.y<=by+bh) start();
-  }
-},{passive:false});
-
-start(); loop();
+})();
 </script>
 </body>
 </html>

@@ -2,586 +2,229 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
-<meta property="og:image" content="https://doppsclass.com/og-image.png">
-<title>😤 Dopp's Corner — Legend of Wellness</title>
-<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Dodge — Dopp's Arcade</title>
+<meta name="description" content="Dodge King Junk's soda sprays and flying junk food with your Wellness Sprite. Survive 60 seconds to win.">
 <link rel="canonical" href="https://doppsclass.com/dopp_corner.html">
-<meta property="og:title" content="😤 Dopp&#39;s Corner — Legend of Wellness">
-<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://doppsclass.com/dopp_corner.html">
-<meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0618;color:#F4EFFF;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden;user-select:none}
-header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(10,6,24,0.94);border-bottom:1px solid rgba(255,59,92,0.2);flex-shrink:0}
-.back-btn{color:#FFD700;font-weight:700;text-decoration:none;font-family:'Cinzel',serif;font-size:13px}
-.hdr-title{font-family:'Cinzel Decorative',serif;font-size:18px;color:#FFD700}
-.hdr-right{font-family:'Cinzel',serif;font-size:13px;color:#F4EFFF;text-align:right;min-width:130px}
-#wrap{position:relative;width:100%;max-width:660px;flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 12px 6px}
-canvas{display:block;border-radius:14px;border:1px solid rgba(255,59,92,0.15)}
-#msg{height:34px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:rgba(255,200,100,0.85);text-align:center;margin-top:6px}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
 </style>
-<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
-<header>
-  <a class="back-btn" href="arcade.html">← Arcade</a>
-  <div class="hdr-title">😤 Dopp's Corner</div>
-  <div class="hdr-right" id="hdr-right">Students: 10</div>
-</header>
-<div id="wrap">
-  <canvas id="c"></canvas>
-  <div id="msg">Dodge Dopp's sweeps — be the LAST student standing!</div>
-</div>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Sprite Dodge</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_art.js"></script>
+<script src="arcade_kit.js"></script>
 <script>
-const cv=document.getElementById('c'), cx=cv.getContext('2d');
-const WRAP=document.getElementById('wrap');
-function resize(){
-  const w=Math.min(WRAP.clientWidth-24,660);
-  cv.width=w; cv.height=Math.min(window.innerHeight-140,500);
+(() => {
+const W = 420, H = 620, TOP = 176, GOAL = 60;          // arena is y TOP..H-20
+const BAD = ART.JUNK, GOOD = ART.HEALTHY;
+const R = 14;                                           // player hit radius (smaller than the art — forgiving)
+let hits = [], me, shots, cones, rains, pickups, boss, keys, target, drag, t, attackT, pickT, lives, inv, shieldT, bonus, wonFlag, survived;
+
+function reset() {
+  me = { x: W / 2, y: H - 90, mood: 'happy', moodT: 0 };
+  shots = []; cones = []; rains = []; pickups = [];
+  boss = { x: W / 2, y: 128, dir: 1, talk: '', talkT: 0, mouth: 0 };
+  hits = []; keys = {}; target = null; drag = null; t = 0; attackT = 1.6; pickT = 4; lives = 3; inv = 0; shieldT = 0; bonus = 0; wonFlag = false; survived = 0;
 }
-resize(); window.addEventListener('resize',()=>{resize();initGame();});
-
-const GOLD='#FFD700',EMERALD='#00E5A0',CRIMSON='#FF3B5C',SKY='#38BFFF',ORANGE='#FF8C00';
-function W(){return cv.width;} function H(){return cv.height;}
-
-// ── CORNER (bottom-left) ─────────────────────────
-const CORNER_X=()=>55, CORNER_Y=()=>H()-55;
-const CORNER_R=()=>70; // pile radius
-
-// ── STUDENT COLORS ───────────────────────────────
-const STUDENT_COLORS=['#38BFFF','#00E5A0','#a855f7','#FF69B4','#FF8C00',
-  '#87CEEB','#90EE90','#FFB6C1','#DDA0DD','#F0E68C'];
-const STUDENT_NAMES=['Alex','Sam','Jordan','Casey','Riley','Morgan','Drew','Avery','Quinn','Blake'];
-
-// ── STATE ────────────────────────────────────────
-let students, player, dopp, phase, sweepAngle, sweepTimer, sweepCooldown;
-let roundNum, corneredCount, particles, shakeTimer;
-
-const STUDENT_R=14, PLAYER_R=16, DOPP_R=28;
-const TOTAL_STUDENTS=9; // 9 AI + 1 player = 10 total visible
-
-const DOPP_ANGERS=[
-  "GET IN THE CORNER!","CLASS DISMISSED — TO THE CORNER!","OH YOU THINK THAT'S FUNNY?!",
-  "DETENTION! CORNER! NOW!","EVERYONE SIT DOWN!","I AM NOT YOUR FRIEND RIGHT NOW!",
-  "CORNER. ALL OF YOU. GO.","WHO DID THAT?! ALL OF YOU!"
-];
-
-function initGame(){
-  phase='countdown'; roundNum=0; corneredCount=0; particles=[];
-  shakeTimer=0; sweepTimer=0; sweepCooldown=180;
-
-  // Player starts at bottom-right area
-  player={
-    x:W()*0.75, y:H()*0.75,
-    vx:0, vy:0,
-    color:'#FFD700', name:'YOU',
-    alive:true, cornered:false,
-    pileX:0, pileY:0,
-    blinkTimer:0
-  };
-
-  // AI students scattered around
-  students=[];
-  for(let i=0;i<TOTAL_STUDENTS;i++){
-    students.push({
-      x:100+Math.random()*(W()-200),
-      y:80+Math.random()*(H()-200),
-      vx:(Math.random()-.5)*2,
-      vy:(Math.random()-.5)*2,
-      color:STUDENT_COLORS[i],
-      name:STUDENT_NAMES[i],
-      alive:true, cornered:false,
-      pileX:0, pileY:0,
-      aiTimer:0
-    });
-  }
-
-  // Dopp starts at top-center, angry
-  dopp={
-    x:W()/2, y:80,
-    vx:0, vy:0,
-    angle:Math.PI/2, // facing down
-    sweeping:false,
-    sweepStartAngle:0,
-    sweepProgress:0,
-    angerLevel:0, // 0-1 ramps up each round
-    mood:'calm', // calm | charging | sweep | recover
-    moodTimer:0,
-    sayTimer:0,
-    saying:''
-  };
-
-  sweepAngle=0;
-  updateHdr();
-  setTimeout(()=>{ phase='play'; showMsg('Dodge the sweep! Move with mouse/touch!'); },1200);
+function input(type) {
+  if (['left', 'right', 'up', 'down'].includes(type)) { keys[type] = true; target = null; }
+  else if (type.startsWith('release-')) keys[type.slice(8)] = false;
 }
-
-function updateHdr(){
-  const alive=[player,...students].filter(s=>s.alive&&!s.cornered).length;
-  document.getElementById('hdr-right').textContent=`Free: ${alive} · Cornered: ${corneredCount}`;
+// mouse: sprite follows the cursor. touch: drag anywhere and the sprite moves with your finger (so your finger never covers it)
+function pointer(type, x, y) {
+  if (type === 'move') target = { x, y };
+  else if (type === 'down') { drag = { x, y }; target = null; }
+  else if (type === 'drag' && drag) { me.x += (x - drag.x) * 1.25; me.y += (y - drag.y) * 1.25; drag = { x, y }; }
+  else if (type === 'up') drag = null;
 }
+const TAUNTS = ['Have a soda!', 'Fries for everyone!', 'Skip the veggies!', 'Snack attack!', 'Sugar rush!', 'More junk!'];
+function say(A, s) { boss.talk = s; boss.talkT = 1.6; }
 
-function showMsg(t){ document.getElementById('msg').textContent=t; }
-
-function lerp(a,b,t){return a+(b-a)*Math.max(0,Math.min(1,t));}
-function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
-
-// ── MOUSE/TOUCH ───────────────────────────────────
-let mouse={x:-999,y:-999};
-cv.addEventListener('mousemove',e=>{
-  const r=cv.getBoundingClientRect();
-  mouse.x=(e.clientX-r.left)*(W()/r.width);
-  mouse.y=(e.clientY-r.top)*(H()/r.height);
-});
-cv.addEventListener('touchmove',e=>{
-  e.preventDefault();
-  const r=cv.getBoundingClientRect();
-  mouse.x=(e.touches[0].clientX-r.left)*(W()/r.width);
-  mouse.y=(e.touches[0].clientY-r.top)*(H()/r.height);
-},{passive:false});
-cv.addEventListener('click',e=>{
-  if(phase==='over'||phase==='win'){
-    const r=cv.getBoundingClientRect();
-    const mx=(e.clientX-r.left)*(W()/r.width),my=(e.clientY-r.top)*(H()/r.height);
-    const by=H()/2+80;
-    if(Math.abs(mx-W()/2)<90&&Math.abs(my-by)<24){initGame();}
-  }
-});
-
-// ── CORNER PILE POSITIONS ─────────────────────────
-function pilePos(index){
-  // Spiral stack in bottom-left corner
-  const angle=(index*2.4);
-  const r=STUDENT_R*1.3*Math.sqrt(index);
-  return{
-    x:CORNER_X()+Math.cos(angle)*Math.min(r,CORNER_R()-STUDENT_R),
-    y:CORNER_Y()+Math.sin(angle)*Math.min(r,CORNER_R()-STUDENT_R)
-  };
-}
-
-// ── SWEEP BEAM ────────────────────────────────────
-// Dopp sweeps a cone from his position toward the corner — everything in the cone gets cornered
-function sweepHits(entity){
-  if(entity.cornered||!entity.alive) return false;
-  const dx=entity.x-dopp.x, dy=entity.y-dopp.y;
-  const d=Math.hypot(dx,dy);
-  if(d>W()*0.65) return false;
-  const angle=Math.atan2(dy,dx);
-  let diff=angle-dopp.sweepStartAngle;
-  while(diff> Math.PI) diff-=Math.PI*2;
-  while(diff<-Math.PI) diff+=Math.PI*2;
-  return diff>=0 && diff<=dopp.sweepProgress;
-}
-
-// ── AI STUDENTS ───────────────────────────────────
-function updateAI(s){
-  if(s.cornered){
-    // Slowly settle to pile position
-    s.x=lerp(s.x,s.pileX,0.08);
-    s.y=lerp(s.y,s.pileY,0.08);
-    return;
-  }
-  s.aiTimer--;
-  // Flee from Dopp
-  const dd=dist(s,dopp);
-  if(dd<160){
-    const a=Math.atan2(s.y-dopp.y,s.x-dopp.x);
-    s.vx+=Math.cos(a)*0.7;
-    s.vy+=Math.sin(a)*0.7;
-  }
-  // Random wander
-  if(s.aiTimer<=0){
-    s.vx+=(Math.random()-.5)*1.5;
-    s.vy+=(Math.random()-.5)*1.5;
-    s.aiTimer=30+Math.floor(Math.random()*40);
-  }
-  // Speed limit
-  const spd=Math.hypot(s.vx,s.vy);
-  if(spd>3.5){s.vx=s.vx/spd*3.5;s.vy=s.vy/spd*3.5;}
-  s.x+=s.vx; s.y+=s.vy;
-  s.vx*=0.92; s.vy*=0.92;
-  // Bounce walls
-  if(s.x<STUDENT_R){s.x=STUDENT_R;s.vx*=-0.5;}
-  if(s.x>W()-STUDENT_R){s.x=W()-STUDENT_R;s.vx*=-0.5;}
-  if(s.y<STUDENT_R){s.y=STUDENT_R;s.vy*=-0.5;}
-  if(s.y>H()-STUDENT_R){s.y=H()-STUDENT_R;s.vy*=-0.5;}
-}
-
-// ── DOPP AI ───────────────────────────────────────
-function updateDopp(){
-  if(dopp.mood==='calm'){
-    dopp.moodTimer--;
-    // Drift toward center
-    dopp.vx+=(W()/2-dopp.x)*0.004;
-    dopp.vy+=(H()*0.35-dopp.y)*0.004;
-    if(dopp.moodTimer<=0){
-      dopp.mood='charging';
-      dopp.moodTimer=60+Math.floor(Math.random()*60);
-      dopp.saying=DOPP_ANGERS[Math.floor(Math.random()*DOPP_ANGERS.length)];
-      dopp.sayTimer=120;
+function attack(A) {
+  const lv = Math.min(1, A.time / GOAL);                // 0 → 1 over the first minute
+  const r = Math.random();
+  if (r < 0.45) {                                       // aimed junk volley
+    const n = 1 + Math.floor(lv * 2 + Math.random() * 1.2);
+    const base = Math.atan2(me.y - boss.y, me.x - boss.x);
+    for (let i = 0; i < n; i++) {
+      const a = base + (i - (n - 1) / 2) * 0.28, sp = 130 + lv * 50;
+      shots.push({ x: boss.x, y: boss.y + 30, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, kind: BAD[Math.floor(Math.random() * BAD.length)], rot: 0 });
     }
-  } else if(dopp.mood==='charging'){
-    dopp.moodTimer--;
-    // Flash red, build up
-    if(dopp.moodTimer<=0){
-      // SWEEP — angle from Dopp toward the general classroom, sweeping
-      dopp.sweeping=true;
-      dopp.sweepStartAngle=Math.atan2(CORNER_Y()-dopp.y,CORNER_X()-dopp.x)-0.3;
-      dopp.sweepProgress=0;
-      dopp.mood='sweep';
-      dopp.moodTimer=90;
-      shakeTimer=8;
+    boss.mouth = 0.4; A.sfx('swipe');
+  } else if (r < 0.75) {                                 // telegraphed soda spray cone
+    const a = Math.atan2(me.y - boss.y, me.x - boss.x) + (Math.random() - 0.5) * 0.3;
+    cones.push({ ox: boss.x, oy: boss.y, a, half: 0.2 + lv * 0.06, warn: 1.35 - lv * 0.3, fire: 0.35 });
+    say(A, 'Soda spray!');
+  } else {                                              // junk rain in warned columns
+    const n = 2 + Math.floor(lv * 2), cols = [];
+    for (let i = 0; i < n; i++) { let x; do { x = 40 + Math.random() * (W - 80); } while (cols.some(c => Math.abs(c - x) < 70)); cols.push(x); }
+    cols.forEach(x => rains.push({ x, warn: 1.15, y: TOP - 20, kind: BAD[Math.floor(Math.random() * BAD.length)], live: false }));
+    say(A, 'Junk rain!');
+  }
+  if (Math.random() < 0.25) say(A, TAUNTS[Math.floor(Math.random() * TAUNTS.length)]);
+  attackT = Math.max(1.3, 2.2 - lv * 0.9) * (0.8 + Math.random() * 0.4);
+}
+function hurt(A, why) {
+  if (inv > 0 || shieldT > 0) return;
+  hits.push(why);
+  lives--; inv = 1.4; me.mood = 'sugar'; me.moodT = 1.2;
+  A.sfx('hit'); A.shake(8, 0.25); A.particles.burst(me.x, me.y, '#FF8FA3', 16, 200, 4); A.float('−1 ❤', me.x, me.y - 40, '#FF8FA3');
+  if (lives <= 0) A.gameOver();
+}
+function update(dt, A) {
+  if (!me) return;
+  t += dt;
+  if (boss.talkT > 0) boss.talkT -= dt;
+  boss.mouth = Math.max(0, boss.mouth - dt);
+  [...shots, ...rains].forEach(s => s.rot = (s.rot || 0) + dt * 3);
+  if (A.state !== 'play') { boss.x = W / 2 + Math.sin(t * 0.8) * 120; return; }
+  if (me.moodT > 0 && (me.moodT -= dt) <= 0) me.mood = 'happy';
+  inv = Math.max(0, inv - dt); shieldT = Math.max(0, shieldT - dt);
+
+  // move
+  const sp = 300;
+  if (keys.left) me.x -= sp * dt; if (keys.right) me.x += sp * dt; if (keys.up) me.y -= sp * dt; if (keys.down) me.y += sp * dt;
+  if (target) { const dx = target.x - me.x, dy = target.y - me.y, d = Math.hypot(dx, dy), step = Math.min(d, 420 * dt); if (d > 1) { me.x += dx / d * step; me.y += dy / d * step; } }
+  me.x = Math.max(24, Math.min(W - 24, me.x)); me.y = Math.max(TOP + 20, Math.min(H - 34, me.y));
+
+  // boss strolls
+  if (!cones.length) boss.x += boss.dir * (50 + Math.min(1, A.time / GOAL) * 50) * dt;
+  if (boss.x < 80 || boss.x > W - 80) boss.dir *= -1;
+
+  // score: 10 points per second survived + bonuses
+  survived = A.time;
+  const s = Math.floor(survived * 10) + bonus; if (s !== A.score) A.setScore(s);
+  if (!wonFlag && survived >= GOAL) { wonFlag = true; A.win('You out-dodged King Junk for a full minute!'); say(A, 'Nooo! Fine, eat a salad…'); }
+
+  attackT -= dt; if (attackT <= 0) attack(A);
+
+  // shots
+  for (let i = shots.length - 1; i >= 0; i--) {
+    const s = shots[i]; s.x += s.vx * dt; s.y += s.vy * dt;
+    if (Math.hypot(s.x - me.x, s.y - me.y) < R + 11) { shots.splice(i, 1); hurt(A, 'shot'); continue; }
+    if (s.x < -30 || s.x > W + 30 || s.y > H + 30 || s.y < -30) shots.splice(i, 1);
+  }
+  // cones
+  for (let i = cones.length - 1; i >= 0; i--) {
+    const c = cones[i];
+    if (c.warn > 0) { c.warn -= dt; if (c.warn <= 0) { A.sfx('pop'); A.shake(4, 0.15); boss.mouth = 0.5; } continue; }
+    c.fire -= dt;
+    const a = Math.atan2(me.y - c.oy, me.x - c.ox); let da = Math.abs(a - c.a); if (da > Math.PI) da = 2 * Math.PI - da;
+    if (da < c.half) hurt(A, 'cone');
+    if (c.fire <= 0) cones.splice(i, 1);
+  }
+  // rain
+  for (let i = rains.length - 1; i >= 0; i--) {
+    const r = rains[i];
+    if (r.warn > 0) { r.warn -= dt; continue; }
+    r.y += 440 * dt;
+    if (Math.abs(r.x - me.x) < R + 14 && Math.abs(r.y - me.y) < R + 14) { rains.splice(i, 1); hurt(A, 'rain'); continue; }
+    if (r.y > H + 30) rains.splice(i, 1);
+  }
+  // healthy pickups
+  pickT -= dt;
+  if (pickT <= 0) {
+    const roll = Math.random(), kind = lives < 3 && roll < 0.25 ? 'heart' : roll < 0.3 ? 'shield' : GOOD[Math.floor(Math.random() * GOOD.length)];
+    pickups.push({ x: 40 + Math.random() * (W - 80), y: TOP + 50 + Math.random() * (H - TOP - 110), kind, life: 6 });
+    pickT = 2.5 + Math.random() * 2;
+  }
+  for (let i = pickups.length - 1; i >= 0; i--) {
+    const p = pickups[i]; p.life -= dt;
+    if (Math.hypot(p.x - me.x, p.y - me.y) < R + 18) {
+      pickups.splice(i, 1);
+      if (p.kind === 'heart') { lives = Math.min(3, lives + 1); A.sfx('medal'); A.float('+1 ❤', p.x, p.y - 20, '#FF8FA3'); }
+      else if (p.kind === 'shield') { shieldT = 5; A.sfx('medal'); A.toast('🛡 Immune boost! 5 seconds of safety'); }
+      else { bonus += 25; A.sfx('coin'); A.float('+25', p.x, p.y - 20, '#7CFFB2'); A.particles.burst(p.x, p.y, '#7CFFB2', 8, 140, 3); }
+      continue;
     }
-  } else if(dopp.mood==='sweep'){
-    dopp.sweepProgress=Math.min(2.2, dopp.sweepProgress+0.045);
-    dopp.moodTimer--;
-    // Corner anyone in the beam
-    const all=[player,...students].filter(s=>s.alive&&!s.cornered);
-    all.forEach(s=>{
-      if(sweepHits(s)){
-        cornerStudent(s);
-      }
-    });
-    if(dopp.sweepProgress>=2.2||dopp.moodTimer<=0){
-      dopp.mood='recover';
-      dopp.sweeping=false;
-      dopp.moodTimer=120+Math.floor(Math.random()*80);
-    }
-  } else if(dopp.mood==='recover'){
-    dopp.moodTimer--;
-    if(dopp.moodTimer<=0){
-      dopp.mood='calm';
-      dopp.moodTimer=90+Math.floor(Math.random()*60);
-      dopp.angerLevel=Math.min(1,dopp.angerLevel+0.1);
-    }
-  }
-
-  // Move Dopp
-  const speed=1.5+dopp.angerLevel;
-  if(dopp.mood==='charging'){
-    // Drift randomly while building up
-    dopp.vx+=(Math.random()-.5)*0.3;
-    dopp.vy+=(Math.random()-.5)*0.3;
-  }
-  dopp.x+=dopp.vx; dopp.y+=dopp.vy;
-  dopp.vx*=0.9; dopp.vy*=0.9;
-  dopp.x=Math.max(DOPP_R,Math.min(W()-DOPP_R,dopp.x));
-  dopp.y=Math.max(DOPP_R,Math.min(H()-DOPP_R,dopp.y));
-  if(dopp.sayTimer>0) dopp.sayTimer--;
-}
-
-function cornerStudent(s){
-  s.cornered=true;
-  const pos=pilePos(corneredCount);
-  s.pileX=pos.x; s.pileY=pos.y;
-  corneredCount++;
-  spawnParticles(s.x,s.y,s.color);
-  updateHdr();
-
-  const freeStudents=[player,...students].filter(s=>s.alive&&!s.cornered);
-  if(s===player){
-    phase='over';
-    showMsg('');
-  } else if(freeStudents.filter(f=>f!==player).length===0&&!player.cornered){
-    // Player is the last one free!
-    phase='win';
-    showMsg('');
-    spawnWinBurst();
-  } else {
-    const freeCount=freeStudents.length;
-    if(freeCount===1&&freeStudents[0]===player){
-      // Will trigger on next frame
-    } else {
-      showMsg(`${s.name} cornered! ${freeCount-1} students left + YOU`);
-    }
+    if (p.life <= 0) pickups.splice(i, 1);
   }
 }
 
-function spawnParticles(x,y,color,n=18){
-  for(let i=0;i<n;i++){
-    particles.push({x,y,vx:(Math.random()-.5)*10,vy:(Math.random()-1)*8,
-      size:Math.random()*5+2,color,life:1,dec:0.018+Math.random()*0.015});
+function drawBoss(ctx, A) {
+  const x = boss.x, y = boss.y + Math.sin(t * 3) * 3;
+  ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, boss.y + 52, 46, 8, 0, 0, 7); ctx.fill();
+  ART.draw(ctx, 'burger', x, y, 90, t);
+  // angry eyes + mouth on the bun
+  ctx.fillStyle = '#fff'; [-16, 16].forEach(dx => { ctx.beginPath(); ctx.arc(x + dx, y - 12, 8, 0, 7); ctx.fill(); });
+  ctx.fillStyle = A.INK; [-16, 16].forEach(dx => { ctx.beginPath(); ctx.arc(x + dx + (me.x - x) / 90, y - 11 + (me.y - y) / 160, 4, 0, 7); ctx.fill(); });
+  ctx.strokeStyle = A.INK; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 26, y - 26); ctx.lineTo(x - 8, y - 20); ctx.moveTo(x + 26, y - 26); ctx.lineTo(x + 8, y - 20); ctx.stroke();
+  // crown
+  ctx.beginPath(); ctx.moveTo(x - 28, y - 38); ctx.lineTo(x - 28, y - 62); ctx.lineTo(x - 14, y - 48); ctx.lineTo(x, y - 68); ctx.lineTo(x + 14, y - 48); ctx.lineTo(x + 28, y - 62); ctx.lineTo(x + 28, y - 38); ctx.closePath(); A.ink('#FFD700', 3);
+  ctx.fillStyle = '#FF3B5C'; ctx.beginPath(); ctx.arc(x, y - 50, 4, 0, 7); ctx.fill();
+  if (boss.talkT > 0) {
+    ctx.font = '900 14px Nunito,sans-serif'; const w = ctx.measureText(boss.talk).width + 20, bx = Math.max(8, Math.min(W - w - 8, x + 50)), by = y - 70;
+    A.rr(bx, by, w, 28, 12); A.ink('#fff', 3); ctx.fillStyle = A.INK; ctx.textAlign = 'left'; ctx.fillText(boss.talk, bx + 10, by + 19);
   }
 }
-function spawnWinBurst(){
-  for(let i=0;i<80;i++){
-    particles.push({x:W()/2,y:H()/2,
-      vx:(Math.random()-.5)*18,vy:(Math.random()-1.2)*14,
-      size:Math.random()*9+3,
-      color:[GOLD,EMERALD,SKY,'#a855f7','#FF69B4'][Math.floor(Math.random()*5)],
-      life:1,dec:0.01+Math.random()*0.012});
-  }
-}
-
-// ── DRAW ─────────────────────────────────────────
-function drawBg(){
-  cx.fillStyle='#1C1A2E'; cx.fillRect(0,0,W(),H());
-  // Classroom floor
-  cx.fillStyle='rgba(255,255,255,0.015)'; cx.fillRect(0,H()-30,W(),30);
-  // Subtle grid
-  cx.strokeStyle='rgba(255,255,255,0.02)'; cx.lineWidth=1;
-  for(let x=0;x<W();x+=60){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H());cx.stroke();}
-  for(let y=0;y<H();y+=60){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W(),y);cx.stroke();}
-  // Shake
-  if(shakeTimer>0){
-    cx.save(); cx.translate((Math.random()-.5)*shakeTimer,(Math.random()-.5)*shakeTimer); shakeTimer--;
-  }
-}
-
-function drawCorner(){
-  const cx2=cx, x=CORNER_X(), y=CORNER_Y(), r=CORNER_R();
-  // Corner marker
-  cx2.strokeStyle='rgba(255,59,92,0.25)'; cx2.lineWidth=2; cx2.setLineDash([6,4]);
-  cx2.beginPath(); cx2.arc(x,y,r,0,Math.PI*2); cx2.stroke(); cx2.setLineDash([]);
-  cx2.fillStyle='rgba(255,59,92,0.05)'; cx2.beginPath(); cx2.arc(x,y,r,0,Math.PI*2); cx2.fill();
-  cx2.font='10px Nunito'; cx2.textAlign='center'; cx2.fillStyle='rgba(255,59,92,0.45)';
-  cx2.fillText('THE CORNER',x,y-r-6);
-}
-
-function drawSweep(){
-  if(!dopp.sweeping) return;
-  const endAngle=dopp.sweepStartAngle+dopp.sweepProgress;
-  cx.save();
-  const grd=cx.createConicalGradient?null:null;
-  cx.globalAlpha=0.18;
-  cx.fillStyle=CRIMSON;
-  cx.beginPath();
-  cx.moveTo(dopp.x,dopp.y);
-  cx.arc(dopp.x,dopp.y,W()*0.72,dopp.sweepStartAngle,endAngle);
-  cx.closePath();
-  cx.fill();
-  cx.globalAlpha=0.5;
-  cx.strokeStyle=CRIMSON; cx.lineWidth=3;
-  cx.beginPath();
-  cx.moveTo(dopp.x,dopp.y);
-  cx.lineTo(dopp.x+Math.cos(endAngle)*W()*0.7,dopp.y+Math.sin(endAngle)*W()*0.7);
-  cx.stroke();
-  cx.globalAlpha=1;
-  cx.restore();
-}
-
-function drawStudent(s, isPlayer){
-  if(!s.alive) return;
-  const r=isPlayer?PLAYER_R:STUDENT_R;
-  const x=s.x, y=s.y;
-  // Glow if player
-  if(isPlayer){
-    cx.shadowColor=GOLD; cx.shadowBlur=16;
-  }
-  // Body
-  cx.fillStyle=s.color;
-  cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2); cx.fill();
-  cx.shadowBlur=0;
-  // Face
-  cx.fillStyle='rgba(0,0,0,0.25)';
-  cx.beginPath(); cx.arc(x-r*0.3,y-r*0.2,r*0.18,0,Math.PI*2); cx.fill();
-  cx.beginPath(); cx.arc(x+r*0.3,y-r*0.2,r*0.18,0,Math.PI*2); cx.fill();
-  cx.strokeStyle='rgba(0,0,0,0.3)'; cx.lineWidth=1.5;
-  cx.beginPath(); cx.arc(x,y+r*0.1,r*0.28,0.1,Math.PI-0.1); cx.stroke();
-  // Name
-  cx.font=`bold ${isPlayer?10:8}px Nunito`; cx.textAlign='center';
-  cx.fillStyle=isPlayer?GOLD:'rgba(255,255,255,0.7)';
-  cx.fillText(s.name,x,y-r-4);
-  // Cornered = squish into pile
-  if(s.cornered){
-    cx.fillStyle='rgba(255,59,92,0.15)';
-    cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2); cx.fill();
-  }
-}
-
-function drawDopp2(){
-  const x=dopp.x, y=dopp.y, r=DOPP_R;
-  const angry=dopp.mood==='charging'||dopp.mood==='sweep';
-  // Glow
-  cx.shadowColor=angry?CRIMSON:ORANGE;
-  cx.shadowBlur=angry?24:12;
-  // Body
-  const bodyColor=angry?'#8B0000':'#6B3A2A';
-  cx.fillStyle=bodyColor;
-  cx.beginPath(); cx.ellipse(x,y,r*0.8,r,0,0,Math.PI*2); cx.fill();
-  cx.shadowBlur=0;
-  // Shirt
-  cx.fillStyle=angry?CRIMSON:ORANGE;
-  cx.beginPath(); cx.ellipse(x,y+r*0.2,r*0.65,r*0.55,0,0,Math.PI*2); cx.fill();
-  // "DOPP" label
-  cx.font='bold 8px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(255,255,255,0.6)';
-  cx.fillText('DOPP',x,y+r*0.28);
-  // Head
-  const skin='#C68642';
-  cx.fillStyle=skin;
-  cx.beginPath(); cx.arc(x,y-r*0.72,r*0.55,0,Math.PI*2); cx.fill();
-  // Angry eyebrows
-  cx.strokeStyle='#333'; cx.lineWidth=2.5; cx.lineCap='round';
-  if(angry){
-    cx.beginPath(); cx.moveTo(x-r*0.45,y-r*0.92); cx.lineTo(x-r*0.12,y-r*0.78); cx.stroke();
-    cx.beginPath(); cx.moveTo(x+r*0.45,y-r*0.92); cx.lineTo(x+r*0.12,y-r*0.78); cx.stroke();
-    cx.fillStyle=CRIMSON;
-  } else {
-    cx.beginPath(); cx.moveTo(x-r*0.45,y-r*0.82); cx.lineTo(x-r*0.1,y-r*0.88); cx.stroke();
-    cx.beginPath(); cx.moveTo(x+r*0.45,y-r*0.82); cx.lineTo(x+r*0.1,y-r*0.88); cx.stroke();
-    cx.fillStyle='#333';
-  }
-  // Eyes
-  cx.beginPath(); cx.arc(x-r*0.22,y-r*0.72,r*0.1,0,Math.PI*2); cx.fill();
-  cx.beginPath(); cx.arc(x+r*0.22,y-r*0.72,r*0.1,0,Math.PI*2); cx.fill();
-  // Mouth — angry or calm
-  cx.strokeStyle='#333'; cx.lineWidth=2;
-  if(angry){
-    // Angry flat-line mouth
-    cx.beginPath(); cx.moveTo(x-r*0.3,y-r*0.52); cx.lineTo(x+r*0.3,y-r*0.52); cx.stroke();
-    // Steam puffs
-    cx.fillStyle='rgba(255,100,0,0.5)';
-    for(let i=0;i<3;i++){
-      cx.beginPath(); cx.arc(x-r*0.35+i*r*0.35,y-r*1.35+Math.sin(Date.now()/200+i)*4,r*0.1,0,Math.PI*2); cx.fill();
-    }
-  } else {
-    cx.beginPath(); cx.arc(x,y-r*0.5,r*0.2,0.1,Math.PI-0.1); cx.stroke();
-  }
-  // Arms out when sweeping
-  if(dopp.mood==='sweep'){
-    cx.strokeStyle=skin; cx.lineWidth=r*0.35; cx.lineCap='round';
-    const sweepMid=dopp.sweepStartAngle+dopp.sweepProgress*0.5;
-    cx.beginPath();
-    cx.moveTo(x,y);
-    cx.lineTo(x+Math.cos(sweepMid)*r*1.8,y+Math.sin(sweepMid)*r*1.8);
-    cx.stroke();
-  } else {
-    cx.strokeStyle=skin; cx.lineWidth=r*0.35; cx.lineCap='round';
-    cx.beginPath(); cx.moveTo(x-r*0.7,y-r*0.2); cx.lineTo(x-r*1.2,y+r*0.3); cx.stroke();
-    cx.beginPath(); cx.moveTo(x+r*0.7,y-r*0.2); cx.lineTo(x+r*1.2,y+r*0.3); cx.stroke();
-  }
-  // Speech bubble
-  if(dopp.sayTimer>0&&dopp.saying){
-    const alpha=Math.min(1,dopp.sayTimer/30);
-    cx.globalAlpha=alpha;
-    const tw=cx.measureText(dopp.saying).width+20;
-    const bx=x-tw/2, by2=y-r*1.9-30;
-    cx.fillStyle='rgba(255,59,92,0.9)';
-    roundRect(bx,by2,tw,26,8); cx.fill();
-    // Tail
-    cx.beginPath(); cx.moveTo(x-8,by2+26); cx.lineTo(x+8,by2+26); cx.lineTo(x,by2+38); cx.closePath(); cx.fill();
-    cx.font='bold 10px Nunito'; cx.textAlign='center'; cx.fillStyle='white';
-    cx.fillText(dopp.saying,x,by2+17);
-    cx.globalAlpha=1;
-  }
-}
-
-function roundRect(x,y,w,h,r){
-  cx.beginPath();
-  cx.moveTo(x+r,y); cx.lineTo(x+w-r,y); cx.quadraticCurveTo(x+w,y,x+w,y+r);
-  cx.lineTo(x+w,y+h-r); cx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  cx.lineTo(x+r,y+h); cx.quadraticCurveTo(x,y+h,x,y+h-r);
-  cx.lineTo(x,y+r); cx.quadraticCurveTo(x,y,x+r,y); cx.closePath();
-}
-
-function drawBtn(x,y,label){
-  const bw=180,bh=44;
-  cx.fillStyle='rgba(255,215,0,0.12)';
-  roundRect(x-bw/2,y-bh/2,bw,bh,10); cx.fill();
-  cx.strokeStyle='rgba(255,215,0,0.4)'; cx.lineWidth=1.5;
-  roundRect(x-bw/2,y-bh/2,bw,bh,10); cx.stroke();
-  cx.font='bold 14px Nunito'; cx.fillStyle=GOLD; cx.textAlign='center';
-  cx.fillText(label,x,y+5);
-}
-
-// ── MAIN LOOP ─────────────────────────────────────
-function loop(){
-  drawBg();
-
-  // Particles
-  particles=particles.filter(p=>p.life>0);
-  particles.forEach(p=>{
-    cx.globalAlpha=p.life;
-    cx.fillStyle=p.color;
-    cx.beginPath(); cx.arc(p.x,p.y,p.size,0,Math.PI*2); cx.fill();
-    p.x+=p.vx; p.y+=p.vy; p.vy+=0.25; p.life-=p.dec;
+function draw(ctx, A) {
+  // castle hall
+  ctx.fillStyle = '#2a1b4d'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#3a2766'; for (let y = 0; y < TOP; y += 26) for (let x = (y / 26 % 2) * 26; x < W; x += 52) ctx.fillRect(x, y, 48, 22);
+  ctx.fillStyle = '#5b2a6e'; ctx.fillRect(0, TOP - 12, W, 12);
+  for (let y = TOP; y < H; y += 44.4) for (let x = 0; x < W; x += 52.5) { ctx.fillStyle = ((x / 52.5 + (y - TOP) / 44.4) | 0) % 2 ? '#e9e0ff' : '#cdbff2'; ctx.fillRect(x, y, 52.5, 44.4); }
+  ctx.fillStyle = 'rgba(42,27,77,.18)'; ctx.fillRect(0, TOP, W, H - TOP);
+  // banners
+  [[40, '#FF3B5C'], [W - 40, '#FF3B5C']].forEach(([x, c]) => { ctx.beginPath(); ctx.moveTo(x - 16, 20); ctx.lineTo(x + 16, 20); ctx.lineTo(x + 16, 96); ctx.lineTo(x, 84); ctx.lineTo(x - 16, 96); ctx.closePath(); A.ink(c, 3); ART.draw(ctx, 'soda', x, 50, 22, 0); });
+  if (!me) return;
+  // cone warnings / blasts
+  cones.forEach(c => {
+    const len = 900;
+    ctx.beginPath(); ctx.moveTo(c.ox, c.oy); ctx.arc(c.ox, c.oy, len, c.a - c.half, c.a + c.half); ctx.closePath();
+    if (c.warn > 0) { ctx.fillStyle = 'rgba(255,59,92,' + (0.12 + 0.12 * Math.sin(t * 24)) + ')'; ctx.fill(); ctx.strokeStyle = 'rgba(255,59,92,.7)'; ctx.setLineDash([10, 8]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]); }
+    else { ctx.fillStyle = 'rgba(120,70,30,.55)'; ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.6)'; for (let i = 0; i < 14; i++) { const d = 60 + ((i * 53 + t * 900) % 560), a = c.a + ((i * 37) % 10 / 10 - 0.5) * c.half * 1.6; ctx.beginPath(); ctx.arc(c.ox + Math.cos(a) * d, c.oy + Math.sin(a) * d, 4, 0, 7); ctx.fill(); } }
   });
-  cx.globalAlpha=1;
-
-  drawCorner();
-  drawSweep();
-
-  // Update
-  if(phase==='play'){
-    // Move player toward mouse
-    const pdx=mouse.x-player.x, pdy=mouse.y-player.y;
-    const pd=Math.hypot(pdx,pdy);
-    if(pd>4&&!player.cornered){
-      player.vx+=pdx/pd*0.8;
-      player.vy+=pdy/pd*0.8;
-    }
-    const spd=Math.hypot(player.vx,player.vy);
-    if(spd>4.5){player.vx=player.vx/spd*4.5;player.vy=player.vy/spd*4.5;}
-    player.x+=player.vx; player.y+=player.vy;
-    player.vx*=0.88; player.vy*=0.88;
-    player.x=Math.max(PLAYER_R,Math.min(W()-PLAYER_R,player.x));
-    player.y=Math.max(PLAYER_R,Math.min(H()-PLAYER_R,player.y));
-
-    students.forEach(updateAI);
-    updateDopp();
-  } else if(phase==='play'&&player.cornered){
-    // Slide to pile
-    player.x=lerp(player.x,player.pileX,0.08);
-    player.y=lerp(player.y,player.pileY,0.08);
-  }
-
-  // Draw pile students (in corner, behind)
-  [...students,player].filter(s=>s.cornered).forEach(s=>drawStudent(s,s===player));
-
-  // Draw active students
-  students.filter(s=>!s.cornered&&s.alive).forEach(s=>drawStudent(s,false));
-
-  // Draw sweep, then Dopp on top
-  drawDopp2();
-
-  // Draw player on top of everyone
-  if(!player.cornered) drawStudent(player,true);
-
-  // Anger meter
-  const am=dopp.angerLevel;
-  cx.fillStyle='rgba(255,59,92,0.15)'; roundRect(W()-22,20,10,H()-80,5); cx.fill();
-  const fh=(H()-80)*am;
-  cx.fillStyle=CRIMSON; roundRect(W()-22,20+(H()-80)-fh,10,fh,5); cx.fill();
-  cx.font='9px Nunito'; cx.textAlign='center'; cx.fillStyle='rgba(255,59,92,0.5)';
-  cx.fillText('😤',W()-17,14);
-
-  if(phase==='over'){
-    cx.fillStyle='rgba(5,7,15,0.82)'; cx.fillRect(0,0,W(),H());
-    cx.textAlign='center';
-    cx.font='bold 36px Nunito'; cx.fillStyle=CRIMSON;
-    cx.fillText('😤 CORNER!',W()/2,H()/2-65);
-    cx.font='18px Nunito'; cx.fillStyle='rgba(240,244,255,0.8)';
-    cx.fillText('Dopp got you!',W()/2,H()/2-28);
-    cx.font='13px Nunito'; cx.fillStyle='rgba(240,244,255,0.4)';
-    cx.fillText(`${corneredCount} students cornered before you.`,W()/2,H()/2+4);
-    cx.fillText('Stay on your toes — and maybe do your homework! 📚',W()/2,H()/2+26);
-    drawBtn(W()/2,H()/2+80,'▶ Try Again');
-
-  } else if(phase==='win'){
-    cx.fillStyle='rgba(5,7,15,0.75)'; cx.fillRect(0,0,W(),H());
-    cx.textAlign='center';
-    cx.font='bold 38px Nunito'; cx.fillStyle=GOLD;
-    cx.shadowColor=GOLD; cx.shadowBlur=20;
-    cx.fillText('🏆 LAST ONE STANDING!',W()/2,H()/2-60);
-    cx.shadowBlur=0;
-    cx.font='18px Nunito'; cx.fillStyle=EMERALD;
-    cx.fillText('You outlasted ALL your classmates!',W()/2,H()/2-22);
-    cx.font='13px Nunito'; cx.fillStyle='rgba(240,244,255,0.45)';
-    cx.fillText('Agility, awareness, and quick decisions = life skills 💪',W()/2,H()/2+8);
-    drawBtn(W()/2,H()/2+80,'▶ Play Again');
-  }
-
-  if(shakeTimer>0) cx.restore();
-  requestAnimationFrame(loop);
+  rains.forEach(r => {
+    if (r.warn > 0) { ctx.fillStyle = 'rgba(255,59,92,' + (0.15 + 0.15 * Math.sin(t * 20)) + ')'; ctx.fillRect(r.x - 22, TOP, 44, H - TOP); ctx.fillStyle = '#FF3B5C'; ctx.font = '900 22px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('!', r.x, TOP + 28); }
+    else { ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.rot); ART.draw(ctx, r.kind, 0, 0, 34, t); ctx.restore(); }
+  });
+  pickups.forEach(p => {
+    if (p.life < 1.5 && Math.sin(t * 20) < 0) return;
+    ctx.fillStyle = p.kind === 'shield' ? 'rgba(56,191,255,.3)' : 'rgba(0,229,160,.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 22 + Math.sin(t * 6) * 2, 0, 7); ctx.fill();
+    ART.draw(ctx, p.kind, p.x, p.y + Math.sin(t * 4) * 3, 32, t);
+  });
+  drawBoss(ctx, A);
+  shots.forEach(s => { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.rot); ctx.fillStyle = 'rgba(255,59,92,.25)'; ctx.beginPath(); ctx.arc(0, 0, 19, 0, 7); ctx.fill(); ART.draw(ctx, s.kind, 0, 0, 30, t); ctx.restore(); });
+  // player
+  ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(me.x, me.y + 26, 22, 6, 0, 0, 7); ctx.fill();
+  if (!(inv > 0 && Math.sin(t * 30) < 0)) A.drawHero(me.x, me.y, 84, 0, me.mood);
+  if (shieldT > 0) { ctx.strokeStyle = 'rgba(56,191,255,' + (shieldT < 1.5 && Math.sin(t * 20) < 0 ? 0.2 : 0.85) + ')'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(me.x, me.y, 34, 0, 7); ctx.stroke(); }
+  // HUD
+  ctx.font = '900 16px Nunito,sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#FF3B5C'; ctx.lineWidth = 4; ctx.strokeStyle = A.INK;
+  const hearts = '❤'.repeat(Math.max(0, lives)); ctx.fillText(hearts, 14, H - 10);
+  const left = Math.max(0, GOAL - survived); ctx.textAlign = 'right'; ctx.font = '900 15px Nunito,sans-serif';
+  const label = wonFlag ? '🏆 ' + Math.floor(survived) + 's' : '⏱ ' + Math.ceil(left) + 's to win';
+  ctx.strokeText(label, W - 14, H - 10); ctx.fillStyle = '#FFD700'; ctx.fillText(label, W - 14, H - 10);
 }
 
-initGame();
-loop();
+window.__dodge = () => ({ me, shots, cones, rains, pickups, boss, lives, R, hits, setT: v => { target = v; } });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Dodge', subtitle: 'Out-dodge King Junk!', W, H, reserveH: 70,
+  storageKey: 'sprite_dodge', winText: 'You survived a full minute!', deathDelay: 800, overTitle: 'Junked!',
+  medals: [{ at: 300, name: 'Bronze', icon: '🥉' }, { at: 700, name: 'Silver', icon: '🥈' }, { at: 1200, name: 'Gold', icon: '🥇' }, { at: 2000, name: 'Legend', icon: '💎' }],
+  howTo: 'King Junk throws junk food at you! Dodge the flying snacks, step out of the <b style="color:#FF3B5C">red warning zones</b>, and grab fruit for bonus points.<br>🛡 = immune boost · ❤ = extra heart. <b>Survive 60 seconds</b> to win.',
+  controls: 'Move mouse / drag finger anywhere · or arrow keys · P pause',
+  facts: [
+    'A can of regular soda has about 9–10 teaspoons of sugar.',
+    'Sleep, exercise, and good food all help your immune system fight germs.',
+    'Water is the best drink for thirst — it has zero sugar and zero calories.',
+    'Fast food is okay sometimes. Healthy habits are about what you do most days.',
+    'Fruits and vegetables help your body build a stronger immune system.'
+  ],
+  reset, update, draw, input, pointer
+});
+})();
 </script>
 </body>
 </html>

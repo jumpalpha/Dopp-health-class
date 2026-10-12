@@ -320,18 +320,16 @@ const CLASSICS = [
   { key:'sprite_memory', title:'Sprite Memory', file:'dopp_match.html', icon:'🧠', desc:'Flip cards and match healthy pairs before the timer runs out.',
     medals:[[2000,'🥉 Bronze'],[5000,'🥈 Silver'],[9000,'🥇 Gold'],[13000,'💎 Legend']], goal:'Clear 2 levels', winBy:'wins' },
   { key:'snack_stack', title:'Snack Stack', file:'dopp_tetris.html', icon:'🟦', desc:'Stack falling healthy snacks and clear 10 lines.',
-    medals:[[500,'🥉 Bronze'],[1500,'🥈 Silver'],[4000,'🥇 Gold'],[8000,'💎 Legend']], goal:'Clear 10 lines', winBy:'wins' }
+    medals:[[500,'🥉 Bronze'],[1500,'🥈 Silver'],[4000,'🥇 Gold'],[8000,'💎 Legend']], goal:'Clear 10 lines', winBy:'wins' },
+  { key:'sprite_catch', title:'Sprite Catch', file:'dopp_drop.html', icon:'🧺', desc:'Catch falling fruits and veggies in your basket. Dodge the junk, build combos!',
+    medals:[[400,'🥉 Bronze'],[1000,'🥈 Silver'],[2200,'🥇 Gold'],[4000,'💎 Legend']], goal:'Score 1,000', winBy:'wins' },
+  { key:'sprite_dodge', title:'Sprite Dodge', file:'dopp_corner.html', icon:'👑', desc:'King Junk throws soda sprays and junk-food rain. Survive 60 seconds!',
+    medals:[[300,'🥉 Bronze'],[700,'🥈 Silver'],[1200,'🥇 Gold'],[2000,'💎 Legend']], goal:'Survive 60 seconds', winBy:'wins' },
+  { key:'sprite_hoops', title:'Sprite Hoops', file:'dopp_dunk.html', icon:'🏀', desc:'Pull back and shoot bad habits into the trash can. Dunk 7 of 10!',
+    medals:[[300,'🥉 Bronze'],[700,'🥈 Silver'],[1100,'🥇 Gold'],[1600,'💎 Legend']], goal:'Dunk 7 of 10', winBy:'wins' }
 ];
 const GROUPS = [
   { name:'⭐ Sprite Classics', sub:'Arcade favorites, rebuilt with your sprite. Earn medals!', color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },
-  { name:'🕹 Action', sub:'Fast hands, quick reflexes.', color:'#FF3B5C', games:[
-    ['🪣','Dopp Drop','Catch healthy items, dodge the junk.','dopp_drop.html'],
-    ['😤',"Dopp's Corner","Dodge Dopp's sweeps. Be the last one standing!",'dopp_corner.html'],
-    ['🏀','Dopp Dunk','Shoot bad health habits into the trash can.','dopp_dunk.html'],
-  ]},
-  { name:'🎲 More Fun', sub:'Quick challenges.', color:'#38BFFF', games:[
-    ['🌀','Dopp Spin','Spin the wheel for a health challenge.','dopp_spin.html']
-  ]},
 ];
 const CLASSROOM = [
   {icon:"📋",title:"Health Jeopardy",type:"Boss",realm:"Any Realm Boss Battle",desc:"5 health categories × 5 dollar values. Hidden Daily Doubles, 2–4 team scoring, Final Jeopardy with wagers.",features:["2–4 Teams","Daily Double","Final Jeopardy","25 Questions"],file:"game01_jeopardy.html"},
@@ -348,6 +346,7 @@ const CLASSROOM = [
   {icon:"🤔",title:"Would You Rather",type:"Daily",realm:"Any Discussion Opener",desc:"10 health dilemmas with class voting, live percentage bars, debate prompts and facts.",features:["Class Voting","10 Dilemmas","Debate Prompts","Health Facts"],file:"game12_would_you_rather.html"},
   {icon:"🎨",title:"Health Pictionary Blitz",type:"Team",realm:"Body Systems Realm",desc:"Full drawing canvas, 24 health vocabulary words, multi-team play with a 60-second timer.",features:["Full Canvas","24 Health Words","Multi-Team","60s Timer"],file:"game13_pictionary.html"},
   {icon:"🦈",title:"Health Shark Tank",type:"Boss",realm:"Final Tower — Chapter 28",desc:"4 health startup pitches scored on a 5-part rubric. Invest or go out!",features:["4 Pitches","5-Point Rubric","Class Voting","Capstone Ready"],file:"game14_shark_tank.html"},
+  {icon:"🌀",title:"Dopp Spin",type:"Daily",realm:"Any Class Warm-Up",desc:"Spin the wheel for a random health challenge to kick off class or fill the last five minutes.",features:["Whole Class","Random Challenges","Quick Warm-Up"],file:"dopp_spin.html"},
   {icon:"💥",title:"Myth Busters",type:"Daily",realm:"Any Chapter Opener",desc:"18 health myths, rapid-fire true/false, timed mode, streak bonuses and an answer log.",features:["18 Myths","Timed Mode","Streak Bonuses","Answer Log"],file:"game15_myth_busters.html"}
 ];
 
@@ -403,7 +402,7 @@ $('groups').innerHTML = GROUPS.map(gr => `<h2 class="sec">${gr.name}</h2><p clas
   <div class="grid">${gr.games.map(([i, t, d, f]) => cardHTML(i, t, d, f, gr.color)).join('')}</div>`).join('');
 
 // ── Classroom tab ──
-const TYPES = [['all','All 15'],['Boss','Boss Battles'],['Team','Team Events'],['Daily','Daily Warm-Ups'],['Wild','Wild Events'],['Solo','Solo Quests']];
+const TYPES = [['all','All ' + CLASSROOM.length],['Boss','Boss Battles'],['Team','Team Events'],['Daily','Daily Warm-Ups'],['Wild','Wild Events'],['Solo','Solo Quests']];
 let ftype = 'all';
 function renderClass() {
   $('filters').innerHTML = TYPES.map(([k, l]) => `<button class="fbtn${k === ftype ? ' on' : ''}" data-f="${k}">${l}</button>`).join('');

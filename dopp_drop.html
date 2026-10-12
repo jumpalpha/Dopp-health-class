@@ -2,253 +2,129 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
-<meta property="og:image" content="https://doppsclass.com/og-image.png">
-<title>Dopp Drop — Health Arcade</title>
-<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Catch — Dopp's Arcade</title>
+<meta name="description" content="Catch the falling fruits and veggies with your Wellness Sprite and dodge the junk food. Build combos for big points.">
 <link rel="canonical" href="https://doppsclass.com/dopp_drop.html">
-<meta property="og:title" content="Dopp Drop — Health Arcade">
-<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://doppsclass.com/dopp_drop.html">
-<meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0a0618;--border:rgba(255,255,255,0.12);--text:#F4EFFF;--dim:#B9B0D6}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(10,6,24,0.94);border-bottom:1px solid var(--border);z-index:10}
-.back-btn{color:var(--sky);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
-.game-title{font-family:'Cinzel Decorative',serif;font-size:clamp(13px,3vw,18px);font-weight:900;color:var(--gold);text-align:center}
-.score-display{font-family:'Cinzel',serif;font-size:12px;color:var(--emerald);font-weight:600;min-width:70px;text-align:right}
-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;position:relative}
-canvas{display:block;max-width:100%;touch-action:none}
-.hud{position:absolute;top:8px;left:0;right:0;display:flex;justify-content:space-between;padding:0 12px;pointer-events:none}
-.hud-item{background:rgba(10,6,24,0.94);border:1px solid var(--border);border-radius:8px;padding:4px 12px;font-family:'Cinzel',serif;font-size:12px;font-weight:700}
-.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,6,24,0.94);gap:18px;text-align:center;padding:20px}
-.overlay-title{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,6vw,38px);font-weight:900;color:var(--gold)}
-.overlay-score{font-family:'Cinzel',serif;font-size:clamp(50px,13vw,80px);font-weight:700;color:var(--emerald)}
-.overlay-sub{font-size:14px;color:var(--dim);max-width:340px;line-height:1.6}
-.play-btn{background:linear-gradient(135deg,var(--gold),#FF8C00);color:#1C1A2E;border:none;padding:14px 40px;border-radius:12px;font-family:'Cinzel Decorative',serif;font-size:15px;font-weight:700;cursor:pointer;transition:transform .2s}
-.play-btn:hover{transform:scale(1.04)}
-.legend{display:flex;gap:16px;font-size:11px;color:var(--dim)}
-.legend-item{display:flex;align-items:center;gap:5px}
-.legend-dot{width:10px;height:10px;border-radius:50%}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
 </style>
-<link rel="stylesheet" href="dopp_skin.css">
 </head>
 <body>
-<header>
-  <a class="back-btn" href="arcade.html">← Arcade</a>
-  <div class="game-title">Dopp Drop</div>
-  <div class="score-display" id="scoreDisplay">Score: 0</div>
-</header>
-<main>
-  <canvas id="gc"></canvas>
-  <div class="overlay" id="overlay">
-    <div class="overlay-title">Dopp Drop</div>
-    <div style="font-size:32px">🧺</div>
-    <div class="overlay-sub">Catch healthy items! Dodge the junk. Use your mouse or arrow keys to move the basket. 30 seconds on the clock!</div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#00E5A0"></div> Healthy = +1</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#FF3B5C"></div> Junk = −1</div>
-    </div>
-    <button class="play-btn" onclick="startGame()">▶ Play</button>
-  </div>
-  <div class="overlay" id="resultOverlay" style="display:none">
-    <div class="overlay-title">Time's Up!</div>
-    <div class="overlay-score" id="finalScore">0</div>
-    <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold)">points</div>
-    <div class="overlay-sub" id="finalMsg"></div>
-    <button class="play-btn" onclick="startGame()">Play Again</button>
-  </div>
-</main>
-
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Sprite Catch</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_art.js"></script>
+<script src="arcade_kit.js"></script>
 <script>
-const canvas=document.getElementById('gc');
-const ctx=canvas.getContext('2d');
-let W,H;
-function resize(){
-  const main=canvas.parentElement;
-  W=Math.min(480, main.clientWidth);
-  H=Math.min(520, main.clientHeight||520);
-  canvas.width=W; canvas.height=H;
-}
-resize();
-window.addEventListener('resize',()=>{resize();if(running)drawAll();});
+(() => {
+const W = 420, H = 640, FLOOR = 590;
+const GOOD = ART.HEALTHY, BAD = ART.JUNK;
+const FACTS = { apple: 'Apples are full of fiber.', orange: 'Oranges are packed with vitamin C.', grape: 'Grapes count toward your fruit for the day.', carrot: 'Carrots help keep your eyes healthy.',
+  broccoli: 'Broccoli is loaded with vitamins C and K.', banana: 'Bananas give quick energy and potassium.', water: 'Water keeps your brain sharp.', strawberry: 'Berries are full of antioxidants.' };
+let me, items, spawnT, lives, combo, bestCombo, keys, aimX, magnetT, t, caught;
 
-const GAME_DURATION=30;
-const goodItems=[
-  {emoji:'🍎',label:'Apple',color:'#FF3B5C'},
-  {emoji:'💧',label:'Water',color:'#38BFFF'},
-  {emoji:'🥦',label:'Broccoli',color:'#00E5A0'},
-  {emoji:'😴',label:'Sleep',color:'#9B59B6'},
-  {emoji:'🍌',label:'Banana',color:'#FFD700'},
-  {emoji:'🏃',label:'Run',color:'#FF8C00'},
-  {emoji:'🥕',label:'Carrot',color:'#FF6B35'},
-  {emoji:'🧘',label:'Mindful',color:'#38BFFF'},
-];
-const badItems=[
-  {emoji:'🍔',label:'Burger',color:'#8B4513'},
-  {emoji:'🚬',label:'Smoke',color:'#666'},
-  {emoji:'🍺',label:'Beer',color:'#DAA520'},
-  {emoji:'📱',label:'Phone',color:'#333'},
-  {emoji:'🍩',label:'Donut',color:'#FF69B4'},
-  {emoji:'🥤',label:'Soda',color:'#8B0000'},
-];
-
-let basket={x:0,y:0,w:70,h:22};
-let items=[], score=0, timeLeft=GAME_DURATION;
-let running=false, animId=null, timerInterval=null;
-let mouseX=null, keys={};
-
-canvas.addEventListener('mousemove',e=>{
-  const r=canvas.getBoundingClientRect();
-  mouseX=(e.clientX-r.left)*W/r.width;
-});
-canvas.addEventListener('touchmove',e=>{
-  e.preventDefault();
-  const r=canvas.getBoundingClientRect();
-  mouseX=(e.touches[0].clientX-r.left)*W/r.width;
-},{passive:false});
-window.addEventListener('keydown',e=>{keys[e.key]=true;});
-window.addEventListener('keyup',e=>{keys[e.key]=false;});
-
-let lastTime=0, spawnTimer=0, spawnRate=1.8, speed=2;
-
-function startGame(){
-  document.getElementById('overlay').style.display='none';
-  document.getElementById('resultOverlay').style.display='none';
-  items=[]; score=0; timeLeft=GAME_DURATION; running=true;
-  spawnTimer=0; spawnRate=1.8; speed=2;
-  basket.x=W/2-basket.w/2; basket.y=H-40;
-  mouseX=W/2;
-  document.getElementById('scoreDisplay').textContent='Score: 0';
-  if(animId) cancelAnimationFrame(animId);
-  if(timerInterval) clearInterval(timerInterval);
-  timerInterval=setInterval(()=>{
-    timeLeft--;
-    if(timeLeft<=0){timeLeft=0;endGame();}
-    speed=2+(GAME_DURATION-timeLeft)*0.08;
-    spawnRate=Math.max(0.6,1.8-(GAME_DURATION-timeLeft)*0.04);
-  },1000);
-  lastTime=performance.now();
-  requestAnimationFrame(loop);
-}
-
-function loop(ts){
-  if(!running) return;
-  const dt=Math.min((ts-lastTime)/1000,0.1);
-  lastTime=ts;
-  update(dt);
-  drawAll();
-  animId=requestAnimationFrame(loop);
-}
-
-function update(dt){
-  // basket movement
-  if(mouseX!==null){
-    const targetX=mouseX-basket.w/2;
-    basket.x+=(targetX-basket.x)*0.2;
-  }
-  if(keys['ArrowLeft']||keys['a']) basket.x-=5;
-  if(keys['ArrowRight']||keys['d']) basket.x+=5;
-  basket.x=Math.max(0,Math.min(W-basket.w,basket.x));
-
+function reset(A) { me = { x: W / 2, squash: 0, mood: 'happy', moodT: 0 }; items = []; spawnT = 0.6; lives = 3; combo = 0; bestCombo = 0; keys = {}; aimX = null; magnetT = 0; t = 0; caught = 0; }
+function input(type) { if (type === 'left' || type === 'right') { keys[type] = true; aimX = null; } else if (type === 'release-left' || type === 'release-right') keys[type.slice(8)] = false; }
+function pointer(type, x) { aimX = x; }
+function update(dt, A) {
+  if (!me) return;
+  t += dt; me.squash = Math.max(0, me.squash - dt * 4);
+  if (me.moodT > 0 && (me.moodT -= dt) <= 0) me.mood = 'happy';
+  items.forEach(it => it.rot += it.spin * dt);
+  if (A.state !== 'play') { if (A.state === 'menu') me.x = W / 2 + Math.sin(t) * 100; return; }
+  magnetT = Math.max(0, magnetT - dt);
+  const level = Math.min(10, A.time / 12);
+  // move
+  if (keys.left) me.x -= 360 * dt; if (keys.right) me.x += 360 * dt;
+  if (aimX != null) me.x += (aimX - me.x) * Math.min(1, dt * 16);
+  me.x = Math.max(30, Math.min(W - 30, me.x));
   // spawn
-  spawnTimer+=dt;
-  if(spawnTimer>=spawnRate){
-    spawnTimer=0;
-    const isGood=Math.random()>0.35;
-    const pool=isGood?goodItems:badItems;
-    const tmpl=pool[Math.floor(Math.random()*pool.length)];
-    items.push({x:10+Math.random()*(W-50),y:-30,good:isGood,...tmpl,size:26,vy:speed+Math.random()*1.5});
+  spawnT -= dt;
+  if (spawnT <= 0) {
+    const r = Math.random(), bad = r < Math.min(0.42, 0.18 + level * 0.025), power = !bad && Math.random() < 0.035;
+    items.push({ x: 30 + Math.random() * (W - 60), y: 40, vy: 150 + level * 26 + Math.random() * 50, kind: power ? 'star' : bad ? BAD[Math.floor(Math.random() * BAD.length)] : GOOD[Math.floor(Math.random() * GOOD.length)], bad, power, rot: 0, spin: (Math.random() - 0.5) * 3 });
+    spawnT = Math.max(0.32, 0.85 - level * 0.05) * (0.7 + Math.random() * 0.6);
   }
-
-  // move items
-  items.forEach(it=>{it.y+=it.vy*(1+speed*0.1);});
-
-  // collision
-  items.forEach((it,i)=>{
-    const cx=it.x+it.size/2, cy=it.y+it.size;
-    if(cx>basket.x&&cx<basket.x+basket.w&&cy>basket.y&&cy<basket.y+basket.h){
-      const gain=it.good?1:-1;
-      score=Math.max(0,score+gain);
-      document.getElementById('scoreDisplay').textContent='Score: '+score;
-      it.collected=true;
-      // flash
-      it.flash={color:it.good?'#00E5A0':'#FF3B5C',t:0};
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i];
+    if (magnetT > 0 && !it.bad && it.y > 200) it.x += (me.x - it.x) * Math.min(1, dt * 3);
+    it.y += it.vy * dt;
+    if (it.y > FLOOR - 60 && it.y < FLOOR - 20 && Math.abs(it.x - me.x) < 38) {
+      items.splice(i, 1); me.squash = 1;
+      if (it.bad) {
+        lives--; combo = 0; A.sfx('hit'); A.shake(8, 0.25); me.mood = 'sugar'; me.moodT = 1.2;
+        A.particles.burst(it.x, FLOOR - 50, '#FF8FA3', 16, 200, 4); A.float('Junk! −1 ❤', it.x, FLOOR - 60, '#FF8FA3');
+        if (lives <= 0) { A.gameOver(); return; }
+      } else if (it.power) {
+        magnetT = 8; A.sfx('medal'); A.toast('🧲 Healthy magnet! Fruit flies to you for 8s');
+      } else {
+        combo++; bestCombo = Math.max(bestCombo, combo); caught++;
+        const mult = combo >= 20 ? 4 : combo >= 10 ? 3 : combo >= 5 ? 2 : 1, pts = 10 * mult;
+        A.addScore(pts); A.sfx(mult > 1 ? 'coin' : 'point');
+        A.particles.burst(it.x, FLOOR - 50, '#7CFFB2', 8, 150, 3); A.float('+' + pts, it.x, FLOOR - 60, mult > 1 ? '#FFD700' : '#7CFFB2');
+        if (combo === 5 || combo === 10 || combo === 20) A.toast('🔥 ' + combo + ' combo! ×' + mult);
+        if (caught % 15 === 0) A.toast('💡 ' + FACTS[it.kind], 2200);
+      }
+      continue;
     }
-  });
-  items=items.filter(it=>!it.collected&&it.y<H+40);
+    if (it.y > H + 30) { items.splice(i, 1); if (!it.bad && !it.power && combo > 0) { combo = 0; A.float('combo lost', it.x, FLOOR - 20, '#b9b0d6'); } }
+  }
 }
-
-function drawAll(){
-  ctx.clearRect(0,0,W,H);
-  // bg gradient
-  const bg=ctx.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,'#0a1028'); bg.addColorStop(1,'#1C1A2E');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // stars
-  ctx.fillStyle='rgba(255,255,255,0.35)';
-  [[40,30],[120,15],[220,45],[330,20],[420,35],[60,90],[290,70]].forEach(([sx,sy])=>{
-    ctx.beginPath(); ctx.arc(sx,sy,1,0,Math.PI*2); ctx.fill();
+function draw(ctx, A) {
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#5fb6ff'); g.addColorStop(0.75, '#cfeeff'); g.addColorStop(0.75, '#6fd16b');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // orchard trees in the back
+  [[40, 0.9], [140, 1.1], [260, 0.95], [370, 1.05]].forEach(([x, s]) => { ctx.fillStyle = '#7a5230'; ctx.fillRect(x - 6 * s, 440 - 70 * s, 12 * s, 80 * s); ctx.fillStyle = '#4fb85a'; ctx.beginPath(); ctx.arc(x, 420 - 80 * s, 48 * s, 0, 7); ctx.fill(); ctx.fillStyle = '#FF5C77'; [[-20, -10], [15, 5], [0, -30]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(x + dx * s, 420 - 80 * s + dy * s, 5 * s, 0, 7); ctx.fill(); }); });
+  ctx.fillStyle = '#5cbf5a'; ctx.fillRect(0, 480, W, H - 480);
+  ctx.fillStyle = '#4aa84a'; for (let x = 0; x < W; x += 24) { ctx.beginPath(); ctx.moveTo(x, 486); ctx.lineTo(x + 6, 474); ctx.lineTo(x + 12, 486); ctx.fill(); }
+  if (!me) return;
+  items.forEach(it => {
+    ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.rot);
+    if (it.bad) { ctx.fillStyle = 'rgba(255,59,92,.25)'; ctx.beginPath(); ctx.arc(0, 0, 22, 0, 7); ctx.fill(); }
+    if (it.power) { ctx.fillStyle = 'rgba(255,215,0,.35)'; ctx.beginPath(); ctx.arc(0, 0, 24 + Math.sin(t * 10) * 3, 0, 7); ctx.fill(); }
+    ART.draw(ctx, it.kind, 0, 0, 34, t); ctx.restore();
   });
-
-  // items
-  items.forEach(it=>{
-    // glow ring
-    ctx.beginPath();
-    ctx.arc(it.x+it.size/2,it.y+it.size/2,it.size/2+4,0,Math.PI*2);
-    ctx.fillStyle=it.good?'rgba(0,229,160,0.15)':'rgba(255,59,92,0.15)';
-    ctx.fill();
-    // emoji
-    ctx.font=it.size+'px serif';
-    ctx.textAlign='left'; ctx.textBaseline='top';
-    ctx.fillText(it.emoji,it.x,it.y);
-  });
-
-  // basket
-  const bx=basket.x,by=basket.y,bw=basket.w,bh=basket.h;
-  // basket body
-  ctx.fillStyle='rgba(255,215,0,0.15)';
-  ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.fill();
-  ctx.strokeStyle='#FFD700'; ctx.lineWidth=2.5;
-  ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.stroke();
-  // weave lines
-  ctx.strokeStyle='rgba(255,215,0,0.3)'; ctx.lineWidth=1;
-  for(let i=1;i<3;i++){
-    ctx.beginPath(); ctx.moveTo(bx,by+bh*i/3); ctx.lineTo(bx+bw,by+bh*i/3); ctx.stroke();
-  }
-  for(let i=1;i<4;i++){
-    ctx.beginPath(); ctx.moveTo(bx+bw*i/4,by); ctx.lineTo(bx+bw*i/4,by+bh); ctx.stroke();
-  }
-
+  // sprite with a basket
+  const sq = me.squash;
+  ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(me.x, FLOOR + 14, 30, 6, 0, 0, 7); ctx.fill();
+  ctx.save(); ctx.translate(me.x, FLOOR); ctx.scale(1 + sq * 0.12, 1 - sq * 0.12);
+  A.drawHero(0, -12, 96, 0, me.mood);
+  ctx.beginPath(); ctx.moveTo(-36, -60); ctx.lineTo(36, -60); ctx.lineTo(28, -36); ctx.lineTo(-28, -36); ctx.closePath(); A.ink('#C98B4E', 3);
+  ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 2; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(i * 16, -60); ctx.lineTo(i * 13, -36); ctx.stroke(); }
+  ctx.restore();
+  if (magnetT > 0) { ctx.strokeStyle = 'rgba(255,215,0,' + (0.4 + Math.sin(t * 12) * 0.3) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(me.x, FLOOR - 30, 56, 0, 7); ctx.stroke(); }
   // HUD
-  ctx.fillStyle='rgba(5,7,15,0.75)';
-  ctx.beginPath(); ctx.roundRect(8,8,90,30,6); ctx.fill();
-  ctx.fillStyle='#FFD700'; ctx.font='bold 13px Cinzel,serif';
-  ctx.textAlign='left'; ctx.textBaseline='middle';
-  ctx.fillText('⏱ '+timeLeft+'s', 18, 23);
-
-  ctx.fillStyle='rgba(5,7,15,0.75)';
-  ctx.beginPath(); ctx.roundRect(W-100,8,92,30,6); ctx.fill();
-  ctx.fillStyle='#00E5A0'; ctx.font='bold 13px Cinzel,serif';
-  ctx.textAlign='right';
-  ctx.fillText('✦ '+score, W-14, 23);
+  ctx.font = '900 15px Nunito,sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#FF3B5C'; ctx.fillText('❤'.repeat(Math.max(0, lives)), 62, 80);
+  if (combo >= 2) { ctx.textAlign = 'right'; ctx.fillStyle = '#1A1030'; ctx.fillText('🔥 ' + combo + ' combo', W - 62, 80); }
 }
 
-function endGame(){
-  running=false;
-  if(animId) cancelAnimationFrame(animId);
-  if(timerInterval) clearInterval(timerInterval);
-  drawAll();
-  document.getElementById('finalScore').textContent=score;
-  const msg=score>=20?'🏆 Health legend! You caught everything good and dodged all the junk!' : score>=12?'🌟 Great reflexes! You clearly know your healthy habits.' : score>=5?'👍 Nice start! Keep practicing those healthy choices.' : '📚 The junk food was fast this time! Better luck next round.';
-  document.getElementById('finalMsg').textContent=msg;
-  document.getElementById('resultOverlay').style.display='flex';
-}
+window.__catch = () => ({ me, items, lives, combo, aim: x => { aimX = x; } });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Catch', subtitle: 'Catch the good stuff!', W, H, reserveH: 70,
+  storageKey: 'sprite_catch', winAt: 1000, winText: 'You caught 1,000 points of healthy food!', deathDelay: 800, overTitle: 'Too much junk!',
+  medals: [{ at: 400, name: 'Bronze', icon: '🥉' }, { at: 1000, name: 'Silver', icon: '🥈' }, { at: 2200, name: 'Gold', icon: '🥇' }, { at: 4000, name: 'Legend', icon: '💎' }],
+  howTo: 'Catch falling <b>fruits and veggies</b> in your basket. Catch in a row for combos!<br>Junk food costs a heart. ⭐ = healthy magnet. <b>1,000 points</b> wins.',
+  controls: 'Move mouse / drag finger · or ← → · P pause',
+  facts: [
+    'Teens need about 2 cups of fruit and 3 cups of vegetables each day.',
+    'Eating fruits of different colors gives you different vitamins.',
+    'Whole fruit has fiber that juice doesn\'t.',
+    'Keeping fruit where you can see it makes you more likely to eat it.',
+    'Junk food is fine sometimes; it\'s the everyday habits that matter most.'
+  ],
+  reset, update, draw, input, pointer,
+  pad: [{ label: '◀', type: 'left', wide: true }, { label: '▶', type: 'right', wide: true }]
+});
+})();
 </script>
 </body>
 </html>
