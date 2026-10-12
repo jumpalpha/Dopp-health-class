@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Field Day — Dopp's Arcade</title>
+<meta name="description" content="Your Wellness Sprite competes in a 5-event track meet: 100m dash, hurdles, long jump, javelin and high jump. Win medals and set an all-around score.">
+<link rel="canonical" href="https://doppsclass.com/field_day.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto;padding:8px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 12px}
+@media (max-height:500px){.top{display:none}}
+</style>
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Field Day</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 900, H = 480, TRACK = 392, PXM = 34;      // track line y, pixels per metre
+const RIVALS = [
+  { name: 'Zippy', color: 'gold' }, { name: 'Bolt', color: 'sky' }, { name: 'Dash', color: 'violet' }
+];
+const EVENTS = [
+  { key: 'sprint', name: '100m Dash', icon: '⚡', how: 'Tap ◀ ▶ (or ← →) back and forth as fast as you can!', fact: 'Sprinting builds fast-twitch muscle fibers for speed and power.' },
+  { key: 'hurdles', name: 'Hurdles', icon: '🚧', how: 'You run automatically. Tap / Space to jump each hurdle!', fact: 'Hurdling trains coordination, agility and timing.' },
+  { key: 'long', name: 'Long Jump', icon: '🦘', how: 'Mash ◀ ▶ to build speed, then tap JUMP right before the white board!', fact: 'Plyometric jumps make your muscles more explosive.' },
+  { key: 'jav', name: 'Javelin', icon: '🏹', how: 'Mash ◀ ▶ to run, tap THROW at the line, then tap again to release at about 40°.', fact: 'Throwing uses your legs, core and shoulders together, a full-body kinetic chain.' },
+  { key: 'high', name: 'High Jump', icon: '🏋️', how: 'Tap when the marker is in the green zone to clear the bar. 3 misses and you\'re out.', fact: 'Jumping and landing exercises help build strong, dense bones.' }
+];
+// rival marks per event [Zippy, Bolt, Dash] (time in s, or distance/height in m)
+const RIVAL_MARKS = { sprint: [12.9, 12.1, 11.4], hurdles: [9.3, 8.8, 8.3], long: [6.1, 6.8, 7.4], jav: [48, 56, 64], high: [1.80, 1.95, 2.05] };
+const LOWER_IS_BETTER = { sprint: true, hurdles: true };
+const POINTS = {
+  sprint: t => (20 - t) / 9.5 * 1000, hurdles: t => (12.5 - t) / 5 * 1000, long: d => (d - 3) / 5.2 * 1000,
+  jav: d => (d - 20) / 55 * 1000, high: h => (h - 1.3) / 0.95 * 1000
+};
+const clampPts = v => Math.max(0, Math.min(1000, Math.round(v)));
+
+let ev, stage, stageT, results, me, rivals, cam, ctxA, lastKey, crowdT, meter, attempt, best, msg, jav, bar, hurdles, rimg = {};
+
+function rivalImg(color) {
+  if (rimg[color]) return rimg[color];
+  const svg = window.petSpriteSVG({ color, stage: 'child', mood_label: 'happy', alive: true }, { tight: true });
+  const im = new Image(); im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); rimg[color] = im; return im;
+}
+
+// ---------- per-event setup ----------
+function startEvent(A) {
+  const E = EVENTS[ev];
+  me = { x: 0, y: 0, vy: 0, v: 0, air: false, legs: 0, done: false, time: 0, hit: 0 };
+  rivals = RIVALS.map((r, i) => ({ ...r, x: 0, v: 0, legs: Math.random() * 6, done: false, time: 0, y: 0, vy: 0 }));
+  cam = 0; lastKey = null; attempt = 1; best = null; meter = 0; jav = null; msg = null;
+  if (E.key === 'hurdles') hurdles = [12, 20, 28, 36, 44, 52].map(m => ({ m, down: false }));
+  if (E.key === 'high') { bar = { h: 1.5, misses: 0, cleared: 0 }; }
+  stage = 'intro'; stageT = 0;
+}
+function resetAttempt() { me.x = 0; me.v = 0; me.y = 0; me.vy = 0; me.air = false; me.done = false; me.time = 0; jav = null; meter = 0; stage = 'count'; stageT = 0; }
+function finishEvent(A, mark) {
+  const E = EVENTS[ev], k = E.key;
+  const marks = RIVAL_MARKS[k], lower = LOWER_IS_BETTER[k];
+  const better = (a, b) => lower ? a < b : a > b;
+  const place = 1 + marks.filter(m => mark == null ? true : better(m, mark)).length;
+  const pts = mark == null ? 0 : clampPts(POINTS[k](mark));
+  results.push({ name: E.name, icon: E.icon, mark, unit: lower ? 's' : 'm', place, pts });
+  A.addScore(pts);
+  A.sfx(place === 1 ? 'win' : place <= 3 ? 'medal' : 'point');
+  if (place <= 3) A.particles.burst(W / 2, 170, ['#FFD700', '#d9e2ec', '#e2a36b'][place - 1], 30, 300, 5);
+  stage = 'result'; stageT = 0;
+}
+
+// ---------- input ----------
+function mash(type) {
+  // alternating ◀ ▶ gives a full stride; tapping the same key (or the screen) still helps a little
+  const alt = (type === 'left' || type === 'right') && lastKey && lastKey !== type;
+  me.v = Math.min(me.max || 11.6, me.v + (alt ? 0.95 : 0.6));
+  lastKey = type; me.legs += 0.5;
+}
+function input(type, A) {
+  if (type.startsWith('release')) return;
+  const k = EVENTS[ev].key;
+  if (stage === 'intro') { if (type === 'tap' || type === 'up') { stage = 'count'; stageT = 0; } return; }
+  if (stage === 'result') { if (stageT > 0.8 && (type === 'tap' || type === 'up')) nextEvent(A); return; }
+  if (stage === 'final') { if (stageT > 1 && (type === 'tap' || type === 'up')) A.gameOver(true); return; }
+  if (stage !== 'run') return;
+  if (k === 'sprint') { if (type === 'left' || type === 'right' || type === 'tap') mash(type); }
+  else if (k === 'hurdles') { if ((type === 'tap' || type === 'up') && !me.air) { me.air = true; me.vy = 6.4; A.sfx('jump'); } }
+  else if (k === 'long') {
+    if (type === 'left' || type === 'right') mash(type);
+    else if ((type === 'tap' || type === 'up') && !me.air) takeoffLong(A);
+  } else if (k === 'jav') {
+    if (!jav) { if (type === 'left' || type === 'right') mash(type); else if (type === 'tap' || type === 'up') { if (me.x / PXM > 26) foul(A); else { jav = { phase: 'aim', ang: 0, dir: 1, runV: me.v }; A.sfx('swipe'); } } }
+    else if (jav.phase === 'aim' && (type === 'tap' || type === 'up')) releaseJav(A);
+  } else if (k === 'high') {
+    if (type === 'tap' || type === 'up') tryHigh(A);
+  }
+}
+function foul(A) { A.sfx('hit'); msg = { text: 'FOUL!', color: '#FF5C77', t: 0 }; afterAttempt(A, null); }
+function afterAttempt(A, mark) {
+  if (mark != null && (best == null || mark > best)) best = mark;
+  stage = 'between'; stageT = 0;
+}
+
+// long jump
+function takeoffLong(A) {
+  const boardM = 40, at = me.x / PXM;
+  if (at > boardM + 0.2) { foul(A); return; }
+  const behind = Math.max(0, boardM - at);
+  if (behind > 4) { msg = { text: 'Too early!', color: '#FFD23F', t: 0 }; }
+  const dist = Math.max(0, 0.075 * me.v * me.v + 0.5 - behind);
+  me.air = true; me.vy = 5.2; me.jumpFrom = me.x; me.jumpDist = dist; A.sfx('jump');
+}
+// javelin
+function releaseJav(A) {
+  const ang = jav.ang, rad = ang * Math.PI / 180;
+  const v0 = 12 + jav.runV * 1.55;
+  let d = v0 * v0 * Math.sin(2 * rad) / 9.8;
+  jav.phase = 'fly'; jav.dist = Math.max(0, d); jav.t = 0; jav.dur = Math.max(0.8, 2 * v0 * Math.sin(rad) / 9.8);
+  jav.x0 = me.x + 10; jav.v0 = v0; jav.rad = rad; A.sfx('flap');
+}
+// high jump
+function tryHigh(A) {
+  if (me.air) return;
+  const q = 1 - Math.abs(meter - 0.5) / 0.5;          // 1 = perfect centre
+  const need = Math.min(0.92, 0.35 + (bar.h - 1.5) * 0.65);
+  me.air = true; me.vy = 0; me.clear = q >= need; me.jt = 0;
+  A.sfx('jump');
+}
+
+function nextEvent(A) {
+  if (ev + 1 >= EVENTS.length) {
+    stage = 'final'; stageT = 0;
+    const total = results.reduce((s, r) => s + r.pts, 0);
+    if (total >= 3000) A.win('Field Day champion!');
+    A.sfx('win');
+    return;
+  }
+  ev++; startEvent(A);
+}
+
+function reset(A) { ctxA = A; ev = 0; results = []; crowdT = 0; RIVALS.forEach(r => rivalImg(r.color)); startEvent(A); }
+
+// ---------- update ----------
+function runRivals(dt, finishM, key) {
+  rivals.forEach((r, i) => {
+    if (r.done) return;
+    const target = RIVAL_MARKS[key][i];
+    const top = finishM / (target - 1.3);          // reach the finish close to their target time
+    r.v = Math.min(top, r.v + top * 1.6 * dt);
+    r.x += r.v * PXM * dt; r.legs += r.v * dt * 1.6; r.time += dt;
+    if (key === 'hurdles') {
+      const m = r.x / PXM;
+      if (!r.air && hurdles.some(h => h.m - m > 0.6 && h.m - m < 1.6)) { r.air = true; r.vy = 6.2; }
+      if (r.air) { r.vy -= 22 * dt; r.y += r.vy * dt; if (r.y <= 0) { r.y = 0; r.air = false; } }
+    }
+    if (r.x / PXM >= finishM) { r.done = true; r.time = target + (Math.random() - 0.5) * 0.2; }
+  });
+}
+function update(dt, A) {
+  crowdT += dt;
+  if (A.state !== 'play') return;
+  stageT += dt;
+  if (msg) { msg.t += dt; if (msg.t > 1.4) msg = null; }
+  const k = EVENTS[ev].key;
+  if (stage === 'count') {
+    if (stageT > 2.2 && (k === 'sprint' || k === 'hurdles')) { stage = 'run'; stageT = 0; A.sfx('point'); }
+    else if (stageT > 0.6 && !(k === 'sprint' || k === 'hurdles')) { stage = 'run'; stageT = 0; }
+    return;
+  }
+  if (stage === 'between') {
+    if (stageT > 1.6) {
+      if (k === 'high') { if (bar.misses >= 3) finishEvent(A, bar.cleared ? bar.lastClear : null); else { me.x = 0; me.air = false; me.y = 0; stage = 'run'; stageT = 0; } }
+      else if (attempt >= 3) finishEvent(A, best);
+      else { attempt++; resetAttempt(); }
+    }
+    return;
+  }
+  if (stage !== 'run') return;
+  me.time += dt;
+
+  if (k === 'sprint') {
+    me.v = Math.max(0, me.v - me.v * 0.8 * dt);
+    me.x += me.v * PXM * dt; me.legs += me.v * dt * 1.6;
+    runRivals(dt, 100, k);
+    if (me.x / PXM >= 100 && !me.done) { me.done = true; finishEvent(A, Math.round(me.time * 100) / 100); }
+    if (me.time > 25 && !me.done) { me.done = true; finishEvent(A, 25); }
+  } else if (k === 'hurdles') {
+    const top = me.hit > 0 ? 5 : 9.2;
+    me.v += (top - me.v) * Math.min(1, dt * (me.v < top ? 1.6 : 4));
+    me.hit = Math.max(0, me.hit - dt);
+    me.x += me.v * PXM * dt; me.legs += me.v * dt * 1.6;
+    if (me.air) { me.vy -= 22 * dt; me.y += me.vy * dt; if (me.y <= 0) { me.y = 0; me.air = false; } }
+    const m = me.x / PXM;
+    hurdles.forEach(h => { if (!h.down && Math.abs(h.m - m) < 0.35 && me.y < 0.75) { h.down = true; me.hit = 0.9; me.v = 4; A.sfx('hit'); A.shake(5, 0.15); msg = { text: 'Clipped it!', color: '#FF8FA3', t: 0 }; } });
+    runRivals(dt, 60, k);
+    if (m >= 60 && !me.done) { me.done = true; finishEvent(A, Math.round(me.time * 100) / 100); }
+  } else if (k === 'long') {
+    if (!me.air) {
+      me.v = Math.max(0, me.v - me.v * 0.7 * dt); me.max = 10.4;
+      me.x += me.v * PXM * dt; me.legs += me.v * dt * 1.6;
+      if (me.x / PXM > 41.5) foul(A);
+    } else {
+      me.vy -= 9.8 * dt; me.y += me.vy * dt;
+      const flightT = 2 * 5.2 / 9.8, prog = Math.min(1, (stageT - (me.tStart || (me.tStart = stageT))) / flightT);
+      me.x = me.jumpFrom + me.jumpDist * PXM * prog;
+      if (prog >= 1) {
+        me.y = 0; me.air = false; me.tStart = 0;
+        const d = Math.round(me.jumpDist * 100) / 100;
+        A.particles.burst(me.x - cam, TRACK, '#f2d49b', 18, 160, 4);
+        msg = { text: d.toFixed(2) + ' m', color: '#FFD700', t: 0 }; A.sfx(d > 6.5 ? 'coin' : 'point');
+        afterAttempt(A, d);
+      }
+    }
+  } else if (k === 'jav') {
+    if (!jav) {
+      me.v = Math.max(0, me.v - me.v * 0.7 * dt); me.max = 10;
+      me.x += me.v * PXM * dt; me.legs += me.v * dt * 1.6;
+      if (me.x / PXM > 26.5) foul(A);
+    } else if (jav.phase === 'aim') {
+      me.v = Math.max(0, me.v - 6 * dt); me.x += me.v * PXM * dt * 0.4;
+      jav.ang += jav.dir * 70 * dt; if (jav.ang > 80) { jav.ang = 80; jav.dir = -1; } if (jav.ang < 5) { jav.ang = 5; jav.dir = 1; }
+    } else if (jav.phase === 'fly') {
+      jav.t += dt;
+      if (jav.t >= jav.dur) {
+        jav.phase = 'land'; const d = Math.round(jav.dist * 10) / 10;
+        msg = { text: d.toFixed(1) + ' m', color: '#FFD700', t: 0 }; A.sfx(d > 55 ? 'coin' : 'point');
+        afterAttempt(A, d);
+      }
+    }
+  } else if (k === 'high') {
+    // the marker sweeps faster as the bar goes up
+    meter = 0.5 + 0.5 * Math.sin(stageT * (2.4 + (bar.h - 1.5) * 4));
+    if (!me.air) { me.x = Math.min(me.x + 200 * dt, 300); me.legs += dt * 8; }
+    else {
+      me.jt += dt;
+      if (me.jt > 1.1) {
+        me.air = false;
+        if (me.clear) {
+          bar.cleared++; bar.lastClear = Math.round(bar.h * 100) / 100; bar.misses = 0;
+          msg = { text: 'Cleared ' + bar.h.toFixed(2) + ' m!', color: '#7CFFB2', t: 0 }; A.sfx('coin');
+          bar.h = Math.round((bar.h + 0.1) * 100) / 100;
+          if (bar.h > 2.45) { finishEvent(A, bar.lastClear); return; }
+        } else {
+          bar.misses++; msg = { text: 'Knocked the bar! (' + bar.misses + '/3)', color: '#FF8FA3', t: 0 }; A.sfx('hit');
+        }
+        stage = 'between'; stageT = 0;
+      }
+    }
+  }
+  // camera follows the player
+  const want = me.x - 220;
+  cam += (Math.max(0, want) - cam) * Math.min(1, dt * 6);
+}
+
+// ---------- drawing ----------
+function draw(ctx, A) {
+  const k = EVENTS[ev] ? EVENTS[ev].key : 'sprint';
+  // sky
+  const g = ctx.createLinearGradient(0, 0, 0, 260);
+  g.addColorStop(0, '#5fb6ff'); g.addColorStop(1, '#cfeeff');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // stadium stands with a cheering crowd (parallax)
+  const off = (cam * 0.3) % 40;
+  ctx.fillStyle = '#4a3a8a'; ctx.fillRect(0, 150, W, 140);
+  ctx.fillStyle = '#5b4aa5'; for (let r = 0; r < 4; r++) ctx.fillRect(0, 160 + r * 32, W, 4);
+  const cols = ['#FF5C77', '#FFD23F', '#4CC4FF', '#3FCB6B', '#B57CFF', '#fff', '#FF9F43'];
+  for (let r = 0; r < 4; r++) for (let i = -1; i < W / 20 + 2; i++) {
+    const x = i * 20 - off - (r % 2) * 10, j = Math.abs(Math.sin(crowdT * 6 + i * 1.7 + r)) * 3;
+    ctx.fillStyle = cols[(i * 3 + r * 5 + 1000) % cols.length];
+    ctx.beginPath(); ctx.arc(x, 182 + r * 32 - j, 7, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle = '#2a2050'; ctx.fillRect(0, 286, W, 10);
+  // infield grass + track
+  ctx.fillStyle = '#4fb85a'; ctx.fillRect(0, 296, W, 24);
+  ctx.fillStyle = '#d9643a'; ctx.fillRect(0, 320, W, H - 320);
+  ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 2;
+  [336, 352, 368, TRACK + 4, 420].forEach(y => { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); });
+  // distance marks every 10 m
+  ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.font = '800 12px Nunito,sans-serif'; ctx.textAlign = 'center';
+  for (let m = 0; m <= 110; m += 10) { const x = m * PXM - cam + 80; if (x > -40 && x < W + 40) { ctx.fillRect(x - 1, 324, 2, 100); ctx.fillText(m + 'm', x, 440); } }
+  const X = m => m * PXM - cam + 80;     // world metres -> screen x
+
+  if (k === 'sprint' || k === 'hurdles') {
+    const fin = k === 'sprint' ? 100 : 60;
+    // finish line
+    for (let i = 0; i < 10; i++) { ctx.fillStyle = i % 2 ? '#fff' : '#1A1030'; ctx.fillRect(X(fin) - 4, 324 + i * 10, 8, 10); }
+    if (k === 'hurdles') hurdles.forEach(h => drawHurdle(ctx, A, X(h.m), TRACK + 2, h.down));
+    if (k === 'hurdles') hurdles.forEach(h => { [342, 358, 374].forEach(y => drawHurdle(ctx, A, X(h.m), y + 2, false, 0.6)); });
+    rivals.forEach((r, i) => runner(ctx, A, X(r.x / PXM), 342 + i * 16 - r.y * PXM * 0.6, r.legs, rivalImg(r.color), 34, r.done));
+  }
+  if (k === 'long') {
+    ctx.fillStyle = '#f2d49b'; ctx.fillRect(X(41), TRACK - 10, 10 * PXM, 26);
+    ctx.strokeStyle = A.INK; ctx.lineWidth = 2; ctx.strokeRect(X(41), TRACK - 10, 10 * PXM, 26);
+    ctx.fillStyle = '#fff'; ctx.fillRect(X(40) - 4, TRACK - 8, 8, 22);
+    ctx.fillStyle = '#FF3B5C'; ctx.fillRect(X(40.2), TRACK - 8, 4, 22);
+    for (let mm = 4; mm <= 9; mm++) { ctx.fillStyle = 'rgba(26,16,48,.6)'; ctx.fillText(mm + 'm', X(40 + mm), TRACK + 32); }
+    RIVAL_MARKS.long.forEach((d, i) => { ctx.fillStyle = ['#FFD23F', '#4CC4FF', '#B49BFF'][i]; ctx.fillRect(X(40 + d) - 2, TRACK - 16, 4, 12); });
+  }
+  if (k === 'jav') {
+    ctx.fillStyle = '#fff'; ctx.fillRect(X(26.5) - 3, 324, 6, 100);
+    ctx.fillStyle = '#4fb85a';
+    RIVAL_MARKS.jav.forEach((d, i) => { const x = 80 + (26.5 + d) * PXM * 0.12 - cam * 0 ; });
+  }
+  if (k === 'high') drawHighBar(ctx, A);
+
+  // player
+  if (k === 'jav' && jav && jav.phase !== 'aim') drawJavFlight(ctx, A);
+  if (k === 'high') drawHighJumper(ctx, A);
+  else {
+    const py = TRACK - me.y * PXM * (k === 'long' ? 0.7 : 0.6);
+    runner(ctx, A, X(me.x / PXM), py, me.legs, null, 50, false, me.air);
+    if (k === 'jav' && (!jav || jav.phase === 'aim')) {
+      const ang = jav ? jav.ang : 20, x0 = X(me.x / PXM) + 8, y0 = py - 34, r = ang * Math.PI / 180;
+      ctx.strokeStyle = '#E9E2C8'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x0 - Math.cos(r) * 26, y0 + Math.sin(r) * 26); ctx.lineTo(x0 + Math.cos(r) * 30, y0 - Math.sin(r) * 30); ctx.stroke();
+      ctx.fillStyle = '#FF3B5C'; ctx.beginPath(); ctx.arc(x0 + Math.cos(r) * 30, y0 - Math.sin(r) * 30, 3, 0, 7); ctx.fill();
+    }
+  }
+
+  // HUD + meters
+  hud(ctx, A, k);
+  if (msg) {
+    ctx.globalAlpha = Math.min(1, (1.4 - msg.t) * 3); ctx.textAlign = 'center'; ctx.font = '900 34px Cinzel,serif'; ctx.lineWidth = 6; ctx.strokeStyle = A.INK;
+    ctx.strokeText(msg.text, W / 2, 250 - msg.t * 20); ctx.fillStyle = msg.color; ctx.fillText(msg.text, W / 2, 250 - msg.t * 20); ctx.globalAlpha = 1;
+  }
+  if (stage === 'intro') introCard(ctx, A);
+  if (stage === 'count' && (k === 'sprint' || k === 'hurdles')) {
+    const txt = stageT < 0.8 ? 'Ready…' : stageT < 1.6 ? 'Set…' : 'GO!';
+    ctx.textAlign = 'center'; ctx.font = '900 54px Cinzel,serif'; ctx.lineWidth = 8; ctx.strokeStyle = A.INK; ctx.strokeText(txt, W / 2, 240); ctx.fillStyle = txt === 'GO!' ? '#7CFFB2' : '#FFD700'; ctx.fillText(txt, W / 2, 240);
+  }
+  if (stage === 'result') resultCard(ctx, A);
+  if (stage === 'final') finalCard(ctx, A);
+}
+function drawHurdle(ctx, A, x, y, down, scale) {
+  const s = scale || 1;
+  ctx.save(); ctx.translate(x, y);
+  if (down) { ctx.rotate(1.2); }
+  ctx.fillStyle = '#fff'; ctx.fillRect(-2 * s, -30 * s, 4 * s, 30 * s); ctx.fillRect(10 * s, -30 * s, 4 * s, 30 * s);
+  ctx.fillStyle = '#FF3B5C'; ctx.fillRect(-6 * s, -34 * s, 24 * s, 7 * s); ctx.strokeStyle = A.INK; ctx.lineWidth = 1.5; ctx.strokeRect(-6 * s, -34 * s, 24 * s, 7 * s);
+  ctx.restore();
+}
+function runner(ctx, A, x, y, legs, img, size, done, air) {
+  const s = Math.sin(legs * 6);
+  ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x, Math.max(y, TRACK - 30) + (img ? 0 : 6), size * 0.38, 5, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#1A1030';
+  if (!air) { ctx.beginPath(); ctx.ellipse(x - 7 + s * 7, y + 2, 7 * size / 50, 4.5 * size / 50, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.ellipse(x + 7 - s * 7, y + 2, 7 * size / 50, 4.5 * size / 50, 0, 0, 7); ctx.fill(); }
+  const bob = air ? 0 : Math.abs(s) * 3;
+  if (img) { if (img.complete) ctx.drawImage(img, x - size / 2, y - size - bob + 4, size, size); }
+  else A.drawHero(x, y - size / 2 - bob + 4, size, air ? -0.15 : 0.06, 'happy');
+}
+function drawHighBar(ctx, A) {
+  const bx = 640, hpx = bar.h * 70;
+  ctx.fillStyle = '#4a7bd8'; A.rr(bx + 20, TRACK - 30, 150, 40, 8); A.ink('#4a7bd8', 2.5);  // landing mat
+  ctx.fillStyle = '#fff'; ctx.fillRect(bx - 4, TRACK - hpx - 20, 6, hpx + 20); ctx.fillRect(bx + 50, TRACK - hpx - 20, 6, hpx + 20);
+  ctx.strokeStyle = '#FFD23F'; ctx.lineWidth = 5;
+  const knocked = stage === 'between' && msg && msg.text.startsWith('Knocked');
+  ctx.beginPath(); if (knocked) { ctx.moveTo(bx, TRACK - hpx + 30); ctx.lineTo(bx + 54, TRACK - 6); } else { ctx.moveTo(bx, TRACK - hpx); ctx.lineTo(bx + 54, TRACK - hpx); } ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = '900 16px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText(bar.h.toFixed(2) + ' m', bx + 27, TRACK - hpx - 28);
+}
+function drawHighJumper(ctx, A) {
+  const bx = 640, hpx = bar.h * 70;
+  if (!me.air) { runner(ctx, A, 260 + me.x, TRACK, me.legs, null, 50, false, false); return; }
+  const p = Math.min(1, me.jt / 1.1);
+  const x = 560 + p * 170, peak = me.clear ? hpx + 26 : hpx - 4;
+  const y = TRACK - 30 - Math.sin(p * Math.PI) * peak;
+  A.drawHero(x, y, 50, -p * Math.PI * 1.1, me.clear ? 'happy' : 'tired');
+}
+function drawJavFlight(ctx, A) {
+  const p = Math.min(1, jav.t / jav.dur), sx = 260, scale = 6.2;     // flight shown zoomed out
+  const dx = jav.dist * p, h = jav.v0 * Math.sin(jav.rad) * (p * jav.dur) - 4.9 * Math.pow(p * jav.dur, 2);
+  const x = sx + dx * scale, y = TRACK - 34 - Math.max(0, h) * scale * 0.9;
+  // field markers in metres
+  ctx.fillStyle = '#4fb85a'; ctx.fillRect(sx, 300, W - sx, 20);
+  ctx.fillStyle = '#fff'; ctx.font = '800 11px Nunito,sans-serif'; ctx.textAlign = 'center';
+  for (let m = 20; m <= 90; m += 10) ctx.fillText(m + 'm', sx + m * scale, 314);
+  RIVAL_MARKS.jav.forEach((d, i) => { ctx.fillStyle = ['#FFD23F', '#4CC4FF', '#B49BFF'][i]; ctx.fillRect(sx + d * scale - 2, 296, 4, 10); });
+  const vy = jav.v0 * Math.sin(jav.rad) - 9.8 * p * jav.dur, vx = jav.v0 * Math.cos(jav.rad), a = Math.atan2(vy, vx);
+  ctx.save(); ctx.translate(x, y); ctx.rotate(-a);
+  ctx.strokeStyle = '#E9E2C8'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-28, 0); ctx.lineTo(28, 0); ctx.stroke();
+  ctx.fillStyle = '#FF3B5C'; ctx.beginPath(); ctx.arc(28, 0, 3, 0, 7); ctx.fill(); ctx.restore();
+}
+function hud(ctx, A, k) {
+  if (stage === 'intro') return;
+  const E = EVENTS[ev];
+  ctx.font = '900 15px Nunito,sans-serif';
+  pill(ctx, A, 70, 12, E.icon + ' ' + E.name + ' · Event ' + (ev + 1) + '/5');
+  let info = '';
+  if (k === 'sprint' || k === 'hurdles') info = me.time.toFixed(2) + ' s';
+  if (k === 'long' || k === 'jav') info = 'Attempt ' + attempt + '/3' + (best != null ? ' · Best ' + best.toFixed(k === 'jav' ? 1 : 2) + ' m' : '');
+  if (k === 'high') info = 'Bar ' + bar.h.toFixed(2) + ' m · Misses ' + bar.misses + '/3';
+  if (info) pill(ctx, A, 70, 48, info);
+  // speed bar for mashing events
+  if ((k === 'sprint' || k === 'long' || (k === 'jav' && !jav)) && stage === 'run') {
+    const v = Math.min(1, me.v / 11.6);
+    A.rr(W / 2 - 150, 452, 300, 16, 8); A.ink('rgba(26,16,48,.7)', 2);
+    if (v > 0) { A.rr(W / 2 - 150, 452, 300 * v, 16, 8); A.ink(v > 0.8 ? '#7CFFB2' : v > 0.5 ? '#FFD23F' : '#FF9F43', 2); }
+    ctx.fillStyle = '#fff'; ctx.font = '900 12px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('SPEED', W / 2, 465);
+  }
+  if (k === 'jav' && jav && jav.phase === 'aim') {
+    // angle dial
+    const cx = W - 130, cy = 250, R = 70;
+    ctx.fillStyle = 'rgba(26,16,48,.75)'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R + 10, -Math.PI / 2 - 0.1, 0.1); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#3FCB6B'; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(cx, cy, R - 6, -45 * Math.PI / 180 - 0.1, -35 * Math.PI / 180 + 0.1); ctx.stroke();
+    const r = jav.ang * Math.PI / 180; ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(r) * R, cy - Math.sin(r) * R); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '900 18px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Math.round(jav.ang) + '°', cx - 20, cy + 24);
+    ctx.font = '800 13px Nunito,sans-serif'; ctx.fillText('Tap to release!', cx - 10, cy + 44);
+  }
+  if (k === 'high' && stage === 'run' && !me.air) {
+    const x0 = W / 2 - 160, y0 = 200, w = 320;
+    const need = Math.min(0.92, 0.35 + (bar.h - 1.5) * 0.65), zone = (1 - need) * w;
+    A.rr(x0, y0, w, 26, 13); A.ink('rgba(26,16,48,.8)', 2.5);
+    ctx.fillStyle = '#3FCB6B'; ctx.fillRect(x0 + w / 2 - zone / 2, y0 + 3, zone, 20);
+    ctx.fillStyle = '#FFD700'; ctx.fillRect(x0 + meter * w - 3, y0 - 6, 6, 38);
+    ctx.fillStyle = '#fff'; ctx.font = '900 14px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Tap in the green!', W / 2, y0 - 12);
+  }
+  if (stage === 'run' && k === 'long' && !me.air && me.x / PXM > 30) { ctx.fillStyle = '#fff'; ctx.font = '900 16px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('JUMP at the board!', W / 2, 300); }
+  if (stage === 'run' && k === 'jav' && !jav && me.x / PXM > 18) { ctx.fillStyle = '#fff'; ctx.font = '900 16px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Tap THROW before the line!', W / 2, 300); }
+}
+function pill(ctx, A, x, y, text) {
+  const w = ctx.measureText(text).width + 24;
+  A.rr(x, y, w, 30, 15); A.ink('rgba(26,16,48,.78)', 2);
+  ctx.fillStyle = '#FFD700'; ctx.textAlign = 'center'; ctx.fillText(text, x + w / 2, y + 21);
+}
+function card(ctx, A, w, h) {
+  const x = (W - w) / 2, y = (H - h) / 2;
+  ctx.fillStyle = 'rgba(10,6,24,.45)'; ctx.fillRect(0, 0, W, H);
+  A.rr(x, y, w, h, 20); A.ink('#1d1440', 3);
+  ctx.strokeStyle = 'rgba(255,215,0,.5)'; ctx.lineWidth = 3; A.rr(x + 4, y + 4, w - 8, h - 8, 16); ctx.stroke();
+  return [x, y];
+}
+function introCard(ctx, A) {
+  const E = EVENTS[ev], [x, y] = card(ctx, A, 520, 250);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#b9b0d6'; ctx.font = '800 15px Nunito,sans-serif'; ctx.fillText('EVENT ' + (ev + 1) + ' OF 5', W / 2, y + 38);
+  ctx.fillStyle = '#FFD700'; ctx.font = '900 38px Cinzel,serif'; ctx.fillText(E.icon + ' ' + E.name, W / 2, y + 84);
+  wrap(ctx, E.how, W / 2, y + 122, 440, 22, '#f4efff', '800 17px Nunito,sans-serif');
+  ctx.fillStyle = '#7CFFB2'; ctx.font = '900 18px Nunito,sans-serif';
+  ctx.globalAlpha = 0.6 + Math.sin(crowdT * 5) * 0.4; ctx.fillText('Tap or press Space to start', W / 2, y + 222); ctx.globalAlpha = 1;
+}
+function resultCard(ctx, A) {
+  const r = results[results.length - 1], E = EVENTS[ev], [x, y] = card(ctx, A, 520, 300);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FFD700'; ctx.font = '900 30px Cinzel,serif'; ctx.fillText(E.name, W / 2, y + 46);
+  const medal = ['🥇 GOLD', '🥈 SILVER', '🥉 BRONZE', '4th place'][r.place - 1];
+  ctx.fillStyle = '#fff'; ctx.font = '900 40px Nunito,sans-serif'; ctx.fillText(medal, W / 2, y + 100);
+  ctx.font = '800 20px Nunito,sans-serif'; ctx.fillStyle = '#e6e0ff';
+  ctx.fillText('Your mark: ' + (r.mark == null ? 'no mark' : r.mark.toFixed(r.unit === 's' ? 2 : (E.key === 'jav' ? 1 : 2)) + ' ' + r.unit) + '   ·   +' + r.pts + ' pts', W / 2, y + 140);
+  // rivals
+  const marks = RIVAL_MARKS[E.key];
+  RIVALS.forEach((rv, i) => {
+    const im = rivalImg(rv.color), xx = W / 2 - 150 + i * 150;
+    if (im.complete) ctx.drawImage(im, xx - 18, y + 158, 36, 36);
+    ctx.fillStyle = '#b9b0d6'; ctx.font = '800 14px Nunito,sans-serif'; ctx.fillText(rv.name + ': ' + marks[i] + ' ' + r.unit, xx, y + 212);
+  });
+  wrap(ctx, '💡 ' + E.fact, W / 2, y + 242, 460, 18, '#7fd5ff', '700 14px Nunito,sans-serif');
+  if (stageT > 0.8) { ctx.fillStyle = '#7CFFB2'; ctx.font = '900 16px Nunito,sans-serif'; ctx.fillText(ev < 4 ? 'Tap for the next event →' : 'Tap for final results →', W / 2, y + 288); }
+}
+function finalCard(ctx, A) {
+  const [x, y] = card(ctx, A, 560, 380), total = results.reduce((s, r) => s + r.pts, 0);
+  ctx.textAlign = 'center'; ctx.fillStyle = '#FFD700'; ctx.font = '900 32px Cinzel,serif'; ctx.fillText('Field Day Results', W / 2, y + 46);
+  results.forEach((r, i) => {
+    const yy = y + 90 + i * 40;
+    ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = '800 18px Nunito,sans-serif'; ctx.fillText(r.icon + ' ' + r.name, x + 40, yy);
+    ctx.textAlign = 'center'; ctx.fillText(['🥇', '🥈', '🥉', '—'][r.place - 1], x + 330, yy);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#FFD700'; ctx.fillText(r.pts + ' pts', x + 520, yy);
+  });
+  ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.beginPath(); ctx.moveTo(x + 40, y + 292); ctx.lineTo(x + 520, y + 292); ctx.stroke();
+  ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = '900 26px Cinzel,serif'; ctx.fillText('All-around: ' + total.toLocaleString(), W / 2, y + 328);
+  ctx.fillStyle = total >= 3000 ? '#7CFFB2' : '#b9b0d6'; ctx.font = '800 15px Nunito,sans-serif';
+  ctx.fillText(total >= 3000 ? '🏆 Champion! Quest complete.' : 'Score 3,000+ to become Field Day champion.', W / 2, y + 354);
+  if (stageT > 1) { ctx.fillStyle = '#7CFFB2'; ctx.font = '900 14px Nunito,sans-serif'; ctx.fillText('Tap to finish', W / 2, y + 374); }
+}
+function wrap(ctx, text, x, y, maxW, lh, color, font) {
+  ctx.font = font; ctx.fillStyle = color; ctx.textAlign = 'center';
+  const words = text.split(' '); let line = '', yy = y;
+  words.forEach(w => { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW) { ctx.fillText(line, x, yy); line = w; yy += lh; } else line = t; });
+  if (line) ctx.fillText(line, x, yy);
+}
+
+window.__fd = () => ({ ev, stage, me, results, bar, jav, attempt, best, meter, EVENTS });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Field Day', subtitle: 'Five events. One champion.', W, H, reserveH: 70,
+  storageKey: 'field_day', winText: 'Field Day champion!', deathDelay: 300, overTitle: 'Meet complete!',
+  medals: [{ at: 1800, name: 'Bronze', icon: '🥉' }, { at: 3000, name: 'Silver', icon: '🥈' }, { at: 3900, name: 'Gold', icon: '🥇' }, { at: 4500, name: 'Legend', icon: '💎' }],
+  howTo: 'Compete against 3 rival sprites in <b>5 events</b>: 100m, hurdles, long jump, javelin and high jump.<br>Score <b>3,000+</b> all-around to become champion!',
+  controls: '← → mash to run · Space / tap to jump, throw and start · P pause',
+  facts: [
+    'Teens need about 60 minutes of moderate to vigorous activity each day.',
+    'The decathlon has 10 events and tests speed, strength, endurance and skill.',
+    'Warming up before you sprint or jump helps prevent injuries.',
+    'Running, jumping and throwing all count as bone-strengthening activity.',
+    'Staying hydrated helps your muscles work their best during exercise.'
+  ],
+  reset, update, draw, input,
+  pad: [{ label: '◀', type: 'left', wide: true }, { label: 'JUMP / GO', type: 'tap', wide: true }, { label: '▶', type: 'right', wide: true }]
+});
+})();
+</script>
+</body>
+</html>

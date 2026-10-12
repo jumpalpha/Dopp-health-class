@@ -200,9 +200,10 @@
       overLock = Date.now() + 250;
     }
     let overLock = 0;
-    A.gameOver = function () {
+    // A.gameOver(quiet): end the run. quiet = true skips the crash sound/shake (for games that simply finish)
+    A.gameOver = function (quiet) {
       if (A.state !== 'play') return;
-      A.state = 'dying'; A.sfx('hit'); A.shake(12, 0.4); A.flash(0.2);
+      A.state = 'dying'; if (!quiet) { A.sfx('hit'); A.shake(12, 0.4); A.flash(0.2); }
       setTimeout(() => { A.state = 'over'; showOver(); overLock = Date.now() + 600; }, cfg.deathDelay || 700);
     };
     function pause() { if (A.state === 'play'){ A.state = 'paused'; paused.classList.remove('hidden'); } }
