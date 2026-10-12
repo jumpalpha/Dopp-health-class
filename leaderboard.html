@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="term.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
 <meta property="og:image" content="https://doppsclass.com/og-image.png">
@@ -185,12 +186,21 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
     </table>
   </div>
   <div class="refresh-note" id="refresh-note"></div>
+
+  <div id="past" style="display:none;margin-top:34px">
+    <h2 style="font-family:Cinzel,serif;text-align:center;margin-bottom:6px">🏛 Past Champions</h2>
+    <div style="text-align:center;color:var(--dim);font-size:14px;margin-bottom:12px">Legends from earlier trimesters, saved forever.</div>
+    <div class="filter-bar" id="past-tabs"></div>
+    <div class="lb-card"><table class="lb-table"><thead><tr><th style="width:48px;text-align:center">#</th><th style="width:40px"></th><th>Hero</th><th>Period</th><th>Verified XP</th><th>Quest tasks</th></tr></thead>
+      <tbody id="past-body"></tbody></table></div>
+    <div id="past-arcade" style="margin-top:14px"></div>
+  </div>
 </div>
 
 <script>
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
-const TRIMESTER    = '2026-T1';
+const TRIMESTER    = ((window.TERM && TERM.id) || '2026-T1');
 const XP_PER_TASK  = 25;
 const TOTAL_TASKS  = 90;
 const { createClient } = supabase;
@@ -313,6 +323,29 @@ function renderTable(rows) {
   }).join('');
 }
 
+// ── Past Champions (frozen copies of finished trimesters) ──
+async function loadPast() {
+  const { data } = await db.rpc('past_terms');
+  if (!data || !data.length) return;
+  document.getElementById('past').style.display = 'block';
+  const tabs = document.getElementById('past-tabs');
+  tabs.innerHTML = data.map((t, i) => `<button class="filter-btn${i ? '' : ' active'}" data-t="${esc(t.id)}">${esc(t.label)}</button>`).join('');
+  tabs.querySelectorAll('button').forEach(b => b.onclick = () => { tabs.querySelectorAll('button').forEach(x => x.classList.remove('active')); b.classList.add('active'); showPast(b.dataset.t); });
+  showPast(data[0].id);
+}
+async function showPast(id) {
+  const body = document.getElementById('past-body');
+  body.innerHTML = '<tr><td colspan="6" class="lb-empty">⏳ Opening the archive…</td></tr>';
+  const { data } = await db.rpc('term_archive_get', { p_trimester: id });
+  const heroes = ((data && data.heroes) || []).slice(0, 15);
+  body.innerHTML = heroes.length ? heroes.map((h, i) => `<tr><td style="text-align:center;font-weight:800">${i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</td><td>${esc(h.avatar || '⚔')}</td>
+    <td style="font-weight:800">${esc(h.name)}</td><td>${esc(h.period)}</td><td style="font-weight:800">${(+h.verified_xp || 0).toLocaleString()}</td><td>${+h.tasks || 0}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="lb-empty">No heroes recorded.</td></tr>';
+  const champs = ((data && data.arcade && data.arcade.champions) || []).slice(0, 5);
+  document.getElementById('past-arcade').innerHTML = champs.length ? '<div style="text-align:center;font-weight:800;margin-bottom:6px">🎮 Arcade Champions</div><div style="text-align:center;font-size:14px;line-height:1.8">' +
+    champs.map((c, i) => `${['🥇','🥈','🥉','4.','5.'][i]} <b>${esc(c.name)}</b> <span style="color:var(--dim)">${esc(c.medals != null ? c.medals + ' medals' : (c.games_won != null ? c.games_won + ' wins' : ''))}</span>`).join('<br>') + '</div>' : '';
+}
+
 function setFilter(val, el) {
   lbFilter = val;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -333,7 +366,7 @@ function startCountdown() {
   }, 1000);
 }
 
-loadData();
+loadData(); loadPast();
 </script>
 </body>
 </html>

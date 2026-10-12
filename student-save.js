@@ -16,7 +16,7 @@
 (function () {
   const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
-  const TRIMESTER = '2026-T1';
+  const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
   const SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
   const KEY_RE = /^[a-z0-9_-]{1,40}$/;
 

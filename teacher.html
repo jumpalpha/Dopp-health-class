@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="term.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
 <meta property="og:image" content="https://doppsclass.com/og-image.png">
@@ -315,6 +316,34 @@ input, select, textarea { color: var(--text); }
       <div id="sub-list" style="margin-top:12px;font-size:14px"></div>
     </div>
 
+    <div class="card" id="term-card" style="border-color:rgba(255,215,0,0.45)">
+      <div class="card-title" style="margin-bottom:4px">🗓 Trimester</div>
+      <div id="term-now" style="font-size:14px;color:var(--dim);margin-bottom:10px">Loading…</div>
+      <button class="btn btn-sm" id="term-open" onclick="termOpen()" style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.6);color:#6b5400">Start a new trimester…</button>
+      <div id="term-form" style="display:none;margin-top:14px">
+        <div style="font-size:14px;line-height:1.55;margin-bottom:12px;padding:12px 14px;border-radius:12px;background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.3)">
+          <b>What happens when you press Start:</b><br>
+          1. This trimester's Hall of Heroes, arcade leaderboards and sprites are saved forever in <b>Past Champions</b> and the <b>Sprite Hall of Fame</b>.<br>
+          2. Every sprite graduates. New students hatch new ones.<br>
+          3. New class codes open (one per period), and the old codes close.<br>
+          4. Every current student becomes a <b>visitor</b>. They keep their last name and PIN and sign in on the Visitor page. Visitor accounts are removed after 90 days with no visits.<br>
+          <span style="color:var(--crimson);font-weight:800">This can't be undone.</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div><label class="form-label" for="term-id">New trimester</label><input type="text" id="term-id" maxlength="7" style="width:110px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></div>
+          <div style="flex:1;min-width:190px"><label class="form-label" for="term-label">Name</label><input type="text" id="term-label" maxlength="60" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></div>
+          <div><label class="form-label" for="term-prefix">Class codes start with</label><input type="text" id="term-prefix" maxlength="10" style="width:120px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;text-transform:uppercase"></div>
+          <div><label class="form-label" for="term-periods">Periods</label><input type="number" id="term-periods" min="1" max="9" value="6" style="width:70px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div><label class="form-label" for="term-confirm">To confirm, type the new trimester (<span id="term-echo"></span>)</label><input type="text" id="term-confirm" maxlength="7" autocomplete="off" style="width:150px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></div>
+          <button class="btn btn-gold" id="term-go" onclick="termStart()">Start new trimester</button>
+        </div>
+      </div>
+      <div id="term-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
+      <div id="term-done" style="display:none;margin-top:14px;padding:14px;border-radius:12px;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.4)"></div>
+    </div>
+
     <div class="stat-row">
       <div class="stat-card highlight">
         <div class="sc-num">28</div>
@@ -560,7 +589,7 @@ input, select, textarea { color: var(--text); }
       <div class="stat-card">
         <div class="sc-num" id="lb-stat-total">—</div>
         <div class="sc-label">Students Enrolled</div>
-        <div class="sc-sub" id="lb-stat-trimester">Trimester 2026-T1</div>
+        <div class="sc-sub" id="lb-stat-trimester">This trimester</div>
       </div>
       <div class="stat-card highlight">
         <div class="sc-num" id="lb-stat-top">—</div>
@@ -731,7 +760,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
-    setTimeout(() => { subInit(); subLoad(); }, 0);
+    setTimeout(() => { subInit(); subLoad(); termLoad(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -792,6 +821,55 @@ async function subRevoke(id){
   subLoad();
 }
 
+// ── TRIMESTER SWITCH ──
+function termNext(id, prefix){
+  const m = /^(\d{4})-T([1-3])$/.exec(id || ''); if (!m) return { id: '', label: '', prefix: '' };
+  let y = +m[1], n = +m[2]; if (n < 3) n++; else { y++; n = 1; }
+  const yy = String(y % 100).padStart(2, '0'), yz = String((y + 1) % 100).padStart(2, '0');
+  return { id: y + '-T' + n, label: 'Trimester ' + n + ' · ' + y + '–' + yz, prefix: yy + yz + 'T' + n };
+}
+let termInfo = null;
+async function termLoad(){
+  const box = document.getElementById('term-now'); if (!box || !teacherPass()) return;
+  const { data, error } = await db.rpc('term_preview', { p_teacher_pass: teacherPass() });
+  if (error || !data){ box.textContent = 'Current trimester: ' + TRIMESTER; return; }
+  termInfo = data;
+  const codes = (data.codes || []).join(', ');
+  box.innerHTML = 'Current: <b style="color:var(--text)">' + escapeHtml(data.label) + '</b> (' + escapeHtml(data.id) + ') · ' +
+    data.students + ' students · ' + data.visitors + ' visitors · ' + data.sprites + ' sprites' + (codes ? '<br>Class codes: ' + escapeHtml(codes) : '');
+}
+function termOpen(){
+  const f = document.getElementById('term-form'); const show = f.style.display === 'none';
+  f.style.display = show ? 'block' : 'none';
+  if (show && termInfo && !document.getElementById('term-id').value){
+    const n = termNext(termInfo.id, termInfo.prefix);
+    document.getElementById('term-id').value = n.id; document.getElementById('term-label').value = n.label; document.getElementById('term-prefix').value = n.prefix;
+  }
+  termEcho();
+}
+function termEcho(){ document.getElementById('term-echo').textContent = document.getElementById('term-id').value.trim().toUpperCase() || '…'; }
+async function termStart(){
+  const err = document.getElementById('term-err'); err.textContent = '';
+  const id = document.getElementById('term-id').value.trim().toUpperCase();
+  if (document.getElementById('term-confirm').value.trim().toUpperCase() !== id || !id){ err.textContent = 'Type ' + (id || 'the new trimester') + ' in the confirm box first.'; return; }
+  const btn = document.getElementById('term-go'); btn.disabled = true; btn.textContent = 'Switching…';
+  const { data, error } = await db.rpc('start_new_trimester', {
+    p_teacher_pass: teacherPass(), p_new: id,
+    p_label: document.getElementById('term-label').value.trim(),
+    p_code_prefix: document.getElementById('term-prefix').value.trim().toUpperCase(),
+    p_periods: +document.getElementById('term-periods').value || 6 });
+  btn.disabled = false; btn.textContent = 'Start new trimester';
+  if (error){ err.textContent = error.message; return; }
+  try { localStorage.setItem('dopp_term', JSON.stringify({ id: data.to, label: data.label, prefix: document.getElementById('term-prefix').value.trim().toUpperCase() })); } catch(e) {}
+  document.getElementById('term-form').style.display = 'none'; document.getElementById('term-open').style.display = 'none';
+  const done = document.getElementById('term-done'); done.style.display = 'block';
+  done.innerHTML = '<b>🎉 ' + escapeHtml(data.label) + ' has started.</b><br>' + data.counts.students + ' students became visitors and ' + data.counts.sprites +
+    ' sprites joined the Hall of Fame.<br><br><b>Give your new classes these codes:</b><br>' +
+    (data.codes || []).map((c, i) => 'Period ' + (i + 1) + ': <b style="font-size:16px;letter-spacing:1px">' + escapeHtml(c) + '</b>').join('<br>') +
+    '<br><br><button class="btn btn-gold btn-sm" onclick="location.reload()">Reload the dashboard</button>';
+}
+document.addEventListener('input', e => { if (e.target && e.target.id === 'term-id') termEcho(); });
+
 // Already unlocked this session?
 if (teacherPass()) {
   document.getElementById('pin-gate').style.display = 'none';
@@ -802,10 +880,11 @@ if (teacherPass()) {
 // ═══════════════════════════════════════════════════════════
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
-const TRIMESTER    = '2026-T1';
+const TRIMESTER    = ((window.TERM && TERM.id) || '2026-T1');
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-subInit(); if (teacherPass()) subLoad();
+(function(){ const sel = document.getElementById('wq-trimester'); if (!sel) return; if (![...sel.options].some(o => o.value === TRIMESTER)) sel.add(new Option(TRIMESTER, TRIMESTER), 0); sel.value = TRIMESTER; })();
+subInit(); if (teacherPass()) { subLoad(); termLoad(); }
 const XP_PER_TASK  = 25;
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task
 

@@ -3,7 +3,7 @@
 (function () {
   const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
-  const TRIMESTER = '2026-T1';
+  const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
   const XP_PER_TASK = 25;
   const POPUP_KEY = 'dopp_daily_popup';
   const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="term.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wellness Sprite — Dopp's Class</title>
 <meta name="description" content="Raise your own Wellness Sprite all trimester with real healthy habits and chapter knowledge.">
@@ -171,7 +172,7 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
 <script>
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
-const TRIMESTER = '2026-T1';
+const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

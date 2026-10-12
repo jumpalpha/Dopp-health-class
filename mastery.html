@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="term.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chapter Mastery — Dopp's Class</title>
 <meta name="description" content="Prove you know each chapter's vocabulary and earn verified XP.">
@@ -107,7 +108,7 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;cursor:pointer}
 <script>
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
-const TRIMESTER = '2026-T1';
+const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

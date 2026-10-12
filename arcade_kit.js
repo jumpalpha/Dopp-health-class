@@ -9,7 +9,7 @@
   // ---------- class leaderboard (Supabase) ----------
   // Signed-in students (Quest page or Visitor page, same browser tab) post their result automatically.
   const NET = {
-    URL: 'https://gmeyamrlqfrabtslsweu.supabase.co', KEY: 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c', TRIMESTER: '2026-T1',
+    URL: 'https://gmeyamrlqfrabtslsweu.supabase.co', KEY: 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c', TRIMESTER: ((window.TERM && TERM.id) || '2026-T1'),
     session() {
       try {
         const id = localStorage.getItem('qSID_' + NET.TRIMESTER), pin = sessionStorage.getItem('qPIN_' + NET.TRIMESTER);

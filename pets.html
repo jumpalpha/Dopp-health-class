@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="term.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sprite Gallery — Dopp's Class</title>
 <meta name="description" content="Every Wellness Sprite in Dopp's Class, and the healthiest sprites of the trimester.">
@@ -79,6 +80,14 @@ select{font:inherit;font-weight:700;padding:8px 10px;border-radius:10px;border:1
     <div class="gallery" id="gallery"></div>
     <p class="dim small" id="empty" style="display:none;margin-top:10px">No sprites yet. Be the first! <a class="cta" href="pet.html">🥚 Get my egg</a></p>
   </div>
+  <div class="panel" id="hof" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <h2>🎓 Sprite Hall of Fame</h2>
+      <select id="hofTerm" aria-label="Trimester"></select>
+    </div>
+    <p class="dim small">Sprites that made it to the end of a trimester. They graduated with their owners.</p>
+    <div class="gallery" id="hofGrid"></div>
+  </div>
   <p class="dim small" id="err" style="margin-top:10px"></p>
 </div>
 
@@ -87,7 +96,7 @@ select{font:inherit;font-weight:700;padding:8px 10px;border-radius:10px;border:1
 <script>
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
-const TRIMESTER = '2026-T1';
+const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -143,8 +152,25 @@ async function load(){
   pets = data || [];
   renderBoard(); renderGallery();
 }
+async function loadHof(){
+  if (!db) return;
+  const { data } = await db.rpc('past_terms');
+  if (!data || !data.length) return;
+  $('hof').style.display = 'block';
+  $('hofTerm').innerHTML = data.map(t => '<option value="' + esc(t.id) + '">' + esc(t.label) + '</option>').join('');
+  $('hofTerm').onchange = showHof; showHof();
+}
+async function showHof(){
+  const { data } = await db.rpc('term_archive_get', { p_trimester: $('hofTerm').value });
+  const list = (data && data.sprites) || [];
+  $('hofGrid').innerHTML = list.length ? list.map((p, i) =>
+    '<div class="card">' + (i < 3 ? '<div style="font-size:20px">' + ['🥇','🥈','🥉'][i] + '</div>' : '') + petSpriteSVG(p, { tight: true }) +
+    '<div class="nm">' + esc(p.name) + '</div><div class="ow">' + esc(p.owner) + (p.period ? ' · ' + esc(p.period) : '') + '</div>' +
+    '<div class="meta">' + esc(STAGE[p.stage] || p.stage || '') + ' · best 🔥 ' + (p.best_streak || 0) + '</div></div>').join('')
+    : '<p class="dim">No sprites graduated that trimester.</p>';
+}
 $('sort').onchange = renderGallery;
-load();
+load(); loadHof();
 setInterval(() => { if (!document.hidden) load(); }, 5 * 60 * 1000);
 </script>
 </body>
