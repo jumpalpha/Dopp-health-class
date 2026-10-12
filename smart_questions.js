@@ -143,7 +143,7 @@ window.SMART_Q = [
 [8,"world",0,"What is the square root of 144?","12","14","11","72","12 × 12 = 144."],
 [8,"world",0,"In what year did World War II end?","1945","1918","1939","1950","It ended in 1945, with Germany surrendering in May and Japan in September."],
 [8,"body",15,"What is the main job of red blood cells?","Carrying oxygen","Fighting infection","Clotting blood","Making hormones","Red blood cells carry oxygen from your lungs to the rest of your body."],
-[8,"mind",6,"Which of these is a strong refusal skill?","Saying no clearly and suggesting something else","Giving in to avoid an argument","Arguing until someone gets angry","Saying \"maybe later\"","A clear \"no\" plus another idea gets you out without drama."],
+[8,"mind",8,"Which of these is a strong refusal skill?","Saying no clearly and suggesting something else","Giving in to avoid an argument","Arguing until someone gets angry","Saying \"maybe later\"","A clear \"no\" plus another idea gets you out without drama."],
 [8,"safe",27,"For adult CPR, about how fast should chest compressions be?","100–120 per minute","30–40 per minute","About 60 per minute","More than 200 per minute","The American Heart Association says to push hard and fast at 100–120 compressions per minute."],
 [8,"food",10,"Which nutrient builds and repairs muscle?","Protein","Carbohydrate","Fiber","Water","Protein supplies the amino acids your body uses to build and repair tissue."],
 [8,"food",10,"How many calories are in 1 gram of fat?","9","4","7","2","Fat has 9 calories per gram. Carbs and protein have 4, and alcohol has 7."],
