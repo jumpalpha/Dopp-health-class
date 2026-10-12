@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Smart Am I? — Dopp's Arcade</title>
+<meta name="description" content="An adaptive brain challenge: questions get harder when you're right and easier when you miss. Find out how you compare with 3rd graders, 12th graders, college students and graduate students.">
+<link rel="canonical" href="https://doppsclass.com/how_smart.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--ink:#1A1030;--text:#F4EFFF;--dim:#b9b0d6;--card:rgba(255,255,255,.06);--border:rgba(255,255,255,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:var(--text);font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:980px;margin:0 auto;padding:10px 16px;gap:10px}
+.top a{color:var(--gold);font-weight:800;text-decoration:none;white-space:nowrap}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:var(--gold);text-shadow:0 2px 0 #000;text-align:center}
+.wrap{max-width:980px;margin:0 auto;padding:6px 16px 40px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:22px}
+.hidden{display:none!important}
+button{font-family:inherit;cursor:pointer}
+.btn{display:inline-block;font:900 18px Nunito,sans-serif;padding:14px 28px;border-radius:16px;border:3px solid var(--ink);background:var(--gold);color:#2a1d00;box-shadow:0 5px 0 var(--ink);text-decoration:none}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.btn.ghost{background:transparent;color:var(--gold);border-color:rgba(255,215,0,.5);box-shadow:none}
+/* start */
+.intro{text-align:center;max-width:640px;margin:10px auto}
+.intro .spr{width:130px;height:130px;margin:6px auto}
+.intro h2{font-family:Cinzel,serif;font-size:clamp(28px,6vw,44px);color:var(--gold);text-shadow:0 3px 0 #000;margin-bottom:8px}
+.intro p{color:var(--dim);font-size:17px;line-height:1.55;margin:8px 0}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:18px 0;text-align:left}
+.rules div{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:14px;padding:12px;font-size:14px;line-height:1.4}
+.rules b{display:block;font-size:15px;color:var(--text);margin-bottom:2px}
+.best{margin:10px 0 16px;color:var(--emerald);font-weight:800}
+/* play */
+.play{display:grid;grid-template-columns:1fr 210px;gap:16px;align-items:start}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-weight:800;color:var(--dim);font-size:14px}
+.tag{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(56,191,255,.15);border:1px solid rgba(56,191,255,.4);color:#bfe8ff;font-size:13px}
+.misses{display:flex;gap:5px;align-items:center}
+.misses i{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.25)}
+.misses i.on{background:var(--crimson);border-color:#ff9db0}
+.q{font-size:clamp(20px,3.6vw,26px);font-weight:900;line-height:1.3;margin:6px 0 16px}
+.answers{display:grid;gap:10px}
+.ans{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:14px 16px;border-radius:14px;border:2px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);font:800 17px Nunito,sans-serif;transition:transform .1s,border-color .15s,background .15s}
+.ans:hover:not(:disabled){border-color:rgba(255,215,0,.6);background:rgba(255,215,0,.08);transform:translateY(-1px)}
+.ans .k{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.1);font-size:14px}
+.ans.right{border-color:var(--emerald);background:rgba(0,229,160,.16)}
+.ans.wrong{border-color:var(--crimson);background:rgba(255,59,92,.16)}
+.ans:disabled{cursor:default}
+.why{margin-top:14px;padding:14px 16px;border-radius:14px;font-size:16px;line-height:1.45}
+.why.ok{background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.4)}
+.why.no{background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.4)}
+.why b{display:block;font-size:17px;margin-bottom:2px}
+.nextrow{display:flex;justify-content:flex-end;margin-top:14px}
+/* tower */
+.tower{background:linear-gradient(#2c1b55,#1a1035);border:1px solid var(--border);border-radius:18px;padding:10px 8px;position:sticky;top:10px}
+.tower h3{font-family:Cinzel,serif;color:var(--gold);font-size:14px;text-align:center;margin-bottom:6px}
+.floor{display:flex;align-items:center;gap:6px;height:27px;padding:0 6px;border-radius:8px;font-size:12px;font-weight:800;color:rgba(244,239,255,.45);position:relative}
+.floor .n{width:20px;text-align:right;color:rgba(255,215,0,.5)}
+.floor.reached{color:var(--text)}
+.floor.reached .n{color:var(--gold)}
+.floor.here{background:rgba(255,215,0,.16);outline:2px solid rgba(255,215,0,.6);color:#fff}
+.floor .me{position:absolute;right:4px;width:26px;height:26px}
+.climb{display:none}
+/* results */
+.res{text-align:center}
+.res .lvl{font-family:Cinzel,serif;font-size:clamp(34px,8vw,56px);color:var(--gold);text-shadow:0 3px 0 #000;line-height:1.1}
+.res .title{font-size:22px;font-weight:900;color:var(--emerald);margin:4px 0 10px}
+.res .head{font-size:clamp(18px,3.4vw,23px);font-weight:900;line-height:1.35;max-width:640px;margin:10px auto 18px}
+.bars{max-width:620px;margin:0 auto;text-align:left;display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:150px 1fr 54px;gap:10px;align-items:center;font-weight:800;font-size:14px}
+.bar .track{height:16px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--emerald));width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.bar .pct{text-align:right}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0}
+.stats span{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-weight:800;font-size:14px}
+.cheer{max-width:640px;margin:6px auto 16px;color:var(--dim);font-size:16px;line-height:1.5}
+.review{max-width:720px;margin:16px auto 0;text-align:left;display:grid;gap:10px}
+.rv{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.45}
+.rv .rq{font-weight:900;margin-bottom:4px}
+.rv .ra{color:var(--emerald);font-weight:800}
+.rv .rx{color:var(--dim);font-size:14px;margin-top:3px}
+.rv a{color:var(--gold);font-weight:800;font-size:14px}
+.net{margin:12px auto;color:var(--dim);font-size:14px;max-width:560px}
+.net a{color:var(--gold)}
+details{max-width:720px;margin:20px auto 0;text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.55;color:var(--dim)}
+details summary{cursor:pointer;font-weight:900;color:var(--text)}
+details a{color:var(--sky)}
+@media (max-width:760px){
+  .play{grid-template-columns:1fr}
+  .tower{display:none}
+  .climb{display:block;margin-bottom:12px}
+  .climb .track{height:12px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+  .climb .fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--gold));transition:width .4s}
+  .climb .lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--dim);margin-bottom:4px}
+  .bar{grid-template-columns:112px 1fr 46px;font-size:13px}
+  .card{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>How Smart Am I?</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div class="wrap">
+
+  <!-- START -->
+  <div class="card intro" id="startView">
+    <div class="spr" id="introSpr"></div>
+    <h2>How Smart Am I?</h2>
+    <p>Climb the Tower of Knowledge! Get one right and the next question is harder. Miss one and it gets easier. Most questions are about health: your body, food, mind, fitness, safety and medicine.</p>
+    <div class="rules">
+      <div><b>🧗 It adapts to you</b>Everyone ends up at their own level, so no two runs are the same.</div>
+      <div><b>❌❌❌ 3 misses in a row</b>ends the climb (after your first 12 questions).</div>
+      <div><b>📊 No grades</b>You'll see how you compare with students from 3rd grade to graduate school.</div>
+    </div>
+    <div class="best" id="bestLine"></div>
+    <button class="btn" id="startBtn">▶ Start climbing</button>
+  </div>
+
+  <!-- PLAY -->
+  <div class="play hidden" id="playView">
+    <div class="card">
+      <div class="climb" id="climb"><div class="lbl"><span id="climbL"></span><span id="climbR"></span></div><div class="track"><div class="fill" id="climbFill"></div></div></div>
+      <div class="qhead"><span id="qNum"></span><span class="tag" id="qTag"></span><span class="misses" id="misses" title="Misses in a row"></span></div>
+      <div class="q" id="qText"></div>
+      <div class="answers" id="answers"></div>
+      <div class="why hidden" id="why"></div>
+      <div class="nextrow hidden" id="nextRow"><button class="btn" id="nextBtn">Next ▶</button></div>
+    </div>
+    <div class="tower" id="tower"><h3>Tower of Knowledge</h3><div id="floors"></div></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card res hidden" id="resView">
+    <div style="color:var(--dim);font-weight:800">Your Brain Level</div>
+    <div class="lvl" id="rLvl"></div>
+    <div class="title" id="rTitle"></div>
+    <div class="head" id="rHead"></div>
+    <div class="bars" id="rBars"></div>
+    <div class="stats" id="rStats"></div>
+    <div class="cheer" id="rCheer"></div>
+    <div class="net" id="rNet"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn" id="againBtn">↻ Climb again</button>
+      <a class="btn ghost" href="arcade.html">🎮 More games</a>
+    </div>
+    <div class="review" id="rReview"></div>
+    <details>
+      <summary>How is this figured out?</summary>
+      <p style="margin-top:8px">Each floor of the tower matches the questions a typical student at that grade could answer. Your Brain Level is estimated from <b>every</b> answer you gave. Hard questions you got right count for more, and the math allows for lucky guesses on 4-choice questions.</p>
+      <p style="margin-top:8px">To compare you with each group, we use a real pattern from national testing: students in the same grade are spread out over a wide range. On NWEA's MAP Growth tests, the spread inside one grade (about 16 points) is about the same as two or more years of average growth. So each grade is modeled as a bell curve centered on its floor, about 2 floors wide.</p>
+      <p style="margin-top:8px">College groups come from who keeps going in school: about 62% of high school graduates start college right away (NCES, 2022), about 38% of adults have a bachelor's degree, and about 14% have an advanced degree (U.S. Census, 2022). Each group is modeled as the matching top share of 12th graders.</p>
+      <p style="margin-top:8px">It's a fun estimate, not an IQ test or a grade. The best way to raise your level is to learn. Every question you miss shows you something new.</p>
+      <p style="margin-top:8px">Sources: <a href="https://www.nwea.org/uploads/MAP-Growth-Normative-Data-Overview.pdf" target="_blank" rel="noopener">NWEA 2020 MAP Growth norms</a> · <a href="https://nces.ed.gov/fastfacts/display.asp?id=51" target="_blank" rel="noopener">NCES Fast Facts</a> · <a href="https://www.census.gov/newsroom/press-releases/2023/educational-attainment-data.html" target="_blank" rel="noopener">U.S. Census Bureau</a></p>
+    </details>
+  </div>
+</div>
+
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script src="smart_questions.js"></script>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+
+// ── floors of the tower ──
+const FLOORS = ['2nd grade','3rd grade','4th grade','5th grade','6th grade','7th grade','8th grade','9th grade','10th grade','11th grade','12th grade','College student','College grad','Grad student','Expert'];
+const TOP = 15, START = 4;
+// ── comparison groups (Brain Level scale: grade g sits on floor g − 1) ──
+// Grades: bell curve centered on the floor, SD 2 floors (within-grade spread ≈ 2+ years of growth, NWEA 2020 norms).
+// College groups: top 62% / 38% / 14% of 12th graders (NCES 2022, Census 2022), as truncated-normal mean and SD.
+function topShare(p) {   // mean/SD of the top share p of N(11, 2)
+  const z = invNorm(1 - p), phi = Math.exp(-z * z / 2) / Math.sqrt(2 * Math.PI), r = phi / p;
+  return { m: 11 + 2 * r, s: 2 * Math.sqrt(Math.max(0.05, 1 + z * r - r * r)) };
+}
+const GROUPS = [
+  { name: '3rd graders', m: 2, s: 2 }, { name: '5th graders', m: 4, s: 2 }, { name: '8th graders', m: 7, s: 2 },
+  { name: '10th graders', m: 9, s: 2 }, { name: '12th graders', m: 11, s: 2 },
+  Object.assign({ name: 'college students' }, topShare(0.62)),
+  Object.assign({ name: 'college graduates' }, topShare(0.38)),
+  Object.assign({ name: 'graduate students' }, topShare(0.14))
+];
+const TITLES = [[0,'Curious Cub 🐣'],[3,'Rising Explorer 🧭'],[5,'Sharp Scout 🔎'],[7,'Knowledge Knight 🛡'],[9,'Wisdom Warrior ⚔'],[11,'Scholar 📜'],[12.5,'Sage 🦉'],[14,'Legend of Wellness 👑']];
+
+// ── math ──
+function erf(x) { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x);
+  const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return s * y; }
+function cdf(z) { return 0.5 * (1 + erf(z / Math.SQRT2)); }
+function invNorm(p) { let lo = -8, hi = 8; for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (cdf(mid) < p) lo = mid; else hi = mid; } return (lo + hi) / 2; }
+// chance of a right answer at Brain Level a on a level-b question (4 choices → 25% guessing floor)
+const pRight = (a, b) => 0.25 + 0.75 / (1 + Math.exp(-1.3 * (a - b)));
+function estimate(hist) {   // posterior mean over a grid, gentle prior centered on 8th grade
+  let num = 0, den = 0;
+  for (let a = -2; a <= 19; a += 0.05) {
+    let lp = -((a - 7) ** 2) / (2 * 16);
+    hist.forEach(h => { const p = pRight(a, h.lvl); lp += Math.log(h.ok ? p : 1 - p); });
+    const w = Math.exp(lp); num += a * w; den += w;
+  }
+  return Math.max(0, Math.min(17, num / den));
+}
+
+// ── state ──
+const Q = window.SMART_Q.map((r, i) => ({ id: i, lvl: r[0], topic: r[1], ch: r[2], q: r[3], right: r[4], wrong: r.slice(5, 8), why: r[8] }));
+let level, hist, used, streakMiss, maxFloor, cur, picked;
+
+function sprite(mood, px) {
+  if (!window.petSpriteSVG) return '';
+  return window.petSpriteSVG({ color: store.get('arcade_sprite_color', 'emerald'), stage: 'child', mood_label: mood || 'happy', alive: true }, { tight: true })
+    .replace('<svg ', '<svg width="' + px + '" height="' + px + '" ');
+}
+function showBest() {
+  const b = store.get('how_smart_best_info', null);
+  $('bestLine').innerHTML = b ? 'Your best: <b>Brain Level ' + b.lvl.toFixed(1) + '</b> · ' + esc(b.head) : '';
+}
+$('introSpr').innerHTML = sprite('happy', 130); showBest();
+
+function start() {
+  level = START; hist = []; used = new Set(); streakMiss = 0; maxFloor = START;
+  $('startView').classList.add('hidden'); $('resView').classList.add('hidden'); $('playView').classList.remove('hidden');
+  next();
+}
+function pickQuestion() {
+  const seen = new Set(store.get('how_smart_seen', []));
+  for (let d = 0; d <= TOP; d++) {
+    for (const L of d ? [level + d, level - d] : [level]) {
+      if (L < 1 || L > TOP) continue;
+      const pool = Q.filter(q => q.lvl === L && !used.has(q.id));
+      if (!pool.length) continue;
+      const fresh = pool.filter(q => !seen.has(q.id));
+      const from = fresh.length ? fresh : pool;
+      return from[Math.floor(Math.random() * from.length)];
+    }
+  }
+  return null;
+}
+function next() {
+  cur = pickQuestion();
+  if (!cur) return finish();
+  used.add(cur.id); picked = false;
+  const opts = [cur.right, ...cur.wrong].map(t => ({ t, ok: t === cur.right })).sort(() => Math.random() - 0.5);
+  $('qNum').textContent = 'Question ' + (hist.length + 1);
+  $('qTag').textContent = (window.SMART_TOPICS[cur.topic] || '') + ' · Floor ' + cur.lvl;
+  $('qText').textContent = cur.q;
+  $('answers').innerHTML = opts.map((o, i) => '<button class="ans" data-ok="' + (o.ok ? 1 : 0) + '"><span class="k">' + (i + 1) + '</span><span>' + esc(o.t) + '</span></button>').join('');
+  $('answers').querySelectorAll('.ans').forEach(b => b.onclick = () => answer(b));
+  $('why').classList.add('hidden'); $('nextRow').classList.add('hidden');
+  drawMisses(); drawTower();
+}
+function answer(btn) {
+  if (picked) return; picked = true;
+  const ok = btn.dataset.ok === '1';
+  $('answers').querySelectorAll('.ans').forEach(b => { b.disabled = true; if (b.dataset.ok === '1') b.classList.add('right'); });
+  if (!ok) btn.classList.add('wrong');
+  hist.push({ id: cur.id, lvl: cur.lvl, ok });
+  streakMiss = ok ? 0 : streakMiss + 1;
+  const early = hist.length <= 4;
+  level = Math.max(1, Math.min(TOP, level + (ok ? (early ? 2 : 1) : -1)));
+  if (ok) maxFloor = Math.max(maxFloor, cur.lvl);
+  const w = $('why'); w.className = 'why ' + (ok ? 'ok' : 'no');
+  w.innerHTML = '<b>' + (ok ? ['✅ Correct!','✅ Nailed it!','✅ Yes!','✅ Smart!'][Math.floor(Math.random() * 4)] : '❌ The answer is: ' + esc(cur.right)) + '</b>' + esc(cur.why);
+  drawMisses(); drawTower();
+  const done = (streakMiss >= 3 && hist.length >= 12) || streakMiss >= 5 || hist.length >= 30;
+  $('nextBtn').textContent = done ? 'See my results ▶' : 'Next ▶';
+  $('nextBtn').onclick = done ? finish : next;
+  $('nextRow').classList.remove('hidden');
+  $('nextBtn').focus({ preventScroll: true });
+}
+function drawMisses() {
+  $('misses').innerHTML = '<span style="margin-right:4px">Misses</span>' + [0, 1, 2].map(i => '<i class="' + (i < Math.min(3, streakMiss) ? 'on' : '') + '"></i>').join('');
+}
+function drawTower() {
+  let h = '';
+  for (let f = TOP; f >= 1; f--) {
+    const cls = 'floor' + (f <= maxFloor ? ' reached' : '') + (f === level ? ' here' : '');
+    h += '<div class="' + cls + '"><span class="n">' + f + '</span><span>' + FLOORS[f - 1] + '</span>' + (f === level ? '<span class="me">' + sprite(streakMiss ? 'tired' : 'happy', 26) + '</span>' : '') + '</div>';
+  }
+  $('floors').innerHTML = h;
+  $('climbL').textContent = 'Floor ' + level + ' · ' + FLOORS[level - 1];
+  $('climbR').textContent = 'Best floor ' + maxFloor;
+  $('climbFill').style.width = (level / TOP * 100) + '%';
+}
+
+function pctText(p) { return p >= 0.995 ? '99%+' : p < 0.01 ? 'under 1%' : Math.round(p * 100) + '%'; }
+function finish() {
+  const lvl = estimate(hist);
+  const pcts = GROUPS.map(g => ({ name: g.name, p: cdf((lvl - g.m) / g.s) }));
+  // headline: the toughest group you beat at least half of, then the next one up
+  let i = -1; pcts.forEach((g, k) => { if (g.p >= 0.5) i = k; });
+  let head;
+  if (i === -1) head = 'You\'re smarter than ' + pctText(pcts[0].p) + ' of 3rd graders. Every climb teaches you something new, so try again!';
+  else if (i === pcts.length - 1) head = 'You\'re smarter than ' + pctText(pcts[i].p) + ' of graduate students. That\'s legendary! 👑';
+  else head = 'You\'re smarter than ' + pctText(pcts[i].p) + ' of ' + pcts[i].name + ', and already ahead of ' + pctText(pcts[i + 1].p) + ' of ' + pcts[i + 1].name + '!';
+  const goal = i < pcts.length - 1 ? GROUPS[i + 1] : null;
+  const title = TITLES.filter(t => lvl >= t[0]).pop()[1];
+  const right = hist.filter(h => h.ok).length;
+
+  $('playView').classList.add('hidden'); $('resView').classList.remove('hidden');
+  $('rLvl').textContent = lvl.toFixed(1);
+  $('rTitle').textContent = title;
+  $('rHead').textContent = head;
+  $('rBars').innerHTML = pcts.map(g => '<div class="bar"><span>' + esc(g.name[0].toUpperCase() + g.name.slice(1)) + '</span><div class="track"><div class="fill" data-w="' + (g.p * 100).toFixed(1) + '"></div></div><span class="pct">' + pctText(g.p) + '</span></div>').join('');
+  requestAnimationFrame(() => setTimeout(() => $('rBars').querySelectorAll('.fill').forEach(f => f.style.width = f.dataset.w + '%'), 60));
+  $('rStats').innerHTML = '<span>📝 ' + hist.length + ' questions</span><span>✅ ' + right + ' right</span><span>🧗 Highest floor: ' + maxFloor + ' (' + FLOORS[maxFloor - 1] + ')</span>';
+  const best = store.get('how_smart_best_info', null);
+  const newBest = !best || lvl > best.lvl;
+  if (newBest) { store.set('how_smart_best_info', { lvl, head }); store.set('how_smart_best', Math.round(lvl * 100)); }   // number = arcade My Stats
+  const missed = hist.filter(h => !h.ok).map(h => Q[h.id]);
+  $('rCheer').innerHTML = (newBest && best ? '✨ <b style="color:var(--emerald)">New personal best!</b> ' : '') +
+    (goal ? '🎯 <b>Next goal:</b> reach Brain Level ' + Math.max(goal.m, lvl + 0.1).toFixed(1) + ' to pass half of all ' + esc(goal.name) + '.<br>' : '') +
+    (missed.length ? 'You just learned ' + missed.length + ' new fact' + (missed.length === 1 ? '' : 's') + '. Look them over below, then climb again. The questions change every time.' : 'You didn\'t miss a single one. Incredible!');
+  $('rReview').innerHTML = missed.length ? '<div style="font-weight:900;font-size:17px;text-align:center">📚 Facts you just learned</div>' + missed.map(q =>
+    '<div class="rv"><div class="rq">' + esc(q.q) + '</div><div class="ra">✔ ' + esc(q.right) + '</div><div class="rx">' + esc(q.why) + '</div>' +
+    (q.ch ? '<a href="chapter' + String(q.ch).padStart(2, '0') + '.html">Learn more in Chapter ' + q.ch + ' →</a>' : '') + '</div>').join('') : '';
+  // remember what was asked so next climb uses fresh questions first
+  const seen = store.get('how_smart_seen', []).concat(hist.map(h => h.id)); store.set('how_smart_seen', seen.slice(-120));
+  showBest(); post(lvl);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+// ── class leaderboard (same as the Sprite arcade) ──
+function post(lvl) {
+  const el = $('rNet'), NET = window.ArcadeNet; if (!NET) return;
+  const ses = NET.session();
+  if (!ses) { el.innerHTML = '🏆 <a href="quest.html">Log in</a> (or <a href="visitor.html">join as a visitor</a>) to post your Brain Level to the class leaderboard.'; return; }
+  const score = Math.round(lvl * 100);
+  if (score <= 0) return;
+  const won = lvl >= 9;
+  if (won) { const k = 'how_smart_wins'; store.set(k, store.get(k, 0) + 1); }
+  el.textContent = '📡 Posting to the leaderboard…';
+  NET.rpc('arcade_submit', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: 'how_smart', p_score: score, p_won: won })
+    .then(r => { el.innerHTML = '📡 Posted! <b>#' + r.rank + '</b>' + (r.visitor ? ' among visitors' : ' in all classes · <b>#' + r.rank_group + '</b> in ' + esc(r.group)) +
+      (r.xp ? '<br>⭐ +' + r.xp + ' Verified XP for out-smarting the average 10th grader!' : '') + '<br><a href="arcade.html#stats">See leaderboards →</a>'; })
+    .catch(e => { el.textContent = /too fast/.test(e.message) ? '' : '⚠ Couldn\'t post your score right now.'; });
+}
+
+$('startBtn').onclick = start; $('againBtn').onclick = start;
+document.addEventListener('keydown', e => {
+  if ($('playView').classList.contains('hidden')) { if (e.key === 'Enter' && !$('startView').classList.contains('hidden')) start(); return; }
+  if (!picked && /^[1-4]$/.test(e.key)) { const b = $('answers').querySelectorAll('.ans')[+e.key - 1]; if (b) answer(b); }
+  else if (picked && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); $('nextBtn').click(); }
+});
+window.__smart = { estimate, GROUPS, cdf, state: () => ({ level, hist, cur, streakMiss }) };   // used by automated playtests
+})();
+</script>
+</body>
+</html>
