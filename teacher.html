@@ -316,6 +316,16 @@ input, select, textarea { color: var(--text); }
       <div id="sub-list" style="margin-top:12px;font-size:14px"></div>
     </div>
 
+    <div class="card" id="vis-card" style="border-color:rgba(0,229,160,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+        <div class="card-title" style="margin-bottom:0">👋 Visitors (past students)</div>
+        <a href="visitor.html" target="_blank" rel="noopener" style="font-size:13px;font-weight:800;color:#0a7a55">Open Visitor page ▶</a>
+      </div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Past students who still play the arcade. Accounts are removed on their own 90 days after the last visit. Removing one deletes that visitor's scores and sprite. Class students are never listed here.</div>
+      <div id="vis-list" style="font-size:14px">Loading…</div>
+      <div id="vis-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
+    </div>
+
     <div class="card" id="term-card" style="border-color:rgba(255,215,0,0.45)">
       <div class="card-title" style="margin-bottom:4px">🗓 Trimester</div>
       <div id="term-now" style="font-size:14px;color:var(--dim);margin-bottom:10px">Loading…</div>
@@ -760,7 +770,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
-    setTimeout(() => { subInit(); subLoad(); termLoad(); }, 0);
+    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -819,6 +829,35 @@ async function subRevoke(id){
   const { error } = await db.rpc('revoke_sub_code', { p_teacher_pass: teacherPass(), p_id: id });
   if (error){ document.getElementById('sub-err').textContent = error.message; return; }
   subLoad();
+}
+
+// ── VISITORS ──
+function visDate(iso){ return new Date(iso).toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' }); }
+let visArmed = null;
+async function visLoad(){
+  const box = document.getElementById('vis-list'); if (!box || !teacherPass()) return;
+  const { data, error } = await db.rpc('visitor_list', { p_teacher_pass: teacherPass() });
+  if (error){ box.textContent = /passphrase/i.test(error.message) ? 'Enter your teacher passphrase again to see visitors.' : 'Could not load visitors right now.'; return; }
+  const rows = data || [];
+  if (!rows.length){ box.innerHTML = '<div style="color:var(--dim)">No visitors yet. When past students join on the Visitor page, they show up here.</div>'; return; }
+  box.innerHTML = '<div style="font-weight:800;margin-bottom:6px">' + rows.length + ' visitor' + (rows.length === 1 ? '' : 's') + '</div>' + rows.map(v =>
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);flex-wrap:wrap">' +
+    '<span><b>' + escapeHtml(v.name) + '</b>' + (v.sprite ? ' 🌱' : '') + '<br><span style="color:var(--dim);font-size:13px">Last visit ' + escapeHtml(visDate(v.last_seen)) +
+    ' · ' + Number(v.plays) + ' arcade game' + (Number(v.plays) === 1 ? '' : 's') + ' · removed on its own ' + escapeHtml(visDate(v.expires)) + '</span></span>' +
+    '<button class="btn btn-sm vis-rm" data-id="' + escapeHtml(v.id) + '" data-name="' + escapeHtml(v.name) + '" style="color:var(--crimson);border:1px solid rgba(255,59,92,0.4);background:transparent">Remove</button></div>').join('');
+  box.querySelectorAll('.vis-rm').forEach(b => b.onclick = () => visRemove(b));
+}
+async function visRemove(btn){
+  const id = btn.dataset.id, err = document.getElementById('vis-err'); err.textContent = '';
+  if (visArmed !== id){   // first click arms, second click removes
+    visArmed = id; btn.textContent = 'Click again to remove ' + btn.dataset.name;
+    setTimeout(() => { if (visArmed === id){ visArmed = null; btn.textContent = 'Remove'; } }, 4000);
+    return;
+  }
+  visArmed = null; btn.disabled = true; btn.textContent = 'Removing…';
+  const { error } = await db.rpc('visitor_remove', { p_teacher_pass: teacherPass(), p_student_id: id });
+  if (error){ err.textContent = error.message; btn.disabled = false; btn.textContent = 'Remove'; return; }
+  visLoad();
 }
 
 // ── TRIMESTER SWITCH ──
@@ -884,7 +923,7 @@ const TRIMESTER    = ((window.TERM && TERM.id) || '2026-T1');
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 (function(){ const sel = document.getElementById('wq-trimester'); if (!sel) return; if (![...sel.options].some(o => o.value === TRIMESTER)) sel.add(new Option(TRIMESTER, TRIMESTER), 0); sel.value = TRIMESTER; })();
-subInit(); if (teacherPass()) { subLoad(); termLoad(); }
+subInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); }
 const XP_PER_TASK  = 25;
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task
 
