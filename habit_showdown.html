@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Habit Showdown — Dopp's Arcade</title>
+<meta name="description" content="A fast health quiz show: good habit or bad, which is healthier, and myth or fact. Build streaks and beat the clock.">
+<link rel="canonical" href="https://doppsclass.com/habit_showdown.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
+</style>
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Habit Showdown</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 420, H = 640, ROUND_TIME = 10;
+// ---- question banks (from Dopp's Dating Game, Hot Take Stand and Dopp or Drop) ----
+const HABITS = [
+  { e: '😴', t: '8+ Hours of Sleep', s: 'A full night\'s rest every night', good: true, f: 'Sleep is when your body repairs muscles and stores memories. Teens need 8 to 10 hours.' },
+  { e: '🏃', t: 'Daily Exercise', s: 'At least 60 minutes of movement', good: true, f: 'Regular activity lowers the risk of heart disease, diabetes and depression.' },
+  { e: '🥗', t: 'Eating Vegetables', s: 'Half your plate fruits and veggies', good: true, f: 'Vegetables are full of fiber, vitamins and antioxidants that protect your cells.' },
+  { e: '💧', t: 'Drinking Water', s: 'Water with meals and during the day', good: true, f: 'Even mild dehydration can hurt memory, mood and concentration.' },
+  { e: '🚬', t: 'Smoking or Vaping', s: '"Just a little, no big deal"', good: false, f: 'There is no safe level of smoking or vaping. Nicotine is highly addictive for teen brains.' },
+  { e: '🍽️', t: 'Skipping Breakfast', s: '"I\'m not hungry in the morning"', good: false, f: 'Breakfast fuels focus. People who skip it often overeat later and have less energy.' },
+  { e: '📱', t: 'Scrolling at Bedtime', s: 'Phone right up until lights out', good: false, f: 'Screen light and stimulation delay melatonin and make sleep worse.' },
+  { e: '🧘', t: 'Managing Stress', s: 'Deep breathing, journaling, talking', good: true, f: 'Coping skills lower stress hormones that can harm your immune system and heart.' },
+  { e: '🥤', t: 'Sugary Drinks Daily', s: 'Soda and energy drinks every day', good: false, f: 'One 12 oz soda has about 10 teaspoons of sugar, near a whole day\'s limit.' },
+  { e: '🤝', t: 'Strong Friendships', s: 'Staying close to people who care', good: true, f: 'Social connection is linked to better mental health and even a longer life.' },
+  { e: '🧴', t: 'Wearing Sunscreen', s: 'SPF when you\'re outside', good: true, f: 'Most skin cancers are caused by UV rays. Daily sunscreen cuts your risk.' },
+  { e: '🍔', t: 'Fast Food Every Day', s: '"It\'s quick and filling"', good: false, f: 'Daily fast food is high in salt and fat. Once in a while is fine; every day adds up.' },
+  { e: '🦷', t: 'Brushing & Flossing', s: 'Twice a day, every day', good: true, f: 'Gum disease is linked to heart disease. Your mouth affects your whole body.' },
+  { e: '🛋️', t: 'Sitting All Day', s: 'Hours of screens without a break', good: false, f: 'Long sitting raises health risks. Even short movement breaks help.' },
+  { e: '🚶', t: 'Walking More', s: 'Taking the stairs, walking places', good: true, f: 'Daily walking lowers blood pressure and boosts your mood.' }
+];
+const PAIRS = [
+  { a: ['😴', '5 Hours Sleep'], b: ['💤', '9 Hours Sleep'], w: 1, f: 'Teens need 8 to 10 hours. Too little sleep hurts memory, mood and growth.' },
+  { a: ['💧', 'Water'], b: ['🥤', 'Soda'], w: 0, f: 'Water hydrates with zero sugar. Soda adds empty calories.' },
+  { a: ['🛋️', 'Sit All Day'], b: ['🚶', 'Walk 20 Minutes'], w: 1, f: 'A daily walk improves heart health and mood.' },
+  { a: ['🥗', 'Side Salad'], b: ['🍟', 'Large Fries'], w: 0, f: 'Veggie sides add fiber and vitamins; fries add salt and fat.' },
+  { a: ['📵', 'Phone-Free Bedroom'], b: ['📱', 'Scroll Until Sleep'], w: 0, f: 'No screens before bed helps you fall asleep faster and sleep deeper.' },
+  { a: ['🧘', 'Talk It Out'], b: ['😤', 'Bottle It Up'], w: 0, f: 'Sharing stress with someone you trust is a real health skill.' },
+  { a: ['🦷', 'Floss Daily'], b: ['🙅', 'Never Floss'], w: 0, f: 'Floss reaches bacteria a toothbrush can\'t.' },
+  { a: ['☀️', 'Sunscreen'], b: ['🏖️', 'Tan Without SPF'], w: 0, f: 'A tan is skin damage. Sunscreen lowers your skin cancer risk.' },
+  { a: ['🍎', 'Fruit Snack'], b: ['🍬', 'Candy Snack'], w: 0, f: 'Fruit\'s fiber slows the sugar rush; candy spikes and crashes.' },
+  { a: ['💊', 'Meds as Prescribed'], b: ['🧪', 'Borrowing a Friend\'s Pills'], w: 0, f: 'Prescriptions are dosed for one person. Misuse can lead to overdose.' },
+  { a: ['🌿', 'Time Outdoors'], b: ['🏠', 'Indoors All Weekend'], w: 0, f: 'Time in nature lowers stress and improves mood.' },
+  { a: ['🧠', 'See a Counselor'], b: ['💪', '"Just Push Through"'], w: 0, f: 'Counseling is real help. Ignoring anxiety or depression usually makes it worse.' },
+  { a: ['🥛', 'Milk or Fortified Alt'], b: ['⚡', 'Energy Drink'], w: 0, f: 'Calcium builds bones in your teen years; energy drinks add caffeine and sugar.' },
+  { a: ['🍳', 'Eggs & Toast'], b: ['🍩', 'Donut Breakfast'], w: 0, f: 'Protein at breakfast keeps you full and focused longer.' },
+  { a: ['🎧', 'Loud Music All Day'], b: ['🔉', 'Volume Under 60%'], w: 1, f: 'Loud headphones can cause permanent hearing loss.' }
+];
+const MYTHS = [
+  { e: '🏃', t: 'If you eat healthy, you don\'t need exercise.', fact: false, f: 'Exercise builds heart, muscle and bone strength in ways food can\'t.' },
+  { e: '☀️', t: 'A tan is healthy because of vitamin D.', fact: false, f: 'Tanning is skin damage. You can get vitamin D from food safely.' },
+  { e: '💪', t: 'Rest days are as important as workout days.', fact: true, f: 'Muscles rebuild during recovery. Rest helps you get stronger.' },
+  { e: '🥱', t: 'A little boredom can be good for your brain.', fact: true, f: 'Unplugged downtime helps creativity and processing feelings.' },
+  { e: '📱', t: 'Apps are designed to keep you scrolling.', fact: true, f: 'Likes and endless feeds use reward loops that make it hard to stop.' },
+  { e: '😴', t: 'You can fully catch up on sleep on weekends.', fact: false, f: 'Sleeping in helps a little, but it can\'t undo a week of short sleep.' },
+  { e: '⚡', t: 'Energy drinks are a good way to hydrate for sports.', fact: false, f: 'Energy drinks have caffeine and sugar. Water or milk is better for teens.' },
+  { e: '🍳', t: 'Eating breakfast can help you focus in class.', fact: true, f: 'Breakfast refuels your brain after a night without food.' },
+  { e: '🫁', t: 'Vaping is just harmless water vapor.', fact: false, f: 'Vape aerosol has nicotine and chemicals that harm lungs and brains.' },
+  { e: '🧠', t: 'Mental health is part of your overall health.', fact: true, f: 'Stress, sleep and mood affect your body, and your body affects your mood.' },
+  { e: '🥕', t: 'Frozen veggies are just as healthy as fresh.', fact: true, f: 'Frozen veggies are picked ripe and frozen fast, keeping their nutrients.' },
+  { e: '🍫', t: 'Sugar-free means calorie-free.', fact: false, f: 'Sugar-free foods can still have plenty of calories from fat or starch.' }
+];
+const TYPES = { habit: { label: 'GOOD OR BAD HABIT?', left: '👎 BAD', right: 'GOOD 👍' }, pair: { label: 'WHICH IS HEALTHIER?' }, myth: { label: 'MYTH OR FACT?', left: '❌ MYTH', right: 'FACT ✅' } };
+
+let rounds, idx, timeLeft, lives, streak, bestStreak, correct, phase, phaseT, feedback, host, pickSide, slide;
+function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+function reset(A) {
+  const h = shuffle(HABITS).slice(0, 5).map(q => ({ type: 'habit', q })), p = shuffle(PAIRS).slice(0, 5).map(q => ({ type: 'pair', q, flip: Math.random() < 0.5 })), m = shuffle(MYTHS).slice(0, 5).map(q => ({ type: 'myth', q }));
+  rounds = []; for (let i = 0; i < 5; i++) rounds.push(h[i], p[i], m[i]);
+  rounds = rounds.slice(0, 3).concat(shuffle(rounds.slice(3)));
+  idx = 0; lives = 3; streak = 0; bestStreak = 0; correct = 0; host = { mood: 'happy', t: 0, jump: 0 };
+  startRound();
+}
+function startRound() { phase = 'ask'; phaseT = 0; timeLeft = ROUND_TIME; feedback = null; pickSide = null; slide = 0; }
+// which side (0 = left, 1 = right) is correct for this round
+function answerSide(r) {
+  if (r.type === 'habit') return r.q.good ? 1 : 0;
+  if (r.type === 'myth') return r.q.fact ? 1 : 0;
+  const w = r.q.w; return r.flip ? 1 - w : w;
+}
+function choose(side, A) {
+  if (phase !== 'ask' || A.state !== 'play') return;
+  const r = rounds[idx], ok = side === answerSide(r);
+  pickSide = side; phase = 'reveal'; phaseT = 0; slide = side ? 1 : -1;
+  if (ok) {
+    correct++; streak++; bestStreak = Math.max(bestStreak, streak);
+    const mult = streak >= 6 ? 3 : streak >= 3 ? 2 : 1;
+    const pts = Math.round((100 + timeLeft * 10) * mult);
+    A.addScore(pts); A.sfx(mult > 1 ? 'medal' : 'coin');
+    A.float('+' + pts + (mult > 1 ? ' ×' + mult : ''), W / 2, 330, '#7CFFB2');
+    A.particles.burst(W / 2, 300, '#7CFFB2', 18, 220, 4);
+    if (streak === 3 || streak === 6) A.toast('🔥 ' + streak + ' in a row! Points ×' + mult);
+    host.mood = 'happy'; host.jump = 1;
+  } else {
+    streak = 0; lives--; A.sfx('hit'); A.shake(6, 0.2);
+    host.mood = 'sugar';
+  }
+  feedback = { ok, text: r.q.f, timeout: false };
+  if (correct === 10) A.win('10 correct answers!');
+}
+function next(A) {
+  if (lives <= 0) { A.gameOver(); return; }
+  if (idx + 1 >= rounds.length) { phase = 'done'; A.sfx('win'); A.gameOver(true); return; }
+  idx++; startRound();
+}
+function input(type, A) {
+  if (phase === 'ask' && phaseT > 0.4) { if (type === 'left') choose(0, A); else if (type === 'right') choose(1, A); }
+  else if (phase === 'reveal' && phaseT > 0.6 && (type === 'tap' || type === 'up' || type === 'left' || type === 'right')) next(A);
+}
+function pointer(type, x, y, A) {
+  if (type !== 'down') return;
+  if (phase === 'ask') {
+    const r = rounds[idx];
+    if (r.type === 'pair') { if (y > 170 && y < 470) choose(x < W / 2 ? 0 : 1, A); }
+    else if (y > 470 && y < 560) choose(x < W / 2 ? 0 : 1, A);
+  } else if (phase === 'reveal' && phaseT > 0.6) next(A);
+}
+function update(dt, A) {
+  if (!host) return;
+  host.t += dt; host.jump = Math.max(0, host.jump - dt * 2.5);
+  if (A.state !== 'play') return;
+  phaseT += dt;
+  if (phase === 'ask') {
+    timeLeft = Math.max(0, timeLeft - dt);
+    if (timeLeft <= 0) { streak = 0; lives--; A.sfx('hit'); host.mood = 'tired'; phase = 'reveal'; phaseT = 0; feedback = { ok: false, text: rounds[idx].q.f, timeout: true }; }
+  } else if (phase === 'reveal' && phaseT > 4.5) next(A);
+}
+
+// ---------- drawing ----------
+function wrap(ctx, text, x, y, maxW, lh, maxLines) {
+  const words = text.split(' '); let line = '', yy = y, n = 0;
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, yy); line = w; yy += lh; if (++n >= (maxLines || 9)) return yy; } else line = t; }
+  if (line) ctx.fillText(line, x, yy); return yy + lh;
+}
+function button(ctx, A, x, y, w, h, label, color, state) {
+  const dim = state === 'dim';
+  ctx.globalAlpha = dim ? 0.35 : 1;
+  A.rr(x, y + 5, w, h, 16); ctx.fillStyle = A.INK; ctx.fill();
+  A.rr(x, y, w, h, 16); A.ink(color, 3);
+  ctx.fillStyle = '#1A1030'; ctx.font = '900 22px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText(label, x + w / 2, y + h / 2 + 8);
+  if (state === 'right') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; A.rr(x - 4, y - 4, w + 8, h + 8, 18); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+}
+function draw(ctx, A) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#2b1660'); g.addColorStop(1, '#140c36'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // stage spotlights
+  ctx.fillStyle = 'rgba(255,215,0,.06)'; ctx.beginPath(); ctx.moveTo(60, 60); ctx.lineTo(0, 600); ctx.lineTo(200, 600); ctx.fill(); ctx.beginPath(); ctx.moveTo(360, 60); ctx.lineTo(220, 600); ctx.lineTo(420, 600); ctx.fill();
+  if (!rounds) return;
+  const r = rounds[idx], T = TYPES[r.type];
+  // HUD
+  ctx.font = '900 15px Nunito,sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#FF5C77';
+  ctx.fillText('❤'.repeat(Math.max(0, lives)) + '♡'.repeat(Math.max(0, 3 - lives)), 64, 82);
+  ctx.textAlign = 'right'; ctx.fillStyle = '#b9b0d6'; ctx.fillText('Round ' + (idx + 1) + '/' + rounds.length, W - 64, 82);
+  if (streak >= 2) { ctx.textAlign = 'center'; ctx.fillStyle = '#FFD700'; ctx.fillText('🔥 ' + streak + ' streak' + (streak >= 3 ? ' ×' + (streak >= 6 ? 3 : 2) : ''), W / 2, 104); }
+  // timer bar
+  const tp = phase === 'ask' ? timeLeft / ROUND_TIME : 0;
+  A.rr(24, 114, W - 48, 12, 6); A.ink('#1f1640', 2);
+  if (tp > 0) { A.rr(24, 114, (W - 48) * tp, 12, 6); A.ink(tp > 0.5 ? '#3FCB6B' : tp > 0.25 ? '#FFD23F' : '#FF5C77', 2); }
+  // round type chip
+  ctx.font = '900 14px Nunito,sans-serif'; const cw = ctx.measureText(T.label).width + 28;
+  A.rr(W / 2 - cw / 2, 136, cw, 28, 14); A.ink('#FFD700', 2.5); ctx.fillStyle = '#2a1d00'; ctx.textAlign = 'center'; ctx.fillText(T.label, W / 2, 155);
+
+  const sl = phase === 'reveal' ? Math.min(1, phaseT * 4) : 0;
+  if (r.type === 'pair') {
+    const L = r.flip ? r.q.b : r.q.a, R = r.flip ? r.q.a : r.q.b, ans = answerSide(r);
+    [L, R].forEach((c, i) => {
+      const x = 22 + i * 196, y = 184, w = 180, h = 270;
+      let col = '#22164a';
+      if (phase === 'reveal') col = i === ans ? '#1f6b4a' : '#4a1f36';
+      A.rr(x, y + 6, w, h, 18); ctx.fillStyle = A.INK; ctx.fill();
+      A.rr(x, y, w, h, 18); A.ink(col, 3);
+      ctx.font = '64px serif'; ctx.textAlign = 'center'; ctx.fillText(c[0], x + w / 2, y + 100);
+      ctx.fillStyle = '#fff'; ctx.font = '900 20px Nunito,sans-serif'; wrap(ctx, c[1], x + w / 2, y + 150, w - 24, 24, 3);
+      if (phase === 'ask') { ctx.fillStyle = '#FFD700'; ctx.font = '900 15px Nunito,sans-serif'; ctx.fillText(i ? 'Tap or ▶' : '◀ or Tap', x + w / 2, y + h - 18); }
+      if (phase === 'reveal' && i === ans) { ctx.font = '900 30px Nunito,sans-serif'; ctx.fillText('✅', x + w - 26, y + 34); }
+      if (phase === 'reveal' && i === pickSide && i !== ans) { ctx.font = '900 30px Nunito,sans-serif'; ctx.fillText('❌', x + w - 26, y + 34); }
+    });
+    ctx.fillStyle = '#FFD700'; ctx.font = '900 22px Cinzel,serif'; ctx.textAlign = 'center'; ctx.fillText('VS', W / 2, 330);
+  } else {
+    const q = r.q, x = 34 + slide * sl * 40, y = 184, w = W - 68, h = 270;
+    ctx.save(); ctx.translate(x + w / 2, y + h / 2); ctx.rotate(slide * sl * 0.05); ctx.translate(-(x + w / 2), -(y + h / 2));
+    A.rr(x, y + 6, w, h, 20); ctx.fillStyle = A.INK; ctx.fill();
+    A.rr(x, y, w, h, 20); A.ink('#22164a', 3);
+    ctx.font = '72px serif'; ctx.textAlign = 'center'; ctx.fillText(q.e, x + w / 2, y + 100);
+    ctx.fillStyle = '#fff'; ctx.font = '900 23px Nunito,sans-serif'; const yy = wrap(ctx, q.t, x + w / 2, y + 150, w - 36, 28, 3);
+    if (q.s) { ctx.fillStyle = '#b9b0d6'; ctx.font = '700 15px Nunito,sans-serif'; wrap(ctx, q.s, x + w / 2, yy + 2, w - 36, 20, 2); }
+    if (phase === 'ask') { ctx.fillStyle = 'rgba(255,215,0,.8)'; ctx.font = '800 13px Nunito,sans-serif'; ctx.fillText('swipe ◀ or ▶', x + w / 2, y + h - 16); }
+    ctx.restore();
+    const ans = answerSide(r);
+    button(ctx, A, 30, 478, 172, 64, T.left, '#FF8FA3', phase === 'reveal' ? (ans === 0 ? 'right' : 'dim') : '');
+    button(ctx, A, 218, 478, 172, 64, T.right, '#7CFFB2', phase === 'reveal' ? (ans === 1 ? 'right' : 'dim') : '');
+  }
+  // feedback panel
+  if (phase === 'reveal' && feedback) {
+    const y = r.type === 'pair' ? 470 : 184, h = r.type === 'pair' ? 110 : 270;
+    ctx.globalAlpha = Math.min(1, phaseT * 4);
+    A.rr(24, y, W - 48, h, 18); A.ink(feedback.ok ? '#16463a' : '#4f1430', 3);
+    ctx.textAlign = 'center'; ctx.fillStyle = feedback.ok ? '#7CFFB2' : '#FF8FA3'; ctx.font = '900 24px Cinzel,serif';
+    ctx.fillText(feedback.timeout ? '⏰ Time\'s up!' : feedback.ok ? 'Correct!' : 'Not quite!', W / 2, y + 36);
+    ctx.fillStyle = '#fff'; ctx.font = '700 16px Nunito,sans-serif'; wrap(ctx, feedback.text, W / 2, y + 64, W - 90, 22, r.type === 'pair' ? 2 : 7);
+    if (phaseT > 0.6) { ctx.fillStyle = '#FFD700'; ctx.font = '900 14px Nunito,sans-serif'; ctx.fillText('Tap for next →', W / 2, y + h - 12); }
+    ctx.globalAlpha = 1;
+  }
+  // host sprite
+  const hb = Math.sin(host.t * 3) * 3 + host.jump * -18;
+  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(60, 626, 26, 5, 0, 0, 7); ctx.fill();
+  A.drawHero(60, 596 + hb, 58, Math.sin(host.t * 2) * 0.05, host.mood);
+  ctx.textAlign = 'left'; ctx.fillStyle = '#b9b0d6'; ctx.font = '800 13px Nunito,sans-serif';
+  ctx.fillText(phase === 'ask' ? 'Quick! Beat the clock!' : feedback && feedback.ok ? 'Nice one!' : 'Now you know!', 98, 600);
+  ctx.fillText(correct + ' correct', 98, 618);
+}
+
+window.__hs = () => ({ rounds, idx, phase, lives, streak, correct, answerSide, choose: s => choose(s, game) });   // used by automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Habit Showdown', subtitle: 'The healthy-choices quiz show!', W, H, reserveH: 70,
+  storageKey: 'habit_showdown', winText: '10 correct answers!', swipe: true, deathDelay: 600, overTitle: 'Out of hearts!',
+  medals: [{ at: 1500, name: 'Bronze', icon: '🥉' }, { at: 3000, name: 'Silver', icon: '🥈' }, { at: 4500, name: 'Gold', icon: '🥇' }, { at: 5800, name: 'Legend', icon: '💎' }],
+  howTo: '15 quick rounds: <b>Good or bad habit?</b> <b>Which is healthier?</b> <b>Myth or fact?</b><br>Answer fast for bonus points, build streaks, and get <b>10 right</b> to win!',
+  controls: '← → or swipe to answer · tap the buttons · P pause',
+  facts: [
+    'Small daily habits, like drinking water and sleeping enough, add up to big health benefits.',
+    'It takes about two months on average for a new habit to feel automatic.',
+    'Pairing a new habit with an old one (like flossing after brushing) helps it stick.',
+    'Checking claims with trusted sources helps you spot health myths online.',
+    'Making the healthy choice easy, like keeping fruit out, helps you choose it more often.'
+  ],
+  reset, update, draw, input, pointer,
+  pad: [{ label: '◀', type: 'left', wide: true }, { label: 'Next', type: 'tap' }, { label: '▶', type: 'right', wide: true }]
+});
+})();
+</script>
+</body>
+</html>

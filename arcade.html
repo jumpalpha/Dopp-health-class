@@ -289,6 +289,8 @@ const CLASSICS = [
     medals:[[50,'🥉 Bronze'],[150,'🥈 Silver'],[300,'🥇 Gold'],[500,'💎 Legend']], goal:150, unit:'points' },
   { key:'field_day', title:'Field Day', file:'field_day.html', icon:'🏅', desc:'5-event track meet: 100m, hurdles, long jump, javelin, high jump. Beat the rivals!',
     medals:[[1800,'🥉 Bronze'],[3000,'🥈 Silver'],[3900,'🥇 Gold'],[4500,'💎 Legend']], goal:'Score 3,000 all-around', winBy:'wins' },
+  { key:'habit_showdown', title:'Habit Showdown', file:'habit_showdown.html', icon:'⚖️', desc:'Quiz show: good or bad habit, which is healthier, myth or fact. Beat the clock!',
+    medals:[[1500,'🥉 Bronze'],[3000,'🥈 Silver'],[4500,'🥇 Gold'],[5800,'💎 Legend']], goal:'Get 10 right', winBy:'wins' },
   { key:'snack_stack', title:'Snack Stack', file:'dopp_tetris.html', icon:'🟦', desc:'Stack falling healthy snacks and clear 10 lines.',
     medals:[[500,'🥉 Bronze'],[1500,'🥈 Silver'],[4000,'🥇 Gold'],[8000,'💎 Legend']], goal:'Clear 10 lines', winBy:'wins' }
 ];
@@ -301,17 +303,12 @@ const GROUPS = [
     ['😤',"Dopp's Corner","Dodge Dopp's sweeps. Be the last one standing!",'dopp_corner.html'],
     ['🏀','Dopp Dunk','Shoot bad health habits into the trash can.','dopp_dunk.html'],
   ]},
-  { name:'🧩 Puzzle & Brain', sub:'Think it through.', color:'#38BFFF', games:[
+  { name:'🧩 Brain & Fun', sub:'Puzzles, word games and quick challenges.', color:'#38BFFF', games:[
     ['🔢','Dopp 2048','Combine tiles to reach Peak Health.','dopp_2048.html'],
     ['🔤','Dopp Wordle','Guess the 5-letter health word in 6 tries.','dopp_wordle.html'],
-    ['🧠','Dopp Memory Match','Flip cards and find the health pairs.','dopp_match.html']
+    ['🧠','Dopp Memory Match','Flip cards and find the health pairs.','dopp_match.html'],
+    ['🌀','Dopp Spin','Spin the wheel for a health challenge.','dopp_spin.html']
   ]},
-  { name:'🎲 Quick Fun', sub:'One-minute games and choices.', color:'#B57CFF', games:[
-    ['⚖️','Dopp or Drop','Pick the better health habit, fast.','dopp_or_drop.html'],
-    ['💘',"Dopp's Dating Game",'Swipe left or right on health habits.','dopp_dating.html'],
-    ['🔥',"Dopp's Hot Take Stand",'Agree or disagree with health hot takes.','dopp_hottake.html'],
-    ['🌀','Dopp Spin','Spin the wheel for a health challenge.','dopp_spin.html'],
-  ]}
 ];
 const CLASSROOM = [
   {icon:"📋",title:"Health Jeopardy",type:"Boss",realm:"Any Realm Boss Battle",desc:"5 health categories × 5 dollar values. Hidden Daily Doubles, 2–4 team scoring, Final Jeopardy with wagers.",features:["2–4 Teams","Daily Double","Final Jeopardy","25 Questions"],file:"game01_jeopardy.html"},
