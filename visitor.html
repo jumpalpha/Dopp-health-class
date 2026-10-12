@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<title>Visitors — Legend of Wellness</title>
+<meta name="description" content="Past students: keep playing the Legend of Wellness arcade, raise a Wellness Sprite and climb the visitor leaderboard.">
+<link rel="canonical" href="https://doppsclass.com/visitor.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@900&family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0a0618;--card:#171030;--border:rgba(255,255,255,.11);--text:#F4EFFF;--dim:#B9B0D6;--ink:#1A1030}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Nunito,system-ui,sans-serif;background:radial-gradient(ellipse 90% 55% at 50% -5%,#3a1f7a 0%,transparent 70%),linear-gradient(#120a2a,#0a0618 60%) fixed;color:var(--text);min-height:100vh}
+a{color:var(--emerald)}
+nav{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 24px;background:rgba(10,6,24,.88);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.nav-logo{font-family:Cinzel,serif;font-weight:700;font-size:16px;color:var(--gold);text-decoration:none}
+.nav-logo span{color:var(--dim)}
+.nav-links{display:flex;gap:4px;flex-wrap:wrap}
+.nav-link{padding:7px 12px;border-radius:9px;font-size:13px;font-weight:800;color:var(--dim);text-decoration:none}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.nav-link.active{color:var(--gold);border:1px solid rgba(255,215,0,.4);background:rgba(255,215,0,.08)}
+main{max-width:980px;margin:0 auto;padding:34px 18px 50px}
+.eyebrow{font-family:Cinzel,serif;font-size:12px;letter-spacing:4px;color:var(--emerald);text-transform:uppercase;font-weight:700}
+h1{font-family:'Cinzel Decorative',serif;font-weight:900;font-size:clamp(32px,6vw,56px);color:var(--gold);text-shadow:0 3px 0 #5a3d00;margin:8px 0 10px;line-height:1.05}
+.lead{color:var(--dim);font-size:17px;line-height:1.55;max-width:640px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px}
+.card h2{font-family:Cinzel,serif;font-size:20px;color:var(--gold);margin-bottom:6px}
+.card p{color:var(--dim);font-size:14px;line-height:1.5;margin-bottom:12px}
+label{display:block;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin:10px 0 4px}
+input{width:100%;font:800 16px Nunito,sans-serif;color:var(--text);background:#0f0a22;border:1px solid var(--border);border-radius:12px;padding:12px 14px;outline:none}
+input:focus{border-color:rgba(255,215,0,.6)}
+.btn{display:inline-block;margin-top:14px;width:100%;text-align:center;font:900 17px Nunito,sans-serif;padding:13px;border-radius:14px;border:3px solid var(--ink);background:var(--gold);color:#2a1d00;box-shadow:0 4px 0 var(--ink);cursor:pointer;text-decoration:none}
+.btn.green{background:linear-gradient(180deg,#3ff0b5,#00c98a);color:#05261a}
+.btn.ghost{background:transparent;color:var(--dim);border-color:var(--border);box-shadow:none;font-size:14px;padding:9px}
+.err{color:#FF8FA3;font-weight:800;font-size:14px;min-height:20px;margin-top:8px}
+.rules{margin-top:22px;font-size:14px;color:var(--dim);line-height:1.6}
+.rules li{margin-left:18px}
+.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.act{display:flex;gap:12px;align-items:center;background:#1f1640;border:1px solid var(--border);border-radius:14px;padding:14px;text-decoration:none;color:var(--text);font-weight:900}
+.act span{font-size:26px}
+.act small{display:block;color:var(--dim);font-weight:700;font-size:12px}
+.board td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.06);font-weight:800}
+.board table{width:100%;border-collapse:collapse}
+.board td.s{color:var(--gold);text-align:right}
+.empty{color:var(--dim);font-weight:700;padding:14px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="pet.html">🌱 Sprite</a>
+    <a class="nav-link" href="leaderboard.html">🏆 Hall</a>
+    <a class="nav-link active" href="visitor.html">👋 Visitors</a>
+  </div>
+</nav>
+<main>
+  <div class="eyebrow">👋 Visitor Section</div>
+  <h1>Welcome Back, Hero</h1>
+  <p class="lead">Took Mr. Dopp's class before? Make a free visitor account to keep playing the arcade, raise a Wellness Sprite, and climb the <b>Visitors leaderboard</b>, separate from current classes.</p>
+
+  <!-- signed in -->
+  <section id="inView" hidden>
+    <div class="card" style="margin-top:24px">
+      <h2 id="hello">Hi!</h2>
+      <p id="expiry"></p>
+      <div class="acts">
+        <a class="act" href="arcade.html"><span>🎮</span><div>Arcade<small>Scores post to the Visitors board</small></div></a>
+        <a class="act" href="pet.html"><span>🌱</span><div>Wellness Sprite<small>Raise and care for your sprite</small></div></a>
+        <a class="act" href="arcade.html#stats"><span>📊</span><div>Leaderboards<small>See where you rank</small></div></a>
+        <a class="act" href="mastery.html"><span>🎓</span><div>Mastery Checks<small>Test what you remember</small></div></a>
+      </div>
+      <button class="btn ghost" id="signOut">Sign out</button>
+    </div>
+  </section>
+  <section id="studentView" hidden>
+    <div class="card" style="margin-top:24px"><h2>You're signed in as a current student</h2><p>Visitor accounts are for past students. Your scores already count for your class. <a href="arcade.html">Go to the Arcade →</a></p></div>
+  </section>
+
+  <!-- signed out -->
+  <section id="outView" hidden>
+    <div class="grid">
+      <div class="card">
+        <h2>New visitor</h2>
+        <p>Make your account in 20 seconds. Use your real first name and last name so Mr. Dopp knows who you are.</p>
+        <label for="nFirst">First name (shown on boards)</label><input id="nFirst" maxlength="16" autocomplete="given-name">
+        <label for="nLast">Last name</label><input id="nLast" maxlength="30" autocomplete="family-name">
+        <label for="nPin">Make a 4-digit PIN</label><input id="nPin" inputmode="numeric" maxlength="4" type="password" autocomplete="new-password">
+        <label for="nPin2">Type the PIN again</label><input id="nPin2" inputmode="numeric" maxlength="4" type="password" autocomplete="new-password">
+        <button class="btn green" id="newBtn">Create visitor account</button>
+        <div class="err" id="newErr"></div>
+      </div>
+      <div class="card">
+        <h2>Returning visitor</h2>
+        <p>Already made a visitor account? Sign back in.</p>
+        <label for="rLast">Last name</label><input id="rLast" maxlength="30" autocomplete="family-name">
+        <label for="rPin">Your 4-digit PIN</label><input id="rPin" inputmode="numeric" maxlength="4" type="password" autocomplete="current-password">
+        <button class="btn" id="retBtn">Sign in</button>
+        <div class="err" id="retErr"></div>
+      </div>
+    </div>
+    <ul class="rules">
+      <li>Your visitor account stays active as long as you visit at least once every <b>90 days</b>. After 90 days with no visit, it's deleted automatically.</li>
+      <li>Visitor accounts reset each trimester.</li>
+      <li>Boards show your sprite's name, first name and last initial only. Mr. Dopp can remove any account.</li>
+      <li>Current students: log in on the <a href="quest.html">Quest page</a> with your class code instead.</li>
+    </ul>
+  </section>
+
+  <div class="card board" style="margin-top:24px">
+    <h2>🏆 Top Visitors</h2>
+    <p>Most arcade medals earned by visitors this trimester.</p>
+    <div id="board"><div class="empty">Loading…</div></div>
+  </div>
+</main>
+<script>
+(() => {
+const URL = 'https://gmeyamrlqfrabtslsweu.supabase.co', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c', TRIMESTER = '2026-T1';
+const CODE = 'VISITOR-' + TRIMESTER;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+async function rpc(name, args) {
+  const r = await fetch(URL + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+  const j = await r.json().catch(() => null); if (!r.ok) { const e = new Error((j && j.message) || 'HTTP ' + r.status); e.code = j && j.code; throw e; } return j;
+}
+async function hashPin(pin) {   // same hashing as the Quest page
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin + URL));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const store = { get(k, s) { try { return (s ? sessionStorage : localStorage).getItem(k); } catch (e) { return null; } },
+  set(k, v, s) { try { (s ? sessionStorage : localStorage).setItem(k, v); } catch (e) {} }, del(k, s) { try { (s ? sessionStorage : localStorage).removeItem(k); } catch (e) {} } };
+const BAD = /(fuck|shit|bitch|cunt|dick|cock|pussy|nigg|fag|slut|whore|porn|sex|nazi|hitler|kill)/i;
+function show(v) { ['inView', 'outView', 'studentView'].forEach(id => $(id).hidden = id !== v); }
+
+async function check() {
+  const id = store.get('qSID_' + TRIMESTER), pin = store.get('qPIN_' + TRIMESTER, true);
+  if (!id || !pin) return show('outView');
+  try {
+    const r = await rpc('visitor_touch', { p_student_id: id, p_pin_hash: pin, p_trimester: TRIMESTER });
+    if (!r) return show('outView');
+    if (!r.visitor) return show('studentView');
+    $('hello').textContent = '👋 Welcome, ' + r.name + '!';
+    $('expiry').innerHTML = 'Your visitor account is active. Visit again before <b>' + new Date(r.expires + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) + '</b> to keep it.';
+    show('inView');
+  } catch (e) { show('outView'); }
+}
+function signIn(student, hash) {
+  store.set('qSID_' + TRIMESTER, student.id); store.set('qPIN_' + TRIMESTER, hash, true);
+  check();
+}
+$('newBtn').onclick = async () => {
+  const first = $('nFirst').value.trim(), last = $('nLast').value.trim(), pin = $('nPin').value.trim(), pin2 = $('nPin2').value.trim(), err = $('newErr');
+  if (!/^[A-Za-zÀ-ÿ' -]{2,16}$/.test(first)) return err.textContent = 'First name: 2 to 16 letters.';
+  if (!/^[A-Za-zÀ-ÿ' -]{2,30}$/.test(last)) return err.textContent = 'Please enter your last name.';
+  if (BAD.test(first) || BAD.test(last)) return err.textContent = 'Please use your real name.';
+  if (!/^\d{4}$/.test(pin)) return err.textContent = 'PIN must be exactly 4 digits.';
+  if (pin !== pin2) return err.textContent = 'PINs don\'t match.';
+  err.textContent = 'Creating your account…';
+  try {
+    const hash = await hashPin(pin);
+    const rows = await rpc('create_student_profile', { p_class_code: CODE, p_last_name: last, p_display_name: first, p_pin_hash: hash, p_avatar: '👋', p_trimester: TRIMESTER });
+    if (!rows || !rows.length) throw new Error('none');
+    err.textContent = ''; signIn(rows[0], hash);
+  } catch (e) { err.textContent = e.code === '23505' ? 'A visitor with that name already exists. Try signing in instead.' : 'Couldn\'t create the account. Try again.'; }
+};
+$('retBtn').onclick = async () => {
+  const last = $('rLast').value.trim(), pin = $('rPin').value.trim(), err = $('retErr');
+  if (!last || !/^\d{4}$/.test(pin)) return err.textContent = 'Enter your last name and 4-digit PIN.';
+  err.textContent = 'Checking…';
+  try {
+    const hash = await hashPin(pin);
+    const found = await rpc('find_student_for_login', { p_class_code: CODE, p_last_name: last, p_trimester: TRIMESTER });
+    if (!found || !found.length) return err.textContent = 'No visitor account with that last name. (Accounts expire after 90 days without a visit.)';
+    for (const f of found) {
+      const ok = await rpc('verify_student_pin', { p_student_id: f.id, p_pin_hash: hash, p_trimester: TRIMESTER });
+      if (ok && ok.length) { err.textContent = ''; return signIn(ok[0], hash); }
+    }
+    err.textContent = 'Incorrect PIN. Try again.';
+  } catch (e) { err.textContent = 'Couldn\'t sign in right now. Try again.'; }
+};
+$('signOut').onclick = () => { store.del('qSID_' + TRIMESTER); store.del('qPIN_' + TRIMESTER, true); show('outView'); };
+
+async function board() {
+  try {
+    const rows = await rpc('arcade_champions', { p_trimester: TRIMESTER, p_group: 'visitors', p_limit: 10 });
+    $('board').innerHTML = rows && rows.length ? '<table>' + rows.map(r => `<tr><td>${['🥇', '🥈', '🥉'][r.rank - 1] || r.rank}</td><td>${esc(r.name)}</td><td class="s">${r.medals} medals · ${r.games_won} won</td></tr>`).join('') + '</table>'
+      : '<div class="empty">No visitors on the board yet. Be the first!</div>';
+  } catch (e) { $('board').innerHTML = '<div class="empty">Couldn\'t load the board right now.</div>'; }
+}
+check(); board();
+})();
+</script>
+</body>
+</html>

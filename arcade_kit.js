@@ -6,6 +6,25 @@
 (function () {
   const INK = '#1A1030';
 
+  // ---------- class leaderboard (Supabase) ----------
+  // Signed-in students (Quest page or Visitor page, same browser tab) post their result automatically.
+  const NET = {
+    URL: 'https://gmeyamrlqfrabtslsweu.supabase.co', KEY: 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c', TRIMESTER: '2026-T1',
+    session() {
+      try {
+        const id = localStorage.getItem('qSID_' + NET.TRIMESTER), pin = sessionStorage.getItem('qPIN_' + NET.TRIMESTER);
+        return id && pin ? { id, pin } : null;
+      } catch (e) { return null; }
+    },
+    async rpc(name, args) {
+      const r = await fetch(NET.URL + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: NET.KEY, Authorization: 'Bearer ' + NET.KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+      const j = await r.json().catch(() => null);
+      if (!r.ok) throw new Error((j && j.message) || ('HTTP ' + r.status));
+      return j;
+    }
+  };
+  window.ArcadeNet = NET;
+
   function Arcade(cfg) {
     const A = { W: cfg.W, H: cfg.H, state: 'menu', score: 0, time: 0, won: false, muted: false };
     const store = {
@@ -184,11 +203,29 @@
           '<div class="ak-best">' + (isBest ? '✨ New best!' : 'Best: <b>' + A.best.toLocaleString() + '</b>') + '</div>' +
           (m ? '<div class="ak-medal">' + m.icon + ' ' + m.name + ' medal</div>' : (medals[0] ? '<div class="ak-medal dim">' + medals[0].icon + ' ' + medals[0].name + ' at ' + medals[0].at + '</div>' : '')) +
           (fact ? '<div class="ak-fact">💡 ' + fact + '</div>' : '') +
+          '<div class="ak-net"></div>' +
           '<button class="ak-play">↻ Play again</button>' +
           '<a class="ak-link" href="arcade.html">🎮 More games</a>' +
         '</div>';
       over.querySelector('.ak-play').onclick = e => { e.stopPropagation(); start(); };
       over.classList.remove('hidden');
+      postScore(over.querySelector('.ak-net'));
+    }
+    function postScore(el) {
+      if (cfg.noBoard || !el) return;
+      const ses = NET.session();
+      if (!ses) { el.innerHTML = '🏆 <a href="quest.html">Log in</a> (or <a href="visitor.html">join as a visitor</a>) to post scores to the class leaderboard.'; return; }
+      if (A.score <= 0) return;
+      el.textContent = '📡 Posting to the leaderboard…';
+      NET.rpc('arcade_submit', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: cfg.storageKey, p_score: A.score, p_won: !!A.won })
+        .then(r => {
+          if (!r) throw new Error('no reply');
+          const where = r.visitor ? ' among visitors' : ' in all classes';
+          el.innerHTML = '📡 Posted! <b>#' + r.rank + '</b>' + where + (r.visitor ? '' : ' · <b>#' + r.rank_group + '</b> in ' + r.group) +
+            (r.xp ? '<br>⭐ +' + r.xp + ' Verified XP for your first quest win!' : '') +
+            '<br><a href="arcade.html#stats">See leaderboards →</a>';
+        })
+        .catch(err => { el.textContent = /too fast/.test(err.message) ? '' : /not signed/.test(err.message) ? '🔒 Your login expired. Log in again on the Quest page to post scores.' : '⚠ Couldn\'t post your score right now.'; });
     }
 
     // ---------- flow ----------
@@ -349,6 +386,10 @@
   .ak-medal.dim{background:#2a2050;color:#b9b0d6}
   .ak-fact{margin-top:12px;background:#0f0a22;border:1px solid #3b2f66;border-radius:12px;padding:10px;font-size:14px;line-height:1.4;text-align:left}
   .ak-link{display:block;margin-top:10px;color:#FFD700;font-weight:800;text-decoration:none}
+  .ak-net{margin-top:10px;font-size:13px;line-height:1.45;color:#cfc6ef;font-weight:700}
+  .ak-net:empty{display:none}
+  .ak-net a{color:#7CFFB2;font-weight:900}
+  .ak-net b{color:#FFD700}
   .ak-pad{display:none;gap:10px;justify-content:center;padding:10px 0 4px;width:100%}
   .ak-pad.always{display:flex}
   @media (hover:none){.ak-pad{display:flex}}

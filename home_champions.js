@@ -70,7 +70,7 @@
     ]);
     const vx = {}; (vxr.data || []).forEach(v => { vx[v.student_id] = v.verified_xp; });
     const heroes = (lb.data || [])
-      .filter(s => !/test/i.test(s.class_code || '') && (vx[s.id] || 0) > 0)
+      .filter(s => !/test|^visitor/i.test(s.class_code || '') && (vx[s.id] || 0) > 0)
       .map(s => ({ name: s.display_name, avatar: s.avatar, period: periodLabel(s.class_code), xp: vx[s.id] || 0 }))
       .sort((a, b) => b.xp - a.xp);
     const sprites = (gal.data || []).filter(p => p.alive && p.stage !== 'egg')

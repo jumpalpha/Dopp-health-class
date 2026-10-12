@@ -202,8 +202,9 @@ let refreshInterval;
 
 const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // "2627T1P4" -> "P4" -> "Period 4"
-const periodKey = code => { const m = String(code || '').match(/P(\d+)$/i); return m ? 'P' + m[1] : null; };
-const periodLabel = code => { const k = periodKey(code); return k ? 'Period ' + k.slice(1) : String(code || ''); };
+const isVisitor = code => /^VISITOR/i.test(String(code || ''));
+const periodKey = code => { if (isVisitor(code)) return 'V'; const m = String(code || '').match(/P(\d+)$/i); return m ? 'P' + m[1] : null; };
+const periodLabel = code => { const k = periodKey(code); return k === 'V' ? 'Visitor' : k ? 'Period ' + k.slice(1) : String(code || ''); };
 const isTest = code => /test/i.test(String(code || ''));
 // Idaho calendar date, YYYY-MM-DD
 const idahoDate = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver' }).format(d);
@@ -251,7 +252,7 @@ async function loadData(showLoading) {
 
 function buildFilters(){
   const keys = [...new Set(allData.map(s => periodKey(s.class_code)).filter(Boolean))]
-    .sort((a, b) => +a.slice(1) - +b.slice(1));
+    .sort((a, b) => (a === 'V') - (b === 'V') || +a.slice(1) - +b.slice(1));
   const bar = document.getElementById('filter-bar');
   const want = ['all'].concat(keys).join(',');
   if (bar.dataset.built === want) return;
@@ -262,7 +263,7 @@ function buildFilters(){
     const b = document.createElement('button');
     b.className = 'filter-btn' + (k === lbFilter ? ' active' : '');
     b.dataset.p = k;
-    b.textContent = k === 'all' ? 'All Periods' : 'Period ' + k.slice(1);
+    b.textContent = k === 'all' ? 'All Periods' : k === 'V' ? '👋 Visitors' : 'Period ' + k.slice(1);
     b.onclick = () => setFilter(k, b);
     bar.insertBefore(b, refresh);
   });
@@ -270,7 +271,8 @@ function buildFilters(){
 
 function render() {
   const showAll = document.getElementById('show-all').checked;
-  let rows = lbFilter === 'all' ? allData : allData.filter(s => periodKey(s.class_code) === lbFilter);
+  // visitors (past students) get their own board, not mixed into current classes
+  let rows = lbFilter === 'all' ? allData.filter(s => !isVisitor(s.class_code)) : allData.filter(s => periodKey(s.class_code) === lbFilter);
   if (!showAll) rows = rows.filter(s => s.vxp > 0 || s.tasks > 0 || s.days > 0);
   renderPodium(rows);
   renderTable(rows);

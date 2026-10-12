@@ -151,6 +151,18 @@ h2.sec:first-child{margin-top:4px}
 .note{font-size:13px;color:var(--dim);margin-top:14px;line-height:1.5}
 
 .empty{color:var(--dim);font-weight:700;padding:30px 0;text-align:center}
+.who{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin:6px 0 14px;font-weight:800}
+.who a{color:var(--emerald)}
+.who .tag{font-size:12px;padding:4px 9px;border-radius:99px;background:rgba(255,215,0,.12);color:var(--gold)}
+.board{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.board table{width:100%;border-collapse:collapse}
+.board th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border)}
+.board td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-weight:800}
+.board tr:last-child td{border-bottom:0}
+.board td.r{width:52px;font-size:18px;text-align:center}
+.board td.n{color:var(--text)} .board td.g{color:var(--dim);font-size:13px} .board td.s{color:var(--gold);text-align:right;font-family:Cinzel,serif;font-size:18px}
+.board tr.me td{background:rgba(124,255,178,.08)}
+@media (max-width:560px){.board td.g{display:none}.board th.g{display:none}}
 footer{border-top:1px solid var(--border);padding:24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;max-width:1100px;margin:0 auto;font-size:13px;color:var(--dim)}
 footer b{font-family:Cinzel,serif;color:var(--gold)}
 footer a{color:var(--dim)}
@@ -246,9 +258,15 @@ footer a{color:var(--dim)}
 
   <section class="panel" id="stats" role="tabpanel" aria-labelledby="tab-stats" hidden>
     <h2 class="sec">🏆 My Stats</h2>
-    <p class="sec-sub">Your best scores and medals in the Sprite Arcade and Sprite Classics.</p>
+    <div class="who" id="who"></div>
+    <p class="sec-sub">Your best scores and medals in the Sprite Arcade and Sprite Classics. <a href="#boards" style="color:var(--gold);font-weight:800">Jump to leaderboards ↓</a></p>
     <div class="stats" id="statGrid"></div>
-    <p class="note">Scores are saved on this device and browser only. If you switch Chromebooks, your bests start fresh there. Verified XP for the Hall of Heroes comes from <a href="mastery.html" style="color:var(--emerald);font-weight:800">Chapter Mastery Checks</a> and live class games.</p>
+    <h2 class="sec" id="boards">📊 Leaderboards · this trimester</h2>
+    <p class="sec-sub">Top scores from every class. Visitors (past students) have their own board. Your first quest win in each game also earns <b style="color:var(--gold)">+10 Verified XP</b>.</p>
+    <div class="filters" id="lbGames"></div>
+    <div class="filters" id="lbGroups"></div>
+    <div class="board" id="lbTable"><div class="empty">Loading…</div></div>
+    <p class="note">Signed in? Your scores post to the leaderboard automatically when a game ends. Not signed in, your bests stay on this device only. Arcade scores are just for fun except the +10 XP first-win bonus; most Verified XP comes from <a href="mastery.html" style="color:var(--emerald);font-weight:800">Chapter Mastery Checks</a> and live class games.</p>
   </section>
 </div>
 </main>
@@ -349,7 +367,8 @@ const nOrig = GROUPS.reduce((n, g) => n + g.games.length, 0);
 $('chips').innerHTML =
   `<span class="chip"><b>${SPRITE.length + nOrig + CLASSROOM.length}</b> games</span>` +
   `<span class="chip">📱 Works on phones & Chromebooks</span>` +
-  `<span class="chip">🚫 No install</span>`;
+  `<span class="chip">🚫 No install</span>` +
+  `<a class="chip" href="visitor.html" style="text-decoration:none;color:var(--emerald)">👋 Past student? Join as a visitor</a>`;
 
 // ── Play tab ──
 function medalOf(g, best) { let m = null; g.medals.forEach(([at, name]) => { if (best >= at) m = name; }); return m; }
@@ -396,9 +415,65 @@ $('filters').addEventListener('click', e => { const b = e.target.closest('[data-
 renderClass();
 
 // ── My Stats tab ──
+// ── class leaderboards (Supabase) ──
+const NET = { URL: 'https://gmeyamrlqfrabtslsweu.supabase.co', KEY: 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c', TRIMESTER: '2026-T1' };
+const session = () => { try { const id = localStorage.getItem('qSID_' + NET.TRIMESTER), pin = sessionStorage.getItem('qPIN_' + NET.TRIMESTER); return id && pin ? { id, pin } : null; } catch (e) { return null; } };
+async function rpc(name, args) {
+  const r = await fetch(NET.URL + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: NET.KEY, Authorization: 'Bearer ' + NET.KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+  const j = await r.json().catch(() => null); if (!r.ok) throw new Error((j && j.message) || 'HTTP ' + r.status); return j;
+}
+let mine = null;          // signed-in player's server records
+async function loadMine() {
+  const ses = session();
+  if (!ses) {
+    $('who').innerHTML = '🔒 Not signed in. <a href="quest.html">Log in on the Quest page</a> to post scores to the class leaderboard, or <a href="visitor.html">join as a visitor</a> if you\'re a past student.';
+    return;
+  }
+  try {
+    mine = await rpc('arcade_mine', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER });
+    if (!mine) throw new Error('expired');
+    $('who').innerHTML = '✅ Signed in as <span>' + esc(mine.name) + '</span><span class="tag">' + esc(mine.group) + '</span><span style="color:var(--dim);font-weight:700">Your scores post automatically.</span>';
+    renderStats();
+    if (!mine.visitor && mine.class_code) { lbGroup = 'mine'; }
+    if (mine.visitor) lbGroup = 'visitors';
+    renderBoardFilters(); loadBoard();
+  } catch (e) { $('who').innerHTML = '🔒 Your login has expired. <a href="quest.html">Log in again</a> to post scores.'; }
+}
+const BOARD_GAMES = [{ key: 'champions', title: '🏆 Champions' }, ...[...SPRITE, ...CLASSICS].map(g => ({ key: g.key, title: g.icon + ' ' + g.title }))];
+let lbGame = 'champions', lbGroup = 'all';
+function groupOptions() {
+  const o = [['all', 'All classes']];
+  if (mine && !mine.visitor && mine.class_code) o.push(['mine', 'My class (' + mine.group + ')']);
+  for (let i = 1; i <= 6; i++) o.push(['2627T1P' + i, 'P' + i]);
+  o.push(['visitors', 'Visitors']);
+  return o;
+}
+function renderBoardFilters() {
+  $('lbGames').innerHTML = BOARD_GAMES.map(g => `<button class="fbtn${g.key === lbGame ? ' on' : ''}" data-g="${g.key}">${g.title}</button>`).join('');
+  $('lbGroups').innerHTML = groupOptions().map(([k, l]) => `<button class="fbtn${k === lbGroup ? ' on' : ''}" data-p="${k}">${l}</button>`).join('');
+}
+$('lbGames').addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (b) { lbGame = b.dataset.g; renderBoardFilters(); loadBoard(); } });
+$('lbGroups').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) { lbGroup = b.dataset.p; renderBoardFilters(); loadBoard(); } });
+async function loadBoard() {
+  const grp = lbGroup === 'mine' ? (mine && mine.class_code) || 'all' : lbGroup;
+  $('lbTable').innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const rows = lbGame === 'champions'
+      ? await rpc('arcade_champions', { p_trimester: NET.TRIMESTER, p_group: grp, p_limit: 10 })
+      : await rpc('arcade_board', { p_trimester: NET.TRIMESTER, p_game: lbGame, p_group: grp, p_limit: 10 });
+    if (!rows || !rows.length) { $('lbTable').innerHTML = '<div class="empty">No scores yet. Be the first on the board!</div>'; return; }
+    const champ = lbGame === 'champions', MED = ['', '🥉', '🥈', '🥇', '💎'];
+    $('lbTable').innerHTML = '<table><tr><th>#</th><th>Player</th><th class="g">Class</th><th style="text-align:right">' + (champ ? 'Medals' : 'Best') + '</th></tr>' +
+      rows.map(r => `<tr${mine && r.name && r.name.indexOf(mine.name) >= 0 ? ' class="me"' : ''}><td class="r">${['🥇', '🥈', '🥉'][r.rank - 1] || r.rank}</td><td class="n">${esc(r.name)}</td><td class="g">${esc(r.group)}</td>` +
+        `<td class="s">${champ ? r.medals + ' <span style="font-size:13px;color:var(--dim)">· ' + r.games_won + ' won</span>' : Number(r.best).toLocaleString() + ' ' + (MED[r.medal] || '')}</td></tr>`).join('') + '</table>';
+  } catch (e) { $('lbTable').innerHTML = '<div class="empty">Couldn\'t load the leaderboard right now.</div>'; }
+}
+renderBoardFilters(); loadBoard(); loadMine();
+
 function renderStats() {
   $('statGrid').innerHTML = [...SPRITE, ...CLASSICS].map(g => {
-    const best = get(g.key + '_best', 0), wins = get(g.key + '_wins', 0);
+    const srv = mine && mine.scores && mine.scores[g.key];
+    const best = Math.max(get(g.key + '_best', 0), srv ? srv.best : 0), wins = Math.max(get(g.key + '_wins', 0), srv ? srv.wins : 0);
     const done = g.winBy === 'wins' ? wins > 0 : best >= g.goal;
     const pct = g.winBy === 'wins' ? (done ? 100 : 0) : Math.min(100, Math.round(best / g.goal * 100));
     return `<div class="scard">
