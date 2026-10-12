@@ -291,13 +291,14 @@ const CLASSICS = [
     medals:[[1800,'🥉 Bronze'],[3000,'🥈 Silver'],[3900,'🥇 Gold'],[4500,'💎 Legend']], goal:'Score 3,000 all-around', winBy:'wins' },
   { key:'habit_showdown', title:'Habit Showdown', file:'habit_showdown.html', icon:'⚖️', desc:'Quiz show: good or bad habit, which is healthier, myth or fact. Beat the clock!',
     medals:[[1500,'🥉 Bronze'],[3000,'🥈 Silver'],[4500,'🥇 Gold'],[5800,'💎 Legend']], goal:'Get 10 right', winBy:'wins' },
+  { key:'sprite_climb', title:'Sprite Climb', file:'dopp_kong.html', icon:'🧗', desc:'Climb the girders, jump rolling junk food, grab the Golden Apple from King Junk!',
+    medals:[[1000,'🥉 Bronze'],[2500,'🥈 Silver'],[4500,'🥇 Gold'],[7000,'💎 Legend']], goal:'Grab the Golden Apple', winBy:'wins' },
   { key:'snack_stack', title:'Snack Stack', file:'dopp_tetris.html', icon:'🟦', desc:'Stack falling healthy snacks and clear 10 lines.',
     medals:[[500,'🥉 Bronze'],[1500,'🥈 Silver'],[4000,'🥇 Gold'],[8000,'💎 Legend']], goal:'Clear 10 lines', winBy:'wins' }
 ];
 const GROUPS = [
   { name:'⭐ Sprite Classics', sub:'Arcade favorites, rebuilt with your sprite. Earn medals!', color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },
   { name:'🕹 Action', sub:'Fast hands, quick reflexes.', color:'#FF3B5C', games:[
-    ['🦍','Donkey Dopp','Climb the girders, dodge junk food barrels.','dopp_kong.html'],
     ['🏍️','Dopp Motomania','Gas, brake, lean and flip through obstacles.','dopp_motomania.html'],
     ['🪣','Dopp Drop','Catch healthy items, dodge the junk.','dopp_drop.html'],
     ['😤',"Dopp's Corner","Dodge Dopp's sweeps. Be the last one standing!",'dopp_corner.html'],
