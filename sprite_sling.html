@@ -104,16 +104,18 @@ const LEVELS = [
       let z = story(900, G, 80, 'glass', 90); addMonster(900, G - 20, 17); addMonster(900, z - 18, 17);
   } },
   { name: 'Soda Skyscraper', shots: 6, build() {
-      let y = G;
-      ['stone', 'wood', 'glass', 'wood'].forEach((m, i) => {
-        const top = story(760, y, 120, m, 75, i === 3 ? 'stone' : 'wood');
-        if (i === 1) addBarrel(760, y - 20);
-        else addMonster(760, y - 20, 19);
-        y = top;
-      });
-      addMonster(760, y - 19, 22);
-      addBomb(640, G - 20); addBlock(640, G - 60, 70, 20, 'wood'); addMonster(640, G - 89, 18);
-      addBarrel(880, G - 20); addMonster(925, G - 20, 17);
+      // A tall tower you can topple: a fizz barrel on the ground floor, and a front bomb that chains into it.
+      const f1 = story(770, G, 120, 'wood', 75);
+      addBarrel(748, G - 20); addMonster(792, G - 20, 18);
+      const f2 = story(770, f1, 120, 'glass', 70, 'wood');
+      addMonster(770, f1 - 19, 19);
+      const f3 = story(770, f2, 120, 'wood', 70, 'wood');
+      addMonster(770, f2 - 19, 19);
+      addMonster(770, f3 - 19, 21);                                   // on the roof, in plain sight
+      // front: bomb under a glass plank with a monster on top (its blast reaches the tower's barrel)
+      addBomb(520, G - 20); addBlock(520, G - 50, 80, 20, 'glass'); addMonster(520, G - 79, 18);
+      // back: an extra fizz barrel for a bigger chain reaction
+      addBarrel(880, G - 20);
   } },
   { name: 'Junk Food Castle', shots: 6, build() {
       let l = story(600, G, 90, 'stone', 80); l = story(600, l, 90, 'wood', 70);
@@ -155,7 +157,12 @@ function buildLevel(n) {
 }
 
 // ---------- damage & explosions ----------
-function flushRemovals() { if (toRemove.length) { toRemove.forEach(b => Composite.remove(engine.world, b)); toRemove = []; } }
+function flushRemovals() {
+  if (!toRemove.length) return;
+  toRemove.forEach(b => Composite.remove(engine.world, b)); toRemove = [];
+  // wake everything so nothing is left "asleep" floating in mid-air after its support breaks
+  Composite.allBodies(engine.world).forEach(o => { if (!o.isStatic) Sleeping.set(o, false); });
+}
 function damage(b, amt) {
   if (!b || b.dead || b.kind === 'ground' || b.kind === 'proj') return;
   b.hp -= amt;
@@ -417,7 +424,7 @@ function drawBody(ctx, A, b) {
   }
 }
 
-window.__sling = () => ({ engine, bodies, monsters, shotsLeft, level, retries, phase, proj, msg, aimAt: (x, y) => { drag = { x, y }; }, fire: () => launch(game), goto: n => { level = n; buildLevel(n); }, LEVELS });   // used by automated playtests
+window.__sling = () => ({ engine, bodies, monsters, shotsLeft, level, retries, phase, proj, msg, aimAt: (x, y) => { drag = { x, y }; }, fire: () => launch(game), goto: n => { level = n; retries = 3; buildLevel(n); }, LEVELS });   // used by automated playtests
 window.game = Arcade({
   mount: '#game', title: 'Sprite Slingshot', subtitle: 'Topple the Junk Food Towers!', W, H, reserveH: 70,
   storageKey: 'sprite_sling', winText: 'You cleared 3 levels!', deathDelay: 900,
