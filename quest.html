@@ -127,8 +127,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 
 /* STREAK CALENDAR */
 .streak-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:28px; }
-.streak-day { aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.04); border:1px solid var(--border); transition:all .2s; cursor:pointer; }
-.streak-day:hover { border-color:rgba(255,255,255,0.2); }
+.streak-day { aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.04); border:1px solid var(--border); transition:all .2s; }
 .streak-day.active { background:rgba(255,215,0,0.2); border-color:rgba(255,215,0,0.5); }
 .streak-day.today { border-color:var(--gold); box-shadow:0 0 8px rgba(255,215,0,0.3); }
 .streak-labels { display:flex; justify-content:space-between; margin-bottom:6px; }
@@ -285,7 +284,7 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
 <div class="section">
   <div class="sec-header">
     <div class="sec-title">📅 Activity Streak</div>
-    <span class="sec-action" onclick="markToday()">✓ Mark Today Active</span>
+    <span style="font-size:12px;color:var(--dim)">Logs itself each day you log in</span>
   </div>
   <div class="streak-labels" id="streak-labels"></div>
   <div class="streak-grid" id="streak-grid"></div>
@@ -536,7 +535,7 @@ function calcStats() {
   let streak = 0;
   const d = new Date();
   while (streak < 366) {
-    if (doneDays.has(d.toISOString().slice(0,10))) { streak++; d.setDate(d.getDate()-1); }
+    if (doneDays.has(localDay(d))) { streak++; d.setDate(d.getDate()-1); }
     else break;
   }
   return { xp, badges, totalTasks, bossTasks, vocabTasks, streak, totalDays: doneDays.size };
@@ -574,12 +573,14 @@ function renderStreak() {
   const grid = document.getElementById('streak-grid');
   grid.innerHTML = '';
   const today = new Date(); const todayS = todayStr();
-  for (let i = 27; i >= 0; i--) {
-    const d = new Date(today); d.setDate(d.getDate()-i);
-    const ds = d.toISOString().slice(0,10);
+  const start = new Date(today); start.setDate(today.getDate() - today.getDay() - 21);   // Sunday, 3 weeks back
+  for (let i = 0; i < 28; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const ds = localDay(d);
     const div = document.createElement('div');
     div.className = 'streak-day' + (doneDays.has(ds) ? ' active' : '') + (ds === todayS ? ' today' : '');
-    div.title = ds; div.onclick = () => toggleDay(ds);
+    if (ds > todayS) div.style.opacity = '0.35';
+    div.title = ds + (doneDays.has(ds) ? ' — logged in' : '');
     grid.appendChild(div);
   }
 }
@@ -656,22 +657,7 @@ async function toggleTask(realmId, ti) {
   }
   render();
 }
-async function toggleDay(ds) {
-  if (!student) return;
-  if (doneDays.has(ds)) {
-    doneDays.delete(ds);
-    await db.rpc('remove_day', { p_student_id: student.id, p_pin_hash: studentPinHash, p_day_date: ds });
-  } else {
-    doneDays.add(ds);
-    await db.rpc('complete_day', { p_student_id: student.id, p_pin_hash: studentPinHash, p_day_date: ds });
-  }
-  render();
-}
-async function markToday() {
-  const t = todayStr();
-  if (!doneDays.has(t)) { await toggleDay(t); showToast('✓ Today marked as active!'); }
-  else showToast('Already marked for today!');
-}
+// Activity days are logged by the server on a correct PIN login (verify_student_pin / create_student_profile).
 
 async function resetAll() {
   if (!student) return;
@@ -700,7 +686,8 @@ function selAv(el, av) {
   el.classList.add('sel'); selectedAv = av;
 }
 
-function todayStr() { return new Date().toISOString().slice(0,10); }
+function localDay(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function todayStr() { return localDay(new Date()); }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
