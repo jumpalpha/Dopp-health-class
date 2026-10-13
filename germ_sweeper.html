@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html data-app-name="Germ Sweeper" lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Germ Sweeper — Dopp's Arcade</title>
+<meta name="description" content="Minesweeper with germs. Clear the board without touching a germ, mark germs with soap, and learn how each one spreads.">
+<link rel="canonical" href="https://doppsclass.com/germ_sweeper.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#1b2f2a 0%,#070d0c 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
+</style>
+<!-- PWA --><link rel="manifest" href="app/germ_sweeper.webmanifest"><link rel="apple-touch-icon" href="app/germ_sweeper-180.png"><meta name="apple-mobile-web-app-title" content="Germ Sweeper"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Germ Sweeper</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 420, H = 640;
+const LEVELS = [
+  { cols: 9, rows: 11, germs: 12, cell: 42, y0: 120 },
+  { cols: 10, rows: 12, germs: 20, cell: 38, y0: 118 }
+];
+const GERMS = [
+  { name: 'Flu Virus', color: '#7CFF6B', tip: 'The flu spreads through coughs and sneezes. A yearly flu shot is the best protection.' },
+  { name: 'Cold Virus', color: '#9be7ff', tip: 'Colds are caused by viruses, so antibiotics don\'t help. Rest, fluids and time do.' },
+  { name: 'Norovirus', color: '#c88bff', tip: 'Norovirus (the "stomach bug") isn\'t killed well by hand sanitizer. Soap and water work best.' },
+  { name: 'Strep Bacteria', color: '#ff6b8a', tip: 'Strep throat is bacterial. A doctor\'s test and antibiotics clear it up.' },
+  { name: 'E. coli', color: '#ffb347', tip: 'Some E. coli cause food poisoning. Wash produce and cook meat all the way through.' },
+  { name: 'Staph Bacteria', color: '#ffe45c', tip: 'Staph can spread through shared towels and razors. Don\'t share them, especially in sports.' }
+];
+let lv, L, grid, cell, x0, y0, started, alive, revealedSafe, flags, mode, cur, kbd, press, timer, msg, msgT, lost, deathT;
+
+function setup(i) {
+  lv = i; L = LEVELS[i]; cell = L.cell; x0 = Math.round((W - L.cols * cell) / 2); y0 = L.y0;
+  grid = []; for (let r = 0; r < L.rows; r++) { grid.push([]); for (let c = 0; c < L.cols; c++) grid[r].push({ germ: false, n: 0, open: false, flag: false, kind: 0 }); }
+  started = false; revealedSafe = 0; flags = 0; timer = 0; cur = { r: Math.floor(L.rows / 2), c: Math.floor(L.cols / 2) }; press = null;
+}
+function reset() { mode = 'dig'; kbd = false; msg = ''; msgT = 0; alive = true; lost = false; deathT = 0; setup(0); }
+const inside = (r, c) => r >= 0 && c >= 0 && r < L.rows && c < L.cols;
+function around(r, c, fn) { for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if ((dr || dc) && inside(r + dr, c + dc)) fn(r + dr, c + dc); }
+function plant(sr, sc) {   // first dig is always safe, and opens an area
+  const spots = [];
+  for (let r = 0; r < L.rows; r++) for (let c = 0; c < L.cols; c++) if (Math.abs(r - sr) > 1 || Math.abs(c - sc) > 1) spots.push([r, c]);
+  spots.sort(() => Math.random() - 0.5).slice(0, L.germs).forEach(([r, c]) => { grid[r][c].germ = true; grid[r][c].kind = Math.floor(Math.random() * GERMS.length); });
+  for (let r = 0; r < L.rows; r++) for (let c = 0; c < L.cols; c++) { let n = 0; around(r, c, (a, b) => { if (grid[a][b].germ) n++; }); grid[r][c].n = n; }
+  started = true;
+}
+function open(r, c, A) {
+  const g = grid[r][c]; if (g.open || g.flag) return;
+  if (g.germ) { boom(r, c, A); return; }
+  const stack = [[r, c]]; let gained = 0;
+  while (stack.length) {
+    const [a, b] = stack.pop(), t = grid[a][b]; if (t.open || t.flag) continue;
+    t.open = true; revealedSafe++; gained++;
+    if (t.n === 0) around(a, b, (p, q) => { if (!grid[p][q].open && !grid[p][q].germ) stack.push([p, q]); });
+  }
+  A.addScore(gained * 5); A.sfx(gained > 6 ? 'coin' : 'point');
+  if (revealedSafe === L.rows * L.cols - L.germs) cleared(A);
+}
+function dig(r, c, A) {
+  if (!alive) return;
+  if (!started) plant(r, c);
+  const g = grid[r][c];
+  if (g.open) {   // tap a number with the right soaps around it: open the rest
+    let f = 0; around(r, c, (a, b) => { if (grid[a][b].flag) f++; });
+    if (g.n && f === g.n) around(r, c, (a, b) => { if (alive) open(a, b, A); });
+    return;
+  }
+  open(r, c, A);
+}
+function toggleFlag(r, c, A) {
+  if (!alive || !started) return;
+  const g = grid[r][c]; if (g.open) return;
+  g.flag = !g.flag; flags += g.flag ? 1 : -1; A.sfx('pop');
+}
+function boom(r, c, A) {
+  alive = false; lost = true; deathT = 0; grid[r][c].open = true; grid[r][c].hit = true;
+  for (const row of grid) for (const g of row) if (g.germ) g.open = true;
+  const k = GERMS[grid[r][c].kind];
+  A.sfx('hit'); A.shake(10, 0.4); A.flash(0.2);
+  msg = '🦠 You touched ' + k.name + '! ' + k.tip; msgT = 99;
+}
+function cleared(A) {
+  alive = false;
+  const bonus = 300 + Math.max(0, 300 - Math.floor(timer) * 2);
+  A.addScore(bonus); A.sfx('win');
+  for (const row of grid) for (const g of row) if (g.germ && !g.flag) { g.flag = true; }
+  A.float('Board clear! +' + bonus, W / 2, 300, '#7CFFB2');
+  if (lv === 0) {
+    A.win('Board 1 is germ-free!');
+    msg = '🧼 Board clean! Next: a bigger board with more germs.'; msgT = 2.4;
+    setTimeout(() => { if (A.state === 'play' || A.state === 'paused') { setup(1); alive = true; } }, 2400);
+  } else {
+    msg = '🏆 Both boards germ-free! Washing hands for 20 seconds stops a lot of germs.'; msgT = 99;
+    setTimeout(() => A.gameOver(true), 1800);
+  }
+}
+function cellAt(x, y) {
+  const c = Math.floor((x - x0) / cell), r = Math.floor((y - y0) / cell);
+  return inside(r, c) ? { r, c } : null;
+}
+const BTN = { x: W / 2 - 130, y: 0, w: 260, h: 44 };
+function btnY() { return y0 + L.rows * cell + 16; }
+function onBtn(x, y) { const by = btnY(); return x >= BTN.x && x <= BTN.x + BTN.w && y >= by && y <= by + BTN.h; }
+function pointer(type, x, y, A) {
+  if (type === 'down') {
+    kbd = false;
+    if (onBtn(x, y)) { mode = mode === 'dig' ? 'flag' : 'dig'; A.sfx('swipe'); press = null; return; }
+    const at = cellAt(x, y); press = at ? { at, t: 0, x, y, used: false } : null;
+  } else if (type === 'drag' && press) {
+    if (Math.hypot(x - press.x, y - press.y) > 14) press = null;
+  } else if (type === 'up' && press) {
+    const p = press; press = null; if (p.used) return;
+    const { r, c } = p.at;
+    if (mode === 'flag' && !grid[r][c].open) toggleFlag(r, c, A); else dig(r, c, A);
+  }
+}
+function input(type, A) {
+  if (type === 'tap') { if (kbd) dig(cur.r, cur.c, A); return; }
+  const d = { up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1] }[type];
+  if (d && kbd) { cur.r = Math.max(0, Math.min(L.rows - 1, cur.r + d[0])); cur.c = Math.max(0, Math.min(L.cols - 1, cur.c + d[1])); }
+}
+document.addEventListener('keydown', e => {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)) kbd = true;
+  if (e.code === 'KeyF' && window.game && window.game.state === 'play') { kbd = true; toggleFlag(cur.r, cur.c, window.game); }
+});
+function update(dt, A) {
+  if (!grid) return;
+  msgT = Math.max(0, msgT - dt);
+  if (A.state !== 'play') return;
+  if (alive && started) timer += dt;
+  if (press && !press.used) {   // hold a tile to drop soap on it
+    press.t += dt;
+    if (press.t > 0.42) { press.used = true; toggleFlag(press.at.r, press.at.c, A); if (navigator.vibrate) try { navigator.vibrate(20); } catch (e) {} }
+  }
+  if (lost) { deathT += dt; if (deathT > 2.2 && deathT - dt <= 2.2) A.gameOver(true); }
+}
+
+const NUMC = ['', '#1e7bff', '#16a34a', '#e11d48', '#7c3aed', '#b45309', '#0891b2', '#111827', '#6b7280'];
+function drawGerm(ctx, x, y, r, col, t) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(t * 0.6);
+  ctx.strokeStyle = '#1A1030'; ctx.lineWidth = 2; ctx.fillStyle = col;
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; ctx.beginPath(); ctx.moveTo(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7); ctx.lineTo(Math.cos(a) * r * 1.15, Math.sin(a) * r * 1.15); ctx.stroke(); ctx.beginPath(); ctx.arc(Math.cos(a) * r * 1.15, Math.sin(a) * r * 1.15, r * 0.14, 0, 7); ctx.fill(); ctx.stroke(); }
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.72, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.rotate(-t * 0.6); ctx.fillStyle = '#1A1030';
+  ctx.beginPath(); ctx.arc(-r * 0.25, -r * 0.1, r * 0.12, 0, 7); ctx.arc(r * 0.25, -r * 0.1, r * 0.12, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, r * 0.22, r * 0.22, 0.2, Math.PI - 0.2); ctx.stroke();
+  ctx.restore();
+}
+function drawSoap(ctx, A, x, y, cell) {
+  const w = cell * 0.56, h = cell * 0.34;
+  A.rr(x - w / 2, y - h / 2 + 3, w, h, h * 0.4); A.ink('#7fd3ff', 2);
+  ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fillRect(x - w / 2 + 4, y - h / 2 + 6, w * 0.45, 2.5);
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+  [[-0.2, -0.42, 0.1], [0.12, -0.5, 0.075], [0.3, -0.36, 0.06]].forEach(([dx, dy, r]) => { ctx.beginPath(); ctx.arc(x + dx * cell, y + dy * cell, r * cell, 0, 7); ctx.stroke(); });
+}
+function wrap(ctx, text, maxW) {
+  const words = text.split(' '), lines = []; let line = '';
+  words.forEach(w => { const test = line ? line + ' ' + w : w; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test; });
+  if (line) lines.push(line); return lines;
+}
+let tt = 0;
+function draw(ctx, A) {
+  tt += 1 / 60;
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#17312b'); g.addColorStop(1, '#0d1b2a'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (!grid) return;
+  ctx.font = '900 15px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
+  ctx.fillText('Board ' + (lv + 1) + ' of 2  ·  🦠 ' + (L.germs - flags) + '  ·  ⏱ ' + Math.floor(timer) + 's', W / 2, 100);
+  // board
+  A.rr(x0 - 6, y0 - 6, L.cols * cell + 12, L.rows * cell + 12, 12); A.ink('#24413a', 3);
+  ctx.textBaseline = 'middle';
+  for (let r = 0; r < L.rows; r++) for (let c = 0; c < L.cols; c++) {
+    const t = grid[r][c], x = x0 + c * cell, y = y0 + r * cell, s = cell - 3;
+    if (t.open) {
+      A.rr(x + 1.5, y + 1.5, s, s, 6); ctx.fillStyle = t.hit ? '#ff5a7a' : '#e8f6ef'; ctx.fill();
+      if (t.germ) drawGerm(ctx, x + cell / 2, y + cell / 2, cell * 0.28, GERMS[t.kind].color, tt);
+      else if (t.n) { ctx.font = '900 ' + Math.round(cell * 0.55) + 'px Nunito,sans-serif'; ctx.fillStyle = NUMC[t.n]; ctx.fillText(t.n, x + cell / 2, y + cell / 2 + 1); }
+    } else {
+      A.rr(x + 1.5, y + 1.5, s, s, 7);
+      const gg = ctx.createLinearGradient(0, y, 0, y + cell); gg.addColorStop(0, '#5a8f7e'); gg.addColorStop(1, '#3b6b5c'); ctx.fillStyle = gg; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x + 6, y + 5, s - 10, 3);
+      if (t.flag) drawSoap(ctx, A, x + cell / 2, y + cell / 2, cell);
+      if (press && press.at.r === r && press.at.c === c && !press.used) {
+        ctx.fillStyle = 'rgba(255,255,255,.25)'; A.rr(x + 1.5, y + 1.5, s, s, 7); ctx.fill();
+        const f = Math.min(1, press.t / 0.42); if (f > 0.25) { ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x + cell / 2, y + cell / 2, cell * 0.36, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); ctx.stroke(); }
+      }
+    }
+    if (kbd && cur.r === r && cur.c === c && alive) { ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 3; A.rr(x, y, cell, cell, 8); ctx.stroke(); }
+  }
+  ctx.textBaseline = 'alphabetic';
+  // dig / soap toggle
+  const by = btnY();
+  A.rr(BTN.x, by, BTN.w, BTN.h, 22); A.ink(mode === 'dig' ? '#00E5A0' : '#38BFFF', 3);
+  ctx.fillStyle = '#1A1030'; ctx.font = '900 16px Nunito,sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(mode === 'dig' ? 'Mode: Check  ⇄  tap for Soap' : 'Mode: Soap  ⇄  tap for Check', W / 2, by + 28);
+  // sprite
+  A.drawHero(40, H - 34, 60, 0, lost ? 'sugar' : 'happy');
+  // message
+  if (msgT > 0 && msg) {
+    ctx.font = '800 14px Nunito,sans-serif'; const lines = wrap(ctx, msg, W - 60), hh = lines.length * 19 + 16, my = 240;
+    ctx.globalAlpha = Math.min(1, msgT * 2); A.rr(16, my, W - 32, hh, 12); A.ink('rgba(10,18,30,.94)', 2.5);
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; lines.forEach((l, i) => ctx.fillText(l, 30, my + 22 + i * 19)); ctx.globalAlpha = 1;
+  }
+}
+
+window.__sweep = () => ({ grid, L, lv, alive, started, revealedSafe, x0, y0, cell, dig: (r, c) => dig(r, c, window.game), flag: (r, c) => toggleFlag(r, c, window.game) });   // for automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Germ Sweeper', subtitle: 'Clear the board, don\'t touch a germ!', W, H, reserveH: 70,
+  storageKey: 'germ_sweeper', winText: 'Board 1 is germ-free!', deathDelay: 600, overTitle: 'Game Over!',
+  medals: [{ at: 500, name: 'Bronze', icon: '🥉' }, { at: 1000, name: 'Silver', icon: '🥈' }, { at: 1600, name: 'Gold', icon: '🥇' }, { at: 2000, name: 'Legend', icon: '💎' }],
+  howTo: '<b>Tap</b> a tile to check it. A number tells how many germs touch that tile. <b>Hold</b> a tile (or switch to Soap) to mark a germ with 🧼.<br>Your first tap is always safe. Clear <b>board 1</b> to win, then try the bigger board!',
+  controls: 'Tap · hold to soap · or arrows to move, Space check, F soap · P pause',
+  facts: [
+    'Washing with soap and water for at least 20 seconds removes far more germs than a quick rinse.',
+    'Most people touch their face many times an hour — that\'s how germs on hands get inside.',
+    'Cover coughs and sneezes with your elbow, not your hand.',
+    'Antibiotics fight bacteria, not viruses like colds and the flu.',
+    'Hand sanitizer needs at least 60% alcohol to work well.'
+  ],
+  reset, update, draw, input, pointer
+});
+})();
+</script>
+</body>
+</html>
