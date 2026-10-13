@@ -118,6 +118,16 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
 const SB_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co', SB_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
 const LOCAL = new URLSearchParams(location.search).has('localnet');
 let sb = null;
+// site-wide player limit (keeps all Germ Snipes games inside the free plan's message budget)
+const hostTok = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join('');
+async function cap(name, args, keepalive) {
+  if (LOCAL) return { ok: true };
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/rpc/' + name, { method: 'POST', keepalive: !!keepalive, headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
+    return r.ok ? await r.json() : { ok: true };   // if the check itself fails, don't block play
+  } catch (e) { return { ok: true }; }
+}
+const busyMsg = r => 'Germ Snipes is full right now — ' + (r.players || 10) + ' players are already in ' + (r.games ? r.games + ' game' + (r.games === 1 ? '' : 's') : 'games') + ' (the site can handle ' + (r.cap || 10) + ' at once). Try again in a few minutes, or play a Partner Game.';
 // Two channels per game so the free plan's message budget stretches:
 //   main  — host -> everyone (lobby, snapshots, results)
 //   up    — players -> host only (moves, shots). Only the host listens to it.
@@ -161,9 +171,13 @@ function homeErr(m) { $('homeErr').textContent = m || ''; }
 function needName() { myName = $('name').value.trim().slice(0, 14); if (!myName) { homeErr('Type your name first.'); return false; } try { localStorage.setItem('snipes_name', myName); } catch (e) {} return true; }
 function screen(s) { $('home').classList.toggle('hide', s !== 'home'); $('lobby').classList.toggle('hide', s !== 'lobby'); $('lobbyMain').classList.toggle('hide', s === 'play'); $('play').classList.toggle('hide', s !== 'play'); }
 
-$('hostBtn').onclick = () => {
+$('hostBtn').onclick = async () => {
   if (!needName()) return;
   code = Array.from({ length: 4 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 31)]).join('');
+  homeErr('Checking for room…'); $('hostBtn').disabled = true;
+  const r = await cap('snipes_host', { p_code: code, p_token: hostTok });
+  $('hostBtn').disabled = false;
+  if (!r.ok) return homeErr(busyMsg(r));
   isHost = true; hostId = myId; lobby = { mode: 'coop', players: [{ id: myId, name: myName, team: 0 }] };
   connect();
 };
@@ -173,14 +187,15 @@ $('joinBtn').onclick = () => {
   isHost = false; hostId = null; connect();
 };
 $('code').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
-let helloTimer = null, lobbyTimer = null, joinWait = null;
+let helloTimer = null, lobbyTimer = null, joinWait = null, beatTimer = null, pendingJoin = {};
+function beat() { if (isHost && net) cap('snipes_beat', { p_code: code, p_token: hostTok, p_players: G ? Object.values(G.pl).filter(p => !G.leftIds.has(p.id)).length : lobby.players.length }); }
 function connect() {
   homeErr('Connecting…'); $('hostBtn').disabled = $('joinBtn').disabled = true;
   net = makeNet(code, isHost, onMsg, err => {
     $('hostBtn').disabled = $('joinBtn').disabled = false;
     if (err) { homeErr(err); return; }
     homeErr(''); screen('lobby'); $('lobCode').textContent = code; renderLobby();
-    if (isHost) { lobbyTimer = setInterval(() => { prune(); sendLobby(); }, 1500); sendLobby(); }
+    if (isHost) { lobbyTimer = setInterval(() => { prune(); sendLobby(); }, 1500); sendLobby(); beatTimer = setInterval(beat, 10000); }
     else {
       tell('hello', { id: myId, name: myName }); helloTimer = setInterval(() => tell('hello', { id: myId, name: myName }), 2500);
       joinWait = setTimeout(() => { if (!hostId) { leave(); homeErr('No game found with code ' + code + '. Check the code with your host.'); } }, 6000);
@@ -221,17 +236,24 @@ $('startBtn').onclick = () => { if (isHost) startGame(); };
 $('leaveLobby').onclick = () => leave();
 function leave() {
   if (net) { isHost ? say('bye', { id: myId }) : tell('bye', { id: myId }); net.close(); } net = null;
-  clearInterval(helloTimer); clearInterval(lobbyTimer); clearTimeout(joinWait); stopGame(); G = null; screen('home');
+  if (isHost) cap('snipes_end', { p_code: code, p_token: hostTok });
+  clearInterval(helloTimer); clearInterval(lobbyTimer); clearTimeout(joinWait); clearInterval(beatTimer); stopGame(); G = null; screen('home');
 }
-window.addEventListener('pagehide', () => { if (net) isHost ? say('bye', { id: myId }) : tell('bye', { id: myId }); });
+window.addEventListener('pagehide', () => { if (net) isHost ? say('bye', { id: myId }) : tell('bye', { id: myId }); if (net && isHost) cap('snipes_end', { p_code: code, p_token: hostTok }, true); });
 
 function onMsg(ev, p) {
   if (!p) return;
   if (ev === 'hello' && isHost) {
     lastHeard[p.id] = Date.now();
-    if (!lobby.players.find(x => x.id === p.id)) {
+    if (!lobby.players.find(x => x.id === p.id) && !pendingJoin[p.id]) {
       if (lobby.players.length >= 8 || G) { say('full', { id: p.id, msg: G ? 'That game already started.' : 'That game is full (8 players).' }); return; }
-      lobby.players.push({ id: p.id, name: String(p.name).slice(0, 14), team: 0 }); balanceTeams(); renderLobby(); sendLobby();
+      pendingJoin[p.id] = true;   // ask the site for one more player slot first
+      cap('snipes_beat', { p_code: code, p_token: hostTok, p_players: lobby.players.length + 1 }).then(r => {
+        delete pendingJoin[p.id];
+        if (!r.ok) { say('full', { id: p.id, msg: busyMsg(r) }); return; }
+        if (lobby.players.find(x => x.id === p.id) || G) return;
+        lobby.players.push({ id: p.id, name: String(p.name).slice(0, 14), team: 0 }); balanceTeams(); renderLobby(); sendLobby();
+      });
     }
   } else if (ev === 'full' && p.id === myId && !hostId) { leave(); homeErr(p.msg); }
   else if (ev === 'lobby' && !isHost) {

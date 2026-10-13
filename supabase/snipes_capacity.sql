@@ -1,0 +1,6 @@
+-- Germ Snipes site-wide player limit (applied 2026-10-13 as migration "snipes_capacity_limit").
+-- Realtime on the free plan allows ~100 messages/second for the whole site; ~10 players total fits.
+-- Hosts reserve slots with snipes_host(), check in with snipes_beat() every 10 s (and before letting
+-- someone join), and free them with snipes_end(). A game silent for 25 s frees its slots.
+-- To change the limit, edit "cap int := 10" in snipes_host and snipes_beat.
+-- See the live function bodies in Supabase for the full code.
