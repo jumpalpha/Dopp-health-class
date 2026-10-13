@@ -27,6 +27,7 @@ GAMES = {
   'pong':     ('cup_pong.html',        '🏓', 'Cup Pong',        'Dump 10 cups of sugary drinks'),
   'sweeper':  ('germ_sweeper.html',     '🦠', 'Germ Sweeper',    'Minesweeper with germs'),
   'ttt':      ('tic_tac_toe.html',     '⭕', 'Tic-Tac-Toe',     'Apples vs. King Junk\'s sodas'),
+  'blast':    ('blast_blocks.html',     '🧊', 'Blast Blocks',    'Blast rows and columns, chain combos'),
   'sling':    ('sprite_sling.html',    '🎯', 'Sprite Slingshot','Topple towers of junk-food monsters'),
 }
 SMART = ('how_smart.html', '🧠', 'How Smart Am I?', 'Compare yourself, 3rd grade to grad school')

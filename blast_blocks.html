@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html data-app-name="Blast Blocks" lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Blast Blocks — Dopp's Arcade</title>
+<meta name="description" content="Drag blocks onto the 8x8 board, clear rows and columns, and build combos. How long can you keep the board open?">
+<link rel="canonical" href="https://doppsclass.com/blast_blocks.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#2a1a5e 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
+</style>
+<!-- PWA --><link rel="manifest" href="app/blast_blocks.webmanifest"><link rel="apple-touch-icon" href="app/blast_blocks-180.png"><meta name="apple-mobile-web-app-title" content="Blast Blocks"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Blast Blocks</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 420, H = 640, N = 8, CELL = 46, GX = (W - N * CELL) / 2, GY = 104;
+const TRAY_Y = GY + N * CELL + 22, TRAY_H = 128, SLOT_W = W / 3, MINI = 22, LIFT = 84;
+const COLORS = ['#FF4D6D', '#FFB020', '#FFE14D', '#3DDC84', '#38BFFF', '#8B6CFF', '#FF7AD9'];
+// pieces as [row, col] cells; weights favor the friendlier shapes
+const SHAPES = [
+  [1, [[0,0]]],
+  [3, [[0,0],[0,1]]], [3, [[0,0],[1,0]]],
+  [3, [[0,0],[0,1],[0,2]]], [3, [[0,0],[1,0],[2,0]]],
+  [2, [[0,0],[0,1],[0,2],[0,3]]], [2, [[0,0],[1,0],[2,0],[3,0]]],
+  [1, [[0,0],[0,1],[0,2],[0,3],[0,4]]], [1, [[0,0],[1,0],[2,0],[3,0],[4,0]]],
+  [4, [[0,0],[0,1],[1,0],[1,1]]],
+  [1, [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]],
+  [1, [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]]], [1, [[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]]],
+  [2, [[0,0],[1,0],[1,1]]], [2, [[0,1],[1,0],[1,1]]], [2, [[0,0],[0,1],[1,0]]], [2, [[0,0],[0,1],[1,1]]],
+  [2, [[0,0],[1,0],[2,0],[2,1]]], [2, [[0,1],[1,1],[2,1],[2,0]]], [2, [[0,0],[0,1],[1,0],[2,0]]], [2, [[0,0],[0,1],[1,1],[2,1]]],
+  [2, [[0,0],[0,1],[0,2],[1,0]]], [2, [[0,0],[0,1],[0,2],[1,2]]], [2, [[0,0],[1,0],[1,1],[1,2]]], [2, [[0,2],[1,0],[1,1],[1,2]]],
+  [2, [[0,0],[0,1],[0,2],[1,1]]], [2, [[1,0],[1,1],[1,2],[0,1]]], [2, [[0,0],[1,0],[2,0],[1,1]]], [2, [[0,1],[1,1],[2,1],[1,0]]],
+  [2, [[0,0],[0,1],[1,1],[1,2]]], [2, [[0,1],[0,2],[1,0],[1,1]]], [2, [[0,0],[1,0],[1,1],[2,1]]], [2, [[0,1],[1,1],[1,0],[2,0]]],
+  [1, [[0,0],[1,0],[2,0],[2,1],[2,2]]], [1, [[0,2],[1,2],[2,2],[2,1],[2,0]]], [1, [[0,0],[0,1],[0,2],[1,0],[2,0]]], [1, [[0,0],[0,1],[0,2],[1,2],[2,2]]]
+];
+const TOTALW = SHAPES.reduce((s, [w]) => s + w, 0);
+const TIPS = ['Puzzles like this give your brain a workout — planning ahead is a real skill.', 'Taking short brain breaks helps you focus better when you get back to work.',
+  'Your brain uses about 20% of your body\'s energy. Fuel it with good food and sleep!', 'Feeling stuck? A quick walk or stretch can help you think more clearly.'];
+
+let board, tray, drag, sel, hover, combo, sinceClear, clears, flash, popTxt, dead, deadT, t;
+function pickShape() { let r = Math.random() * TOTALW; for (const [w, c] of SHAPES) { if ((r -= w) <= 0) return c; } return SHAPES[0][1]; }
+function makePiece() { const cells = pickShape(); return { cells, h: Math.max(...cells.map(c => c[0])) + 1, w: Math.max(...cells.map(c => c[1])) + 1, color: COLORS[Math.floor(Math.random() * COLORS.length)] }; }
+function fits(p, r, c) { return p.cells.every(([dr, dc]) => r + dr >= 0 && r + dr < N && c + dc >= 0 && c + dc < N && !board[r + dr][c + dc]); }
+function fitsAnywhere(p) { for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (fits(p, r, c)) return true; return false; }
+function refill() {   // a fresh set of three always has at least one piece that fits (unless the board truly can't take one)
+  for (let tries = 0; tries < 30; tries++) { tray = [makePiece(), makePiece(), makePiece()]; if (tray.some(fitsAnywhere)) return; }
+}
+function reset() {
+  board = Array.from({ length: N }, () => Array(N).fill(null));
+  drag = null; sel = -1; hover = null; combo = 0; sinceClear = 0; clears = []; flash = []; popTxt = null; dead = false; deadT = 0; t = 0;
+  refill();
+}
+function slotCenter(i) { return { x: SLOT_W * i + SLOT_W / 2, y: TRAY_Y + TRAY_H / 2 }; }
+function anchorFor(p, x, y) {   // which board cell the piece's top-left lands on, for a piece drawn centered at (x, y)
+  const px = x - p.w * CELL / 2, py = y - p.h * CELL / 2;
+  return { r: Math.round((py - GY) / CELL), c: Math.round((px - GX) / CELL) };
+}
+function place(i, r, c, A) {
+  const p = tray[i]; if (!p || !fits(p, r, c)) return false;
+  p.cells.forEach(([dr, dc]) => board[r + dr][c + dc] = p.color);
+  A.addScore(p.cells.length); A.sfx('point');
+  tray[i] = null;
+  // full rows / columns
+  const rows = [], cols = [];
+  for (let k = 0; k < N; k++) { if (board[k].every(Boolean)) rows.push(k); if (board.every(row => row[k])) cols.push(k); }
+  const n = rows.length + cols.length;
+  if (n) {
+    combo++; sinceClear = 0;
+    const pts = Math.round(10 * N * n * (n + 1) / 2 * (1 + (combo - 1) * 0.5));
+    const cells = new Set(); rows.forEach(rr => { for (let k = 0; k < N; k++) cells.add(rr * N + k); }); cols.forEach(cc => { for (let k = 0; k < N; k++) cells.add(k * N + cc); });
+    cells.forEach(id => { const rr = Math.floor(id / N), cc = id % N; flash.push({ r: rr, c: cc, color: board[rr][cc], t: 0 }); board[rr][cc] = null;
+      A.particles.burst(GX + cc * CELL + CELL / 2, GY + rr * CELL + CELL / 2, flash[flash.length - 1].color, 4, 160, 4); });
+    A.addScore(pts); A.sfx(n > 1 ? 'medal' : 'coin'); if (n > 1) A.shake(5 + n * 2, 0.25);
+    const words = n >= 4 ? 'UNBELIEVABLE!' : n === 3 ? 'AMAZING!' : n === 2 ? 'GREAT!' : 'NICE!';
+    popTxt = { text: words + (combo > 1 ? '  COMBO ×' + combo : ''), pts, t: 0 };
+    if (board.every(row => row.every(v => !v))) { A.addScore(300); A.float('BOARD CLEAR +300', W / 2, GY + N * CELL / 2 + 40, '#7CFFB2'); }
+  } else if (++sinceClear >= 3) combo = 0;   // combo lasts while you clear at least every 3 pieces
+  if (tray.every(x => !x)) refill();
+  if (!tray.some(x => x && fitsAnywhere(x))) { dead = true; deadT = 0; A.sfx('hit'); }
+  return true;
+}
+function trayHit(x, y) { if (y < TRAY_Y - 10 || y > TRAY_Y + TRAY_H + 10) return -1; const i = Math.floor(x / SLOT_W); return tray[i] ? i : -1; }
+function input(type, A) {}
+function pointer(type, x, y, A) {
+  if (dead) return;
+  if (type === 'down') {
+    const i = trayHit(x, y);
+    if (i >= 0) { drag = { i, x, y, sx: x, sy: y, moved: false }; return; }
+    if (sel >= 0 && tray[sel]) {   // tap-to-place: piece was picked first, now tap where it goes
+      const p = tray[sel], r = Math.floor((y - GY) / CELL) - Math.floor((p.h - 1) / 2), c = Math.floor((x - GX) / CELL) - Math.floor((p.w - 1) / 2);
+      if (place(sel, r, c, A)) sel = -1; else A.sfx('hit');
+    }
+  } else if ((type === 'drag' || type === 'move') && drag) {
+    drag.x = x; drag.y = y; if (Math.hypot(x - drag.sx, y - drag.sy) > 10) drag.moved = true;
+  } else if (type === 'move' && sel >= 0 && tray[sel]) {
+    const p = tray[sel]; hover = { r: Math.floor((y - GY) / CELL) - Math.floor((p.h - 1) / 2), c: Math.floor((x - GX) / CELL) - Math.floor((p.w - 1) / 2) };
+  } else if (type === 'up' && drag) {
+    const d = drag; drag = null;
+    if (!d.moved) { sel = sel === d.i ? -1 : d.i; hover = null; return; }   // a tap just selects the piece
+    const p = tray[d.i], a = anchorFor(p, d.x, d.y - LIFT);
+    if (!place(d.i, a.r, a.c, A)) A.sfx('swipe');
+    sel = -1;
+  }
+}
+function update(dt, A) {
+  if (!board) return;
+  t += dt;
+  flash = flash.filter(f => (f.t += dt) < 0.35);
+  if (popTxt && (popTxt.t += dt) > 1.3) popTxt = null;
+  if (dead && A.state === 'play') { deadT += dt; if (deadT > 1.2) { dead = false; A.toast('💡 ' + TIPS[Math.floor(Math.random() * TIPS.length)], 2600); A.gameOver(); } }
+}
+
+function block(ctx, A, x, y, s, color, alpha) {
+  ctx.globalAlpha = alpha == null ? 1 : alpha;
+  const r = Math.max(3, s * 0.18);
+  A.rr(x + 1.5, y + 1.5, s - 3, s - 3, r); ctx.fillStyle = color; ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; A.rr(x + 4, y + 4, s - 8, s * 0.28, r * 0.7); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; A.rr(x + 4, y + s * 0.7, s - 8, s * 0.2, r * 0.7); ctx.fill();
+  ctx.lineWidth = Math.max(1.5, s * 0.05); ctx.strokeStyle = 'rgba(26,16,48,.85)'; A.rr(x + 1.5, y + 1.5, s - 3, s - 3, r); ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+function draw(ctx, A) {
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2a1a5e'); g.addColorStop(1, '#130b33'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (!board) return;
+  // combo meter
+  ctx.textAlign = 'center'; ctx.font = '900 14px Nunito,sans-serif'; ctx.fillStyle = combo > 1 ? '#FFD700' : 'rgba(255,255,255,.55)';
+  ctx.fillText(combo > 1 ? '🔥 Combo ×' + combo + '  (clear within ' + (3 - sinceClear) + ' to keep it)' : 'Fill a row or column to clear it', W / 2, GY - 14);
+  // board
+  A.rr(GX - 8, GY - 8, N * CELL + 16, N * CELL + 16, 14); A.ink('#1b1240', 3);
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const x = GX + c * CELL, y = GY + r * CELL;
+    if (board[r][c]) block(ctx, A, x, y, CELL, board[r][c]);
+    else { ctx.fillStyle = 'rgba(255,255,255,.06)'; A.rr(x + 2, y + 2, CELL - 4, CELL - 4, 7); ctx.fill(); }
+  }
+  // ghost preview + highlight lines that would clear
+  let ghost = null;
+  if (drag && drag.moved && tray[drag.i]) { const p = tray[drag.i], a = anchorFor(p, drag.x, drag.y - LIFT); ghost = { p, ...a }; }
+  else if (sel >= 0 && tray[sel] && hover) ghost = { p: tray[sel], ...hover };
+  if (ghost && fits(ghost.p, ghost.r, ghost.c)) {
+    const tmp = board.map(row => row.slice()); ghost.p.cells.forEach(([dr, dc]) => tmp[ghost.r + dr][ghost.c + dc] = ghost.p.color);
+    for (let k = 0; k < N; k++) {
+      if (tmp[k].every(Boolean)) { ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(GX, GY + k * CELL, N * CELL, CELL); }
+      if (tmp.every(row => row[k])) { ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(GX + k * CELL, GY, CELL, N * CELL); }
+    }
+    ghost.p.cells.forEach(([dr, dc]) => block(ctx, A, GX + (ghost.c + dc) * CELL, GY + (ghost.r + dr) * CELL, CELL, ghost.p.color, 0.45));
+  }
+  // clearing flash
+  flash.forEach(f => { const s = CELL * (1 + f.t * 1.2), x = GX + f.c * CELL + CELL / 2 - s / 2, y = GY + f.r * CELL + CELL / 2 - s / 2; block(ctx, A, x, y, s, '#ffffff', 1 - f.t / 0.35); });
+  // tray
+  ctx.fillStyle = 'rgba(255,255,255,.05)'; A.rr(8, TRAY_Y - 6, W - 16, TRAY_H + 12, 16); ctx.fill();
+  tray.forEach((p, i) => {
+    if (!p || (drag && drag.i === i && drag.moved)) return;
+    const ok = fitsAnywhere(p), { x, y } = slotCenter(i), s = MINI;
+    if (sel === i) { ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 3; A.rr(SLOT_W * i + 8, TRAY_Y - 2, SLOT_W - 16, TRAY_H + 4, 14); ctx.stroke(); }
+    p.cells.forEach(([dr, dc]) => block(ctx, A, x - p.w * s / 2 + dc * s, y - p.h * s / 2 + dr * s, s, ok ? p.color : '#5b5378', ok ? 1 : 0.6));
+  });
+  if (drag && drag.moved && tray[drag.i]) {
+    const p = tray[drag.i], cx = drag.x, cy = drag.y - LIFT;
+    p.cells.forEach(([dr, dc]) => block(ctx, A, cx - p.w * CELL / 2 + dc * CELL, cy - p.h * CELL / 2 + dr * CELL, CELL, p.color, 0.95));
+  }
+  // praise
+  if (popTxt) {
+    const k = Math.min(1, popTxt.t * 6), a = Math.max(0, 1 - Math.max(0, popTxt.t - 0.8) * 2);
+    ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.font = '900 ' + Math.round(28 * k) + 'px Nunito,sans-serif';
+    ctx.lineWidth = 6; ctx.strokeStyle = '#1A1030'; ctx.strokeText(popTxt.text, W / 2, GY + N * CELL / 2 - 10); ctx.fillStyle = '#FFD700'; ctx.fillText(popTxt.text, W / 2, GY + N * CELL / 2 - 10);
+    ctx.font = '900 20px Nunito,sans-serif'; ctx.strokeText('+' + popTxt.pts, W / 2, GY + N * CELL / 2 + 22); ctx.fillStyle = '#7CFFB2'; ctx.fillText('+' + popTxt.pts, W / 2, GY + N * CELL / 2 + 22);
+    ctx.globalAlpha = 1;
+  }
+  if (dead) { ctx.fillStyle = 'rgba(10,6,24,.55)'; ctx.fillRect(0, GY - 8, W, N * CELL + 16); ctx.textAlign = 'center'; ctx.font = '900 30px Nunito,sans-serif'; ctx.fillStyle = '#FF8FA3'; ctx.fillText('No room left!', W / 2, GY + N * CELL / 2 + 10); }
+}
+
+window.__blast = () => ({ board, tray, place: (i, r, c) => place(i, r, c, window.game), fits, combo });   // for automated tests
+window.game = Arcade({
+  mount: '#game', title: 'Blast Blocks', subtitle: 'Fill rows and columns to blast them!', W, H, reserveH: 70,
+  storageKey: 'blast_blocks', winAt: 2000, winText: 'You scored 2,000!', deathDelay: 300, overTitle: 'No room left!',
+  medals: [{ at: 1000, name: 'Bronze', icon: '🥉' }, { at: 3000, name: 'Silver', icon: '🥈' }, { at: 6000, name: 'Gold', icon: '🥇' }, { at: 12000, name: 'Legend', icon: '💎' }],
+  howTo: '<b>Drag</b> a piece onto the board (or <b>tap</b> a piece, then tap the board). Fill a whole <b>row or column</b> to blast it.<br>Clear lines on back-to-back turns for a <b>combo</b>. The game ends when none of your pieces fit — plan ahead! Score <b>2,000</b> to win.',
+  controls: 'Drag pieces · or tap a piece, then tap the board · P pause',
+  facts: TIPS,
+  reset, update, draw, input, pointer
+});
+})();
+</script>
+</body>
+</html>
