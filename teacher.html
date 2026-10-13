@@ -317,6 +317,14 @@ input, select, textarea { color: var(--text); }
       <div id="sub-list" style="margin-top:12px;font-size:14px"></div>
     </div>
 
+    <div class="card" id="pin-card" style="border-color:rgba(56,191,255,0.45)">
+      <div class="card-title" style="margin-bottom:4px">🔑 Reset a student PIN</div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">PINs are stored scrambled, so they can't be looked up. Find the student, set a new 4-digit PIN, and tell them. Their progress stays.</div>
+      <input type="text" id="pin-q" maxlength="40" placeholder="Last name, e.g. Sagers" autocomplete="off" style="width:100%;max-width:320px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit">
+      <div id="pin-list" style="margin-top:10px;font-size:14px"></div>
+      <div id="pin-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
+    </div>
+
     <div class="card" id="vis-card" style="border-color:rgba(0,229,160,0.45)">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
         <div class="card-title" style="margin-bottom:0">👋 Visitors (past students)</div>
@@ -771,7 +779,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
-    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); }, 0);
+    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); pinInit(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -830,6 +838,45 @@ async function subRevoke(id){
   const { error } = await db.rpc('revoke_sub_code', { p_teacher_pass: teacherPass(), p_id: id });
   if (error){ document.getElementById('sub-err').textContent = error.message; return; }
   subLoad();
+}
+
+// ── PIN RESET ──
+async function pinHash(pin){   // same hashing as the Quest page
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin + SUPABASE_URL));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+let pinTimer = null;
+function pinInit(){
+  const q = document.getElementById('pin-q'); if (!q || q.dataset.ready) return; q.dataset.ready = '1';
+  q.addEventListener('input', () => { clearTimeout(pinTimer); pinTimer = setTimeout(pinSearch, 300); });
+}
+async function pinSearch(){
+  const box = document.getElementById('pin-list'), err = document.getElementById('pin-err'), q = document.getElementById('pin-q').value.trim();
+  err.textContent = '';
+  if (q.length < 2){ box.innerHTML = ''; return; }
+  if (!teacherPass()){ box.textContent = 'Enter your teacher passphrase again first.'; return; }
+  const { data, error } = await db.rpc('pin_reset_search', { p_teacher_pass: teacherPass(), p_last_name: q });
+  if (error){ box.textContent = /passphrase/i.test(error.message) ? 'Enter your teacher passphrase again.' : 'Could not search right now.'; return; }
+  const rows = data || [];
+  if (!rows.length){ box.innerHTML = '<div style="color:var(--dim)">No student this trimester with a last name starting "' + escapeHtml(q) + '".</div>'; return; }
+  box.innerHTML = rows.map(r =>
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);flex-wrap:wrap">' +
+    '<span><b>' + escapeHtml(r.name) + '</b><br><span style="color:var(--dim);font-size:13px">' + escapeHtml(r.period) + '</span></span>' +
+    '<span style="display:flex;gap:6px;align-items:center"><input class="pin-new" data-id="' + escapeHtml(r.id) + '" inputmode="numeric" maxlength="4" placeholder="New PIN" autocomplete="off" style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
+    '<button class="btn btn-sm pin-set" data-id="' + escapeHtml(r.id) + '" data-name="' + escapeHtml(r.name) + '">Set PIN</button></span>' +
+    '<div class="pin-msg" data-id="' + escapeHtml(r.id) + '" style="width:100%;font-weight:800;font-size:13px"></div></div>').join('');
+  box.querySelectorAll('.pin-set').forEach(b => b.onclick = () => pinSet(b));
+}
+async function pinSet(btn){
+  const id = btn.dataset.id, inp = document.querySelector('.pin-new[data-id="' + id + '"]'), msg = document.querySelector('.pin-msg[data-id="' + id + '"]');
+  const pin = inp.value.trim(); msg.style.color = 'var(--crimson)';
+  if (!/^\d{4}$/.test(pin)){ msg.textContent = 'PIN must be exactly 4 digits.'; return; }
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const { data, error } = await db.rpc('pin_reset_set', { p_teacher_pass: teacherPass(), p_student_id: id, p_pin_hash: await pinHash(pin) });
+  btn.disabled = false; btn.textContent = 'Set PIN';
+  if (error || !data){ msg.textContent = error ? error.message : 'Could not find that student.'; return; }
+  msg.style.color = '#0a7a55'; msg.textContent = '✓ ' + btn.dataset.name + "'s PIN is now " + pin + '. Tell them, then clear this box.';
+  inp.value = '';
 }
 
 // ── VISITORS ──
@@ -924,7 +971,7 @@ const TRIMESTER    = ((window.TERM && TERM.id) || '2026-T1');
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 (function(){ const sel = document.getElementById('wq-trimester'); if (!sel) return; if (![...sel.options].some(o => o.value === TRIMESTER)) sel.add(new Option(TRIMESTER, TRIMESTER), 0); sel.value = TRIMESTER; })();
-subInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); }
+subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); }
 const XP_PER_TASK  = 25;
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task
 
