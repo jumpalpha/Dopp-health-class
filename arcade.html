@@ -362,7 +362,7 @@ const PARTNER = [
     medals:[[100,'🥉 1 win'],[500,'🥈 5 wins'],[1000,'🥇 10 wins'],[2000,'💎 20 wins']], goal:'Beat a classmate', winBy:'wins' }
 ];
 const GROUPS = [
-  { name:'🤝 Partner Games', sub:'Play a classmate on two devices. Wins count when you\'re both signed in.', color:'#38BFFF', games: PARTNER.map(g => [g.icon, g.title, g.desc, g.file]) },
+  { name:'🤝 Partner Games', sub:'Play a classmate on two devices. Wins count when you\'re both signed in.', color:'#38BFFF', games: [['🦠', 'Germ Snipes', 'Multiplayer maze shooter (2–8 players) inspired by the \'80s classic Snipes. Co-op or red vs. blue teams!', 'germ_snipes.html'], ...PARTNER.map(g => [g.icon, g.title, g.desc, g.file])] },
   { name:'⭐ Sprite Classics', sub:'Arcade favorites, rebuilt with your sprite. Earn medals!', color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },
 ];
 const CLASSROOM = [

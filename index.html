@@ -865,7 +865,7 @@ document.addEventListener('DOMContentLoaded', function () {   // pwa.js is defer
   if (!el || !window.doppVisits) return;
   window.doppVisits.then(function (n) {
     if (typeof n !== 'number') return;
-    el.innerHTML = '👀 <b>' + n.toLocaleString() + '</b> visits to the site';
+    el.innerHTML = '👀 <b>' + n.toLocaleString() + '</b> visits to the site <span style="font-weight:700;opacity:.75">(since we started counting)</span>';
     el.style.display = 'block';
   });
 });
