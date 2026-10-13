@@ -137,7 +137,9 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 /* NAME MODAL */
 .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; display:flex; align-items:center; justify-content:center; display:none; }
 .modal-bg.show { display:flex; }
-.modal-box { background:#0d1020; border:1px solid var(--border); border-radius:18px; padding:32px; max-width:360px; width:90%; }
+.modal-box { --text:#F4EFFF; --dim:rgba(244,239,255,0.75); --border:rgba(255,255,255,0.25);
+  background:#0d1020; color:var(--text); border:1px solid var(--border); border-radius:18px; padding:32px; max-width:360px; width:90%; }
+.modal-input::placeholder { color:rgba(244,239,255,0.6); opacity:1; }
 .modal-title { font-family:'Cinzel Decorative',serif; font-size:20px; font-weight:700;
   background:linear-gradient(135deg,var(--gold),#FF8C00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
 .modal-sub { font-size:13px; color:var(--dim); margin-bottom:20px; line-height:1.5; }
