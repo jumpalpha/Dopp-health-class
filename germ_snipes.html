@@ -103,7 +103,7 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
 <section id="play" class="hide">
   <canvas id="cv" width="480" height="560"></canvas>
   <div class="controls"><div id="stick"><div id="knob"></div></div><button id="fire">SPRAY</button></div>
-  <div class="keys">Move: arrows / WASD · Spray: Space · Bubbles bounce off walls once</div>
+  <div class="keys">Move: arrows / WASD · Spray: Space (diagonals too) or click/hold anywhere to aim · Bubbles bounce off walls once</div>
   <div class="over hide" id="over"><div class="ovcard"><h2 id="ovTitle"></h2><p class="dim" id="ovSub"></p><table class="res" id="ovRes"></table>
     <button class="btn gold" id="againBtn">Back to lobby</button></div></div>
 </section>
@@ -272,26 +272,38 @@ function onMsg(ev, p) {
 }
 
 // ================= the maze (same on every device from the seed) =================
-const T = 32, CW = 12, CH = 12, MW = CW * 2 + 1, MH = CH * 2 + 1;   // 25 x 25 tiles
+const T = 24, CW = 11, CH = 11, MW = CW * 3 + 1, MH = CH * 3 + 1;   // each cell = 2x2 open tiles + 1 wall -> 34 x 34 tiles
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function buildMaze(seed) {
   const R = rng(seed), g = Array.from({ length: MH }, () => Array(MW).fill(1)), seen = new Set();
-  const stack = [[0, 0]]; seen.add('0,0'); g[1][1] = 0;
+  const openCell = (cx, cy) => { for (let y = 0; y < 2; y++) for (let x = 0; x < 2; x++) g[cy * 3 + 1 + y][cx * 3 + 1 + x] = 0; };
+  const openWall = (cx, cy, dx, dy) => {   // the 2-tile wall between cell (cx,cy) and its neighbor in direction (dx,dy)
+    for (let k = 0; k < 2; k++) { if (dx) g[cy * 3 + 1 + k][cx * 3 + (dx > 0 ? 3 : 0)] = 0; else g[cy * 3 + (dy > 0 ? 3 : 0)][cx * 3 + 1 + k] = 0; }
+  };
+  for (let cy = 0; cy < CH; cy++) for (let cx = 0; cx < CW; cx++) openCell(cx, cy);
+  const stack = [[0, 0]]; seen.add('0,0');
   while (stack.length) {
     const [cx, cy] = stack[stack.length - 1];
     const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [cx + dx, cy + dy, dx, dy]).filter(([x, y]) => x >= 0 && y >= 0 && x < CW && y < CH && !seen.has(x + ',' + y));
     if (!nb.length) { stack.pop(); continue; }
     const [nx, ny, dx, dy] = nb[Math.floor(R() * nb.length)];
-    g[cy * 2 + 1 + dy][cx * 2 + 1 + dx] = 0; g[ny * 2 + 1][nx * 2 + 1] = 0; seen.add(nx + ',' + ny); stack.push([nx, ny]);
+    openWall(cx, cy, dx, dy); seen.add(nx + ',' + ny); stack.push([nx, ny]);
   }
-  // knock out extra walls so there are loops and nobody gets trapped
-  for (let k = 0; k < 70; k++) {
-    const x = 1 + Math.floor(R() * (MW - 2)), y = 1 + Math.floor(R() * (MH - 2));
-    if (g[y][x] === 1 && ((x % 2 === 0 && y % 2 === 1) || (x % 2 === 1 && y % 2 === 0))) g[y][x] = 0;
+  // open it up: remove about half of the remaining inside walls
+  for (let cy = 0; cy < CH; cy++) for (let cx = 0; cx < CW; cx++) {
+    if (cx < CW - 1 && R() < 0.5) openWall(cx, cy, 1, 0);
+    if (cy < CH - 1 && R() < 0.5) openWall(cx, cy, 0, 1);
   }
+  // a few big open rooms (no walls inside, corner posts included)
+  for (let k = 0; k < 4; k++) {
+    const w = 2 + Math.floor(R() * 2), h = 2, rx = Math.floor(R() * (CW - w)), ry = Math.floor(R() * (CH - h));
+    for (let y = ry * 3 + 1; y < (ry + h) * 3; y++) for (let x = rx * 3 + 1; x < (rx + w) * 3; x++) g[y][x] = 0;
+  }
+  // lone wall posts with nothing attached are mostly clutter
+  for (let y = 3; y < MH - 1; y += 3) for (let x = 3; x < MW - 1; x += 3) if (!g[y - 1][x] && !g[y + 1][x] && !g[y][x - 1] && !g[y][x + 1] && R() < 0.6) g[y][x] = 0;
   return g;
 }
-const cellCenter = (cx, cy) => ({ x: (cx * 2 + 1.5) * T, y: (cy * 2 + 1.5) * T });
+const cellCenter = (cx, cy) => ({ x: (cx * 3 + 2) * T, y: (cy * 3 + 2) * T });
 function solidAt(maze, px, py) { const tx = Math.floor(px / T), ty = Math.floor(py / T); return ty < 0 || tx < 0 || ty >= MH || tx >= MW || maze[ty][tx] === 1; }
 function hitsWall(maze, x, y, r) { return solidAt(maze, x - r, y - r) || solidAt(maze, x + r, y - r) || solidAt(maze, x - r, y + r) || solidAt(maze, x + r, y + r); }
 function moveCircle(maze, o, dx, dy, r) {
@@ -305,7 +317,7 @@ function spawnFor(team, i) {
 }
 
 // ================= game state =================
-const PR = 10, PSPEED = 140, BSPEED = 330, GSPEED = 62, SNEEZE_SPEED = 170, ROUND_SECS = 240;
+const PR = 6, PSPEED = 130, BSPEED = 330, GSPEED = 62, SNEEZE_SPEED = 170, ROUND_SECS = 240;
 let G = null, raf = 0, simTimer = null, snapTimer = null;
 function startGame() {   // host
   balanceTeams();
@@ -327,8 +339,8 @@ function beginGame(p) {
   for (const [cx, cy] of spots) {
     if (G.hives.length >= nh) break;
     const c = cellCenter(cx, cy);
-    if (Object.values(G.pl).some(pl => Math.hypot(pl.sx - c.x, pl.sy - c.y) < 5 * T)) continue;
-    if (G.hives.some(h => Math.hypot(h.x - c.x, h.y - c.y) < 4 * T)) continue;
+    if (Object.values(G.pl).some(pl => Math.hypot(pl.sx - c.x, pl.sy - c.y) < 8 * T)) continue;
+    if (G.hives.some(h => Math.hypot(h.x - c.x, h.y - c.y) < 6 * T)) continue;
     G.hives.push({ x: c.x, y: c.y, hp: 5, t: 1 + R() * 3 });
   }
   me = G.pl[myId];
@@ -387,15 +399,15 @@ function hostTick() {
     let ax = 0, ay = 0;
     if (best) { const cx = (tx + best[0] + 0.5) * T, cy = (ty + best[1] + 0.5) * T; ax = cx - g.x; ay = cy - g.y; }
     else { const tgt = Object.values(G.pl).find(p => p.alive && Math.floor(p.x / T) === tx && Math.floor(p.y / T) === ty); if (tgt) { ax = tgt.x - g.x; ay = tgt.y - g.y; } }
-    const n = Math.hypot(ax, ay); if (n > 0.5) moveCircle(G.maze, g, ax / n * GSPEED * dt, ay / n * GSPEED * dt, 9);
+    const n = Math.hypot(ax, ay); if (n > 0.5) moveCircle(G.maze, g, ax / n * GSPEED * dt, ay / n * GSPEED * dt, 6);
     // sneeze at a player in a straight, open line
     g.cd -= dt;
     if (g.cd <= 0) {
       g.cd = 2.5 + Math.random() * 3;
-      const tgt = Object.values(G.pl).find(p => p.alive && Math.hypot(p.x - g.x, p.y - g.y) < 6 * T && clearLine(g.x, g.y, p.x, p.y));
+      const tgt = Object.values(G.pl).find(p => p.alive && Math.hypot(p.x - g.x, p.y - g.y) < 8 * T && clearLine(g.x, g.y, p.x, p.y));
       if (tgt) { const d = Math.hypot(tgt.x - g.x, tgt.y - g.y); G.bul.push({ id: G.nextId++, x: g.x, y: g.y, vx: (tgt.x - g.x) / d * SNEEZE_SPEED, vy: (tgt.y - g.y) / d * SNEEZE_SPEED, team: -1, kind: 'sneeze', life: 2, bounces: 1 }); }
     }
-    Object.values(G.pl).forEach(p => { if (p.alive && Math.hypot(p.x - g.x, p.y - g.y) < PR + 9) hurt(p); });
+    Object.values(G.pl).forEach(p => { if (p.alive && Math.hypot(p.x - g.x, p.y - g.y) < PR + 6) hurt(p); });
   });
   // bullets
   for (let i = G.bul.length - 1; i >= 0; i--) {
@@ -410,8 +422,8 @@ function hostTick() {
     let gone = false;
     if (b.kind === 'soap') {
       const owner = G.pl[b.owner];
-      for (let j = G.germs.length - 1; j >= 0; j--) { const g = G.germs[j]; if (Math.hypot(g.x - b.x, g.y - b.y) < 13) { G.germs.splice(j, 1); award(owner, 50); G.fx.push(['germ', g.x, g.y]); gone = true; break; } }
-      if (!gone) for (const h of G.hives) { if (h.hp > 0 && Math.hypot(h.x - b.x, h.y - b.y) < 18) { h.hp--; gone = true; if (h.hp <= 0) { award(owner, 500); G.fx.push(['hive', h.x, h.y]); } else award(owner, 20); break; } }
+      for (let j = G.germs.length - 1; j >= 0; j--) { const g = G.germs[j]; if (Math.hypot(g.x - b.x, g.y - b.y) < 10) { G.germs.splice(j, 1); award(owner, 50); G.fx.push(['germ', g.x, g.y]); gone = true; break; } }
+      if (!gone) for (const h of G.hives) { if (h.hp > 0 && Math.hypot(h.x - b.x, h.y - b.y) < 13) { h.hp--; gone = true; if (h.hp <= 0) { award(owner, 500); G.fx.push(['hive', h.x, h.y]); } else award(owner, 20); break; } }
       if (!gone && G.mode === 'teams') for (const p of Object.values(G.pl)) { if (p.alive && p.team !== b.team && p.inv <= 0 && Math.hypot(p.x - b.x, p.y - b.y) < PR + 4) { hurt(p); award(owner, 200); gone = true; break; } }
     } else {
       for (const p of Object.values(G.pl)) { if (p.alive && Math.hypot(p.x - b.x, p.y - b.y) < PR + 4) { hurt(p); gone = true; break; } }
@@ -467,7 +479,23 @@ function lerpState() {   // positions about 190 ms in the past, blended between 
 }
 
 // ---------- my own movement (smooth: I move myself, others see me 6x a second) ----------
-const keys = {}; let stickV = [0, 0], firing = false, fireCd = 0;
+const keys = {}; let stickV = [0, 0], firing = false, fireCd = 0, diagT = 0, aim = null, aimFire = false, aimTap = false;
+// click / touch and hold on the maze to spray toward that exact spot (any angle)
+(() => {
+  const c = document.getElementById('cv'); let pid = null;
+  const at = e => {
+    if (!G || !me) return;
+    const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * VW, y = (e.clientY - r.top) / r.height * VH;
+    const camX = Math.max(0, Math.min(MW * T - VW, me.x - VW / 2)), camY = Math.max(0, Math.min(MH * T - VH, me.y - VH / 2));
+    const dx = x + camX - me.x, dy = y + camY - me.y, d = Math.hypot(dx, dy);
+    if (d > 4) aim = [dx / d, dy / d];
+  };
+  c.addEventListener('pointerdown', e => { pid = e.pointerId; c.setPointerCapture(pid); at(e); aimFire = true; aimTap = true; tapAim = aim && aim.slice(); e.preventDefault(); });
+  c.addEventListener('pointermove', e => { if (e.pointerId === pid) at(e); });
+  const up = e => { if (e.pointerId !== pid) return; pid = null; aimFire = false; aim = null; };
+  let tapAim = null; window.__tapAim = () => tapAim;
+  c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up);
+})();
 document.addEventListener('keydown', e => {
   if (!G) return; const k = e.key.toLowerCase();
   if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'w', 'a', 's', 'd'].includes(k)) { e.preventDefault(); keys[k] = true; }
@@ -480,13 +508,14 @@ function inputVec() {
 }
 function sendPos() {
   if (!G || !me || !G.pl[myId] || G.over) return;
-  const p = G.pl[myId], k = Math.round(me.x) + ',' + Math.round(me.y) + ',' + me.dir.join();
+  const p = G.pl[myId], k = Math.round(me.x) + ',' + Math.round(me.y) + ',' + me.dir.map(v => v.toFixed(1)).join();
   if (!p.alive || k === lastSent) return; lastSent = k;
   if (isHost) { p.x = me.x; p.y = me.y; p.dir = me.dir.slice(); }
-  else tell('p', { id: myId, x: Math.round(me.x), y: Math.round(me.y), d: me.dir });
+  else tell('p', { id: myId, x: Math.round(me.x), y: Math.round(me.y), d: me.dir.map(v => +v.toFixed(2)) });
 }
 function myShot() {
-  const s = { id: myId, x: Math.round(me.x + me.dir[0] * 12), y: Math.round(me.y + me.dir[1] * 12), dx: me.dir[0], dy: me.dir[1] };
+  const n = Math.hypot(me.dir[0], me.dir[1]) || 1, ux = me.dir[0] / n, uy = me.dir[1] / n;
+  const s = { id: myId, x: Math.round(me.x + ux * 8), y: Math.round(me.y + uy * 8), dx: +ux.toFixed(3), dy: +uy.toFixed(3) };
   if (isHost) hostShot(s.id, s.x, s.y, s.dx, s.dy); else tell('shot', s);
 }
 
@@ -526,9 +555,16 @@ function frame(now) {
   // move myself
   if (mine && mine.alive && !G.over) {
     const [ix, iy] = inputVec();
-    if (ix || iy) { const n = Math.hypot(ix, iy); moveCircle(G.maze, me, ix / n * PSPEED * dt, iy / n * PSPEED * dt, PR); me.dir = [ix, iy]; }
+    if (ix || iy) {
+      const n = Math.hypot(ix, iy); moveCircle(G.maze, me, ix / n * PSPEED * dt, iy / n * PSPEED * dt, PR);
+      if (ix && iy) { me.dir = [ix, iy]; diagT = 0.15; }
+      else if ((diagT -= dt) <= 0) me.dir = [ix, iy];   // letting go of one key a split second early keeps the diagonal
+    }
+    if (aim) me.dir = aim.slice();   // mouse / finger on the screen aims in any direction
+    else if (aimTap && window.__tapAim()) me.dir = window.__tapAim().slice();   // a quick tap still aims
     fireCd -= dt;
-    if ((keys[' '] || firing) && fireCd <= 0) { fireCd = 0.25; myShot(); }
+    if (aimTap && fireCd > 0.12) fireCd = 0.12;   // a tap shoots almost right away
+    if ((keys[' '] || firing || aimFire || aimTap) && fireCd <= 0) { fireCd = 0.25; myShot(); aimTap = false; }
   }
   // camera
   const camX = Math.max(0, Math.min(MW * T - VW, me.x - VW / 2)), camY = Math.max(0, Math.min(MH * T - VH, me.y - VH / 2));
@@ -542,19 +578,19 @@ function frame(now) {
   }
   // hives
   G.hives.forEach(h => {
-    if (h.hp <= 0) { ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.beginPath(); ctx.arc(h.x, h.y, 12, 0, 7); ctx.fill(); return; }
+    if (h.hp <= 0) { ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.beginPath(); ctx.arc(h.x, h.y, 8, 0, 7); ctx.fill(); return; }
     const pulse = Math.sin(now / 200 + h.x) * 2;
     ctx.fillStyle = '#5c2a7a'; ctx.strokeStyle = '#1A1030'; ctx.lineWidth = 3;
-    ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; ctx.lineTo(h.x + Math.cos(a) * (15 + pulse), h.y + Math.sin(a) * (15 + pulse)); } ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#7CFF6B'; for (let i = 0; i < h.hp; i++) { ctx.beginPath(); ctx.arc(h.x - 10 + i * 5, h.y + 22, 2, 0, 7); ctx.fill(); }
-    ctx.fillStyle = '#b06bd6'; ctx.beginPath(); ctx.arc(h.x, h.y, 6, 0, 7); ctx.fill();
+    ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; ctx.lineTo(h.x + Math.cos(a) * (10 + pulse * 0.6), h.y + Math.sin(a) * (10 + pulse * 0.6)); } ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#7CFF6B'; for (let i = 0; i < h.hp; i++) { ctx.beginPath(); ctx.arc(h.x - 8 + i * 4, h.y + 15, 1.6, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#b06bd6'; ctx.beginPath(); ctx.arc(h.x, h.y, 4, 0, 7); ctx.fill();
   });
   const L = lerpState();
   if (L) {
     // germs
     L.g.forEach(g => drawGerm(g[1], g[2], now));
     // bullets
-    L.bl.forEach(b => { ctx.beginPath(); ctx.arc(b[1], b[2], b[3] === -1 ? 4 : 5, 0, 7); ctx.fillStyle = b[3] === -1 ? '#c6ff8a' : b[3] === 1 ? '#ffb3c1' : b[3] === 2 ? '#b8e2ff' : '#e6fbff'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1.5; ctx.stroke(); });
+    L.bl.forEach(b => { ctx.beginPath(); ctx.arc(b[1], b[2], b[3] === -1 ? 3 : 3.5, 0, 7); ctx.fillStyle = b[3] === -1 ? '#c6ff8a' : b[3] === 1 ? '#ffb3c1' : b[3] === 2 ? '#b8e2ff' : '#e6fbff'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1.5; ctx.stroke(); });
     // other players
     L.p.forEach(r => { if (r[0] === myId) return; const p = G.pl[r[0]]; if (p && p.alive) drawPlayer(p, r[1], r[2], now); });
   }
@@ -565,21 +601,21 @@ function frame(now) {
   drawHud(mine);
 }
 function drawGerm(x, y, now) {
-  ctx.save(); ctx.translate(x, y); ctx.rotate(now / 600 + x * 0.01);
+  ctx.save(); ctx.translate(x, y); ctx.scale(0.62, 0.62); ctx.rotate(now / 600 + x * 0.01);
   ctx.strokeStyle = '#1A1030'; ctx.lineWidth = 1.5; ctx.fillStyle = '#7CFF6B';
   for (let i = 0; i < 6; i++) { const a = i / 6 * 7; ctx.beginPath(); ctx.moveTo(Math.cos(a) * 6, Math.sin(a) * 6); ctx.lineTo(Math.cos(a) * 11, Math.sin(a) * 11); ctx.stroke(); ctx.beginPath(); ctx.arc(Math.cos(a) * 11, Math.sin(a) * 11, 2, 0, 7); ctx.fill(); }
   ctx.beginPath(); ctx.arc(0, 0, 7.5, 0, 7); ctx.fill(); ctx.stroke(); ctx.restore();
-  ctx.fillStyle = '#1A1030'; ctx.beginPath(); ctx.arc(x - 2.5, y - 1, 1.4, 0, 7); ctx.arc(x + 2.5, y - 1, 1.4, 0, 7); ctx.fill();
+  ctx.fillStyle = '#1A1030'; ctx.beginPath(); ctx.arc(x - 1.6, y - 0.6, 0.9, 0, 7); ctx.arc(x + 1.6, y - 0.6, 0.9, 0, 7); ctx.fill();
 }
 function drawPlayer(p, x, y, now, isMe) {
   const blink = p.invShow && Math.floor(now / 100) % 2;
   if (blink && !isMe) return;
   ctx.globalAlpha = blink ? 0.45 : 1;
-  ctx.fillStyle = teamCol(p.team); ctx.globalAlpha *= 0.35; ctx.beginPath(); ctx.arc(x, y, 15, 0, 7); ctx.fill(); ctx.globalAlpha = blink ? 0.45 : 1;
-  const img = heroImg[spriteCol(p.team)]; if (img && img.complete) ctx.drawImage(img, x - 14, y - 15, 28, 28); else { ctx.fillStyle = teamCol(p.team); ctx.beginPath(); ctx.arc(x, y, PR, 0, 7); ctx.fill(); }
+  ctx.fillStyle = teamCol(p.team); ctx.globalAlpha *= 0.35; ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fill(); ctx.globalAlpha = blink ? 0.45 : 1;
+  const img = heroImg[spriteCol(p.team)]; if (img && img.complete) ctx.drawImage(img, x - 8, y - 9, 16, 16); else { ctx.fillStyle = teamCol(p.team); ctx.beginPath(); ctx.arc(x, y, PR, 0, 7); ctx.fill(); }
   const d = p === G.pl[myId] ? me.dir : p.dir || [1, 0], n = Math.hypot(d[0], d[1]) || 1;
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + d[0] / n * 17, y + d[1] / n * 17, 3, 0, 7); ctx.fill();
-  ctx.font = '800 11px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.strokeText(p.name + (isMe ? ' ★' : ''), x, y - 19); ctx.fillStyle = teamCol(p.team); ctx.fillText(p.name + (isMe ? ' ★' : ''), x, y - 19);
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + d[0] / n * 11, y + d[1] / n * 11, 2, 0, 7); ctx.fill();
+  ctx.font = '800 9px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 2.5; ctx.strokeStyle = '#000'; ctx.strokeText(p.name + (isMe ? ' ★' : ''), x, y - 12); ctx.fillStyle = teamCol(p.team); ctx.fillText(p.name + (isMe ? ' ★' : ''), x, y - 12);
   ctx.globalAlpha = 1;
 }
 function drawHud(mine) {
@@ -595,7 +631,7 @@ function drawHud(mine) {
   }
   ctx.textAlign = 'right'; ctx.fillStyle = '#d7b3ff'; ctx.fillText('Hives ' + hives, VW - 10, 20);
   // mini-map
-  const s = 3.4, mx = VW - MW * s - 8, my = 36;
+  const s = 3, mx = VW - MW * s - 8, my = 36;
   ctx.fillStyle = 'rgba(5,10,20,.7)'; ctx.fillRect(mx - 3, my - 3, MW * s + 6, MH * s + 6);
   ctx.fillStyle = 'rgba(63,124,196,.8)'; for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (G.maze[y][x]) ctx.fillRect(mx + x * s, my + y * s, s, s);
   ctx.fillStyle = '#d06bff'; G.hives.forEach(h => { if (h.hp > 0) ctx.fillRect(mx + h.x / T * s - 2, my + h.y / T * s - 2, 4, 4); });
