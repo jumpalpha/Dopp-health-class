@@ -43,6 +43,7 @@ insert into public.arcade_games (key, title, max_score, medals) values
   ('sprite_memory',  'Sprite Memory',    30000,  '{2000,5000,9000,13000}'),
   ('sprite_catch',   'Sprite Catch',     100000, '{400,1000,2200,4000}'),
   ('sprite_slice',   'Sprite Slice',     100000, '{250,800,1600,3000}'),
+  ('vocab_slice',    'Vocab Slice',      100000, '{500,1200,2200,3500}'),
   ('sprite_dodge',   'Sprite Dodge',     50000,  '{300,700,1200,2000}'),
   ('sprite_hoops',   'Sprite Hoops',     3000,   '{300,700,1100,1600}'),
   ('how_smart',      'How Smart Am I?',  1700,   '{700,900,1100,1400}')

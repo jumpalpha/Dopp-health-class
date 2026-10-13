@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html data-app-name="Vocab Slice" lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Vocab Slice — Dopp's Arcade</title>
+<meta name="description" content="Read the definition, then swipe to slice the fruit carrying the matching health vocabulary term. Works for every chapter.">
+<link rel="canonical" href="https://doppsclass.com/vocab_slice.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%2310004%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+.chbar{display:flex;justify-content:center;align-items:center;gap:8px;padding:0 16px 8px;font-weight:800;font-size:14px;color:#d9d2f2}
+.chbar select{font:inherit;font-weight:800;color:#f4efff;background:#140c2e;border:1px solid rgba(255,215,0,.5);border-radius:10px;padding:6px 10px;max-width:260px}
+.chbar .note{font-size:12px;color:#00E5A0;font-weight:700}
+#game{padding:0 8px 16px}
+</style>
+<!-- PWA --><link rel="manifest" href="app/vocab_slice.webmanifest"><link rel="apple-touch-icon" href="app/vocab_slice-180.png"><meta name="apple-mobile-web-app-title" content="Vocab Slice"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Vocab Slice</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div class="chbar"><label for="chSel">Chapter</label><select id="chSel"></select><span class="note" id="chNote"></span></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="pet_vocab.js"></script>
+<script src="arcade_art.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 420, H = 640, WIN_TERMS = 10;
+const V = window.PET_VOCAB || {};
+const FRUITS = ['apple', 'orange', 'grape', 'banana', 'strawberry', 'carrot', 'broccoli'];
+const JUICE = { apple: '#ff5c77', orange: '#ffa53b', grape: '#a46bff', carrot: '#ff8a2b', broccoli: '#5cd16b', banana: '#ffe14d', strawberry: '#ff3b5c' };
+const FONT = '800 13px Nunito,system-ui,sans-serif', DEF_FONT = '700 16px Nunito,system-ui,sans-serif';
+
+// ---------- chapter picker ----------
+const sel = document.getElementById('chSel'), note = document.getElementById('chNote');
+sel.innerHTML = '<option value="all">🎲 All chapters (mix)</option>' +
+  Object.keys(V).sort((a, b) => a - b).map(k => '<option value="' + k + '">Ch ' + k + ' · ' + V[k].title + '</option>').join('');
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const urlCh = new URLSearchParams(location.search).get('ch');
+let chapter = V[urlCh] ? urlCh : (urlCh === 'all' ? 'all' : (V[store.get('vocab_slice_ch', '1')] ? store.get('vocab_slice_ch', '1') : '1'));
+sel.value = chapter;
+sel.onchange = () => {
+  chapter = sel.value; store.set('vocab_slice_ch', chapter);
+  try { history.replaceState(null, '', '?ch=' + chapter); } catch (e) {}
+  note.textContent = game.state === 'play' ? 'Starts next game' : '';
+  sel.blur();
+};
+
+// ---------- helpers ----------
+const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+const mctx = document.createElement('canvas').getContext('2d');
+function wrap(text, font, maxW) {
+  mctx.font = font; const words = String(text).split(/\s+/), lines = []; let line = '';
+  for (const w of words) { const test = line ? line + ' ' + w : w; if (mctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test; }
+  if (line) lines.push(line);
+  return { lines, w: Math.max(...lines.map(l => mctx.measureText(l).width)) };
+}
+function segDist(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy;
+  let u = L ? ((px - ax) * dx + (py - ay) * dy) / L : 0; u = Math.max(0, Math.min(1, u));
+  return Math.hypot(px - (ax + u * dx), py - (ay + u * dy));
+}
+function segHitsRect(ax, ay, bx, by, r) {
+  for (let i = 0; i <= 10; i++) { const x = ax + (bx - ax) * i / 10, y = ay + (by - ay) * i / 10; if (x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h) return true; }
+  return false;
+}
+const labelRect = it => ({ x: it.x - it.lw / 2 - 8, y: it.y + 22, w: it.lw + 16, h: it.lines.length * 15 + 8 });
+
+// ---------- game state ----------
+let items, halves, splats, trail, last, queue, deck, target, defBox, lives, correct, streak, bestStreak, missed, phase, gapT, reveal, t, flash, chUsed;
+
+function pool(ch) { return ch === 'all' ? Object.keys(V).flatMap(k => V[k].terms.map(x => ({ term: x[0], def: x[1], ch: k }))) : V[ch].terms.map(x => ({ term: x[0], def: x[1], ch })); }
+
+function reset() {
+  items = []; halves = []; splats = []; trail = []; last = null; queue = []; lives = 3; correct = 0; streak = 0; bestStreak = 0; missed = [];
+  phase = 'gap'; gapT = 0.6; reveal = null; t = 0; flash = 0; target = null; defBox = null;
+  chUsed = chapter; deck = shuffle(pool(chUsed)); note.textContent = '';
+}
+
+function nextTarget() {
+  if (!deck.length) deck = shuffle(pool(chUsed));
+  target = deck.shift();
+  const w = wrap(target.def, DEF_FONT, W - 56);
+  defBox = { lines: w.lines, h: 34 + w.lines.length * 20 + 12, ok: 0 };
+}
+
+function newVolley() {
+  nextTarget();
+  const n = correct < 4 ? 3 : correct < 9 ? 4 : 5;
+  const decoys = shuffle(V[target.ch].terms.map(x => x[0]).filter(x => x !== target.term)).slice(0, n - 1);
+  const terms = shuffle([target.term, ...decoys]);
+  const fruits = shuffle(FRUITS);
+  const xs = shuffle(terms.map((_, i) => 62 + i * (W - 124) / Math.max(1, n - 1)));
+  terms.forEach((term, i) => queue.push({ delay: i * 0.28, term, kind: fruits[i % fruits.length], x: xs[i] }));
+  phase = 'volley';
+}
+
+function launch(q) {
+  const g = gravity(), top = 64 + defBox.h + 28;
+  const apex = top + Math.random() * 80;
+  const lab = wrap(q.term, FONT, 128);
+  items.push({ x: q.x, y: H + 30, vx: (Math.random() - 0.5) * 50, vy: -Math.sqrt(2 * g * (H + 30 - apex)),
+    kind: q.kind, term: q.term, correct: q.term === target.term, lines: lab.lines, lw: lab.w, rot: 0, spin: (Math.random() - 0.5) * 2, r: 28 });
+}
+
+const gravity = () => 470 + Math.min(correct, 15) * 14;
+
+function popItem(it) { if (window.game) game.particles.burst(it.x, it.y, 'rgba(255,255,255,.8)', 8, 120, 2.5); }
+
+function slice(it, ax, ay, bx, by, A) {
+  const ang = Math.atan2(by - ay, bx - ax);
+  [-1, 1].forEach(side => halves.push({ x: it.x, y: it.y, vx: it.vx * 0.5 + Math.cos(ang + Math.PI / 2) * side * 120, vy: Math.min(it.vy, 0) * 0.3 - 80,
+    rot: it.rot, spin: side * 4, kind: it.kind, side, life: 1.4 }));
+  splats.push({ x: it.x, y: it.y, c: JUICE[it.kind] || '#7CFFB2', r: 16 + Math.random() * 8, life: 2.2 });
+  A.particles.burst(it.x, it.y, JUICE[it.kind] || '#7CFFB2', 10, 180, 3);
+  if (it.correct) {
+    correct++; streak++; bestStreak = Math.max(bestStreak, streak);
+    const pts = 100 + Math.min(streak - 1, 8) * 25;
+    A.addScore(pts); A.sfx('coin'); A.float('+' + pts, it.x, it.y - 26, streak > 2 ? '#FFD700' : '#ffffff');
+    reveal = { term: target.term, life: 1.3, ok: true }; defBox.ok = 1;
+    items.forEach(popItem); items = []; queue = []; trail = []; last = null;
+    if (streak % 5 === 0 && lives < 3) { lives++; A.toast('❤ ' + streak + ' in a row! Extra heart'); }
+    else if (streak % 5 === 0) A.toast('🔥 ' + streak + ' in a row!');
+    if (correct === WIN_TERMS) A.win('You matched ' + WIN_TERMS + ' vocab terms!');
+    phase = 'gap'; gapT = 1.1;
+  } else {
+    lives--; streak = 0; flash = 0.35; A.sfx('hit'); A.shake(9, 0.3);
+    A.float('✗ ' + (it.term.length > 18 ? it.term.slice(0, 17) + '…' : it.term), it.x, it.y - 26, '#FF8FA3');
+    trail = []; last = null;
+    if (lives <= 0) { reveal = { term: target.term, life: 2, ok: false }; A.gameOver(); }
+  }
+}
+
+function hits(it, ax, ay, bx, by) { return segDist(it.x, it.y, ax, ay, bx, by) < it.r || segHitsRect(ax, ay, bx, by, labelRect(it)); }
+
+function pointer(type, x, y, A) {
+  if (type === 'down') {
+    last = { x, y }; trail = [{ x, y, a: 1 }];
+    for (let i = items.length - 1; i >= 0; i--) if (hits(items[i], x, y, x, y)) { const it = items.splice(i, 1)[0]; slice(it, x - 10, y, x + 10, y, A); return; }   // tap works too
+    return;
+  }
+  if (type === 'up') { last = null; return; }
+  if (type !== 'drag' || !last) return;
+  const ax = last.x, ay = last.y;
+  if (Math.hypot(x - ax, y - ay) < 3) return;
+  trail.push({ x, y, a: 1 }); if (trail.length > 14) trail.shift();
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i];
+    if (hits(it, ax, ay, x, y)) { items.splice(i, 1); slice(it, ax, ay, x, y, A); if (A.state !== 'play' || !last) return; }
+  }
+  last = { x, y };
+}
+
+function update(dt, A) {
+  if (!items) return;
+  t += dt; flash = Math.max(0, flash - dt);
+  trail.forEach(p => p.a -= dt * 5); trail = trail.filter(p => p.a > 0);
+  halves.forEach(h => { h.vy += 900 * dt; h.x += h.vx * dt; h.y += h.vy * dt; h.rot += h.spin * dt; h.life -= dt; });
+  halves = halves.filter(h => h.life > 0 && h.y < H + 60);
+  splats.forEach(s => s.life -= dt); splats = splats.filter(s => s.life > 0);
+  if (reveal) { reveal.life -= dt; if (reveal.life <= 0) reveal = null; }
+  if (defBox && defBox.ok) defBox.ok = Math.max(0, defBox.ok - dt);
+  if (A.state === 'menu') {
+    if (items.length < 3 && Math.random() < dt * 1.2) {
+      const x = 60 + Math.random() * (W - 120);
+      items.push({ x, y: H + 30, vx: (Math.random() - 0.5) * 60, vy: -(620 + Math.random() * 120), kind: FRUITS[Math.floor(Math.random() * FRUITS.length)], term: '', lines: [], lw: 0, rot: 0, spin: 1, r: 28, deco: true });
+    }
+  } else if (A.state !== 'play') return;
+  if (A.state === 'play') {
+    if (phase === 'gap') { gapT -= dt; if (gapT <= 0) newVolley(); }
+    for (let i = queue.length - 1; i >= 0; i--) { queue[i].delay -= dt; if (queue[i].delay <= 0) launch(queue.splice(i, 1)[0]); }
+  }
+  const g = A.state === 'play' ? gravity() : 470;
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i];
+    it.vy += g * dt; it.x += it.vx * dt; it.y += it.vy * dt; it.rot += it.spin * dt;
+    const m = Math.max(30, it.lw / 2 + 10);
+    if (it.x < m || it.x > W - m) { it.vx *= -0.6; it.x = Math.max(m, Math.min(W - m, it.x)); }
+    if (it.vy > 0 && it.y > H + 60) items.splice(i, 1);
+  }
+  // the right answer fell off the board without being sliced
+  if (A.state === 'play' && phase === 'volley' && !queue.length && !items.some(it => it.correct)) {
+    lives--; streak = 0; A.sfx('hit'); flash = 0.3;
+    missed.push(target.term); deck.splice(Math.min(2, deck.length), 0, target);   // it comes back soon
+    reveal = { term: target.term, life: 1.8, ok: false };
+    items.forEach(popItem); items = [];
+    if (lives <= 0) { A.gameOver(); return; }
+    phase = 'gap'; gapT = 1.8;
+  }
+}
+
+function pill(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+function draw(ctx, A) {
+  // chalkboard in a wooden frame
+  ctx.fillStyle = '#7a4a24'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#1f3d33'; ctx.fillRect(10, 10, W - 20, H - 20);
+  const grd = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, H * 0.7); grd.addColorStop(0, 'rgba(255,255,255,.05)'); grd.addColorStop(1, 'rgba(0,0,0,.25)');
+  ctx.fillStyle = grd; ctx.fillRect(10, 10, W - 20, H - 20);
+  ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.lineWidth = 14;
+  for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(30, 120 + i * 110); ctx.bezierCurveTo(W * 0.3, 90 + i * 110, W * 0.7, 150 + i * 110, W - 30, 110 + i * 110); ctx.stroke(); }
+  if (!items) return;
+  splats.forEach(s => { ctx.globalAlpha = Math.min(0.5, s.life / 2.2 * 0.5); ctx.fillStyle = s.c; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); });
+  ctx.globalAlpha = 1;
+  A.drawHero(W - 46, H - 44, 66, 0, flash > 0 ? 'sugar' : 'happy');
+
+  // definition card
+  if (A.state !== 'menu' && defBox) {
+    const bx = 18, by = 62, bw = W - 36;
+    pill(ctx, bx, by, bw, defBox.h, 14);
+    ctx.fillStyle = defBox.ok ? 'rgba(0,229,160,' + (0.25 + defBox.ok * 0.5) + ')' : 'rgba(10,6,24,.82)'; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = defBox.ok ? '#00E5A0' : '#FFD700'; ctx.stroke();
+    ctx.textAlign = 'left'; ctx.font = '900 12px Nunito,sans-serif'; ctx.fillStyle = '#FFD700';
+    ctx.fillText('SLICE THE TERM THAT MEANS…', bx + 14, by + 22);
+    ctx.textAlign = 'right'; ctx.fillStyle = correct >= WIN_TERMS ? '#00E5A0' : '#d9d2f2';
+    ctx.fillText('Ch ' + target.ch + ' · ' + Math.min(correct, WIN_TERMS) + '/' + WIN_TERMS + (correct > WIN_TERMS ? ' +' + (correct - WIN_TERMS) : ''), bx + bw - 14, by + 22);
+    ctx.textAlign = 'left'; ctx.font = DEF_FONT; ctx.fillStyle = '#ffffff';
+    defBox.lines.forEach((l, i) => ctx.fillText(l, bx + 14, by + 46 + i * 20));
+  }
+
+  halves.forEach(h => {
+    ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.rot);
+    ctx.beginPath(); ctx.rect(-30, h.side < 0 ? -30 : 0, 60, 30); ctx.clip();
+    ctx.globalAlpha = Math.min(1, h.life); ART.draw(ctx, h.kind, 0, 0, 44, t); ctx.restore();
+  });
+  items.forEach(it => {
+    ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(Math.sin(it.rot) * 0.4); ART.draw(ctx, it.kind, 0, 0, 44, t); ctx.restore();
+    if (!it.lines.length) return;
+    const r = labelRect(it);
+    pill(ctx, r.x, r.y, r.w, r.h, 9); ctx.fillStyle = 'rgba(255,248,225,.96)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#2a1a0a'; ctx.stroke();
+    ctx.textAlign = 'center'; ctx.font = FONT; ctx.fillStyle = '#1a1230';
+    it.lines.forEach((l, i) => ctx.fillText(l, it.x, r.y + 16 + i * 15));
+  });
+
+  // blade trail
+  if (trail.length > 1) {
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (let i = 1; i < trail.length; i++) {
+      const p = trail[i], q = trail[i - 1], w = 2 + (i / trail.length) * 9;
+      ctx.strokeStyle = 'rgba(255,255,255,' + Math.max(0, p.a) + ')'; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+      ctx.strokeStyle = 'rgba(124,255,178,' + Math.max(0, p.a) * 0.6 + ')'; ctx.lineWidth = w * 0.4; ctx.stroke();
+    }
+  }
+  // answer reveal
+  if (reveal) {
+    const a = Math.min(1, reveal.life * 2), y = H * 0.56;
+    ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.lineJoin = 'round';
+    ctx.font = '900 14px Nunito,sans-serif'; ctx.lineWidth = 5; ctx.strokeStyle = '#05070F';
+    const head = reveal.ok ? '✔ CORRECT' : 'THE ANSWER WAS';
+    ctx.strokeText(head, W / 2, y - 26); ctx.fillStyle = reveal.ok ? '#00E5A0' : '#FF8FA3'; ctx.fillText(head, W / 2, y - 26);
+    const big = wrap(reveal.term, '900 26px Nunito,sans-serif', W - 60);
+    ctx.font = '900 26px Nunito,sans-serif'; ctx.lineWidth = 7;
+    big.lines.forEach((l, i) => { ctx.strokeText(l, W / 2, y + 4 + i * 30); ctx.fillStyle = '#FFD700'; ctx.fillText(l, W / 2, y + 4 + i * 30); });
+    ctx.globalAlpha = 1;
+  }
+  if (flash > 0) { ctx.fillStyle = 'rgba(255,59,92,' + flash * 0.7 + ')'; ctx.fillRect(0, 0, W, H); }
+  // HUD
+  if (A.state !== 'menu') {
+    ctx.font = '900 18px Nunito,sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#FF3B5C';
+    ctx.fillText('❤'.repeat(Math.max(0, lives)) + '♡'.repeat(Math.max(0, 3 - lives)), 22, H - 24);
+    if (streak >= 2) { ctx.fillStyle = '#FFD700'; ctx.font = '900 14px Nunito,sans-serif'; ctx.fillText('🔥 ' + streak + ' in a row', 22, H - 48); }
+  }
+}
+
+reset();
+window.__vslice = () => ({ items, lives, correct, streak, target, phase, missed,   // used by automated playtests
+  swipe: (pts) => { pointer('down', pts[0][0], pts[0][1], game); for (const p of pts.slice(1)) pointer('drag', p[0], p[1], game); pointer('up', 0, 0, game); } });
+const game = window.game = Arcade({
+  mount: '#game', title: 'Vocab Slice', subtitle: 'Read it. Find it. Slice it!', W, H, reserveH: 110,
+  storageKey: 'vocab_slice', winText: 'You matched ' + WIN_TERMS + ' vocab terms!', deathDelay: 1600, overTitle: 'Out of hearts!',
+  medals: [{ at: 500, name: 'Bronze', icon: '🥉' }, { at: 1200, name: 'Silver', icon: '🥈' }, { at: 2200, name: 'Gold', icon: '🥇' }, { at: 3500, name: 'Legend', icon: '💎' }],
+  howTo: 'Read the <b>definition</b> at the top, then <b>swipe (or tap)</b> the fruit carrying the matching <b>vocab term</b>.<br>Wrong term or letting the right one drop costs a heart. 5 in a row = extra heart. <b>Match ' + WIN_TERMS + ' terms</b> to win!',
+  controls: 'Pick a chapter above · swipe or tap to slice · P pause',
+  facts: [
+    'Saying a definition out loud in your own words helps you remember it.',
+    'Short practice sessions spread over several days beat one long cram session.',
+    'Missed a term? It comes back soon in the same game, so watch for it.',
+    'Try the Flashcard Flip on your chapter page for any terms you keep missing.',
+    'Sleep helps your brain lock in what you studied today.'
+  ],
+  reset, update, draw, pointer
+});
+})();
+</script>
+</body>
+</html>
