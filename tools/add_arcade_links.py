@@ -23,6 +23,7 @@ GAMES = {
   'run':      ('sprite_run.html',      '🛕', 'Sprite Run',      'Swipe past soda, grab fruit'),
   'dash':     ('sprite_dash.html',     '🏃', 'Sprite Dash',     'Jump and duck past junk food'),
   'flap':     ('sprite_flap.html',     '🪽', 'Sprite Flap',     'Flap through junk-food towers'),
+  'slice':    ('sprite_slice.html',    '🔪', 'Sprite Slice',    'Swipe fruit and veggies, skip the junk'),
   'sling':    ('sprite_sling.html',    '🎯', 'Sprite Slingshot','Topple towers of junk-food monsters'),
 }
 SMART = ('how_smart.html', '🧠', 'How Smart Am I?', 'Compare yourself, 3rd grade to grad school')
@@ -30,7 +31,7 @@ SMART = ('how_smart.html', '🧠', 'How Smart Am I?', 'Compare yourself, 3rd gra
 MAP = {
    1: ['showdown', 'breaker'],  2: ['showdown', 'hoops'],   3: ['memory', 'word'],     4: ['hoops', 'run'],
    5: ['showdown', 'word'],     6: ['showdown', 'memory'],  7: ['memory', 'word'],     8: ['showdown', 'hoops'],
-   9: ['dodge', 'climb'],      10: ['catch', 'stack', 'snake'], 11: ['s2048', 'dodge'], 12: ['field', 'run', 'rider'],
+   9: ['dodge', 'climb'],      10: ['catch', 'stack', 'snake'], 11: ['s2048', 'slice', 'dodge'], 12: ['field', 'run', 'rider'],
   13: ['maze', 'breaker'],     14: ['field', 'climb'],     15: ['dash', 'catch'],     16: ['word', 'memory'],
   17: ['word', 'memory'],      18: ['climb', 'showdown'],  19: ['showdown', 'hoops'], 20: ['hoops', 'flap'],
   21: ['showdown', 'dodge'],   22: ['dodge', 'breaker'],   23: ['invaders', 'maze'],  24: ['invaders', 'word'],
