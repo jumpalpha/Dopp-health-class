@@ -4,10 +4,11 @@
 -- Safe to re-run. Adds one table + functions; touches nothing else.
 -- All game rules run here on the server so the leaderboard is fair.
 --
--- Decay (per hour): food 1.3, energy 1.1, mood 1.0, clean 0.8
--- Health: -1/hr when average need < 30, -2/hr when any need is 0,
---         +0.5/hr when average need > 60.
--- A fully healthy sprite left 100% alone dies after ~121 hours (5 days).
+-- Decay (per hour): food 1.625, energy 1.375, mood 1.25, clean 1.0
+-- Health: -1.25/hr when average need < 30, -2.5/hr when any need is 0,
+--         +0.625/hr when average need > 60.
+-- A fully healthy sprite left 100% alone dies after ~97 hours (4 days).
+-- (Changed 2026-10-13 from 5 days: every hourly rate is 1.25x the original.)
 -- Dead sprites revive after 10 correct chapter questions.
 -- ============================================================
 
@@ -76,15 +77,15 @@ begin
   steps := least(h, 400);
   for i in 1..steps loop
     exit when not r.alive;
-    r.food   := greatest(0, r.food   - 1.3);
-    r.energy := greatest(0, r.energy - 1.1);
-    r.mood   := greatest(0, r.mood   - 1.0);
-    r.clean  := greatest(0, r.clean  - 0.8);
+    r.food   := greatest(0, r.food   - 1.625);
+    r.energy := greatest(0, r.energy - 1.375);
+    r.mood   := greatest(0, r.mood   - 1.25);
+    r.clean  := greatest(0, r.clean  - 1.0);
     avg_need := (r.food + r.energy + r.mood + r.clean) / 4;
     min_need := least(r.food, r.energy, r.mood, r.clean);
-    if min_need <= 0 then r.health := r.health - 2;
-    elsif avg_need < 30 then r.health := r.health - 1;
-    elsif avg_need > 60 then r.health := least(100, r.health + 0.5);
+    if min_need <= 0 then r.health := r.health - 2.5;
+    elsif avg_need < 30 then r.health := r.health - 1.25;
+    elsif avg_need > 60 then r.health := least(100, r.health + 0.625);
     end if;
     if r.health <= 0 then
       r.health := 0; r.alive := false;
