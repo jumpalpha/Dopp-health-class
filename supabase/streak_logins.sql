@@ -8,3 +8,10 @@ revoke execute on function public.complete_day(uuid, text, date) from public, an
 revoke execute on function public.remove_day(uuid, text, date) from public, anon, authenticated;
 revoke execute on function public.complete_day(uuid, date) from public, anon, authenticated;
 revoke execute on function public.remove_day(uuid, date) from public, anon, authenticated;
+
+-- 2026-10-13 (later): old self-marked days hidden, not deleted.
+-- active_days_backup_20261013 holds them; _real_day() filters them out of
+-- get_student_days(uuid,text) and get_leaderboard_data(text) for dates before 2026-10-13.
+-- To bring them back: make _real_day() return true.
+revoke execute on function public.get_student_days(uuid) from public, anon, authenticated;
+revoke execute on function public.reset_student_progress(uuid) from public, anon, authenticated;
