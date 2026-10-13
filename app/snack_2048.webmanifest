@@ -1,0 +1,30 @@
+{
+  "id": "../dopp_2048.html",
+  "name": "Snack 2048 · Dopp's Arcade",
+  "short_name": "Snack 2048",
+  "start_url": "../dopp_2048.html",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#0a0618",
+  "theme_color": "#140c2e",
+  "icons": [
+    {
+      "src": "snack_2048-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "snack_2048-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "snack_2048-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

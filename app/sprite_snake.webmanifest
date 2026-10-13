@@ -1,0 +1,30 @@
+{
+  "id": "../dopp_snake.html",
+  "name": "Sprite Snake · Dopp's Arcade",
+  "short_name": "Sprite Snake",
+  "start_url": "../dopp_snake.html",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#0a0618",
+  "theme_color": "#140c2e",
+  "icons": [
+    {
+      "src": "sprite_snake-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "sprite_snake-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "sprite_snake-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

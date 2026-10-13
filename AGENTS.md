@@ -17,6 +17,7 @@ The site is a mostly static HTML/CSS/JavaScript website for a health class curri
 - Dopp arcade games: `dopp_*.html`
 - Classroom game templates: `game01_*.html` through `game15_*.html`
 - Shared styling/scripts where present: `shared.css`, `shared.js`
+- Web app (installable + offline): `manifest.webmanifest`, `sw.js`, `pwa.js`, `offline.html`, `app/` (per-game manifests and icons). After adding, renaming or removing an arcade game in `arcade.html`, or adding a new page, run `python3 tools/build_pwa.py`.
 
 The user prefers plain, step-by-step help and non-technical explanations when possible.
 

@@ -1,0 +1,30 @@
+{
+  "id": "../field_day.html",
+  "name": "Field Day · Dopp's Arcade",
+  "short_name": "Field Day",
+  "start_url": "../field_day.html",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#0a0618",
+  "theme_color": "#140c2e",
+  "icons": [
+    {
+      "src": "field_day-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "field_day-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "field_day-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

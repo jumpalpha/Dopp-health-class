@@ -1,0 +1,30 @@
+{
+  "id": "../how_smart.html",
+  "name": "How Smart Am I? · Dopp's Arcade",
+  "short_name": "How Smart?",
+  "start_url": "../how_smart.html",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#0a0618",
+  "theme_color": "#140c2e",
+  "icons": [
+    {
+      "src": "how_smart-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "how_smart-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "how_smart-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

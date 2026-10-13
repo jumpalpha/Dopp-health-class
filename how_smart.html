@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-app-name="How Smart Am I?" lang="en">
 <head>
 <meta charset="UTF-8">
 <script src="term.js"></script>
@@ -98,6 +98,7 @@ details a{color:var(--sky)}
   .card{padding:16px}
 }
 </style>
+<!-- PWA --><link rel="manifest" href="app/how_smart.webmanifest"><link rel="apple-touch-icon" href="app/how_smart-180.png"><meta name="apple-mobile-web-app-title" content="How Smart?"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
 <body>
 <div class="top"><a href="arcade.html">← Arcade</a><h1>How Smart Am I?</h1><a href="pet.html">🌱 My Sprite</a></div>
@@ -332,7 +333,8 @@ function post(lvl) {
   NET.rpc('arcade_submit', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: 'how_smart', p_score: score, p_won: won })
     .then(r => { el.innerHTML = '📡 Posted! <b>#' + r.rank + '</b>' + (r.visitor ? ' among visitors' : ' in all classes · <b>#' + r.rank_group + '</b> in ' + esc(r.group)) +
       (r.xp ? '<br>⭐ +' + r.xp + ' Verified XP for out-smarting the average 10th grader!' : '') + '<br><a href="arcade.html#stats">See leaderboards →</a>'; })
-    .catch(e => { el.textContent = /too fast/.test(e.message) ? '' : '⚠ Couldn\'t post your score right now.'; });
+    .catch(e => { if (e.offline && NET.queue) { NET.queue({ p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: 'how_smart', p_score: score, p_won: won }); el.textContent = '📴 No internet right now. Your score is saved on this device and will post to the leaderboard when you\'re back online.'; return; }
+      el.textContent = /too fast/.test(e.message) ? '' : '⚠ Couldn\'t post your score right now.'; });
 }
 
 $('startBtn').onclick = start; $('againBtn').onclick = start;

@@ -17,12 +17,40 @@
       } catch (e) { return null; }
     },
     async rpc(name, args) {
-      const r = await fetch(NET.URL + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: NET.KEY, Authorization: 'Bearer ' + NET.KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+      let r;
+      try { r = await fetch(NET.URL + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: NET.KEY, Authorization: 'Bearer ' + NET.KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) }); }
+      catch (e) { const err = new Error('offline'); err.offline = true; throw err; }
       const j = await r.json().catch(() => null);
       if (!r.ok) throw new Error((j && j.message) || ('HTTP ' + r.status));
       return j;
     }
   };
+  // Offline scores: if a result can't reach the server (no internet), keep the best one per game
+  // on this device and post it the next time the site is online.
+  const QKEY = 'dopp_score_queue';
+  function readQ() { try { return JSON.parse(localStorage.getItem(QKEY) || '{}'); } catch (e) { return {}; } }
+  function writeQ(q) { try { Object.keys(q).length ? localStorage.setItem(QKEY, JSON.stringify(q)) : localStorage.removeItem(QKEY); } catch (e) {} }
+  NET.queue = function (args) {
+    const q = readQ(), k = args.p_student_id + '|' + args.p_trimester + '|' + args.p_game, old = q[k];
+    q[k] = old ? Object.assign({}, old, { p_score: Math.max(old.p_score, args.p_score), p_won: old.p_won || args.p_won, p_pin_hash: args.p_pin_hash }) : args;
+    writeQ(q);
+  };
+  NET.queued = () => Object.keys(readQ()).length;
+  let flushing = false;
+  NET.flush = async function () {
+    if (flushing || !navigator.onLine) return; flushing = true;
+    try {
+      for (const k of Object.keys(readQ())) {
+        const args = readQ()[k]; if (!args) continue;
+        try { await NET.rpc('arcade_submit', args); }
+        catch (e) { if (e.offline) break; if (/too fast/.test(e.message)) { await new Promise(r => setTimeout(r, 3500)); continue; } }
+        const q = readQ(); delete q[k]; writeQ(q);               // posted, or the server said no for good
+        await new Promise(r => setTimeout(r, 400));
+      }
+    } finally { flushing = false; }
+  };
+  window.addEventListener('online', () => NET.flush());
+  setTimeout(() => NET.flush(), 1500);
   window.ArcadeNet = NET;
 
   function Arcade(cfg) {
@@ -225,7 +253,8 @@
             (r.xp ? '<br>⭐ +' + r.xp + ' Verified XP for your first quest win!' : '') +
             '<br><a href="arcade.html#stats">See leaderboards →</a>';
         })
-        .catch(err => { el.textContent = /too fast/.test(err.message) ? '' : /not signed/.test(err.message) ? '🔒 Your login expired. Log in again on the Quest page to post scores.' : '⚠ Couldn\'t post your score right now.'; });
+        .catch(err => { if (err.offline) { NET.queue({ p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: cfg.storageKey, p_score: A.score, p_won: !!A.won }); el.textContent = '📴 No internet right now. Your score is saved on this device and will post to the leaderboard when you\'re back online.'; return; }
+          el.textContent = /too fast/.test(err.message) ? '' : /not signed/.test(err.message) ? '🔒 Your login expired. Log in again on the Quest page to post scores.' : '⚠ Couldn\'t post your score right now.'; });
     }
 
     // ---------- flow ----------

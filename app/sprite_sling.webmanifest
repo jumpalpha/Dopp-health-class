@@ -1,0 +1,30 @@
+{
+  "id": "../sprite_sling.html",
+  "name": "Sprite Slingshot · Dopp's Arcade",
+  "short_name": "Slingshot",
+  "start_url": "../sprite_sling.html",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#0a0618",
+  "theme_color": "#140c2e",
+  "icons": [
+    {
+      "src": "sprite_sling-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "sprite_sling-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "sprite_sling-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

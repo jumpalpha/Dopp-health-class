@@ -1,0 +1,73 @@
+{
+  "id": "./?app=doppsclass",
+  "name": "Doppsclass: The Legend of Wellness",
+  "short_name": "Doppsclass",
+  "description": "Dopp's health class: chapters, vocabulary, quests and the Wellness Sprite arcade.",
+  "start_url": "arcade.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0618",
+  "theme_color": "#140c2e",
+  "icons": [
+    {
+      "src": "app/site-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "app/site-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "app/site-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Arcade",
+      "url": "arcade.html",
+      "icons": [
+        {
+          "src": "app/site-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Chapters",
+      "url": "chapters.html",
+      "icons": [
+        {
+          "src": "app/site-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Quest",
+      "url": "quest.html",
+      "icons": [
+        {
+          "src": "app/site-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "How Smart Am I?",
+      "url": "how_smart.html",
+      "icons": [
+        {
+          "src": "app/how_smart-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
