@@ -973,6 +973,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 (function(){ const sel = document.getElementById('wq-trimester'); if (!sel) return; if (![...sel.options].some(o => o.value === TRIMESTER)) sel.add(new Option(TRIMESTER, TRIMESTER), 0); sel.value = TRIMESTER; })();
 subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); }
 const XP_PER_TASK  = 25;
+const XP_PER_DAY   = 5;   // per login day
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task
 
 // ═══════════════════════════════════════════════════════════
@@ -1396,7 +1397,7 @@ async function loadProgressData() {
       avatar: s.avatar,
       class_code: s.class_code,
       tasks,
-      xp: tasks * XP_PER_TASK,
+      xp: tasks * XP_PER_TASK + daySet.size * XP_PER_DAY,
       days: daySet.size,
       streak,
       pet: pets[s.id] || null,

@@ -130,6 +130,10 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 .streak-day { aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.04); border:1px solid var(--border); transition:all .2s; }
 .streak-day.active { background:rgba(255,215,0,0.2); border-color:rgba(255,215,0,0.5); }
 .streak-day.today { border-color:var(--gold); box-shadow:0 0 8px rgba(255,215,0,0.3); }
+.streak-day { display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:var(--dim); }
+.streak-day.active { color:var(--text); }
+.streak-day .mo { font-size:9px; display:block; line-height:1; }
+.streak-month { font-size:13px; font-weight:800; color:var(--text); margin-bottom:8px; }
 .streak-labels { display:flex; justify-content:space-between; margin-bottom:6px; }
 .streak-label { font-size:10px; color:var(--dim); text-align:center; }
 
@@ -284,8 +288,9 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
 <div class="section">
   <div class="sec-header">
     <div class="sec-title">📅 Activity Streak</div>
-    <span style="font-size:12px;color:var(--dim)">Logs itself each day you log in</span>
+    <span style="font-size:12px;color:var(--dim)">+5 XP each day you log in</span>
   </div>
+  <div class="streak-month" id="streak-month"></div>
   <div class="streak-labels" id="streak-labels"></div>
   <div class="streak-grid" id="streak-grid"></div>
 </div>
@@ -356,6 +361,7 @@ const REALMS = [
 ];
 
 const XP_PER_TASK = 25;
+const XP_PER_DAY = 5;   // each day on the Activity Streak (a real login) is worth 5 XP
 const TOTAL_XP = REALMS.reduce((s,r) => s + r.tasks.length * XP_PER_TASK, 0);
 
 const ACHIEVEMENTS = [
@@ -538,6 +544,7 @@ function calcStats() {
     if (doneDays.has(localDay(d))) { streak++; d.setDate(d.getDate()-1); }
     else break;
   }
+  xp += doneDays.size * XP_PER_DAY;
   return { xp, badges, totalTasks, bossTasks, vocabTasks, streak, totalDays: doneDays.size };
 }
 
@@ -574,6 +581,9 @@ function renderStreak() {
   grid.innerHTML = '';
   const today = new Date(); const todayS = todayStr();
   const start = new Date(today); start.setDate(today.getDate() - today.getDay() - 21);   // Sunday, 3 weeks back
+  const endD = new Date(start); endD.setDate(start.getDate() + 27);
+  const fmt = x => x.toLocaleDateString([], { month: 'long', day: 'numeric' });
+  document.getElementById('streak-month').textContent = fmt(start) + ' – ' + fmt(endD);
   for (let i = 0; i < 28; i++) {
     const d = new Date(start); d.setDate(start.getDate() + i);
     const ds = localDay(d);
@@ -581,6 +591,7 @@ function renderStreak() {
     div.className = 'streak-day' + (doneDays.has(ds) ? ' active' : '') + (ds === todayS ? ' today' : '');
     if (ds > todayS) div.style.opacity = '0.35';
     div.title = ds + (doneDays.has(ds) ? ' — logged in' : '');
+    div.innerHTML = (d.getDate() === 1 || i === 0 ? '<span style="text-align:center"><span class="mo">' + d.toLocaleDateString([], { month: 'short' }) + '</span>' + d.getDate() + '</span>' : d.getDate());
     grid.appendChild(div);
   }
 }
