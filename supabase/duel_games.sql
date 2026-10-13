@@ -276,3 +276,8 @@ grant execute on function public.duel_state(uuid, text) to anon, authenticated;
 grant execute on function public.duel_move(uuid, text, int) to anon, authenticated;
 grant execute on function public.duel_leave(uuid, text) to anon, authenticated;
 grant execute on function public.duel_rematch(uuid, text) to anon, authenticated;
+
+-- 2026-10-13: added 'memory' (Dopp Memory). Applied as migration "partner_memory_game":
+-- new columns secret / flip1 / peek / peek_until, _duel_memory_deck(), and memory branches in
+-- _duel_view, duel_create, duel_move and duel_rematch. The card layout (secret) is never sent
+-- to the page; only flipped or matched cards are.

@@ -59,6 +59,19 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
 .c4 .h.drop{animation:drop .38s cubic-bezier(.5,0,1,1)}
 @keyframes drop{from{transform:translateY(var(--from))}to{transform:translateY(0)}}
 .h.win,.t.win{box-shadow:0 0 0 4px #fff,0 0 18px 4px rgba(255,255,255,.8)}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;user-select:none;-webkit-user-select:none}
+.card4{aspect-ratio:3/4;perspective:600px;cursor:pointer}
+.card4 .in{position:relative;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d}
+.card4.up .in{transform:rotateY(180deg)}
+.card4 .fc{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:2.5px solid var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.card4 .back{background:repeating-linear-gradient(45deg,#3b2a7a 0 8px,#4a378f 8px 16px);color:var(--gold);font:900 26px Cinzel,serif;text-shadow:0 2px 0 #000}
+.card4 .front{background:#fff8e7;transform:rotateY(180deg)}
+.card4 .front svg{width:92%;height:auto}
+.card4 .front b{font:900 10px Nunito,sans-serif;color:#2a1a14;margin-top:-2px;white-space:nowrap}
+.card4.m1 .front{box-shadow:inset 0 0 0 4px var(--p1);background:#ffe3e8}
+.card4.m2 .front{box-shadow:inset 0 0 0 4px var(--p2);background:#fff6cf}
+.card4.m1 .fc,.card4.m2 .fc{border-color:var(--ink)}
+.pairs{text-align:center;font-weight:900;font-size:14px;margin:-4px 0 10px;color:rgba(244,239,255,.85)}
 /* tic-tac-toe */
 .ttt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:var(--gold);border-radius:16px;padding:8px;border:3px solid var(--ink);user-select:none}
 .ttt .t{aspect-ratio:1;background:#2b1c55;border-radius:10px;display:flex;align-items:center;justify-content:center;font:900 64px Nunito,sans-serif;cursor:pointer}
@@ -82,6 +95,7 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
     <div class="picker">
       <button class="pick" data-g="connect4"><span class="ic">🔴</span>Connect 4</button>
       <button class="pick" data-g="tictactoe"><span class="ic">⭕</span>Tic-Tac-Toe</button>
+      <button class="pick" data-g="memory" style="grid-column:1/-1"><span class="ic" id="memIcon" style="width:44px;height:44px;margin:0 auto 4px"></span>Dopp Memory</button>
     </div>
     <div id="who"></div>
     <div id="nameBox"><label for="name">Your name</label><input id="name" maxlength="16" placeholder="First name" autocomplete="off"></div>
@@ -125,11 +139,12 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
 </section>
 </main>
 
+<script src="dopp_faces.js"></script>
 <script>
 (() => {
 const URL = 'https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
 const TRI = (window.TERM && TERM.id) || '2026-T1';
-const NAMES = { connect4: 'Connect 4', tictactoe: 'Tic-Tac-Toe' };
+const NAMES = { connect4: 'Connect 4', tictactoe: 'Tic-Tac-Toe', memory: 'Dopp Memory' };
 const $ = id => document.getElementById(id);
 const store = { get: (k, s) => { try { return (s ? sessionStorage : localStorage).getItem(k); } catch (e) { return null; } },
                 set: (k, v, s) => { try { (s ? sessionStorage : localStorage).setItem(k, v); } catch (e) {} },
@@ -147,7 +162,9 @@ function token() {   // this tab's secret for the game
 }
 const signedIn = () => { const id = store.get('qSID_' + TRI), pin = store.get('qPIN_' + TRI, true); return id && pin ? { id, pin } : null; };
 
-let game = new URLSearchParams(location.search).get('g') === 'tictactoe' ? 'tictactoe' : 'connect4';
+let game = ['tictactoe', 'memory'].includes(new URLSearchParams(location.search).get('g')) ? new URLSearchParams(location.search).get('g') : 'connect4';
+let peekFaces = {}, peekUntil = 0, peekTimer = null;
+$('memIcon').innerHTML = doppFace('Mullet');
 let S = null, timer = null, busy = false, lastBoard = '';
 
 // ---------- lobby ----------
@@ -203,8 +220,13 @@ function winCells(b) {
   }
   return new Set(out);
 }
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function render() {
   if (!S) return;
+  if (S.game === 'memory' && S.peek && S.peek_ms > 0) {   // keep a missed pair showing for its full moment
+    const keys = S.peek.split(','); peekFaces = {}; keys.forEach(k => { if (S.faces && S.faces[k]) peekFaces[k] = S.faces[k]; });
+    peekUntil = Date.now() + S.peek_ms; clearTimeout(peekTimer); peekTimer = setTimeout(render, S.peek_ms + 30);
+  }
   if (S.status === 'waiting') { show('waiting'); $('waitTitle').textContent = NAMES[S.game]; $('bigCode').textContent = S.code; return; }
   show('game');
   const mine = S.status === 'playing' && S.turn === S.me;
@@ -213,7 +235,8 @@ function render() {
   $('pl1').classList.toggle('turn', S.status === 'playing' && S.turn === 1); $('pl2').classList.toggle('turn', S.status === 'playing' && S.turn === 2);
   const oppName = S.me === 1 ? S.p2_name : S.p1_name;
   $('status').className = 'status' + (mine ? ' mine' : '');
-  $('status').textContent = S.status === 'playing' ? (mine ? 'Your turn!' : oppName + ' is thinking…') : '';
+  if (S.status === 'playing' && S.game === 'memory' && Date.now() < peekUntil) { $('status').className = 'status'; $('status').textContent = '❌ No match!'; }
+  else $('status').textContent = S.status === 'playing' ? (mine ? (S.game === 'memory' ? (S.flip1 != null ? 'Your turn — flip one more' : 'Your turn — flip two cards') : 'Your turn!') : oppName + (S.game === 'memory' ? ' is flipping…' : ' is thinking…')) : '';
   $('offline').textContent = S.status === 'playing' && !S.opp_online ? '⚠ ' + oppName + ' seems disconnected. If they don\'t come back within a minute, you win.' : '';
   $('rankNote').textContent = S.ranked ? '🏆 Both players signed in — wins count on the class leaderboard.' : 'Practice game — wins only count when both players are signed in.';
   drawBoard(mine);
@@ -244,6 +267,17 @@ function drawBoard(mine) {
     }
     box.innerHTML = html + '</div>';
     box.querySelectorAll('.col').forEach(el => el.onclick = () => move(+el.dataset.c));
+  } else if (S.game === 'memory') {
+    const faces = Object.assign({}, Date.now() < peekUntil ? peekFaces : {}, S.faces || {});
+    const n1 = (b.match(/1/g) || []).length / 2, n2 = (b.match(/2/g) || []).length / 2;
+    let html = '<div class="pairs">Pairs — ' + esc(S.p1_name) + ': ' + n1 + ' · ' + esc(S.p2_name || '…') + ': ' + n2 + '</div><div class="mem">';
+    for (let i = 0; i < 16; i++) {
+      const f = faces[i], style = f ? DOPP_STYLES[f.charCodeAt(0) - 65] : null;
+      html += '<div class="card4' + (f ? ' up' : '') + (b[i] === '1' ? ' m1' : b[i] === '2' ? ' m2' : '') + '" data-i="' + i + '"><div class="in">' +
+        '<div class="fc back">D</div><div class="fc front">' + (style ? doppFace(style) + '<b>' + style + '</b>' : '') + '</div></div></div>';
+    }
+    box.innerHTML = html + '</div>';
+    box.querySelectorAll('.card4').forEach(el => el.onclick = () => move(+el.dataset.i));
   } else {
     let html = '<div class="ttt">';
     for (let i = 0; i < 9; i++) html += '<div class="t' + (b[i] === '1' ? ' p1' : b[i] === '2' ? ' p2' : '') + (fresh && i === S.last_move ? ' pop' : '') + (wins.has(i) ? ' win' : '') + '" data-i="' + i + '">' + (b[i] === '1' ? '✕' : b[i] === '2' ? '◯' : '') + '</div>';
@@ -255,6 +289,7 @@ function drawBoard(mine) {
 async function move(cell) {
   if (!S || S.status !== 'playing' || S.turn !== S.me || busy) return;
   if (S.game === 'tictactoe' && S.board[cell] !== '0') return;
+  if (S.game === 'memory' && (S.board[cell] !== '0' || S.flip1 === cell || Date.now() < peekUntil)) return;
   if (S.game === 'connect4' && S.board[cell] !== '0') { $('status').textContent = 'That column is full.'; return; }
   busy = true;
   try { S = await rpc('duel_move', { p_id: S.id, p_token: token(), p_cell: cell }); } catch (e) { $('status').textContent = e.message; }
