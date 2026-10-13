@@ -23,6 +23,14 @@ body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a06
 <body>
 <div class="top"><a href="arcade.html">← Arcade</a><h1>Sprite Climb</h1><a href="pet.html">🌱 My Sprite</a></div>
 <div id="game"></div>
+<script>
+// Sprite Climb was rebuilt 2026-10-13: clear old Sprite Climb bests on this device once.
+try { if (localStorage.getItem('sprite_climb_ver') !== '2') {
+  ['sprite_climb_best', 'sprite_climb_wins'].forEach(k => localStorage.removeItem(k));
+  const q = JSON.parse(localStorage.getItem('dopp_score_queue') || '{}'); Object.keys(q).forEach(k => { if (/\|sprite_climb$/.test(k)) delete q[k]; });
+  localStorage.setItem('dopp_score_queue', JSON.stringify(q)); localStorage.setItem('sprite_climb_ver', '2');
+} } catch (e) {}
+</script>
 <script src="pet_sprite.js"></script>
 <script src="arcade_art.js"></script>
 <script src="arcade_kit.js"></script>
@@ -44,84 +52,111 @@ const JUNK = ['soda', 'donut', 'burger', 'fries', 'cookie', 'candy'];
 const TIPS = ['Climbing stairs is a great everyday workout.', 'Jumping builds strong bones.', 'Junk food every day adds up fast; balance is key.',
   'Broccoli is packed with vitamin C and fiber.', 'Strong legs and core help you climb, jump and balance.'];
 
-let me, barrels, throwT, king, level, lives, keys, power, powerUp, jumpedOver, banner, t, deadT;
+// ---- physics (pixels, seconds) ----
+const GRAV = 1500, JUMP_V = 410, WALK = 112, CLIMB = 90;
+const SAFE_FALL = 64;          // falling farther than this (from the highest point) knocks you out
+const COYOTE = 0.07, JUMP_BUF = 0.12;
+const HB = { w: 7, top: 28, bot: 2 }, BR = 11;   // player half-width / height, barrel radius
+let me, barrels, throwT, king, level, lives, keys, power, powerUp, banner, t, deadT, deathMsg, bonus, bonusT;
 const py = (p, x) => p.yL + (p.yR - p.yL) * (x - p.x0) / (p.x1 - p.x0);
 const on = (p, x) => x >= p.x0 && x <= p.x1;
 
 function respawn() {
-  me = { x: 30, y: P[0].yL, vx: 0, vy: 0, plat: 0, ground: true, ladder: null, face: 1, walk: 0, inv: 1.5 };
-  barrels = []; throwT = 1.2; power = 0; deadT = 0;
+  me = { x: 30, y: P[0].yL, vx: 0, vy: 0, plat: 0, ground: true, ladder: null, face: 1, walk: 0, inv: 1.2, coyote: 0, jumpBuf: 0, peakY: P[0].yL, airVx: 0 };
+  barrels = []; throwT = 1.2; power = 0; deadT = 0; deathMsg = '';
   powerUp = { x: 200, plat: 2, got: false, t: 0 };
+  bonus = 5000; bonusT = 0;
 }
 function reset(A) { level = 1; lives = 3; keys = {}; t = 0; king = { throwAnim: 0 }; banner = 2; respawn(); }
 function input(type, A) {
   if (type.startsWith('release-')) { keys[type.slice(8)] = false; return; }
   keys[type] = true;
-  if (type === 'tap' && me.ground && !me.ladder && deadT <= 0) { me.vy = -340; me.ground = false; A.sfx('jump'); }
+  if (type === 'tap') me.jumpBuf = JUMP_BUF;   // pressed a hair early still counts
 }
-
-function nearLadder(x, footY) {
-  return LADDERS.find(l => !l.broken && Math.abs(l.x - x) < 14 && footY <= py(P[l.a], l.x) + 4 && footY >= py(P[l.b], l.x) - 4);
-}
-function hurt(A) {
-  if (deadT > 0 || (me.inv > 0 && me.y < H)) return;
-  lives--; deadT = 1.4; A.sfx('hit'); A.shake(10, 0.3);
+function nearLadder(x) { return LADDERS.find(l => !l.broken && Math.abs(l.x - x) < 7); }
+function die(A, why) {
+  if (deadT > 0) return;
+  lives--; deadT = 1.6; deathMsg = why; me.ladder = null; A.sfx('hit'); A.shake(10, 0.3); A.flash(0.15);
   A.particles.burst(me.x, me.y - 16, '#FF8FA3', 22, 220, 4);
   if (lives <= 0) { A.gameOver(); return; }
-  A.toast('💔 ' + lives + (lives === 1 ? ' life' : ' lives') + ' left');
+  A.toast('💔 ' + why + ' — ' + lives + (lives === 1 ? ' life' : ' lives') + ' left', 2000);
 }
 function levelClear(A) {
-  A.addScore(1000 * level); A.sfx('win');
-  A.float('Golden Apple! +' + 1000 * level, W / 2, 300, '#FFD700');
+  const pts = 1000 * level + bonus;
+  A.addScore(pts); A.sfx('win');
+  A.float('Golden Apple! +' + pts, W / 2, 300, '#FFD700');
   A.particles.burst(GOAL_X, P[5].yL - 20, '#FFD700', 40, 300, 5);
   if (level === 1) A.win('You grabbed the Golden Apple!');
   else A.toast('💡 ' + TIPS[level % TIPS.length], 2400);
   level++; banner = 2; respawn();
 }
+// circle (barrel) vs the player's body box
+function hitsMe(b) {
+  const cx = Math.max(me.x - HB.w, Math.min(b.x, me.x + HB.w)), cy = Math.max(me.y - HB.top, Math.min(b.y, me.y - HB.bot));
+  return (b.x - cx) ** 2 + (b.y - cy) ** 2 < (BR - 1) ** 2;
+}
+function land(A, i, gy) {
+  const fall = gy - me.peakY;
+  me.y = gy; me.vy = 0; me.ground = true; me.plat = i; me.peakY = gy; me.airVx = 0;
+  if (fall > SAFE_FALL) die(A, 'Fell too far');
+}
 
 function update(dt, A) {
   t += dt; king.throwAnim = Math.max(0, king.throwAnim - dt * 2);
   if (!me || A.state !== 'play') return;
+  dt = Math.min(dt, 1 / 30);
   banner = Math.max(0, banner - dt);
-  if (deadT > 0) { deadT -= dt; me.vy += 900 * dt; me.y += me.vy * dt * 0.3; if (deadT <= 0 && A.state === 'play') respawn(); return; }
-  power = Math.max(0, power - dt); me.inv = Math.max(0, me.inv - dt);
+  if (deadT > 0) { deadT -= dt; if (deadT <= 0 && A.state === 'play') respawn(); return; }
+  power = Math.max(0, power - dt); me.inv = Math.max(0, me.inv - dt); me.jumpBuf = Math.max(0, me.jumpBuf - dt);
+  // bonus clock: runs out = out of time
+  bonusT += dt; if (bonusT >= 1.2) { bonusT -= 1.2; bonus = Math.max(0, bonus - 100); if (bonus === 0) { die(A, 'Out of time'); return; } }
 
   // ---- player ----
+  const smashing = power > 0;   // holding the broccoli: no climbing or jumping (like the hammer)
   if (me.ladder) {
     const l = me.ladder, top = py(P[l.b], l.x), bot = py(P[l.a], l.x);
     me.x = l.x; me.vx = 0;
-    if (keys.up) me.y -= 110 * dt; else if (keys.down) me.y += 110 * dt;
+    if (keys.up) me.y -= CLIMB * dt; else if (keys.down) me.y += CLIMB * dt;
     me.walk += (keys.up || keys.down) ? dt * 10 : 0;
-    if (me.y <= top) { me.y = top; me.ladder = null; me.plat = l.b; me.ground = true; }
-    if (me.y >= bot) { me.y = bot; me.ladder = null; me.plat = l.a; me.ground = true; }
+    me.jumpBuf = 0;   // no jumping off ladders
+    if (me.y <= top) { me.y = top; me.ladder = null; me.plat = l.b; me.ground = true; me.peakY = top; }
+    if (me.y >= bot) { me.y = bot; me.ladder = null; me.plat = l.a; me.ground = true; me.peakY = bot; }
   } else {
-    me.vx = (keys.right ? 145 : 0) - (keys.left ? 145 : 0);
-    if (me.vx) { me.face = Math.sign(me.vx); if (me.ground) me.walk += dt * 12; }
-    // grab a ladder
-    const l = nearLadder(me.x, me.y);
-    if (l && me.ground && ((keys.up && Math.abs(me.y - py(P[l.a], l.x)) < 6) || (keys.down && Math.abs(me.y - py(P[l.b], l.x)) < 6))) { me.ladder = l; me.ground = false; return; }
-    me.x = Math.max(10, Math.min(W - 10, me.x + me.vx * dt));
-    if (!me.ground) { me.vy += 1100 * dt; me.y += me.vy * dt; }
-    // land on / follow girders
+    if (me.ground) {
+      me.vx = (keys.right ? WALK : 0) - (keys.left ? WALK : 0);
+      if (me.vx) { me.face = Math.sign(me.vx); me.walk += dt * 12; }
+      // grab a ladder: must line up with it
+      const l = !smashing && nearLadder(me.x);
+      if (l && ((keys.up && Math.abs(me.y - py(P[l.a], l.x)) < 4) || (keys.down && Math.abs(me.y - py(P[l.b], l.x)) < 4))) { me.ladder = l; me.ground = false; me.x = l.x; return; }
+      // jump: direction is locked at takeoff, no steering in the air
+      if (me.jumpBuf > 0 && !smashing) { me.jumpBuf = 0; me.vy = -JUMP_V; me.ground = false; me.airVx = me.vx; me.coyote = 0; me.peakY = me.y; A.sfx('jump'); }
+    } else {
+      me.vx = me.airVx;
+      if (me.coyote > 0 && me.jumpBuf > 0 && !smashing) { me.jumpBuf = 0; me.vy = -JUMP_V; me.coyote = 0; me.peakY = me.y; A.sfx('jump'); }
+    }
+    me.coyote = Math.max(0, me.coyote - dt);
+    const nx = me.x + me.vx * dt;
+    if (nx < 9 || nx > W - 9) { me.x = Math.max(9, Math.min(W - 9, nx)); if (!me.ground) me.airVx = 0; } else me.x = nx;
+    if (!me.ground) { me.vy += GRAV * dt; me.y += me.vy * dt; me.peakY = Math.min(me.peakY, me.y); }
     const p = P[me.plat];
     if (me.ground) {
-      if (!on(p, me.x)) { me.ground = false; me.vy = 0; }
+      if (!on(p, me.x)) { me.ground = false; me.vy = 0; me.airVx = me.vx * 0.5; me.coyote = COYOTE; me.peakY = me.y; }   // walked off the edge
       else me.y = py(p, me.x);
     }
     if (!me.ground && me.vy >= 0) {
       for (let i = P.length - 1; i >= 0; i--) {
         const q = P[i]; if (!on(q, me.x)) continue;
         const gy = py(q, me.x);
-        if (me.y >= gy - 2 && me.y <= gy + 14) { me.y = gy; me.vy = 0; me.ground = true; me.plat = i; break; }
+        if (me.y >= gy - 1 && me.y - me.vy * dt <= gy + 2) { land(A, i, gy); if (deadT > 0) return; break; }
       }
     }
-    if (me.y > H + 40) { hurt(A); return; }
+    if (me.y > H + 40) { die(A, 'Fell off'); return; }
   }
   // goal
-  if (me.plat === 5 && me.ground && Math.abs(me.x - GOAL_X) < 18) { levelClear(A); return; }
+  if (me.plat === 5 && me.ground && Math.abs(me.x - GOAL_X) < 16) { levelClear(A); return; }
   // power-up broccoli
-  if (!powerUp.got && me.plat === powerUp.plat && Math.abs(me.x - powerUp.x) < 18 && Math.abs(me.y - py(P[powerUp.plat], powerUp.x)) < 30) {
-    powerUp.got = true; power = 8; A.sfx('medal'); A.toast('🥦 Broccoli Power! Smash junk for 8 seconds');
+  if (!powerUp.got && me.plat === powerUp.plat && me.ground && Math.abs(me.x - powerUp.x) < 14) {
+    powerUp.got = true; power = 7; A.sfx('medal'); A.toast('🥦 Broccoli Power! Smash junk for 7 seconds — no jumping or climbing');
   }
   powerUp.t += dt;
 
@@ -129,41 +164,40 @@ function update(dt, A) {
   throwT -= dt;
   if (throwT <= 0 && banner < 1.2) {
     king.throwAnim = 1;
-    barrels.push({ x: 86, y: P[5].yL - 12, vx: 0, vy: 0, plat: 5, dir: 1, kind: JUNK[Math.floor(Math.random() * JUNK.length)], rot: 0, ladder: null, scored: false });
-    throwT = Math.max(1.15, 2.6 - level * 0.35) + Math.random() * 1.1;
+    const wild = level >= 2 && Math.random() < 0.12 * (level - 1);
+    barrels.push({ x: 86, y: P[5].yL - BR, vx: 0, vy: 0, plat: 5, dir: 1, kind: JUNK[Math.floor(Math.random() * JUNK.length)], rot: 0, ladder: null, scored: false, wild });
+    throwT = Math.max(1.0, 2.5 - level * 0.35) + Math.random() * 1.0;
   }
-  const speed = 120 + level * 22;
+  const speed = 118 + level * 20, ladderOdds = Math.min(0.55, 0.25 + level * 0.08);
   for (let i = barrels.length - 1; i >= 0; i--) {
     const b = barrels[i];
     if (b.ladder) {
-      b.y += 140 * dt;
-      if (b.y >= py(P[b.ladder.a], b.ladder.x) - 12) { b.plat = b.ladder.a; b.ladder = null; b.dir = P[b.plat].yL > P[b.plat].yR ? -1 : 1; }
+      b.y += 150 * dt;
+      if (b.y >= py(P[b.ladder.a], b.ladder.x) - BR) { b.plat = b.ladder.a; b.ladder = null; }
     } else if (b.plat != null) {
       const p = P[b.plat];
       b.dir = b.plat === 5 ? 1 : (p.yL > p.yR ? -1 : 1);
-      b.x += b.dir * speed * dt; b.rot += b.dir * speed * dt / 12;
-      if (!on(p, b.x)) { b.plat = null; b.vy = 0; b.vx = b.dir * speed * 0.6; }
+      b.x += b.dir * speed * dt; b.rot += b.dir * speed * dt / BR;
+      if (!on(p, b.x)) { b.plat = null; b.vy = 0; b.vx = b.dir * speed * 0.5; }
       else {
-        b.y = py(p, b.x) - 12;
-        // sometimes roll down a ladder
-        const l = LADDERS.find(l => l.b === b.plat && Math.abs(l.x - b.x) < 3);
-        if (l && !b.triedL) { b.triedL = true; if (Math.random() < 0.3) { b.ladder = l; b.x = l.x; } }
+        b.y = py(p, b.x) - BR;
+        const l = LADDERS.find(l => l.b === b.plat && !l.broken && Math.abs(l.x - b.x) < 4);
+        if (l && !b.triedL) { b.triedL = true; if (Math.random() < ladderOdds) { b.ladder = l; b.x = l.x; } }
         if (!l) b.triedL = false;
       }
+      if (b.wild && b.plat != null && b.plat !== 5 && Math.random() < dt * 0.9) { b.plat = null; b.vy = -220; b.vx = (Math.random() < 0.5 ? -1 : 1) * 90; }   // wild bounce
     } else {
       b.vy += 900 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
-      for (let k = P.length - 1; k >= 0; k--) { const q = P[k]; if (on(q, b.x) && b.y + 12 >= py(q, b.x) && b.y + 12 <= py(q, b.x) + 18 && b.vy > 0) { b.plat = k; b.y = py(q, b.x) - 12; A.sfx('point'); break; } }
+      for (let k = P.length - 1; k >= 0; k--) { const q = P[k]; if (on(q, b.x) && b.vy > 0 && b.y + BR >= py(q, b.x) && b.y + BR <= py(q, b.x) + 16) { b.plat = k; b.y = py(q, b.x) - BR; A.sfx('point'); break; } }
     }
-    if (b.y > H + 40 || (b.plat === 0 && (b.x < -20 || b.x > W + 20))) { barrels.splice(i, 1); continue; }
-    if (b.plat === 0 && b.x < 6) { barrels.splice(i, 1); continue; }
+    if (b.y > H + 40 || b.x < -30 || b.x > W + 30 || (b.plat === 0 && b.x < 6)) { barrels.splice(i, 1); continue; }
     // collisions
-    const dx = Math.abs(b.x - me.x), dy = (me.y - 16) - b.y;
-    if (dx < 18 && Math.abs(dy) < 22) {
-      if (power > 0) { A.addScore(300); A.sfx('coin'); A.float('SMASH +300', b.x, b.y - 10, '#7CFFB2'); A.particles.burst(b.x, b.y, '#FFD23F', 16, 220, 4); barrels.splice(i, 1); continue; }
-      hurt(A); return;
+    if (hitsMe(b)) {
+      if (power > 0 && Math.abs(b.y - (me.y - 16)) < 30) { A.addScore(300); A.sfx('coin'); A.float('SMASH +300', b.x, b.y - 10, '#7CFFB2'); A.particles.burst(b.x, b.y, '#FFD23F', 16, 220, 4); barrels.splice(i, 1); continue; }
+      if (me.inv <= 0) { die(A, 'Hit by junk food'); return; }
     }
-    // jumped over it
-    if (!b.scored && !me.ground && !me.ladder && dx < 14 && dy < -16 && dy > -80) { b.scored = true; A.addScore(100); A.sfx('coin'); A.float('+100', me.x, me.y - 50, '#FFD700'); }
+    // cleared it: passed right under the feet while airborne
+    if (!b.scored && !me.ground && !me.ladder && Math.abs(b.x - me.x) < 10 && me.y < b.y - BR && b.y - me.y < 70) { b.scored = true; A.addScore(100); A.sfx('coin'); A.float('+100', me.x, me.y - 50, '#FFD700'); }
   }
 }
 
@@ -216,11 +250,11 @@ function draw(ctx, A) {
   // barrels (rolling junk food)
   barrels.forEach(b => { ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.ladder ? 0 : b.rot * 0.3); ctx.beginPath(); ctx.arc(0, 0, 13, 0, 7); A.ink('rgba(255,255,255,.18)', 1.5); ART.draw(ctx, b.kind, 0, 0, 24, t); ctx.restore(); });
   // player
-  if (!((deadT > 0 || me.inv > 0) && Math.floor((deadT || me.inv) * 10) % 2)) {
+  if (!(deadT <= 0 && me.inv > 0 && Math.floor(me.inv * 10) % 2)) {
     const bob = me.ground && me.vx ? Math.abs(Math.sin(me.walk)) * 2 : 0;
     if (me.ground && !me.ladder) { ctx.fillStyle = A.INK; const s = Math.sin(me.walk) * 5 * (me.vx ? 1 : 0); ctx.beginPath(); ctx.ellipse(me.x - 5 + s, me.y - 2, 5, 3.5, 0, 0, 7); ctx.ellipse(me.x + 5 - s, me.y - 2, 5, 3.5, 0, 0, 7); ctx.fill(); }
     ctx.save(); ctx.translate(me.x, me.y - 17 - bob); ctx.scale(me.face, 1);
-    A.drawHero(0, 0, 36, me.ladder ? Math.sin(me.walk) * 0.1 : 0, deadT > 0 ? 'ghost' : 'happy');
+    A.drawHero(0, 0, 36, deadT > 0 ? 1.4 : me.ladder ? Math.sin(me.walk) * 0.1 : 0, deadT > 0 ? 'ghost' : 'happy');
     ctx.restore();
     if (power > 0) { ctx.strokeStyle = 'rgba(124,255,178,' + (0.5 + Math.sin(t * 12) * 0.3) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(me.x, me.y - 17, 22, 0, 7); ctx.stroke(); }
   }
@@ -228,6 +262,8 @@ function draw(ctx, A) {
   ctx.textAlign = 'left'; ctx.font = '900 15px Nunito,sans-serif'; ctx.fillStyle = '#FF5C77';
   ctx.fillText('❤'.repeat(Math.max(0, lives)), 62, 80);
   ctx.textAlign = 'right'; ctx.fillStyle = '#b9b0d6'; ctx.fillText('Level ' + level, W - 62, 80);
+  ctx.textAlign = 'center'; ctx.font = '900 14px Nunito,sans-serif'; ctx.fillStyle = bonus <= 1000 ? '#FF5C77' : '#FFD700'; ctx.fillText('BONUS ' + bonus, W / 2, 80);
+  if (deadT > 0 && deathMsg) { ctx.font = '900 22px Nunito,sans-serif'; ctx.lineWidth = 5; ctx.strokeStyle = A.INK; ctx.strokeText(deathMsg + '!', W / 2, 300); ctx.fillStyle = '#FF8FA3'; ctx.fillText(deathMsg + '!', W / 2, 300); }
   if (power > 0) { ctx.textAlign = 'center'; ctx.fillStyle = '#7CFFB2'; ctx.fillText('🥦 SMASH ' + Math.ceil(power) + 's', W / 2, 100); }
   if (banner > 0 && A.state === 'play') {
     ctx.globalAlpha = Math.min(1, banner); ctx.textAlign = 'center'; ctx.font = '900 30px Cinzel,serif'; ctx.lineWidth = 6; ctx.strokeStyle = A.INK;
@@ -236,12 +272,12 @@ function draw(ctx, A) {
   }
 }
 
-window.__climb = () => ({ me, barrels, level, lives, P, LADDERS, GOAL_X, power, keys });   // used by automated playtests
+window.__climb = () => ({ me, barrels, level, lives, P, LADDERS, GOAL_X, power, keys, bonus, deadT });   // used by automated playtests
 window.game = Arcade({
   mount: '#game', title: 'Sprite Climb', subtitle: 'Grab the Golden Apple from King Junk!', W, H, reserveH: 70,
   storageKey: 'sprite_climb', winText: 'You grabbed the Golden Apple!', deathDelay: 900,
-  medals: [{ at: 1000, name: 'Bronze', icon: '🥉' }, { at: 2500, name: 'Silver', icon: '🥈' }, { at: 4500, name: 'Gold', icon: '🥇' }, { at: 7000, name: 'Legend', icon: '💎' }],
-  howTo: 'Climb the girders and ladders to the <b>Golden Apple</b>.<br><b>Jump</b> over rolling junk food (+100). Grab 🥦 broccoli to <b>smash</b> it!',
+  medals: [{ at: 3000, name: 'Bronze', icon: '🥉' }, { at: 6000, name: 'Silver', icon: '🥈' }, { at: 10000, name: 'Gold', icon: '🥇' }, { at: 15000, name: 'Legend', icon: '💎' }],
+  howTo: 'Climb the girders and ladders to the <b>Golden Apple</b> before the <b>bonus</b> runs out.<br><b>Jump</b> over rolling junk food (+100) — jumps can\'t change direction mid-air. <b>Falling too far knocks you out</b>, so use the ladders! 🥦 Broccoli lets you <b>smash</b> junk, but you can\'t jump or climb while holding it.',
   controls: '← → walk · ↑ ↓ climb ladders · Space jump · P pause',
   overTitle: 'Knocked down!',
   facts: [

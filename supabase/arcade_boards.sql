@@ -36,7 +36,7 @@ insert into public.arcade_games (key, title, max_score, medals) values
   ('snack_stack',    'Snack Stack',      90000,  '{500,1500,4000,8000}'),
   ('field_day',      'Field Day',        5000,   '{1800,3000,3900,4500}'),
   ('habit_showdown', 'Habit Showdown',   9000,   '{1500,3000,4500,5800}'),
-  ('sprite_climb',   'Sprite Climb',     60000,  '{1000,2500,4500,7000}'),
+  ('sprite_climb',   'Sprite Climb',     60000,  '{3000,6000,10000,15000}'),
   ('sprite_rider',   'Sprite Rider',     30000,  '{2500,5000,8500,12000}'),
   ('word_quest',     'Word Quest',       4000,   '{600,1400,2200,2900}'),
   ('snack_2048',     'Snack 2048',       200000, '{2000,6000,12000,22000}'),

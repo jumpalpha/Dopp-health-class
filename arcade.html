@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <script src="term.js"></script>
+<script>
+// Sprite Climb was rebuilt 2026-10-13: clear old Sprite Climb bests on this device once.
+try { if (localStorage.getItem('sprite_climb_ver') !== '2') {
+  ['sprite_climb_best', 'sprite_climb_wins'].forEach(k => localStorage.removeItem(k));
+  const q = JSON.parse(localStorage.getItem('dopp_score_queue') || '{}'); Object.keys(q).forEach(k => { if (/\|sprite_climb$/.test(k)) delete q[k]; });
+  localStorage.setItem('dopp_score_queue', JSON.stringify(q)); localStorage.setItem('sprite_climb_ver', '2');
+} } catch (e) {}
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
 <meta property="og:image" content="https://doppsclass.com/og-image.png">
@@ -312,8 +321,8 @@ const CLASSICS = [
     medals:[[1800,'🥉 Bronze'],[3000,'🥈 Silver'],[3900,'🥇 Gold'],[4500,'💎 Legend']], goal:'Score 3,000 all-around', winBy:'wins' },
   { key:'habit_showdown', title:'Habit Showdown', file:'habit_showdown.html', icon:'⚖️', desc:'Quiz show: good or bad habit, which is healthier, myth or fact. Beat the clock!',
     medals:[[1500,'🥉 Bronze'],[3000,'🥈 Silver'],[4500,'🥇 Gold'],[5800,'💎 Legend']], goal:'Get 10 right', winBy:'wins' },
-  { key:'sprite_climb', title:'Sprite Climb', file:'dopp_kong.html', icon:'🧗', desc:'Climb the girders, jump rolling junk food, grab the Golden Apple from King Junk!',
-    medals:[[1000,'🥉 Bronze'],[2500,'🥈 Silver'],[4500,'🥇 Gold'],[7000,'💎 Legend']], goal:'Grab the Golden Apple', winBy:'wins' },
+  { key:'sprite_climb', title:'Sprite Climb', file:'dopp_kong.html', icon:'🧗', desc:'Arcade-tough: jump rolling junk food, don\'t fall too far, beat the bonus clock to the Golden Apple!',
+    medals:[[3000,'🥉 Bronze'],[6000,'🥈 Silver'],[10000,'🥇 Gold'],[15000,'💎 Legend']], goal:'Grab the Golden Apple', winBy:'wins' },
   { key:'sprite_rider', title:'Sprite Rider', file:'dopp_motomania.html', icon:'🏍️', desc:'Dirt-bike hills, ramps and flips on 3 tracks. Lean to land it!',
     medals:[[2500,'🥉 Bronze'],[5000,'🥈 Silver'],[8500,'🥇 Gold'],[12000,'💎 Legend']], goal:'Finish track 1', winBy:'wins' },
   { key:'word_quest', title:'Word Quest', file:'dopp_wordle.html', icon:'🔤', desc:'Guess the 5-letter health word in 6 tries. Solve 3 words to win!',
