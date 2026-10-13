@@ -22,6 +22,7 @@
   var ua = navigator.userAgent;
   var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   var macSafari = !ios && /Macintosh/.test(ua) && /Safari\//.test(ua) && !/Chrome|Chromium|Edg|Firefox/.test(ua);
+  var android = /Android/.test(ua), firefox = /Firefox\//.test(ua), edge = /Edg\//.test(ua), samsung = /SamsungBrowser/.test(ua);
   var gameName = document.documentElement.getAttribute('data-app-name');   // set on game pages by build_pwa.py
   var label = gameName ? 'Install ' + gameName : 'Install the Doppsclass app';
   var deferred = null, btn = null;
@@ -38,9 +39,16 @@
   function tip() {
     var steps = ios
       ? '<li>Tap the <span class="pwa-share">⬆</span> <b>Share</b> button (bottom of the screen on iPhone, top on iPad). In Chrome on iPhone it\'s at the top right.</li><li>Scroll down and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li>'
-      : '<li>In the menu bar, click <b>File</b> → <b>Add to Dock…</b></li><li>Click <b>Add</b>.</li>';
+      : macSafari ? '<li>In the menu bar, click <b>File</b> → <b>Add to Dock…</b></li><li>Click <b>Add</b>.</li>'
+      : android && firefox ? '<li>Tap the <b>⋮</b> menu.</li><li>Tap <b>Install</b> (or <b>Add to Home screen</b>).</li>'
+      : android && samsung ? '<li>Tap the <b>☰</b> menu at the bottom.</li><li>Tap <b>Add page to</b> → <b>Home screen</b>.</li>'
+      : android ? '<li>Tap the <b>⋮</b> menu at the top right.</li><li>Tap <b>Add to Home screen</b> or <b>Install app</b>.</li><li>Tap <b>Install</b>.</li>'
+      : firefox ? '<li>Firefox on a computer can\'t install web apps.</li><li>Open <b>doppsclass.com</b> in <b>Chrome</b> or <b>Edge</b> and use this button there — or just bookmark this page (<b>Ctrl+D</b>).</li>'
+      : edge ? '<li>Click the <b>⋯</b> menu at the top right.</li><li>Choose <b>Apps</b> → <b>Install this site as an app</b>.</li><li>Click <b>Install</b>.</li>'
+      : '<li>Look for the <b>install icon</b> (a little screen with a ⬇ arrow) at the right end of the address bar and click it.</li><li>No icon? Click the <b>⋮</b> menu → <b>Cast, save, and share</b> → <b>Install page as app…</b></li><li>Click <b>Install</b>.</li>';
+    var extra = (!ios && !macSafari && !android) ? '<div style="font-size:13px;color:#cfc6ee;margin:-4px 0 10px">On a school Chromebook, installing may be turned off. If so, bookmark this page instead (<b>Ctrl+D</b>).</div>' : '';
     var d = document.createElement('div'); d.className = 'pwa-tip';
-    d.innerHTML = '<div class="pwa-card" role="dialog" aria-label="How to install"><h3>📲 ' + label + '</h3><ol>' + steps + '</ol>' +
+    d.innerHTML = '<div class="pwa-card" role="dialog" aria-label="How to install"><h3>📲 ' + label + '</h3><ol>' + steps + '</ol>' + extra +
       '<div style="font-size:13px;color:#cfc6ee;margin-bottom:12px">It gets its own icon, opens full screen, and ' + (gameName ? 'the game works' : 'the arcade games work') + ' without internet.</div>' +
       '<button class="pwa-ok">Got it</button></div>';
     d.onclick = function (e) { if (e.target === d || e.target.classList.contains('pwa-ok')) d.remove(); };
@@ -67,6 +75,9 @@
   window.addEventListener('appinstalled', hide);
   // iPhone / iPad / Mac Safari: no install prompt, so the button shows how to do it by hand.
   if (ios || macSafari) ready(place);
+  // A page with an install spot (the home page) always shows the button. If the browser
+  // hasn't offered its own install prompt, the button shows how to install by hand instead.
+  ready(function () { if (document.querySelector('[data-pwa-install]')) place(); });
 
   function ready(fn) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
 })();
