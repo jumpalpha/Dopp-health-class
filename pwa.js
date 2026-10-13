@@ -17,7 +17,10 @@
   window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 
   var standalone = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
-  if (standalone) { document.documentElement.classList.add('pwa-app'); return; }
+  // remember on this device that the app is installed, so the browser tab stops offering it
+  var KEY = 'dopp_app_installed', mark = function (v) { try { v ? localStorage.setItem(KEY, '1') : localStorage.removeItem(KEY); } catch (e) {} };
+  var installed = function () { try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; } };
+  if (standalone) { mark(true); document.documentElement.classList.add('pwa-app'); return; }
 
   var ua = navigator.userAgent;
   var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -71,13 +74,14 @@
   function hide() { if (btn && btn.parentNode) btn.parentNode.style.display = 'none'; }
 
   // Chrome, Edge, Android: the browser tells us when this page can be installed.
-  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; ready(place); });
-  window.addEventListener('appinstalled', hide);
+  // (Chrome only offers this when the app is NOT installed, so it also means "they uninstalled it")
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; mark(false); ready(place); });
+  window.addEventListener('appinstalled', function () { mark(true); hide(); });
   // iPhone / iPad / Mac Safari: no install prompt, so the button shows how to do it by hand.
-  if (ios || macSafari) ready(place);
+  if ((ios || macSafari) && !installed()) ready(place);
   // A page with an install spot (the home page) always shows the button. If the browser
   // hasn't offered its own install prompt, the button shows how to install by hand instead.
-  ready(function () { if (document.querySelector('[data-pwa-install]')) place(); });
+  ready(function () { if (document.querySelector('[data-pwa-install]') && !installed()) place(); });
 
   function ready(fn) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
 })();
