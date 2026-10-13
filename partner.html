@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Partner Games — Dopp's Arcade</title>
+<meta name="description" content="Play Connect 4 or Tic-Tac-Toe with a classmate on two devices. One makes a game, the other types the 4-letter code.">
+<link rel="canonical" href="https://doppsclass.com/partner.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { --gold:#FFD700; --emerald:#00E5A0; --sky:#38BFFF; --crimson:#FF3B5C; --ink:#1A1030; --p1:#FF3B5C; --p2:#FFD23F; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:var(--gold);font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:var(--gold);text-shadow:0 2px 0 #000}
+main{max-width:480px;margin:0 auto;padding:4px 16px 32px}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:20px;margin-bottom:14px}
+h2{font-family:Cinzel,serif;color:var(--gold);font-size:20px;margin-bottom:6px}
+p.dim,.dim{color:rgba(244,239,255,.75);font-size:14px;line-height:1.45}
+.picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}
+.pick{border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;color:#fff;font:800 15px Nunito,sans-serif}
+.pick .ic{font-size:30px;display:block;margin-bottom:4px}
+.pick.sel{border-color:var(--gold);background:rgba(255,215,0,.12)}
+label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px;color:rgba(244,239,255,.85)}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:800 17px Nunito,sans-serif}
+input::placeholder{color:rgba(244,239,255,.55)}
+input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-size:26px}
+.btn{display:block;width:100%;padding:14px;border:0;border-radius:14px;font:900 16px Nunito,sans-serif;cursor:pointer;margin-top:12px}
+.btn.gold{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#1a1000}
+.btn.green{background:var(--emerald);color:#04241a}
+.btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.3)}
+.btn:disabled{opacity:.5;cursor:default}
+.or{text-align:center;color:rgba(244,239,255,.55);font-weight:800;margin:14px 0 2px;font-size:13px}
+.err{color:#FF8FA3;font-weight:800;font-size:14px;min-height:18px;margin-top:8px}
+.signed{font-size:13px;font-weight:800;color:var(--emerald)}
+.bigcode{font:900 54px Nunito,sans-serif;letter-spacing:12px;text-align:center;color:var(--gold);margin:10px 0;text-shadow:0 3px 0 #000}
+.players{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.pl{flex:1;border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.05);border:2px solid transparent;font-weight:900;font-size:14px;display:flex;align-items:center;gap:8px;min-width:0}
+.pl span.n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl.turn{border-color:var(--gold);background:rgba(255,215,0,.1)}
+.pl .dot{width:18px;height:18px;border-radius:50%;flex:none;border:2px solid var(--ink)}
+.pl .sc{margin-left:auto;font-size:18px}
+.vs{font-weight:900;color:rgba(255,255,255,.5)}
+.status{text-align:center;font-weight:900;font-size:18px;margin:8px 0 12px;min-height:24px}
+.status.mine{color:var(--emerald)}
+.offline{text-align:center;color:#FF8FA3;font-weight:800;font-size:13px;min-height:16px;margin-bottom:6px}
+/* connect 4 */
+.c4{background:#1f5fd1;border-radius:16px;padding:8px;display:grid;grid-template-columns:repeat(7,1fr);gap:6px;border:3px solid var(--ink);box-shadow:0 8px 0 #123c88;user-select:none;-webkit-user-select:none}
+.c4 .col{display:grid;grid-template-rows:repeat(6,1fr);gap:6px;border-radius:10px;cursor:pointer;padding:2px 0}
+.c4.can .col:hover{background:rgba(255,255,255,.12)}
+.c4 .h{aspect-ratio:1;border-radius:50%;background:#0a1a3d;box-shadow:inset 0 3px 0 rgba(0,0,0,.45);position:relative}
+.c4 .h.p1,.c4 .h.p2{border:2px solid var(--ink)}
+.c4 .h.p1{background:radial-gradient(circle at 35% 30%,#ff8a9b,var(--p1) 60%)}
+.c4 .h.p2{background:radial-gradient(circle at 35% 30%,#fff1a6,var(--p2) 60%)}
+.c4 .h.drop{animation:drop .38s cubic-bezier(.5,0,1,1)}
+@keyframes drop{from{transform:translateY(var(--from))}to{transform:translateY(0)}}
+.h.win,.t.win{box-shadow:0 0 0 4px #fff,0 0 18px 4px rgba(255,255,255,.8)}
+/* tic-tac-toe */
+.ttt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:var(--gold);border-radius:16px;padding:8px;border:3px solid var(--ink);user-select:none}
+.ttt .t{aspect-ratio:1;background:#2b1c55;border-radius:10px;display:flex;align-items:center;justify-content:center;font:900 64px Nunito,sans-serif;cursor:pointer}
+.ttt .t.p1{color:var(--p1)} .ttt .t.p2{color:var(--p2)}
+.ttt .t.pop{animation:pop .25s ease-out}
+@keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+.row{display:flex;gap:10px}.row .btn{flex:1}
+.hide{display:none}
+.result{text-align:center;font:900 24px Cinzel,serif;color:var(--gold);margin:6px 0}
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>🤝 Partner Games</h1><span style="width:64px"></span></div>
+<main>
+
+<!-- LOBBY -->
+<section id="lobby">
+  <div class="card">
+    <h2>Pick a game</h2>
+    <div class="picker">
+      <button class="pick" data-g="connect4"><span class="ic">🔴</span>Connect 4</button>
+      <button class="pick" data-g="tictactoe"><span class="ic">⭕</span>Tic-Tac-Toe</button>
+    </div>
+    <div id="who"></div>
+    <div id="nameBox"><label for="name">Your name</label><input id="name" maxlength="16" placeholder="First name" autocomplete="off"></div>
+    <button class="btn gold" id="createBtn">Create a game</button>
+    <div class="or">— or join your partner's game —</div>
+    <label for="code">Game code</label>
+    <input id="code" class="code" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters">
+    <button class="btn green" id="joinBtn">Join game</button>
+    <div class="err" id="lobbyErr"></div>
+  </div>
+  <p class="dim" style="text-align:center">One player makes a game and shares the 4-letter code. The other player types it in on their own device.</p>
+</section>
+
+<!-- WAITING -->
+<section id="waiting" class="hide">
+  <div class="card" style="text-align:center">
+    <h2 id="waitTitle">Connect 4</h2>
+    <p class="dim">Tell your partner to open <b>Partner Games</b> and type this code:</p>
+    <div class="bigcode" id="bigCode">····</div>
+    <p class="dim">Waiting for them to join…</p>
+    <button class="btn ghost" id="cancelBtn">Cancel</button>
+  </div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="hide">
+  <div class="players">
+    <div class="pl" id="pl1"><span class="dot" style="background:var(--p1)"></span><span class="n" id="n1"></span><span class="sc" id="s1">0</span></div>
+    <span class="vs">vs</span>
+    <div class="pl" id="pl2"><span class="dot" style="background:var(--p2)"></span><span class="n" id="n2"></span><span class="sc" id="s2">0</span></div>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="offline" id="offline"></div>
+  <div id="board"></div>
+  <div id="endBox" class="hide">
+    <div class="result" id="result"></div>
+    <div class="row"><button class="btn gold" id="rematchBtn">Rematch</button><button class="btn ghost" id="doneBtn">Leave</button></div>
+  </div>
+  <div id="playBox"><button class="btn ghost" id="leaveBtn" style="margin-top:16px">Leave game (counts as a loss)</button></div>
+  <p class="dim" id="rankNote" style="text-align:center;margin-top:12px"></p>
+</section>
+</main>
+
+<script>
+(() => {
+const URL = 'https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRI = (window.TERM && TERM.id) || '2026-T1';
+const NAMES = { connect4: 'Connect 4', tictactoe: 'Tic-Tac-Toe' };
+const $ = id => document.getElementById(id);
+const store = { get: (k, s) => { try { return (s ? sessionStorage : localStorage).getItem(k); } catch (e) { return null; } },
+                set: (k, v, s) => { try { (s ? sessionStorage : localStorage).setItem(k, v); } catch (e) {} },
+                del: (k, s) => { try { (s ? sessionStorage : localStorage).removeItem(k); } catch (e) {} } };
+async function rpc(name, args) {
+  const r = await fetch(URL + name, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error((j && j.message) || 'Connection problem — try again');
+  return j;
+}
+function token() {   // this tab's secret for the game
+  let t = store.get('duel_tok', true);
+  if (!t) { const a = new Uint8Array(16); crypto.getRandomValues(a); t = Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); store.set('duel_tok', t, true); }
+  return t;
+}
+const signedIn = () => { const id = store.get('qSID_' + TRI), pin = store.get('qPIN_' + TRI, true); return id && pin ? { id, pin } : null; };
+
+let game = new URLSearchParams(location.search).get('g') === 'tictactoe' ? 'tictactoe' : 'connect4';
+let S = null, timer = null, busy = false, lastBoard = '';
+
+// ---------- lobby ----------
+function pick(g) { game = g; document.querySelectorAll('.pick').forEach(b => b.classList.toggle('sel', b.dataset.g === g)); history.replaceState(null, '', '?g=' + g); }
+document.querySelectorAll('.pick').forEach(b => b.onclick = () => pick(b.dataset.g));
+pick(game);
+const me = signedIn();
+if (me) { $('who').innerHTML = '<div class="signed">✓ Signed in — wins count on the class leaderboard when your partner is signed in too.</div>'; $('nameBox').classList.add('hide'); }
+else { $('who').innerHTML = '<div class="dim">Not signed in, so this is just for fun. <a href="quest.html" style="color:var(--gold)">Log in on the Quest page</a> to have wins count.</div>'; $('name').value = store.get('duel_name') || ''; }
+$('code').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+function args(extra) {
+  const a = Object.assign({ p_token: token(), p_name: $('name').value.trim() || null }, extra);
+  if (me) { a.p_student_id = me.id; a.p_pin_hash = me.pin; }
+  return a;
+}
+function lobbyErr(m) { $('lobbyErr').textContent = m || ''; }
+$('createBtn').onclick = async () => {
+  if (!me && !$('name').value.trim()) return lobbyErr('Type your name first.');
+  store.set('duel_name', $('name').value.trim()); lobbyErr(''); $('createBtn').disabled = true;
+  try { S = await rpc('duel_create', args({ p_game: game })); enter(); } catch (e) { lobbyErr(e.message); }
+  $('createBtn').disabled = false;
+};
+$('joinBtn').onclick = async () => {
+  const c = $('code').value.trim();
+  if (c.length !== 4) return lobbyErr('Codes are 4 letters/numbers.');
+  if (!me && !$('name').value.trim()) return lobbyErr('Type your name first.');
+  store.set('duel_name', $('name').value.trim()); lobbyErr(''); $('joinBtn').disabled = true;
+  try { S = await rpc('duel_join', args({ p_code: c })); enter(); } catch (e) { lobbyErr(e.message); }
+  $('joinBtn').disabled = false;
+};
+$('code').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
+
+// ---------- in a game ----------
+function enter() { store.set('duel_id', S.id, true); lastBoard = ''; render(); clearInterval(timer); timer = setInterval(poll, 900); }
+function leaveToLobby() { clearInterval(timer); S = null; store.del('duel_id', true); show('lobby'); }
+async function poll() {
+  if (!S || busy) return;
+  try { const n = await rpc('duel_state', { p_id: S.id, p_token: token() }); if (!busy) { S = n; render(); } }
+  catch (e) { if (/not found|Not your game/i.test(e.message)) leaveToLobby(); }
+}
+function show(id) { ['lobby', 'waiting', 'game'].forEach(s => $(s).classList.toggle('hide', s !== id)); }
+
+const C4W = 7, C4H = 6;
+function winCells(b) {
+  const g = S.game, cols = g === 'connect4' ? 7 : 3, rows = g === 'connect4' ? 6 : 3, need = g === 'connect4' ? 4 : 3, out = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const ch = b[r * cols + c]; if (ch === '0') continue;
+    for (const [dr, dc] of [[0,1],[1,0],[1,1],[1,-1]]) {
+      const cells = [];
+      for (let k = 0; k < need; k++) { const rr = r + dr * k, cc = c + dc * k; if (rr < 0 || rr >= rows || cc < 0 || cc >= cols || b[rr * cols + cc] !== ch) break; cells.push(rr * cols + cc); }
+      if (cells.length === need) out.push(...cells);
+    }
+  }
+  return new Set(out);
+}
+function render() {
+  if (!S) return;
+  if (S.status === 'waiting') { show('waiting'); $('waitTitle').textContent = NAMES[S.game]; $('bigCode').textContent = S.code; return; }
+  show('game');
+  const mine = S.status === 'playing' && S.turn === S.me;
+  $('n1').textContent = S.p1_name + (S.me === 1 ? ' (you)' : ''); $('n2').textContent = (S.p2_name || '…') + (S.me === 2 ? ' (you)' : '');
+  $('s1').textContent = S.score1; $('s2').textContent = S.score2;
+  $('pl1').classList.toggle('turn', S.status === 'playing' && S.turn === 1); $('pl2').classList.toggle('turn', S.status === 'playing' && S.turn === 2);
+  const oppName = S.me === 1 ? S.p2_name : S.p1_name;
+  $('status').className = 'status' + (mine ? ' mine' : '');
+  $('status').textContent = S.status === 'playing' ? (mine ? 'Your turn!' : oppName + ' is thinking…') : '';
+  $('offline').textContent = S.status === 'playing' && !S.opp_online ? '⚠ ' + oppName + ' seems disconnected. If they don\'t come back within a minute, you win.' : '';
+  $('rankNote').textContent = S.ranked ? '🏆 Both players signed in — wins count on the class leaderboard.' : 'Practice game — wins only count when both players are signed in.';
+  drawBoard(mine);
+  const done = S.status === 'done';
+  $('endBox').classList.toggle('hide', !done); $('playBox').classList.toggle('hide', done);
+  if (done) {
+    const r = S.reason, w = S.winner;
+    $('result').textContent = w === 0 ? '🤝 It\'s a draw!' : w === S.me ? (r === 'left' ? '🏆 ' + oppName + ' left — you win!' : r === 'timeout' ? '🏆 ' + oppName + ' disconnected — you win!' : '🏆 You win!') : r === 'left' || r === 'expired' ? 'Game over' : '😬 ' + oppName + ' wins!';
+    const canRe = r !== 'left' && r !== 'expired';
+    const asked = S.me === 1 ? S.rematch1 : S.rematch2, they = S.me === 1 ? S.rematch2 : S.rematch1;
+    $('rematchBtn').classList.toggle('hide', !canRe);
+    $('rematchBtn').disabled = asked;
+    $('rematchBtn').textContent = asked ? 'Waiting for ' + oppName + '…' : they ? oppName + ' wants a rematch!' : 'Rematch';
+  }
+}
+function drawBoard(mine) {
+  const b = S.board, wins = S.status === 'done' && S.winner > 0 ? winCells(b) : new Set(), fresh = b !== lastBoard;
+  const box = $('board');
+  if (S.game === 'connect4') {
+    let html = '<div class="c4' + (mine ? ' can' : '') + '">';
+    for (let c = 0; c < C4W; c++) {
+      html += '<div class="col" data-c="' + c + '">';
+      for (let r = 0; r < C4H; r++) {
+        const i = r * C4W + c, v = b[i], drop = fresh && i === S.last_move;
+        html += '<div class="h' + (v === '1' ? ' p1' : v === '2' ? ' p2' : '') + (drop ? ' drop' : '') + (wins.has(i) ? ' win' : '') + '"' + (drop ? ' style="--from:-' + (r + 1) * 110 + '%"' : '') + '></div>';
+      }
+      html += '</div>';
+    }
+    box.innerHTML = html + '</div>';
+    box.querySelectorAll('.col').forEach(el => el.onclick = () => move(+el.dataset.c));
+  } else {
+    let html = '<div class="ttt">';
+    for (let i = 0; i < 9; i++) html += '<div class="t' + (b[i] === '1' ? ' p1' : b[i] === '2' ? ' p2' : '') + (fresh && i === S.last_move ? ' pop' : '') + (wins.has(i) ? ' win' : '') + '" data-i="' + i + '">' + (b[i] === '1' ? '✕' : b[i] === '2' ? '◯' : '') + '</div>';
+    box.innerHTML = html + '</div>';
+    box.querySelectorAll('.t').forEach(el => el.onclick = () => move(+el.dataset.i));
+  }
+  lastBoard = b;
+}
+async function move(cell) {
+  if (!S || S.status !== 'playing' || S.turn !== S.me || busy) return;
+  if (S.game === 'tictactoe' && S.board[cell] !== '0') return;
+  if (S.game === 'connect4' && S.board[cell] !== '0') { $('status').textContent = 'That column is full.'; return; }
+  busy = true;
+  try { S = await rpc('duel_move', { p_id: S.id, p_token: token(), p_cell: cell }); } catch (e) { $('status').textContent = e.message; }
+  busy = false; render();
+}
+$('cancelBtn').onclick = async () => { try { await rpc('duel_leave', { p_id: S.id, p_token: token() }); } catch (e) {} leaveToLobby(); };
+$('leaveBtn').onclick = async () => {
+  if (!confirm('Leave this game? Your partner wins this round.')) return;
+  try { await rpc('duel_leave', { p_id: S.id, p_token: token() }); } catch (e) {} leaveToLobby();
+};
+$('doneBtn').onclick = async () => { try { await rpc('duel_leave', { p_id: S.id, p_token: token() }); } catch (e) {} leaveToLobby(); };
+$('rematchBtn').onclick = async () => { busy = true; try { S = await rpc('duel_rematch', { p_id: S.id, p_token: token() }); lastBoard = ''; } catch (e) {} busy = false; render(); };
+
+// came back to this tab (refresh): pick the game back up
+const saved = store.get('duel_id', true);
+if (saved) rpc('duel_state', { p_id: saved, p_token: token() }).then(n => { if (n && n.status !== 'done') { S = n; enter(); } else store.del('duel_id', true); }).catch(() => store.del('duel_id', true));
+window.__duel = () => S;   // for automated tests
+})();
+</script>
+</body>
+</html>

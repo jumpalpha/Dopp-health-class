@@ -352,7 +352,15 @@ const CLASSICS = [
   { key:'how_smart', title:'How Smart Am I?', file:'how_smart.html', icon:'🧠', desc:'Questions get harder when you\'re right. See how you compare with 3rd graders up to grad students!',
     medals:[[700,'🥉 Bronze'],[900,'🥈 Silver'],[1100,'🥇 Gold'],[1400,'💎 Legend']], goal:'Pass the average 10th grader', winBy:'wins' }
 ];
+// Partner games: two devices, one code. Score = 100 per win (only when both players are signed in).
+const PARTNER = [
+  { key:'connect4_duel', title:'Connect 4', file:'partner.html?g=connect4', icon:'🔴', desc:'Play a classmate on their own device. One makes a game, the other types the 4-letter code.',
+    medals:[[100,'🥉 1 win'],[500,'🥈 5 wins'],[1000,'🥇 10 wins'],[2000,'💎 20 wins']], goal:'Beat a classmate', winBy:'wins' },
+  { key:'tictactoe_duel', title:'Tic-Tac-Toe vs. a Friend', file:'partner.html?g=tictactoe', icon:'❌', desc:'Two players, two devices, one code. Best of as many rematches as you want!',
+    medals:[[100,'🥉 1 win'],[500,'🥈 5 wins'],[1000,'🥇 10 wins'],[2000,'💎 20 wins']], goal:'Beat a classmate', winBy:'wins' }
+];
 const GROUPS = [
+  { name:'🤝 Partner Games', sub:'Play a classmate on two devices. Wins count when you\'re both signed in.', color:'#38BFFF', games: PARTNER.map(g => [g.icon, g.title, g.desc, g.file]) },
   { name:'⭐ Sprite Classics', sub:'Arcade favorites, rebuilt with your sprite. Earn medals!', color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },
 ];
 const CLASSROOM = [
@@ -466,7 +474,7 @@ async function loadMine() {
     renderBoardFilters(); loadBoard();
   } catch (e) { $('who').innerHTML = '🔒 Your login has expired. <a href="quest.html">Log in again</a> to post scores.'; }
 }
-const BOARD_GAMES = [{ key: 'champions', title: '🏆 Champions' }, ...[...SPRITE, ...CLASSICS].map(g => ({ key: g.key, title: g.icon + ' ' + g.title }))];
+const BOARD_GAMES = [{ key: 'champions', title: '🏆 Champions' }, ...[...SPRITE, ...CLASSICS, ...PARTNER].map(g => ({ key: g.key, title: g.icon + ' ' + g.title }))];
 let lbGame = 'champions', lbGroup = 'all';
 function groupOptions() {
   const o = [['all', 'All classes']];
@@ -498,7 +506,7 @@ async function loadBoard() {
 renderBoardFilters(); loadBoard(); loadMine();
 
 function renderStats() {
-  $('statGrid').innerHTML = [...SPRITE, ...CLASSICS].map(g => {
+  $('statGrid').innerHTML = [...SPRITE, ...CLASSICS, ...PARTNER].map(g => {
     const srv = mine && mine.scores && mine.scores[g.key];
     const best = Math.max(get(g.key + '_best', 0), srv ? srv.best : 0), wins = Math.max(get(g.key + '_wins', 0), srv ? srv.wins : 0);
     const done = g.winBy === 'wins' ? wins > 0 : best >= g.goal;

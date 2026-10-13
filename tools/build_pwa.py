@@ -17,6 +17,7 @@ SHORT = {'how_smart': 'How Smart?', 'habit_showdown': 'Showdown', 'habit_breaker
 src = open('arcade.html', encoding='utf-8').read()
 GAMES = [dict(zip(('key', 'title', 'file', 'icon'), m)) for m in
          re.findall(r"key:'(\w+)', title:'([^']+)', file:'([^']+)', icon:'([^']+)'", src)]
+GAMES = [g for g in GAMES if '?' not in g['file']]   # partner games are online-only (partner.html?g=...)
 assert len(GAMES) >= 20, 'could not read the game list from arcade.html'
 for i, g in enumerate(GAMES):
     g['short'] = SHORT.get(g['key'], g['title'] if len(g['title']) <= 12 else g['title'].split(' ', 1)[1])
