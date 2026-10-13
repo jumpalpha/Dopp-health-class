@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html data-app-name="Tic-Tac-Toe" lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Tic-Tac-Toe — Dopp's Arcade</title>
+<meta name="description" content="Play tic-tac-toe as healthy apples against King Junk's sodas. Win 3 of 5 rounds to beat him.">
+<link rel="canonical" href="https://doppsclass.com/tic_tac_toe.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#2a1a4a 0%,#0a0618 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
+</style>
+<!-- PWA --><link rel="manifest" href="app/tic_tac_toe.webmanifest"><link rel="apple-touch-icon" href="app/tic_tac_toe-180.png"><meta name="apple-mobile-web-app-title" content="Tic-Tac-Toe"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Tic-Tac-Toe</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 420, H = 640, ROUNDS = 5, NEED = 3;
+const CELL = 106, GX = (W - CELL * 3) / 2, GY = 190;
+const SMART = [0.15, 0.25, 0.35, 0.45, 0.55];   // how often King Junk plays the perfect move, by round
+const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const FACTS = [
+  'A medium apple has about 4 g of fiber, which helps you feel full longer.',
+  'A 12 oz can of soda has about 39 g of sugar — more than a teen\'s whole daily limit of added sugar (25 g).',
+  'Swapping one soda a day for water cuts about 140 calories a day.',
+  'Fruit\'s natural sugar comes packed with fiber, water and vitamins. Soda\'s sugar comes with none of that.',
+  'Thinking a few moves ahead works in health too: planning snacks ahead makes the healthy choice easier.'
+];
+let board, round, wins, losses, draws, streak, turn, starter, phase, winLine, endT, aiT, msg, msgT, pop;
+
+function reset() { round = 0; wins = 0; losses = 0; draws = 0; streak = 0; msg = ''; msgT = 0; newRound(); }
+function newRound() {
+  board = Array(9).fill(null); winLine = null; endT = 0; pop = Array(9).fill(0);
+  starter = round % 2 === 0 ? 'P' : 'K'; turn = starter; phase = 'play'; aiT = 0.7;
+}
+function winner(b) {
+  for (const l of LINES) if (b[l[0]] && b[l[0]] === b[l[1]] && b[l[0]] === b[l[2]]) return { who: b[l[0]], line: l };
+  return b.every(Boolean) ? { who: 'draw' } : null;
+}
+function minimax(b, me) {   // score from King Junk's side
+  const w = winner(b);
+  if (w) return w.who === 'K' ? 10 : w.who === 'P' ? -10 : 0;
+  let best = me === 'K' ? -99 : 99;
+  for (let i = 0; i < 9; i++) if (!b[i]) {
+    b[i] = me; const s = minimax(b, me === 'K' ? 'P' : 'K'); b[i] = null;
+    best = me === 'K' ? Math.max(best, s) : Math.min(best, s);
+  }
+  return best;
+}
+function aiMove() {
+  const open = board.map((v, i) => v ? -1 : i).filter(i => i >= 0);
+  if (Math.random() > SMART[round]) return open[Math.floor(Math.random() * open.length)];
+  let best = -99, picks = [];
+  for (const i of open) { board[i] = 'K'; const s = minimax(board, 'P'); board[i] = null; if (s > best) { best = s; picks = [i]; } else if (s === best) picks.push(i); }
+  return picks[Math.floor(Math.random() * picks.length)];
+}
+function place(i, who, A) {
+  board[i] = who; pop[i] = 0.001; A.sfx(who === 'P' ? 'point' : 'pop');
+  const w = winner(board);
+  if (w) return endRound(w, A);
+  turn = who === 'P' ? 'K' : 'P'; aiT = 0.55 + Math.random() * 0.35;
+}
+function endRound(w, A) {
+  phase = 'end'; endT = 0; winLine = w.line || null; round++;
+  if (w.who === 'P') {
+    wins++; streak++; const pts = 300 + 50 * (streak - 1); A.addScore(pts); A.sfx('coin');
+    A.float('You win! +' + pts, W / 2, GY + CELL * 3 + 30, '#7CFFB2'); A.particles.burst(W / 2, GY + CELL * 1.5, '#7CFFB2', 26, 240, 4);
+    msg = '🍎 ' + FACTS[(round - 1) % FACTS.length]; msgT = 3.5;
+    if (wins === NEED) A.win('You beat King Junk!');
+  } else if (w.who === 'K') {
+    losses++; streak = 0; A.sfx('hit'); A.shake(6, 0.25); A.float('King Junk wins', W / 2, GY + CELL * 3 + 30, '#FF8FA3');
+    msg = '🥤 King Junk got three in a row. Watch for his traps — block two-in-a-rows!'; msgT = 3.5;
+  } else {
+    draws++; A.addScore(100); A.sfx('point'); A.float('Draw +100', W / 2, GY + CELL * 3 + 30, '#FFD700');
+    msg = '🤝 A draw! Perfect play by both sides always ends in a tie.'; msgT = 3;
+  }
+}
+function input(type, A) {}
+function pointer(type, x, y, A) {
+  if (type !== 'down' || phase !== 'play' || turn !== 'P') return;
+  const c = Math.floor((x - GX) / CELL), r = Math.floor((y - GY) / CELL);
+  if (c < 0 || c > 2 || r < 0 || r > 2) return;
+  const i = r * 3 + c; if (!board[i]) place(i, 'P', A);
+}
+// keyboard: 1-9 like a phone keypad (top row 1 2 3)
+document.addEventListener('keydown', e => {
+  const n = e.key >= '1' && e.key <= '9' ? +e.key - 1 : -1;
+  if (n < 0 || !window.game || window.game.state !== 'play' || phase !== 'play' || turn !== 'P' || board[n]) return;
+  place(n, 'P', window.game);
+});
+function update(dt, A) {
+  if (!board) return;
+  msgT = Math.max(0, msgT - dt); pop = pop.map(p => p ? Math.min(1, p + dt * 5) : 0);
+  if (A.state !== 'play') return;
+  if (phase === 'play' && turn === 'K') { aiT -= dt; if (aiT <= 0) place(aiMove(), 'K', A); }
+  if (phase === 'end') {
+    endT += dt;
+    if (endT > 2.2) {
+      const decided = wins === NEED || losses > ROUNDS - NEED || round >= ROUNDS;
+      if (decided) { phase = 'over'; A.gameOver(true); } else newRound();
+    }
+  }
+}
+
+function drawApple(ctx, A, x, y, s) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  ctx.beginPath(); ctx.moveTo(0, -22); ctx.bezierCurveTo(26, -38, 44, -4, 26, 22); ctx.bezierCurveTo(16, 36, 4, 34, 0, 28); ctx.bezierCurveTo(-4, 34, -16, 36, -26, 22); ctx.bezierCurveTo(-44, -4, -26, -38, 0, -22); ctx.closePath();
+  A.ink('#ff4d5e', 3);
+  ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.beginPath(); ctx.ellipse(-12, -8, 5, 9, -0.4, 0, 7); ctx.fill();
+  ctx.strokeStyle = A.INK; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(2, -34); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(12, -34, 10, 5, -0.4, 0, 7); A.ink('#3ad16b', 2.5);
+  ctx.restore();
+}
+function drawSoda(ctx, A, x, y, s) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  A.rr(-20, -30, 40, 60, 8); A.ink('#8a5cff', 3);
+  A.rr(-16, -36, 32, 8, 3); A.ink('#c9c9d6', 2.5);
+  ctx.fillStyle = '#fff'; A.rr(-20, -8, 40, 16, 0); ctx.fill(); ctx.strokeStyle = A.INK; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#e0245e'; ctx.font = '900 12px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('JUNK', 0, 4);
+  ctx.restore();
+}
+function wrap(ctx, text, maxW) {
+  const words = text.split(' '), lines = []; let line = '';
+  words.forEach(w => { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; });
+  if (line) lines.push(line); return lines;
+}
+function draw(ctx, A) {
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2b1c55'); g.addColorStop(1, '#160e2e'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (!board) return;
+  // scoreboard
+  ctx.textAlign = 'center'; ctx.font = '900 15px Nunito,sans-serif'; ctx.fillStyle = '#fff';
+  ctx.fillText('Round ' + Math.min(round + (phase === 'end' ? 0 : 1), ROUNDS) + ' of ' + ROUNDS + '  ·  Win ' + NEED + ' to beat King Junk', W / 2, 100);
+  ctx.font = '900 20px Nunito,sans-serif';
+  ctx.fillStyle = '#7CFFB2'; ctx.fillText('You ' + wins, W / 2 - 90, 136);
+  ctx.fillStyle = '#FFD700'; ctx.fillText('Ties ' + draws, W / 2, 136);
+  ctx.fillStyle = '#FF8FA3'; ctx.fillText('Junk ' + losses, W / 2 + 90, 136);
+  ctx.font = '800 14px Nunito,sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.8)';
+  ctx.fillText(phase !== 'play' ? '' : turn === 'P' ? 'Your turn — tap a square' : 'King Junk is thinking…', W / 2, 172);
+  // board
+  A.rr(GX - 8, GY - 8, CELL * 3 + 16, CELL * 3 + 16, 18); A.ink('rgba(255,255,255,.06)', 3);
+  ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+  for (let k = 1; k < 3; k++) {
+    ctx.beginPath(); ctx.moveTo(GX + k * CELL, GY + 10); ctx.lineTo(GX + k * CELL, GY + CELL * 3 - 10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(GX + 10, GY + k * CELL); ctx.lineTo(GX + CELL * 3 - 10, GY + k * CELL); ctx.stroke();
+  }
+  for (let i = 0; i < 9; i++) {
+    if (!board[i]) continue;
+    const x = GX + (i % 3) * CELL + CELL / 2, y = GY + Math.floor(i / 3) * CELL + CELL / 2, p = pop[i], s = 1.25 * (p < 1 ? 0.6 + 0.5 * Math.sin(p * Math.PI / 2) : 1);
+    if (board[i] === 'P') drawApple(ctx, A, x, y + 4, s); else drawSoda(ctx, A, x, y + 2, s);
+  }
+  if (winLine) {
+    const a = winLine[0], b = winLine[2], f = Math.min(1, endT * 3);
+    const ax = GX + (a % 3) * CELL + CELL / 2, ay = GY + Math.floor(a / 3) * CELL + CELL / 2, bx = GX + (b % 3) * CELL + CELL / 2, by = GY + Math.floor(b / 3) * CELL + CELL / 2;
+    ctx.strokeStyle = board[a] === 'P' ? '#00E5A0' : '#FF3B5C'; ctx.lineWidth = 10;
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + (bx - ax) * f, ay + (by - ay) * f); ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  // players
+  const by = GY + CELL * 3 + 72;
+  A.drawHero(70, by, 70, 0, losses > wins ? 'tired' : 'happy');
+  drawSoda(ctx, A, W - 70, by, 0.85);
+  ctx.font = '900 13px Nunito,sans-serif'; ctx.textAlign = 'center';
+  ctx.fillStyle = turn === 'P' && phase === 'play' ? '#7CFFB2' : 'rgba(255,255,255,.55)'; ctx.fillText('YOU 🍎', 70, by + 48);
+  ctx.fillStyle = turn === 'K' && phase === 'play' ? '#FF8FA3' : 'rgba(255,255,255,.55)'; ctx.fillText('KING JUNK', W - 70, by + 48);
+  // message
+  if (msgT > 0 && msg) {
+    ctx.font = '800 14px Nunito,sans-serif'; const lines = wrap(ctx, msg, W - 60), hh = lines.length * 19 + 16, my = GY + CELL * 1.5 - hh / 2;
+    ctx.globalAlpha = Math.min(1, msgT * 2); A.rr(16, my, W - 32, hh, 12); A.ink('rgba(20,12,44,.94)', 2.5);
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; lines.forEach((l, i) => ctx.fillText(l, 30, my + 22 + i * 19)); ctx.globalAlpha = 1;
+  }
+}
+
+window.__ttt = () => ({ board, round, wins, losses, draws, turn, phase, place: i => place(i, 'P', window.game) });   // for automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Tic-Tac-Toe', subtitle: 'Apples vs. King Junk!', W, H, reserveH: 70,
+  storageKey: 'tic_tac_toe', winText: 'You beat King Junk!', deathDelay: 600, overTitle: 'Match Over!',
+  medals: [{ at: 400, name: 'Bronze', icon: '🥉' }, { at: 700, name: 'Silver', icon: '🥈' }, { at: 1000, name: 'Gold', icon: '🥇' }, { at: 1200, name: 'Legend', icon: '💎' }],
+  howTo: 'You\'re the <b>apples</b>, King Junk is the <b>sodas</b>. Get three in a row to win the round.<br><b>5 rounds — win 3</b> to beat him. He gets smarter every round! Win +300, tie +100, and wins in a row earn a bonus.',
+  controls: 'Tap a square · or keys 1–9 (top row is 1 2 3) · P pause',
+  facts: FACTS,
+  reset, update, draw, input, pointer
+});
+})();
+</script>
+</body>
+</html>

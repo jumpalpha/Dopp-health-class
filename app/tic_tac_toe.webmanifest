@@ -1,0 +1,30 @@
+{
+  "id": "../tic_tac_toe.html",
+  "name": "Tic-Tac-Toe · Dopp's Arcade",
+  "short_name": "Tic-Tac-Toe",
+  "start_url": "../tic_tac_toe.html",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#0a0618",
+  "theme_color": "#140c2e",
+  "icons": [
+    {
+      "src": "tic_tac_toe-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "tic_tac_toe-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "tic_tac_toe-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
