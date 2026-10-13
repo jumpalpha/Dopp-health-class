@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html data-app-name="Cup Pong" lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Cup Pong — Dopp's Arcade</title>
+<meta name="description" content="Toss a ping-pong ball with your Wellness Sprite and dump 10 cups of sugary drinks. Learn how much sugar is hiding in each one.">
+<link rel="canonical" href="https://doppsclass.com/cup_pong.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#10324a 0%,#06101c 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
+</style>
+<!-- PWA --><link rel="manifest" href="app/cup_pong.webmanifest"><link rel="apple-touch-icon" href="app/cup_pong-180.png"><meta name="apple-mobile-web-app-title" content="Cup Pong"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Cup Pong</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+// ---- world (meters) and camera ----
+const W = 420, H = 640, G = 9.8;
+const TW = 0.76, TL = 2.4, CUP_R = 0.09, CUP_H = 0.12, BR = 0.022;
+const F = 680, CAM_Z = -1.8, CAM_H = 1.5, HORIZON = 110;
+const START = { x: 0, y: 0.32, z: 0.05 }, ELEV = 0.85;
+const P_MIN = 3.2, P_MAX = 5.0, YAW_MAX = 0.3, BALLS = 16, BONUS_BALL_AT = 3;
+const proj = (x, y, z) => { const d = Math.max(0.3, z - CAM_Z), s = F / d; return { x: W / 2 + x * s, y: HORIZON + (CAM_H - y) * s, s }; };
+
+// Every cup is a sugary drink to dump. Sugar numbers are for typical U.S. bottle/can sizes.
+const DRINKS = [
+  { name: 'Soda', liquid: '#5a2d14', tip: 'A 20 oz soda has about 65 g of sugar — around 16 teaspoons.' },
+  { name: 'Energy Drink', liquid: '#9be03a', tip: 'A 16 oz energy drink can have about 54 g of sugar plus 160 mg of caffeine. Teens should keep caffeine to about 100 mg a day or less.' },
+  { name: 'Sports Drink', liquid: '#38BFFF', tip: 'A 20 oz sports drink has about 34 g of sugar. It\'s made for long, hard workouts — water is best for everyday thirst.' },
+  { name: 'Sweet Tea', liquid: '#8a4b12', tip: 'Bottled sweet tea can have as much sugar as soda. Unsweetened tea or water skips it.' },
+  { name: 'Fruit Punch', liquid: '#e0245e', tip: 'Many "juice drinks" are only 10% juice. The rest is mostly water and added sugar.' },
+  { name: 'Lemonade', liquid: '#ffe45c', tip: 'Bottled lemonade often has about as much sugar as soda. Try water with a lemon slice.' },
+  { name: 'Slushie', liquid: '#4f6bff', tip: 'Slushies are mostly frozen sugar water — lots of sugar, almost no nutrients.' },
+  { name: 'Frappé', liquid: '#c89466', tip: 'A big blended coffee drink can top 50 g of sugar — more than a candy bar.' },
+  { name: 'Vitamin Water', liquid: '#ff8fd0', tip: '"Vitamin" drinks often add sugar. Most teens get plenty of vitamins from regular food.' },
+  { name: 'Sweet Coffee', liquid: '#6b4226', tip: 'Flavored syrups add up fast. Each pump can add about 5 g of sugar.' },
+  { name: 'Root Beer', liquid: '#3d1c0c', tip: 'Root beer is soda too — about the same sugar as cola, just usually without the caffeine.' },
+  { name: 'Iced Mocha', liquid: '#7b4a2e', tip: 'Chocolate, syrup and whipped cream can put more than a whole day\'s sugar limit for teens (25 g) in one cup.' }
+];
+
+let cups, ball, phase, power, yaw, drag, ptrTap, ballsLeft, sunk, streak, msg, msgT, endT, t, rerackedAt, trail, lastPos;
+
+function rack(n, keep) {
+  // triangle with the apex toward the player; rows of 1..k
+  const rows = n === 10 ? 4 : n === 6 ? 3 : n === 3 ? 2 : 1, S = CUP_R * 2 + 0.008, z0 = n === 10 ? 1.8 : n === 6 ? 1.9 : n === 3 ? 2.0 : 2.05;
+  const out = [];
+  for (let k = 0; k < rows; k++) for (let i = 0; i <= k; i++) out.push({ x: (i - k / 2) * S, z: z0 + k * S * 0.866 });
+  return out.map((p, i) => Object.assign(p, keep ? keep[i] : {}, { alive: true, pop: 0 }));
+}
+function reset() {
+  const drinks = DRINKS.slice().sort(() => Math.random() - 0.5).slice(0, 10);
+  cups = rack(10, drinks.map(d => ({ drink: d })));
+  power = 4.1; yaw = 0; drag = null; ptrTap = false; ballsLeft = BALLS; sunk = 0; streak = 0;
+  msg = ''; msgT = 0; t = 0; rerackedAt = {}; trail = [];
+  nextBall();
+}
+function nextBall() { ball = { x: START.x, y: START.y, z: START.z, vx: 0, vy: 0, vz: 0, bounced: false, rimmed: false, bounces: 0 }; phase = 'aim'; endT = 0; trail = []; }
+function velFor(p, w) { const h = p * Math.cos(ELEV); return { vx: h * Math.sin(w), vy: p * Math.sin(ELEV), vz: h * Math.cos(w) }; }
+function current() {
+  if (drag) {
+    const pull = Math.max(0, drag.y - drag.sy), side = drag.x - drag.sx;
+    return { p: Math.min(P_MAX, P_MIN + pull * 0.0075), w: Math.max(-YAW_MAX, Math.min(YAW_MAX, -side * 0.0016)) };
+  }
+  return { p: power, w: yaw };
+}
+function throwBall(p, w, A) {
+  const v = velFor(p, w); Object.assign(ball, v); phase = 'fly'; endT = 0; ballsLeft--; A.sfx('swipe');
+}
+function input(type, A) {
+  if (phase !== 'aim') return;
+  if (type === 'tap') { if (ptrTap) { ptrTap = false; return; } throwBall(power, yaw, A); return; }
+  if (type === 'left') yaw = Math.max(-YAW_MAX, yaw - 0.008);
+  if (type === 'right') yaw = Math.min(YAW_MAX, yaw + 0.008);
+  if (type === 'up') power = Math.min(P_MAX, power + 0.025);
+  if (type === 'down') power = Math.max(P_MIN, power - 0.025);
+  if (['left', 'right', 'up', 'down'].includes(type)) drag = null;
+}
+// pull DOWN to set power, slide sideways to aim, let go to throw
+function pointer(type, x, y, A) {
+  if (type === 'down') { ptrTap = true; if (phase === 'aim') drag = { sx: x, sy: y, x, y }; }
+  else if (type === 'drag' && drag) { drag.x = x; drag.y = y; }
+  else if (type === 'up' && drag) {
+    const c = current(), pulled = drag.y - drag.sy > 14; drag = null;
+    if (pulled && phase === 'aim') { power = c.p; yaw = c.w; throwBall(c.p, c.w, A); }
+  }
+}
+
+function liveCups() { return cups.filter(c => c.alive); }
+function sink(A, c, rattle) {
+  c.alive = false; sunk++; streak++; phase = 'done'; endT = 0;
+  const fire = streak >= 3, base = 100 + (ball.bounced ? 100 : 0) + (ball.rimmed || rattle ? 0 : 25);
+  const pts = (base + 25 * (streak - 1)) * (fire ? 2 : 1);
+  A.addScore(pts); A.sfx('coin');
+  const p = proj(c.x, CUP_H, c.z);
+  A.particles.burst(p.x, p.y, c.drink.liquid, 18, 180, 4);
+  const label = ball.bounced ? 'Bounce shot! ' : rattle ? 'Rattled in! ' : !ball.rimmed ? 'Swish! ' : 'Sunk! ';
+  A.float(label + '+' + pts, p.x, p.y - 26, fire ? '#FF8A3D' : '#7CFFB2');
+  if (streak % BONUS_BALL_AT === 0) { ballsLeft++; A.toast('🔥 <b>On fire!</b> +1 ball, and sinks score double', 2200); }
+  msg = '🫗 Dumped: ' + c.drink.name + ' — ' + c.drink.tip; msgT = 4;
+  if (sunk === 10) { A.addScore(ballsLeft * 50); A.win('All 10 sugary drinks dumped!'); }
+}
+function miss(A) {
+  phase = 'done'; endT = 0; streak = 0; A.sfx('hit');
+  const p = proj(Math.max(-TW, Math.min(TW, ball.x)), Math.max(0, ball.y), Math.min(TL, Math.max(0.3, ball.z)));
+  A.float('Miss!', Math.max(40, Math.min(W - 40, p.x)), Math.max(200, Math.min(H - 60, p.y)), '#FF8FA3');
+}
+function maybeRerack() {
+  const n = liveCups().length;
+  if ((n === 6 || n === 3) && !rerackedAt[n]) {
+    rerackedAt[n] = true;
+    cups = rack(n, liveCups().map(c => ({ drink: c.drink })));
+    return true;
+  }
+  return false;
+}
+function stepBall(h, A) {
+  const py = ball.y;
+  ball.vy -= G * h; ball.x += ball.vx * h; ball.y += ball.vy * h; ball.z += ball.vz * h;
+  const live = liveCups();
+  // through the rim plane, falling
+  if (py >= CUP_H && ball.y < CUP_H && ball.vy < 0) {
+    for (const c of live) {
+      const d = Math.hypot(ball.x - c.x, ball.z - c.z);
+      if (d < CUP_R - BR * 0.4) { sink(A, c, false); return; }
+      if (d < CUP_R + BR) {
+        if (d < CUP_R && !ball.rimmed && Math.random() < 0.45) { sink(A, c, true); return; }
+        const nx = (ball.x - c.x) / (d || 1), nz = (ball.z - c.z) / (d || 1);
+        ball.y = CUP_H + 0.001; ball.vy = Math.abs(ball.vy) * 0.3 + 0.5; ball.vx = ball.vx * 0.4 + nx * 0.7; ball.vz = ball.vz * 0.4 + nz * 0.7;
+        ball.rimmed = true; A.sfx('pop'); return;
+      }
+    }
+  }
+  // cup walls
+  if (ball.y < CUP_H && ball.y > 0) for (const c of live) {
+    const dx = ball.x - c.x, dz = ball.z - c.z, d = Math.hypot(dx, dz), m = CUP_R + BR;
+    if (d < m && d > 0) {
+      const nx = dx / d, nz = dz / d; ball.x = c.x + nx * m; ball.z = c.z + nz * m;
+      const vn = ball.vx * nx + ball.vz * nz; if (vn < 0) { ball.vx -= 1.4 * vn * nx; ball.vz -= 1.4 * vn * nz; }
+      ball.rimmed = true;
+    }
+  }
+  // table
+  const onTable = Math.abs(ball.x) <= TW && ball.z >= 0 && ball.z <= TL;
+  if (onTable && ball.y < BR && ball.vy < 0) {
+    ball.y = BR; ball.vy = -ball.vy * 0.62; ball.vx *= 0.9; ball.vz *= 0.9; ball.bounces++; ball.bounced = true;
+    if (ball.vy > 0.5) A.sfx('point');
+  }
+}
+function update(dt, A) {
+  if (!cups) return;
+  t += dt; msgT = Math.max(0, msgT - dt);
+  cups.forEach(c => { if (!c.alive) c.pop += dt; });
+  if (A.state !== 'play') return;
+  if (phase === 'fly') {
+    const steps = 6, h = Math.min(dt, 0.05) / steps;
+    for (let s = 0; s < steps && phase === 'fly'; s++) stepBall(h, A);
+    if (phase === 'fly') {
+      const p = proj(ball.x, ball.y, ball.z); trail.push(p); if (trail.length > 12) trail.shift();
+      endT += dt;
+      const rolling = ball.y <= BR + 0.002 && Math.abs(ball.vy) < 0.4;
+      if (ball.y < -0.6 || ball.z > TL + 0.8 || endT > 3.5 || ball.bounces >= 3 || rolling) miss(A);
+    }
+  } else if (phase === 'done') {
+    endT += dt;
+    if (endT > 1.0) {
+      if (sunk === 10) { phase = 'over'; A.gameOver(true); return; }
+      if (ballsLeft <= 0) { phase = 'over'; A.gameOver(true); return; }
+      if (maybeRerack()) A.toast('Re-rack! ' + liveCups().length + ' cups left', 1600);
+      nextBall();
+    }
+  }
+}
+
+// ---- drawing ----
+function poly(ctx, pts) { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); }
+function drawCup(ctx, A, c) {
+  const top = proj(c.x, CUP_H, c.z), bot = proj(c.x, 0, c.z);
+  const rT = CUP_R * top.s, rB = CUP_R * 0.72 * bot.s, ey = rT * 0.32;
+  if (!c.alive) {   // quick tip-over puff, then gone
+    if (c.pop > 0.5) return;
+    ctx.globalAlpha = 1 - c.pop * 2; ctx.save(); ctx.translate(bot.x, bot.y); ctx.rotate(c.pop * 3); ctx.translate(-bot.x, -bot.y);
+  }
+  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(bot.x, bot.y, rB * 1.15, rB * 0.35, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(top.x - rT, top.y); ctx.lineTo(bot.x - rB, bot.y); ctx.ellipse(bot.x, bot.y, rB, rB * 0.3, 0, Math.PI, 0, true); ctx.lineTo(top.x + rT, top.y); ctx.closePath();
+  const g = ctx.createLinearGradient(top.x - rT, 0, top.x + rT, 0); g.addColorStop(0, '#d9f3ff'); g.addColorStop(0.45, '#ffffff'); g.addColorStop(1, '#9fc7dc');
+  ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = A.INK; ctx.stroke();
+  ctx.fillStyle = 'rgba(56,191,255,.55)'; ctx.fillRect(top.x - rT * 0.92, top.y + (bot.y - top.y) * 0.12, rT * 1.84, Math.max(2, (bot.y - top.y) * 0.1));
+  ctx.beginPath(); ctx.ellipse(top.x, top.y, rT, ey, 0, 0, 7); ctx.fillStyle = '#f4fbff'; ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(top.x, top.y + ey * 0.25, rT * 0.8, ey * 0.7, 0, 0, 7); ctx.fillStyle = c.drink.liquid; ctx.fill();
+  if (!c.alive) { ctx.restore(); ctx.globalAlpha = 1; }
+}
+function drawBall(ctx, A) {
+  const fire = streak >= 3 && phase !== 'done';
+  if (Math.abs(ball.x) <= TW && ball.z >= 0 && ball.z <= TL && ball.y > 0) {
+    const sh = proj(ball.x, 0, ball.z), a = Math.max(0.08, 0.35 - ball.y * 0.25);
+    ctx.fillStyle = 'rgba(0,0,0,' + a + ')'; ctx.beginPath(); ctx.ellipse(sh.x, sh.y, BR * sh.s * 1.1, BR * sh.s * 0.4, 0, 0, 7); ctx.fill();
+  }
+  trail.forEach((p, i) => { ctx.fillStyle = fire ? 'rgba(255,140,60,' + (i / trail.length * 0.5) + ')' : 'rgba(255,255,255,' + (i / trail.length * 0.3) + ')'; ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(2, BR * p.s * i / trail.length), 0, 7); ctx.fill(); });
+  const p = proj(ball.x, ball.y, ball.z), r = Math.max(4, BR * p.s * 1.15);
+  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 7); A.ink(fire ? '#FFB347' : '#ffffff', 2);
+  ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.beginPath(); ctx.arc(p.x - r * 0.35, p.y - r * 0.35, r * 0.3, 0, 7); ctx.fill();
+}
+function wrap(ctx, text, maxW) {
+  const words = text.split(' '), lines = []; let line = '';
+  words.forEach(w => { const test = line ? line + ' ' + w : w; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test; });
+  if (line) lines.push(line); return lines;
+}
+function draw(ctx, A) {
+  // cafeteria wall + floor
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#123a52'); g.addColorStop(0.53, '#1d5570'); g.addColorStop(0.54, '#2a2140'); g.addColorStop(1, '#171126');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,255,255,.05)'; for (let x = 0; x < W; x += 56) ctx.fillRect(x, 0, 28, H * 0.535);
+  if (!cups) return;
+  // table: legs, top, edge, center line
+  const c0 = proj(-TW, 0, 0), c1 = proj(TW, 0, 0), c2 = proj(TW, 0, TL), c3 = proj(-TW, 0, TL);
+  ctx.fillStyle = '#0b2233'; ctx.fillRect(c3.x + 6, c3.y, 6, 60); ctx.fillRect(c2.x - 12, c2.y, 6, 60);
+  poly(ctx, [c0, c1, { x: c1.x, y: c1.y + 14 }, { x: c0.x, y: c0.y + 14 }]); ctx.fillStyle = '#0d3f63'; ctx.fill();
+  poly(ctx, [c0, c1, c2, c3]); ctx.fillStyle = '#1565a8'; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = '#f4fbff'; ctx.stroke();
+  const m0 = proj(0, 0, 0), m1 = proj(0, 0, TL); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(m0.x, m0.y); ctx.lineTo(m1.x, m1.y); ctx.stroke();
+  // cups far→near with the ball slotted in by depth
+  const items = cups.map(c => ({ z: c.z, c })); if (ball && phase !== 'done') items.push({ z: ball.z - CUP_R, ball: true });
+  items.sort((a, b) => b.z - a.z).forEach(it => it.ball ? drawBall(ctx, A) : drawCup(ctx, A, it.c));
+  // aim preview: the first part of the arc only
+  if (phase === 'aim' && A.state === 'play') {
+    const c = current(), v = velFor(c.p, c.w);
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    for (let i = 1; i <= 8; i++) { const tt = i * 0.035, p = proj(START.x + v.vx * tt, START.y + v.vy * tt - 0.5 * G * tt * tt, START.z + v.vz * tt); ctx.beginPath(); ctx.arc(p.x, p.y, 4 - i * 0.3, 0, 7); ctx.fill(); }
+    // power meter
+    const f = (c.p - P_MIN) / (P_MAX - P_MIN);
+    A.rr(W - 30, 360, 16, 160, 8); A.ink('rgba(10,20,40,.7)', 2);
+    const mh = 156 * f; A.rr(W - 28, 518 - mh, 12, mh, 6); ctx.fillStyle = f > 0.75 ? '#FF8A3D' : f > 0.4 ? '#FFD700' : '#00E5A0'; ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = '900 11px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillText('PWR', W - 22, 536);
+    if (drag) { ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.setLineDash([6, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(drag.sx, drag.sy); ctx.lineTo(drag.x, drag.y); ctx.stroke(); ctx.setLineDash([]); }
+  }
+  // sprite
+  A.drawHero(64, H - 52, 92, 0, phase === 'done' ? (streak ? 'happy' : 'tired') : 'happy');
+  // HUD
+  ctx.font = '900 15px Nunito,sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
+  ctx.fillText('Cups left ' + liveCups().length + '  ·  Balls ' + ballsLeft + (streak >= 3 ? '  ·  🔥 x2' : ''), W / 2, 100);
+  if (msgT > 0) {
+    ctx.font = '800 14px Nunito,sans-serif'; const lines = wrap(ctx, msg, W - 60), hh = lines.length * 19 + 16;
+    ctx.globalAlpha = Math.min(1, msgT * 2); A.rr(16, 116, W - 32, hh, 12); A.ink('rgba(8,20,40,.92)', 2.5);
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; lines.forEach((l, i) => ctx.fillText(l, 30, 138 + i * 19)); ctx.globalAlpha = 1;
+  }
+}
+
+window.__pong = () => ({ cups, ball, phase, ballsLeft, sunk, streak, START, ELEV, G, CUP_H, throw: (p, w) => throwBall(p, w, window.game) });   // for automated playtests
+window.game = Arcade({
+  mount: '#game', title: 'Cup Pong', subtitle: 'Dump the sugary drinks!', W, H, reserveH: 70,
+  storageKey: 'cup_pong', winText: 'All 10 sugary drinks dumped!', deathDelay: 700, overTitle: 'Game Over!',
+  medals: [{ at: 500, name: 'Bronze', icon: '🥉' }, { at: 1200, name: 'Silver', icon: '🥈' }, { at: 2000, name: 'Gold', icon: '🥇' }, { at: 3200, name: 'Legend', icon: '💎' }],
+  howTo: '<b>Pull down</b> for power, <b>slide sideways</b> to aim, and let go to toss. Every cup is a sugary drink — sink it to dump it.<br><b>16 balls</b> to clear all <b>10 cups</b>. Swish +25, bounce shot +100. Sink 3 in a row and you\'re <b>on fire</b>: double points and a bonus ball!',
+  controls: 'Drag down & release · or ← → aim, ↑ ↓ power, Space toss · P pause',
+  facts: [
+    'The American Heart Association says kids and teens should have less than 25 g of added sugar a day.',
+    'About 4 grams of sugar equals 1 teaspoon.',
+    'Sugary drinks are the #1 source of added sugar in the American diet.',
+    'Water has zero sugar and zero calories, and your brain is about 75% water.',
+    'Craving fizz? Sparkling water with a splash of juice has a fraction of the sugar of soda.'
+  ],
+  reset, update, draw, input, pointer
+});
+})();
+</script>
+</body>
+</html>

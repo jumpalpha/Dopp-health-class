@@ -24,6 +24,7 @@ GAMES = {
   'dash':     ('sprite_dash.html',     '🏃', 'Sprite Dash',     'Jump and duck past junk food'),
   'flap':     ('sprite_flap.html',     '🪽', 'Sprite Flap',     'Flap through junk-food towers'),
   'slice':    ('sprite_slice.html',    '🔪', 'Sprite Slice',    'Swipe fruit and veggies, skip the junk'),
+  'pong':     ('cup_pong.html',        '🏓', 'Cup Pong',        'Dump 10 cups of sugary drinks'),
   'sling':    ('sprite_sling.html',    '🎯', 'Sprite Slingshot','Topple towers of junk-food monsters'),
 }
 SMART = ('how_smart.html', '🧠', 'How Smart Am I?', 'Compare yourself, 3rd grade to grad school')

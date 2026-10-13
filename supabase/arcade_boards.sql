@@ -46,6 +46,7 @@ insert into public.arcade_games (key, title, max_score, medals) values
   ('vocab_slice',    'Vocab Slice',      100000, '{500,1200,2200,3500}'),
   ('sprite_dodge',   'Sprite Dodge',     50000,  '{300,700,1200,2000}'),
   ('sprite_hoops',   'Sprite Hoops',     3000,   '{300,700,1100,1600}'),
+  ('cup_pong',       'Cup Pong',         15000,  '{500,1200,2000,3200}'),
   ('how_smart',      'How Smart Am I?',  1700,   '{700,900,1100,1400}')
 on conflict (key) do update set title = excluded.title, max_score = excluded.max_score, medals = excluded.medals;
 
