@@ -271,7 +271,7 @@ footer a{color:var(--dim)}
   <section class="panel" id="stats" role="tabpanel" aria-labelledby="tab-stats" hidden>
     <h2 class="sec">🏆 My Stats</h2>
     <div class="who" id="who"></div>
-    <p class="sec-sub">Your best scores and medals in the Sprite Arcade and Sprite Classics. <a href="#boards" style="color:var(--gold);font-weight:800">Jump to leaderboards ↓</a></p>
+    <p class="sec-sub">Your best scores and medals in the Sprite Arcade. <a href="#boards" style="color:var(--gold);font-weight:800">Jump to leaderboards ↓</a></p>
     <div class="stats" id="statGrid"></div>
     <h2 class="sec" id="boards">📊 Leaderboards · this trimester</h2>
     <p class="sec-sub">Top scores from every class. Visitors (past students) have their own board. Your first quest win in each game also earns <b style="color:var(--gold)">+10 Verified XP</b>.</p>
@@ -364,9 +364,9 @@ const PARTNER = [
     medals:[[100,'🥉 1 win'],[500,'🥈 5 wins'],[1000,'🥇 10 wins'],[2000,'💎 20 wins']], goal:'Beat a classmate', winBy:'wins' }
 ];
 const GROUPS = [
+  { merged:true, color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },   // shown right under the Sprite Arcade posters, no heading of its own
   { name:'👥 Team Games', sub:'Big groups on their own devices. Team up against the germs or go red vs. blue.', color:'#FF3B5C', games: [['🦠', 'Germ Snipes', 'Multiplayer maze shooter (2–8 players) inspired by the \'80s classic Snipes. Co-op or red vs. blue teams!', 'germ_snipes.html']] },
   { name:'🤝 Partner Games', sub:'1 vs. 1 against a classmate on two devices. Wins count when you\'re both signed in.', color:'#38BFFF', games: PARTNER.map(g => [g.icon, g.title, g.desc, g.file]) },
-  { name:'⭐ Sprite Classics', sub:'Arcade favorites, rebuilt with your sprite. Earn medals!', color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },
 ];
 const CLASSROOM = [
   {icon:"📋",title:"Health Jeopardy",type:"Boss",realm:"Any Realm Boss Battle",desc:"5 health categories × 5 dollar values. Hidden Daily Doubles, 2–4 team scoring, Final Jeopardy with wagers.",features:["2–4 Teams","Daily Double","Final Jeopardy","25 Questions"],file:"game01_jeopardy.html"},
@@ -436,7 +436,7 @@ $('posters').innerHTML = SPRITE.map(g => {
 const cardHTML = (icon, title, desc, file, color, newTab) =>
   `<a class="card" href="${file}" style="--accent:${color};--tint:${color}22"${newTab ? ' target="_blank" rel="noopener"' : ''}>
     <span class="ic">${icon}</span><span><span class="t">${esc(title)}</span><span class="d" style="display:block">${esc(desc)}</span></span></a>`;
-$('groups').innerHTML = GROUPS.map(gr => `<h2 class="sec">${gr.name}</h2><p class="sec-sub">${gr.sub}</p>
+$('groups').innerHTML = GROUPS.map(gr => `${gr.merged ? '<div style="height:14px"></div>' : `<h2 class="sec">${gr.name}</h2><p class="sec-sub">${gr.sub}</p>`}
   <div class="grid">${gr.games.map(([i, t, d, f]) => cardHTML(i, t, d, f, gr.color)).join('')}</div>`).join('');
 
 // ── Classroom tab ──
