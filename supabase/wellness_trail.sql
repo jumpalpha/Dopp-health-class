@@ -1,5 +1,6 @@
 -- ============================================================
--- The Wellness Trail (trail.html). NOT YET APPLIED to the database (waiting on approval); apply as migration "wellness_trail".
+-- The Wellness Trail (trail.html). Applied as migrations wellness_trail_tables, wellness_trail_functions,
+-- wellness_trail_leave_remove_soft (leaving a convoy clears team_id; nothing is deleted).
 -- An Oregon Trail style journey through Realms 1-5 (chapters 1-16).
 --
 -- Rules the server enforces (so nobody can rush or grief):
@@ -51,7 +52,7 @@ alter table public.trail_teams enable row level security;
 create table if not exists public.trail_members (
   student_id uuid not null references public.students(id) on delete cascade,
   trimester  text not null,
-  team_id    uuid not null references public.trail_teams(id) on delete cascade,
+  team_id    uuid references public.trail_teams(id) on delete cascade,   -- null = left their convoy
   joined_at  timestamptz not null default now(),
   primary key (student_id, trimester)
 );
@@ -208,7 +209,7 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare t public.trail_teams; c text; tries int := 0; nm text;
 begin
   if not public._arcade_auth(p_student_id, p_pin_hash, p_trimester) then raise exception 'not signed in'; end if;
-  if exists (select 1 from public.trail_members where student_id = p_student_id and trimester = p_trimester) then raise exception 'Leave your current convoy first'; end if;
+  if exists (select 1 from public.trail_members where student_id = p_student_id and trimester = p_trimester and team_id is not null) then raise exception 'Leave your current convoy first'; end if;
   nm := left(btrim(regexp_replace(coalesce(p_name, ''), '[^A-Za-z0-9 ''!-]', '', 'g')), 20);
   if nm = '' then nm := 'Convoy'; end if;
   loop
@@ -218,7 +219,8 @@ begin
     exception when unique_violation then tries := tries + 1; if tries > 20 then raise exception 'Try again'; end if;
     end;
   end loop;
-  insert into public.trail_members (student_id, trimester, team_id) values (p_student_id, p_trimester, t.id);
+  insert into public.trail_members (student_id, trimester, team_id) values (p_student_id, p_trimester, t.id)
+  on conflict (student_id, trimester) do update set team_id = excluded.team_id, joined_at = now();
   return public._trail_team(p_student_id, p_trimester);
 end $$;
 
@@ -227,21 +229,20 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare t public.trail_teams;
 begin
   if not public._arcade_auth(p_student_id, p_pin_hash, p_trimester) then raise exception 'not signed in'; end if;
-  if exists (select 1 from public.trail_members where student_id = p_student_id and trimester = p_trimester) then raise exception 'Leave your current convoy first'; end if;
+  if exists (select 1 from public.trail_members where student_id = p_student_id and trimester = p_trimester and team_id is not null) then raise exception 'Leave your current convoy first'; end if;
   select * into t from public.trail_teams where trimester = p_trimester and code = upper(btrim(p_code)) for update;
   if not found then raise exception 'No convoy with that code'; end if;
   if (select count(*) from public.trail_members where team_id = t.id) >= 4 then raise exception 'That convoy is full (4 wagons)'; end if;
-  insert into public.trail_members (student_id, trimester, team_id) values (p_student_id, p_trimester, t.id);
+  insert into public.trail_members (student_id, trimester, team_id) values (p_student_id, p_trimester, t.id)
+  on conflict (student_id, trimester) do update set team_id = excluded.team_id, joined_at = now();
   return public._trail_team(p_student_id, p_trimester);
 end $$;
 
 create or replace function public.trail_team_leave(p_student_id uuid, p_pin_hash text, p_trimester text)
 returns boolean language plpgsql security definer set search_path = public as $$
-declare tid uuid;
 begin
   if not public._arcade_auth(p_student_id, p_pin_hash, p_trimester) then raise exception 'not signed in'; end if;
-  delete from public.trail_members where student_id = p_student_id and trimester = p_trimester returning team_id into tid;
-  delete from public.trail_teams t where t.id = tid and not exists (select 1 from public.trail_members m where m.team_id = t.id);
+  update public.trail_members set team_id = null where student_id = p_student_id and trimester = p_trimester;
   return true;
 end $$;
 
@@ -307,12 +308,10 @@ end $$;
 
 create or replace function public.trail_teacher_remove(p_teacher_pass text, p_student_id uuid, p_trimester text)
 returns boolean language plpgsql security definer set search_path = public as $$
-declare tid uuid;
 begin
   if not public._teacher_ok(p_teacher_pass) then raise exception 'Wrong teacher passphrase'; end if;
-  delete from public.trail_members where student_id = p_student_id and trimester = p_trimester returning team_id into tid;
-  delete from public.trail_teams t where t.id = tid and not exists (select 1 from public.trail_members m where m.team_id = t.id);
-  return tid is not null;
+  update public.trail_members set team_id = null where student_id = p_student_id and trimester = p_trimester and team_id is not null;
+  return found;
 end $$;
 
 revoke all on function public.trail_load(uuid, text, text) from public;

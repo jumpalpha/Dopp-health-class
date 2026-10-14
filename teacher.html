@@ -335,6 +335,16 @@ input, select, textarea { color: var(--text); }
       <div id="vis-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
     </div>
 
+    <div class="card" id="trail-card" style="border-color:rgba(56,191,255,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+        <div class="card-title" style="margin-bottom:0">🌄 Wellness Trail convoys</div>
+        <a href="trail.html" target="_blank" rel="noopener" style="font-size:13px;font-weight:800;color:#0a7a55">Open the Wellness Trail ▶</a>
+      </div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Student-made teams of up to 4 wagons. Each student keeps their own journey; removing someone only takes them out of the convoy (their journey and scores stay).</div>
+      <div id="trail-list" style="font-size:14px">Loading…</div>
+      <div id="trail-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
+    </div>
+
     <div class="card" id="term-card" style="border-color:rgba(255,215,0,0.45)">
       <div class="card-title" style="margin-bottom:4px">🗓 Trimester</div>
       <div id="term-now" style="font-size:14px;color:var(--dim);margin-bottom:10px">Loading…</div>
@@ -779,7 +789,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
-    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); pinInit(); }, 0);
+    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -908,6 +918,29 @@ async function visRemove(btn){
   visLoad();
 }
 
+// ── WELLNESS TRAIL CONVOYS ──
+let trailArmed = null;
+async function trailLoad(){
+  const box = document.getElementById('trail-list'); if (!box || !teacherPass()) return;
+  const { data, error } = await db.rpc('trail_teacher_teams', { p_teacher_pass: teacherPass(), p_trimester: TRIMESTER });
+  if (error){ box.textContent = /passphrase/i.test(error.message) ? 'Enter your teacher passphrase again to see convoys.' : 'Could not load convoys right now.'; return; }
+  const teams = (data || []).filter(t => (t.members || []).length);
+  if (!teams.length){ box.innerHTML = '<div style="color:var(--dim)">No convoys yet. Students make them on the Wellness Trail page.</div>'; return; }
+  box.innerHTML = teams.map(t => '<div style="padding:8px 0;border-top:1px solid var(--border)"><b>' + escapeHtml(t.name) + '</b> <span style="color:var(--dim);font-size:13px">· code ' + escapeHtml(t.code) + '</span>' +
+    t.members.map(m => '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0 5px 12px;flex-wrap:wrap"><span>' + escapeHtml(m.name) +
+      ' <span style="color:var(--dim);font-size:13px">' + escapeHtml(m.class || '') + ' · ' + (m.miles == null ? 'not traveling' : Number(m.miles) + ' mi') + (Number(m.finished) ? ' · finished ' + Number(m.finished) + '×' : '') + '</span></span>' +
+      '<button class="btn btn-sm trail-rm" data-id="' + escapeHtml(m.id) + '" data-name="' + escapeHtml(m.name) + '" style="color:var(--crimson);border:1px solid rgba(255,59,92,0.4);background:transparent">Remove from convoy</button></div>').join('') + '</div>').join('');
+  box.querySelectorAll('.trail-rm').forEach(b => b.onclick = () => trailRemove(b));
+}
+async function trailRemove(btn){
+  const id = btn.dataset.id, err = document.getElementById('trail-err'); err.textContent = '';
+  if (trailArmed !== id){ trailArmed = id; btn.textContent = 'Click again to remove ' + btn.dataset.name; setTimeout(() => { if (trailArmed === id){ trailArmed = null; btn.textContent = 'Remove from convoy'; } }, 4000); return; }
+  trailArmed = null; btn.disabled = true; btn.textContent = 'Removing…';
+  const { error } = await db.rpc('trail_teacher_remove', { p_teacher_pass: teacherPass(), p_student_id: id, p_trimester: TRIMESTER });
+  if (error){ err.textContent = error.message; btn.disabled = false; btn.textContent = 'Remove from convoy'; return; }
+  trailLoad();
+}
+
 // ── TRIMESTER SWITCH ──
 function termNext(id, prefix){
   const m = /^(\d{4})-T([1-3])$/.exec(id || ''); if (!m) return { id: '', label: '', prefix: '' };
@@ -971,7 +1004,7 @@ const TRIMESTER    = ((window.TERM && TERM.id) || '2026-T1');
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 (function(){ const sel = document.getElementById('wq-trimester'); if (!sel) return; if (![...sel.options].some(o => o.value === TRIMESTER)) sel.add(new Option(TRIMESTER, TRIMESTER), 0); sel.value = TRIMESTER; })();
-subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); }
+subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); trailLoad(); }
 const XP_PER_TASK  = 25;
 const XP_PER_DAY   = 5;   // per login day
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task

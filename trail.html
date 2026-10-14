@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Wellness Trail — Legend of Wellness</title>
+<meta name="description" content="An Oregon Trail style journey through Realms 1–5 of the Legend of Wellness. Lead your wagon 1,200 miles to Wellness Valley with your convoy or computer partners.">
+<link rel="canonical" href="https://doppsclass.com/trail.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--ink:#1A1030;--body:#FF6B6B;--mind:#9B8CE0;--social:#38BFFF;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.14);--dim:rgba(244,239,255,.72)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#0a0618}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed #0a0618;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+a{color:var(--gold)}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:760px;margin:0 auto;padding:10px 16px}
+.top a{font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:19px;color:var(--gold);text-shadow:0 2px 0 #000}
+main{max-width:760px;margin:0 auto;padding:4px 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+h2{font-family:Cinzel,serif;color:var(--gold);font-size:20px;margin-bottom:6px;text-shadow:0 2px 0 #000}
+h3{font-size:15px;font-weight:900;margin-bottom:8px}
+p{line-height:1.5}
+.dim{color:var(--dim);font-size:14px;line-height:1.5}
+.small{font-size:12.5px}
+label{display:block;font-size:13px;font-weight:800;margin:10px 0 5px;color:rgba(244,239,255,.85)}
+input,select{width:100%;padding:11px 12px;border-radius:12px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:800 16px Nunito,sans-serif}
+select option{color:#111}
+input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-size:22px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border:0;border-radius:14px;font:900 15px Nunito,sans-serif;cursor:pointer;color:#fff;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.22);touch-action:manipulation}
+.btn.gold{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#1a1000;border:0}
+.btn.green{background:var(--emerald);color:#04241a;border:0}
+.btn.block{display:flex;width:100%;margin-top:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+.err{color:#FF8FA3;font-weight:800;font-size:14px;min-height:18px;margin-top:6px}
+.ok{color:var(--emerald);font-weight:800}
+.hide{display:none!important}
+/* scene */
+.scene{position:relative;border-radius:18px;overflow:hidden;border:3px solid var(--ink);box-shadow:0 6px 0 rgba(0,0,0,.4);margin-bottom:10px;background:#000}
+.scene svg{display:block;width:100%;height:auto}
+.scene .tag{position:absolute;left:10px;top:8px;background:rgba(10,6,24,.72);padding:4px 10px;border-radius:10px;font-weight:900;font-size:13px}
+.scene .tag2{position:absolute;right:10px;top:8px;background:rgba(10,6,24,.72);padding:4px 10px;border-radius:10px;font-weight:900;font-size:13px}
+.wheel{transform-box:fill-box;transform-origin:center}
+.rolling .wheel{animation:spin .5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rolling .wagon{animation:bob .25s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-1.5px)}}
+/* progress */
+.prog{position:relative;height:38px;margin:4px 6px 14px}
+.prog .bar{position:absolute;left:0;right:0;top:17px;height:6px;border-radius:4px;background:rgba(255,255,255,.12)}
+.prog .fill{position:absolute;left:0;top:17px;height:6px;border-radius:4px;background:linear-gradient(90deg,var(--emerald),var(--gold))}
+.prog .lm{position:absolute;top:0;transform:translateX(-50%);font-size:14px;line-height:1;filter:grayscale(.7);opacity:.7}
+.prog .lm.past{filter:none;opacity:1}
+.prog .me{position:absolute;top:24px;transform:translateX(-50%);font-size:10px;font-weight:900;color:var(--gold);white-space:nowrap}
+.prog .me::before{content:'';position:absolute;left:50%;top:-10px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--gold);border:2px solid var(--ink)}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px 6px;text-align:center}
+.stat b{display:block;font-size:17px;font-weight:900}
+.stat span{font-size:11px;color:var(--dim);font-weight:800}
+.today{border-radius:12px;padding:8px 12px;font-weight:900;font-size:14px;margin-bottom:10px;background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.35)}
+.today.capped{background:rgba(255,215,0,.1);border-color:rgba(255,215,0,.4)}
+.tri{display:grid;gap:7px}
+.meter{display:grid;grid-template-columns:72px 1fr 34px;align-items:center;gap:8px;font-weight:900;font-size:13px}
+.meter .m{height:12px;border-radius:7px;background:rgba(255,255,255,.1);overflow:hidden}
+.meter .m i{display:block;height:100%;border-radius:7px;transition:width .4s}
+.party{display:grid;gap:6px}
+.trav{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:8px;padding:7px 10px;border-radius:12px;background:rgba(255,255,255,.04)}
+.trav .nm{font-weight:900;font-size:14px}.trav .st{font-size:12px;color:var(--dim);font-weight:800}
+.trav .hp{height:9px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden}.trav .hp i{display:block;height:100%;background:var(--emerald)}
+.trav.out{opacity:.45}.trav.sick .st,.trav.hurt .st{color:#FFB37A}
+.sup{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center}
+.sup div{background:rgba(255,255,255,.04);border-radius:10px;padding:7px 2px}
+.sup b{display:block;font-size:16px}.sup span{font-size:11px;color:var(--dim);font-weight:800}
+.acts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.acts .go{grid-column:1/-1;font-size:18px;padding:16px}
+.log{display:grid;gap:4px;font-size:13.5px;line-height:1.4}
+.log div{padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.04)}
+.log div:first-child{background:rgba(255,215,0,.08);font-weight:800}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+/* convoy */
+.mem{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);margin-bottom:6px}
+.mem .nm{font-weight:900}.mem .sub{grid-column:1/-1;font-size:12px;color:var(--dim);font-weight:800}
+.mem .pb{grid-column:1/-1;height:6px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden}.mem .pb i{display:block;height:100%;background:var(--sky)}
+.pill{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:900;background:rgba(255,255,255,.1)}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(5,3,14,.78);display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:12px}
+@media(min-width:640px){.modal{align-items:center}}
+.sheet{width:100%;max-width:560px;max-height:92vh;overflow:auto;background:linear-gradient(180deg,#2a1a58,#160d33);border:2px solid rgba(255,215,0,.35);border-radius:20px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.sheet .ch{display:inline-block;font-size:11px;font-weight:900;padding:3px 8px;border-radius:7px;background:rgba(255,215,0,.15);color:var(--gold);margin-bottom:6px}
+.sheet h2{font-size:21px}
+.sheet .txt{font-size:15.5px;line-height:1.55;margin:6px 0 12px}
+.choice{display:block;width:100%;text-align:left;padding:12px 14px;margin-top:8px;border-radius:14px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font:800 15px Nunito,sans-serif;line-height:1.4;cursor:pointer}
+.choice:hover{border-color:var(--gold)}
+.fb{margin-top:12px;padding:12px 14px;border-radius:14px;font-size:14.5px;line-height:1.5}
+.fb.good{background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.4)}
+.fb.bad{background:rgba(255,59,92,.12);border:1px solid rgba(255,59,92,.4)}
+.fx{margin-top:6px;font-weight:900;font-size:13px}
+.shop{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;margin:6px 0}
+.shop .q{min-width:26px;text-align:center;font-weight:900}
+.shop button{width:34px;height:34px;border-radius:10px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:900 18px Nunito,sans-serif;cursor:pointer}
+/* forage */
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.ft{aspect-ratio:1;border-radius:14px;background:rgba(127,176,105,.18);border:2px solid rgba(127,176,105,.4);display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;transition:transform .1s}
+.ft:active{transform:scale(.93)}
+.ft.got{background:rgba(0,229,160,.3)}.ft.bad{background:rgba(255,59,92,.35)}
+.timer{height:8px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden}.timer i{display:block;height:100%;background:var(--gold);transition:width .1s linear}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#123d30;border:1.5px solid var(--emerald);color:#eafff7;padding:10px 16px;border-radius:14px;font-weight:900;z-index:60;max-width:92vw;text-align:center}
+.big{font:900 30px Cinzel,serif;color:var(--gold);text-align:center;margin:6px 0;text-shadow:0 3px 0 #000}
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>🌄 The Wellness Trail</h1><span style="width:64px"></span></div>
+<main>
+
+<!-- START -->
+<section id="start">
+  <div class="card">
+    <h2>The Wellness Trail</h2>
+    <p class="dim">Lead your wagon 1,200 miles through Realms 1–5 to Wellness Valley. Keep your party's health triangle balanced: <b style="color:var(--body)">body</b>, <b style="color:var(--mind)">mind</b> and <b style="color:var(--social)">social</b>. Every choice on the trail comes from what we learn in class.</p>
+    <p class="dim small" style="margin-top:8px">⏳ Your wagon can travel up to <b>200 miles a day</b>, so the fastest anyone can finish is 6 days. When you finish, you can start a new journey and try for a better score.</p>
+    <div id="who" style="margin-top:10px"></div>
+  </div>
+  <div class="card hide" id="resumeCard">
+    <h3 id="resumeTitle">Your journey</h3>
+    <p class="dim" id="resumeInfo"></p>
+    <button class="btn gold block" id="resumeBtn">Continue the trail ▶</button>
+  </div>
+  <div class="card" id="setupCard">
+    <h3 id="setupTitle">Start a new journey</h3>
+    <label>Your three travel companions</label>
+    <div class="row"><input id="c1" maxlength="12"><input id="c2" maxlength="12"><input id="c3" maxlength="12"></div>
+    <label for="bots">Computer partners (extra wagons that travel with you)</label>
+    <select id="bots"><option value="0">None</option><option value="1" selected>1 partner wagon</option><option value="2">2 partner wagons</option><option value="3">3 partner wagons</option></select>
+    <p class="dim small" style="margin-top:6px">Want classmates in your convoy instead? Set up a convoy below. You can have both.</p>
+    <button class="btn gold block" id="newBtn">🐂 Hit the trail</button>
+    <div class="err" id="startErr"></div>
+  </div>
+  <div class="card" id="convoyStart"></div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="hide">
+  <div class="scene" id="scene"><div class="tag" id="realmTag"></div><div class="tag2" id="dayTag"></div><div id="sceneSvg"></div></div>
+  <div class="prog" id="prog"></div>
+  <div class="today" id="today"></div>
+  <div class="stats">
+    <div class="stat"><b id="sMiles">0</b><span>miles of 1,200</span></div>
+    <div class="stat"><b id="sNext">—</b><span id="sNextName">next stop</span></div>
+    <div class="stat"><b id="sRight">0</b><span>right answers</span></div>
+    <div class="stat"><b id="sScore">0</b><span>score so far</span></div>
+  </div>
+  <div class="grid2">
+    <div>
+      <div class="card"><h3>Health triangle</h3><div class="tri" id="tri"></div></div>
+      <div class="card"><h3>Your party</h3><div class="party" id="party"></div></div>
+    </div>
+    <div>
+      <div class="card"><h3>Supplies</h3><div class="sup" id="sup"></div>
+        <div class="row" style="margin-top:10px">
+          <div><label for="pace" style="margin-top:0">Pace</label><select id="pace"></select></div>
+          <div><label for="rations" style="margin-top:0">Meals</label><select id="rations"></select></div>
+        </div>
+        <p class="dim small" id="planNote" style="margin-top:6px"></p>
+      </div>
+      <div class="card"><div class="acts">
+        <button class="btn gold go" id="goBtn">🐂 Travel on</button>
+        <button class="btn" id="restBtn">⛺ Rest a day</button>
+        <button class="btn" id="fireBtn">🔥 Campfire talk</button>
+        <button class="btn" id="forageBtn">🫐 Forage</button>
+        <button class="btn" id="medBtn">💊 Use medicine</button>
+      </div><div class="err" id="gameErr"></div></div>
+    </div>
+  </div>
+  <div class="card"><h3>Trail journal</h3><div class="log" id="log"></div></div>
+  <div class="card" id="convoyGame"></div>
+  <div style="text-align:center;margin-top:6px"><button class="btn" id="quitBtn" style="font-size:13px;padding:8px 12px">Start over with a new journey</button></div>
+</section>
+</main>
+
+<div class="modal hide" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script src="pet_vocab.js"></script>
+<script src="trail_data.js"></script>
+<script>
+(() => {
+const URL = 'https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRI = (window.TERM && TERM.id) || '2026-T1';
+const TOTAL = TRAIL_TOTAL, CAP = TRAIL_DAY_CAP, LMS = TRAIL_LANDMARKS, PACE = TRAIL_PACE, RAT = TRAIL_RATIONS;
+const $ = id => document.getElementById(id);
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const store = { get: (k, s) => { try { return (s ? sessionStorage : localStorage).getItem(k); } catch (e) { return null; } },
+                set: (k, v, s) => { try { (s ? sessionStorage : localStorage).setItem(k, v); } catch (e) {} },
+                del: (k, s) => { try { (s ? sessionStorage : localStorage).removeItem(k); } catch (e) {} } };
+async function rpc(name, args) {
+  const r = await fetch(URL + name, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error((j && j.message) || 'Connection problem. Try again.');
+  return j;
+}
+const ME = (() => { const id = store.get('qSID_' + TRI), pin = store.get('qPIN_' + TRI, true); return id && pin ? { id, pin } : null; })();
+const auth = extra => Object.assign({ p_student_id: ME.id, p_pin_hash: ME.pin, p_trimester: TRI }, extra || {});
+const denverDay = () => { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver' }).format(new Date()); } catch (e) { return new Date().toISOString().slice(0, 10); } };
+
+// ---------- state ----------
+let S = null, RUN = null, LEFT = CAP, TEAM = null, MARKERS = [], BUSY = false, INFO = {};
+const LOCAL = !ME;
+function localDaily() { let d = {}; try { d = JSON.parse(store.get('trail_local_daily') || '{}'); } catch (e) {} if (d.day !== denverDay()) d = { day: denverDay(), miles: 0 }; return d; }
+function localLeft() { return CAP - localDaily().miles; }
+
+function newState(names, nBots) {
+  const party = [{ n: 'You', hp: 100, st: 'ok', cond: '' }].concat(names.map(n => ({ n, hp: 100, st: 'ok', cond: '' })));
+  const pool = TRAIL_BOT_NAMES.slice().sort(() => Math.random() - .5);
+  return { v: 1, day: 1, miles: 0, pace: 'steady', rations: 'balanced',
+    res: { food: 300, water: 14, meds: 2, parts: 1, coins: 60 },
+    tri: { body: 80, mind: 80, social: 75 },
+    party, bots: pool.slice(0, nBots).map(n => ({ n, hp: 100, food: 140, sick: false, out: false })),
+    right: 0, asked: 0, seen: [], log: [], trials: {}, lmDone: [0], forageDay: -9, helped: 0, done: false, over: false };
+}
+const alive = () => S.party.filter(p => p.st !== 'out');
+const realmAt = mi => TRAIL_REALMS[Math.min(4, Math.floor(Math.min(mi, TOTAL - 1) / 240))];
+const nextLm = () => LMS.find(l => l.mi > S.miles) || LMS[LMS.length - 1];
+function log(t) { S.log.unshift(t); S.log = S.log.slice(0, 40); }
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3500); }
+
+function score() {
+  const a = alive(), hpAvg = a.length ? a.reduce((s, p) => s + p.hp, 0) / a.length : 0;
+  const triAvg = (S.tri.body + S.tri.mind + S.tri.social) / 3;
+  const trials = Object.values(S.trials).reduce((s, t) => s + t.c, 0);
+  const bots = S.bots.filter(b => !b.out).length;
+  let sc = a.length * 300 + hpAvg * 3 + triAvg * 4 + Math.min(S.right * 15, 600) + trials * 10 + bots * 100
+         + Math.min(Math.floor(S.res.food / 4) + S.res.coins, 400) + Math.min(S.helped * 20, 200);
+  if (!S.done) sc = sc * (S.miles / TOTAL);
+  return clamp(Math.round(sc), 0, 5000);
+}
+
+// ---------- saving ----------
+async function quickSave() {   // a save that isn't part of a trail day: block other actions until it's back
+  if (BUSY) return; BUSY = true; render();
+  try { await save(); } catch (e) { $('gameErr').textContent = 'Couldn\'t save: ' + e.message; }
+  BUSY = false; render();
+}
+async function save(status) {
+  if (LOCAL) {
+    store.set('trail_local', JSON.stringify(S));
+    return { status };
+  }
+  const r = await rpc('trail_save', auth({ p_run_id: RUN, p_state: S, p_status: status || 'active', p_score: status === 'done' ? score() : null }));
+  const keepMiles = S.miles;
+  S = r.state; LEFT = r.left_today; INFO.run = { id: RUN, state: S };
+  if (r.clamped && r.miles < keepMiles) log('⛺ The trail is closed for today. Your wagon stopped at mile ' + r.miles + '.');
+  (r.gifts || []).forEach(g => { const t = '📦 ' + g.from.split(' ')[0] + ' sent you ' + g.qty + ' ' + itemName(g.item, g.qty) + '!'; log(t); toast(t); });
+  return r;
+}
+const itemName = (k, q) => ({ food: 'lb of food', water: q === 1 ? 'day of water' : 'days of water', meds: q === 1 ? 'medicine kit' : 'medicine kits', coins: 'coins', parts: 'spare parts' }[k] || k);
+
+// ---------- the trail day ----------
+function applyFx(fx, why) {
+  const out = [];
+  fx = fx || {};
+  ['body', 'mind', 'social'].forEach(k => { if (fx[k]) { S.tri[k] = clamp(S.tri[k] + fx[k], 0, 100); out.push((fx[k] > 0 ? '+' : '') + fx[k] + ' ' + k); } });
+  ['food', 'water', 'meds', 'parts', 'coins'].forEach(k => { if (fx[k]) { S.res[k] = Math.max(0, S.res[k] + fx[k]); out.push((fx[k] > 0 ? '+' : '') + fx[k] + ' ' + (k === 'food' ? 'lb food' : k)); } });
+  if (fx.hp) { const t = pick(alive()); if (t) { t.hp = clamp(t.hp + fx.hp, 0, 100); out.push((fx.hp > 0 ? '+' : '') + fx.hp + ' health for ' + t.n); } }
+  if (fx.hurt) { const t = pick(alive().filter(p => p.st === 'ok')) || pick(alive()); if (t) { t.st = 'hurt'; t.cond = why && why.hurt || pick(['a sprained ankle', 'a pulled muscle', 'a bad fall']); t.hp = clamp(t.hp - 10, 0, 100); out.push(t.n + ' has ' + t.cond); } }
+  if (fx.sick) { const t = pick(alive().filter(p => p.st === 'ok')) || pick(alive()); if (t) { t.st = 'sick'; t.cond = why && why.sick || pick(['a bad cold', 'a fever', 'a stomach bug']); t.hp = clamp(t.hp - 8, 0, 100); out.push(t.n + ' has ' + t.cond); } }
+  if (fx.heal) { const t = alive().find(p => p.st !== 'ok'); if (t) { out.push(t.n + ' is feeling better'); t.st = 'ok'; t.cond = ''; t.hp = clamp(t.hp + 10, 0, 100); } }
+  if (fx.day) for (let i = 0; i < fx.day; i++) passDay({}), out.push('lost a day');
+  return out;
+}
+const CAUSE = { 'x-water': { sick: 'dysentery' }, 'r5-dysentery': { sick: 'dysentery' }, 'r4-stew': { sick: 'food poisoning' }, 'r1-advocacy': { sick: 'a stomach bug' },
+  'x-hands': { sick: 'a stomach bug' }, 'x-cut': { sick: 'an infected cut' }, 'x-lightning': { hurt: 'a lightning-scare fall' }, 'r4-warmup': { hurt: 'a pulled muscle' },
+  'r5-ankle': { hurt: 'a sprained ankle' }, 'r3-race': { hurt: 'a wagon-crash bruise' } };
+const TIP_FOR = c => /dysentery|water/.test(c) ? 0 : /food poison/.test(c) ? 13 : /stomach/.test(c) ? 1 : /ankle|muscle|fall|bruise|crash/.test(c) ? 8 : /hunger/.test(c) ? 3 : /thirst/.test(c) ? 10 : /exhaust/.test(c) ? 11 : /cut/.test(c) ? 27 : 39;
+
+function passDay(o) {
+  o = o || {};
+  S.day++;
+  const a = alive(), n = a.length, r = RAT[S.rations], p = PACE[S.pace];
+  let need = r.food * n, ate = true;
+  if (S.res.food >= need) S.res.food -= need; else { S.res.food = 0; ate = false; }
+  S.tri.body += (ate ? r.body : -5); S.tri.mind += (ate ? r.mind : -3);
+  if (S.res.water >= 1) S.res.water -= 1; else { S.res.water = 0; S.tri.body -= 6; if (!o.quiet) log('🥵 Out of water. Everyone is getting dehydrated.'); }
+  if (!ate && !o.quiet) log('🍽️ Not enough food. The party is going hungry.');
+  if (o.moved) { S.tri.body += p.body; S.tri.mind += p.mind; if (S.pace === 'steady' && S.rations === 'balanced') S.tri.body += 1; }
+  if (o.rest) { S.tri.body += 6; S.tri.mind += 4; }
+  if (o.fire) { S.tri.social += 8; S.tri.mind += 3; }
+  const partners = S.bots.filter(b => !b.out).length + (TEAM ? TEAM.members.length - 1 : 0);
+  if (!partners && !o.fire) S.tri.social -= 1;
+  if (S.tri.social < 25) S.tri.mind -= 1;
+  ['body', 'mind', 'social'].forEach(k => S.tri[k] = clamp(S.tri[k], 0, 100));
+  a.forEach(t => {
+    if (t.st === 'sick' || t.st === 'hurt') {
+      t.hp -= 4;
+      if (Math.random() < (o.rest ? 0.35 : 0.12)) { t.st = 'ok'; t.cond = ''; log('🙂 ' + t.n + ' recovered.'); }
+    } else if (S.tri.body > 60) t.hp += 2;
+    if (S.tri.body < 30) t.hp -= 3;
+    if (S.tri.mind < 20 && Math.random() < .15) t.hp -= 3;
+    t.hp = clamp(t.hp, 0, 100);
+    if (t.hp <= 0) bench(t, t.cond || (S.res.food === 0 ? 'hunger' : S.res.water === 0 ? 'thirst' : 'exhaustion'));
+  });
+  // computer partners
+  S.bots.forEach(b => {
+    if (b.out) return;
+    b.food = Math.max(0, b.food - 3);
+    if (b.food === 0) b.hp -= 6;
+    if (!b.sick && Math.random() < .03) { b.sick = true; log('🤒 ' + b.n + '\'s party came down with a fever.'); }
+    if (b.sick) { b.hp -= 4; if (Math.random() < .12) { b.sick = false; log('🙂 ' + b.n + '\'s party is feeling better.'); } }
+    if (b.hp > 0 && b.food > 0 && !b.sick) b.hp = Math.min(100, b.hp + 1);
+    if (b.hp <= 0) { b.out = true; log('🛞 ' + b.n + '\'s wagon had to turn back home.'); }
+  });
+  if (!alive().length) S.over = true;
+  // gentle warnings
+  const perDay = RAT[S.rations].food * alive().length;
+  if (perDay && S.res.food > 0 && S.res.food < perDay * 5 && !(S.warnFood > S.day - 4)) { S.warnFood = S.day; log('⚠️ Food is running low (about ' + Math.floor(S.res.food / perDay) + ' days left). Forage, or buy food at the next fort.'); }
+  if (S.res.water > 0 && S.res.water <= 3 && !(S.warnWater > S.day - 3)) { S.warnWater = S.day; log('⚠️ Only ' + S.res.water + ' days of water left. Next refill: ' + nextWater() + '.'); }
+}
+function nextWater() { const w = LMS.find(l => l.mi > S.miles && /spring|forage|steep|river|fort|finish/.test(l.kind)); return w ? w.name + ' (' + (w.mi - S.miles) + ' mi)' : 'Wellness Valley'; }
+function bench(t, cause) {
+  if (t.st === 'out') return;
+  t.st = 'out'; t.hp = 0;
+  const msg = (t.n === 'You' ? 'You have' : t.n + ' has') + ' been benched' + (cause ? ' with ' + cause : '') + '.';
+  log('🪦 ' + msg); toast(msg);
+  if (!LOCAL) rpc('trail_marker', auth({ p_run_id: RUN, p_tip: TIP_FOR(cause || '') })).catch(() => {});
+}
+
+// ---------- actions ----------
+function canMove() { return (LOCAL ? localLeft() : LEFT) > 0; }
+async function act(kind) {
+  if (BUSY || S.done || S.over) return;
+  $('gameErr').textContent = '';
+  if (!canMove()) { $('gameErr').textContent = 'Your party has made camp for today. The trail opens again at midnight.'; return; }
+  BUSY = true; render();
+  try {
+    if (kind === 'travel') await travel();
+    else if (kind === 'rest') { passDay({ rest: true }); log('⛺ Day ' + S.day + ': The party rested and recovered.'); }
+    else if (kind === 'fire') { passDay({ fire: true }); log('🔥 Day ' + S.day + ': A long talk around the campfire. Everyone feels closer.'); }
+    else if (kind === 'forage') { await forage(false); passDay({}); }
+    await afterDay();
+  } catch (e) { $('gameErr').textContent = e.message; }
+  BUSY = false; if (S) render();
+}
+async function travel() {
+  const p = PACE[S.pace], nx = nextLm(), before = S.miles;
+  let left = LOCAL ? localLeft() : LEFT;
+  let gain = Math.min(p.mi, left, nx.mi - S.miles);
+  if (S.tri.body < 25) gain = Math.max(1, Math.round(gain * .7));
+  S.miles += gain;
+  if (LOCAL) { const d = localDaily(); d.miles += gain; store.set('trail_local_daily', JSON.stringify(d)); } else LEFT -= gain;
+  passDay({ moved: true });
+  animate();
+  log('🐂 Day ' + S.day + ': Traveled ' + gain + ' miles.' + (S.tri.body < 25 ? ' (The party is too worn down to go fast.)' : ''));
+  // markers left by classmates
+  const mk = MARKERS.find(m => m.miles > before && m.miles <= S.miles);
+  if (mk) { const t = '🪧 A trail marker from ' + mk.who + ': "' + TRAIL_TIPS[mk.tip] + '"'; log(t); S.tri.mind = clamp(S.tri.mind + 2, 0, 100); }
+  if (S.over) return;
+  if (S.miles >= nx.mi && S.lmDone.indexOf(nx.mi) < 0) { await landmark(nx); return; }
+  // events
+  const roll = Math.random();
+  const needy = S.bots.find(b => !b.out && (b.food < 25 || b.sick) && !(b.askedDay > S.day - 6));
+  if (needy && roll < .5) { await botEvent(needy); return; }
+  if (roll < .36) await quizEvent();
+  else if (roll < .5) await luckEvent();
+}
+async function afterDay() {
+  if (!S) return;
+  if (S.over && !S.done) { await save('over').catch(() => {}); overScreen(); return; }
+  await save().catch(e => { $('gameErr').textContent = 'Couldn\'t save: ' + e.message; });
+}
+
+// ---------- events ----------
+function modal(html) { $('sheet').innerHTML = html; $('modal').classList.remove('hide'); $('sheet').scrollTop = 0; }
+function closeModal() { $('modal').classList.add('hide'); }
+function waitClick(sel) { return new Promise(res => $('sheet').querySelectorAll(sel).forEach(b => b.onclick = () => res(b))); }
+const fxLine = arr => arr.length ? '<div class="fx">' + esc(arr.join(' · ')) + '</div>' : '';
+
+async function quizEvent() {
+  const realm = realmAt(S.miles).n;
+  let pool = TRAIL_EVENTS.filter(e => e.realm === realm && S.seen.indexOf(e.id) < 0);
+  const extra = TRAIL_EVENTS.filter(e => e.realm === 0 && S.seen.indexOf(e.id) < 0);
+  if (extra.length && (Math.random() < .15 || !pool.length)) pool = extra;
+  if (!pool.length) pool = TRAIL_EVENTS.filter(e => e.realm === realm || e.realm === 0);
+  const ev = pick(pool);
+  S.seen.push(ev.id); S.seen = S.seen.slice(-60);
+  const order = ev.choices.map((c, i) => i).sort(() => Math.random() - .5);
+  modal('<span class="ch">📖 Chapter ' + ev.ch + '</span><h2>' + esc(ev.title) + '</h2><p class="txt">' + esc(ev.text) + '</p>' +
+    order.map(i => '<button class="choice" data-i="' + i + '">' + esc(ev.choices[i][0]) + '</button>').join('') + '<div id="evOut"></div>');
+  const b = await waitClick('.choice');
+  const [label, good, fx, fb] = ev.choices[+b.dataset.i];
+  S.asked++;
+  const res = applyFx(Object.assign({}, fx, good ? { coins: (fx.coins || 0) + 5 } : {}), CAUSE[ev.id]);
+  if (good) S.right++;
+  $('sheet').querySelectorAll('.choice').forEach(x => { x.disabled = true; if (x !== b) x.style.opacity = .4; });
+  $('evOut').innerHTML = '<div class="fb ' + (good ? 'good' : 'bad') + '"><b>' + (good ? '✅ Good call!' : '❌ Not the best choice.') + '</b> ' + esc(fb) + fxLine(res) + '</div><button class="btn gold block" id="evOk">Continue</button>';
+  log((good ? '✅ ' : '❌ ') + ev.title + (res.length ? ': ' + res.join(', ') : ''));
+  await waitClick('#evOk'); closeModal();
+}
+async function luckEvent() {
+  const l = pick(TRAIL_LUCK);
+  if (l.parts) {
+    if (S.res.parts > 0) { S.res.parts--; log('🔧 A wagon wheel cracked. You used a spare part to fix it.'); }
+    else { applyFx({ day: 2 }); log('🔧 A wheel cracked and you had no spare part. Repairs took 2 days.'); toast('No spare part! Repairs took 2 days.'); }
+    return;
+  }
+  const res = applyFx(l.fx);
+  log('🎲 ' + l.text);
+}
+async function botEvent(b) {
+  b.askedDay = S.day;
+  const hungry = b.food < 25;
+  modal('<span class="ch">🤝 Convoy</span><h2>' + esc(b.n) + '\'s wagon needs help</h2><p class="txt">' + (hungry
+    ? esc(b.n) + '\'s party is almost out of food. They ask if you can share 20 lb.'
+    : esc(b.n) + '\'s party is sick with a fever. They ask if you can spare a medicine kit.') + '</p>' +
+    '<button class="choice" data-y="1">' + (hungry ? 'Share 20 lb of food' : 'Give a medicine kit') + '</button><button class="choice" data-y="0">Sorry, we can\'t spare it</button><div id="evOut"></div>');
+  const c = await waitClick('.choice'), yes = c.dataset.y === '1';
+  let txt;
+  if (yes && hungry && S.res.food >= 20) { S.res.food -= 20; b.food += 20; S.tri.social = clamp(S.tri.social + 8, 0, 100); S.helped++; txt = 'You shared food. ' + b.n + '\'s party is grateful, and your convoy feels stronger. (+8 social)'; }
+  else if (yes && !hungry && S.res.meds > 0) { S.res.meds--; b.sick = false; b.hp = Math.min(100, b.hp + 15); S.tri.social = clamp(S.tri.social + 8, 0, 100); S.helped++; txt = 'You gave medicine. ' + b.n + '\'s party is recovering. (+8 social)'; }
+  else if (yes) txt = 'You wanted to help, but you don\'t have enough to spare.';
+  else { S.tri.social = clamp(S.tri.social - 2, 0, 100); txt = b.n + ' understands, but the convoy feels a little less close. (-2 social)'; }
+  log('🤝 ' + txt);
+  $('sheet').querySelectorAll('.choice').forEach(x => x.disabled = true);
+  $('evOut').innerHTML = '<div class="fb ' + (yes ? 'good' : 'bad') + '">' + esc(txt) + '</div><button class="btn gold block" id="evOk">Continue</button>';
+  await waitClick('#evOk'); closeModal();
+}
+
+// ---------- landmarks ----------
+async function landmark(l) {
+  S.lmDone.push(l.mi);
+  log(l.icon + ' Arrived at ' + l.name + '.');
+  const head = '<span class="ch">📍 Mile ' + l.mi + '</span><h2>' + l.icon + ' ' + esc(l.name) + '</h2><p class="txt">' + esc(l.text) + '</p>';
+  if (l.kind === 'river') return river(l, head);
+  if (l.kind === 'fort') { S.bots.forEach(b => { if (!b.out) b.food += 80; }); S.res.water = Math.max(S.res.water, 20); log('💧 Filled your water barrels at the fort\'s well (20 days).'); await trial(l.realm, head); await shop(l); refreshMarkers(); return; }
+  if (l.kind === 'finish') { await trial(5, head); await finish(); return; }
+  let note = '';
+  if (l.kind === 'spring' || l.kind === 'forage' || l.kind === 'steep') { S.res.water = Math.max(S.res.water, 20); note = 'You refilled your water barrels (20 days). '; }
+  if (l.kind === 'sight') { S.tri.mind = clamp(S.tri.mind + 4, 0, 100); note = 'The view lifts everyone\'s spirits (+4 mind). '; }
+  if (l.kind === 'steep') { if (S.tri.body < 55) { applyFx({ hp: -12 }); note += 'The climb was brutal for a tired party. '; } else note += 'Your strong party powers up the climb. '; }
+  modal(head + '<div class="fb good">' + esc(note) + '</div>' + (l.kind === 'forage' ? '<button class="btn green block" id="lmF">🫐 Forage the orchard (free!)</button>' : '') + '<button class="btn gold block" id="evOk">Continue</button>');
+  const b = await waitClick('#evOk, #lmF');
+  if (b.id === 'lmF') await forage(true); else closeModal();
+}
+async function river(l, head) {
+  const depth = (1.5 + Math.random() * 4.5).toFixed(1);
+  let d = +depth;
+  for (;;) {
+    modal(head + '<p class="txt">The river is <b>' + d.toFixed(1) + ' feet deep</b> where the trail crosses.</p>' +
+      '<button class="choice" data-c="ford">🚶 Ford it: walk the wagon across</button>' +
+      '<button class="choice" data-c="float">🛶 Seal the wagon and float it across</button>' +
+      '<button class="choice" data-c="ferry"' + (S.res.coins < 15 ? ' disabled' : '') + '>⛴️ Pay the ferry (15 coins)</button>' +
+      '<button class="choice" data-c="wait">⏳ Wait a day for the water to drop</button>' +
+      '<p class="dim small" style="margin-top:10px">Safety (Ch 26): never wade through moving water deeper than your knees.</p><div id="evOut"></div>');
+    const c = (await waitClick('.choice')).dataset.c;
+    let txt, good = true;
+    if (c === 'wait') { passDay({}); d = Math.max(1.2, d - (0.5 + Math.random())); log('⏳ Waited a day at ' + l.name + '.'); continue; }
+    if (c === 'ferry') { S.res.coins -= 15; txt = 'The ferry carries you safely across.'; }
+    else if (c === 'ford') {
+      if (d <= 2.5) txt = 'The water was shallow. You crossed safely.';
+      else { good = false; const r = applyFx({ food: -25, hurt: 1 }, { hurt: 'a slip in the river' }); txt = 'Too deep! The current knocked the wagon sideways. ' + r.join(', ') + '.'; }
+    } else {
+      if (d < 5 || Math.random() < .5) txt = 'The sealed wagon floated across. Nice work.';
+      else { good = false; const r = applyFx({ food: -15, water: -5 }); txt = 'The wagon tipped and you lost supplies. ' + r.join(', ') + '.'; }
+    }
+    log('🌊 ' + l.name + ': ' + txt);
+    $('sheet').querySelectorAll('.choice').forEach(x => x.disabled = true);
+    $('evOut').innerHTML = '<div class="fb ' + (good ? 'good' : 'bad') + '">' + esc(txt) + '</div>' +
+      '<p class="txt" style="margin-top:12px">Fill your water barrels from the river?</p>' +
+      '<button class="choice" data-w="boil">🔥 Yes, boil or filter it first</button><button class="choice" data-w="raw">🪣 Yes, as it is. It looks clean.</button><div id="evOut2"></div>';
+    const w = (await waitClick('[data-w]')).dataset.w;
+    S.res.water = Math.max(S.res.water, 20);
+    let t2;
+    if (w === 'boil') { S.right++; S.asked++; S.res.coins += 5; t2 = 'Smart. Boiling or filtering kills germs that cause illnesses like dysentery (Ch 23, 28). Barrels full. (+5 coins)'; }
+    else { S.asked++; if (Math.random() < .5) { applyFx({ sick: 1 }, { sick: 'dysentery' }); t2 = 'Clear water can still carry germs. Someone came down with dysentery (Ch 15, 23).'; } else t2 = 'You got lucky this time. Clear-looking water can still carry germs (Ch 23).'; }
+    log('💧 ' + t2);
+    $('sheet').querySelectorAll('[data-w]').forEach(x => x.disabled = true);
+    $('evOut2').innerHTML = '<div class="fb ' + (w === 'boil' ? 'good' : 'bad') + '">' + esc(t2) + '</div><button class="btn gold block" id="evOk">Continue</button>';
+    await waitClick('#evOk'); closeModal(); return;
+  }
+}
+async function trial(realmN, head) {
+  if (S.trials[realmN]) return;
+  const R = TRAIL_REALMS[realmN - 1], pool = [];
+  R.chs.forEach(c => ((window.PET_VOCAB || {})[c] || { terms: [] }).terms.forEach(t => pool.push({ c, term: t[0], def: t[1] })));
+  if (pool.length < 4) { S.trials[realmN] = { c: 0, n: 0 }; return; }
+  const qs = pool.slice().sort(() => Math.random() - .5).slice(0, 4);
+  let right = 0;
+  for (let i = 0; i < qs.length; i++) {
+    const q = qs[i], opts = [q].concat(pool.filter(p => p.term !== q.term).sort(() => Math.random() - .5).slice(0, 3)).sort(() => Math.random() - .5);
+    modal((i === 0 ? head : '') + '<span class="ch">⚔️ Realm Trial · ' + esc(R.name) + ' · ' + (i + 1) + ' of 4</span><h2>Which term matches?</h2><p class="txt">"' + esc(q.def) + '"</p>' +
+      opts.map(o => '<button class="choice" data-t="' + esc(o.term) + '">' + esc(o.term) + '</button>').join('') + '<div id="evOut"></div>');
+    const b = await waitClick('.choice'), ok = b.dataset.t === q.term;
+    if (ok) { right++; S.res.coins += 10; }
+    $('sheet').querySelectorAll('.choice').forEach(x => { x.disabled = true; if (x.dataset.t === q.term) x.style.borderColor = 'var(--emerald)'; else if (x === b) x.style.borderColor = 'var(--crimson)'; });
+    $('evOut').innerHTML = '<div class="fb ' + (ok ? 'good' : 'bad') + '">' + (ok ? '✅ Correct! +10 coins.' : '❌ The answer is <b>' + esc(q.term) + '</b> (Ch ' + q.c + ').') + '</div><button class="btn gold block" id="evOk">' + (i < 3 ? 'Next' : 'Finish trial') + '</button>';
+    await waitClick('#evOk');
+  }
+  S.trials[realmN] = { c: right, n: 4 };
+  if (right === 4) S.tri.mind = clamp(S.tri.mind + 5, 0, 100);
+  log('⚔️ Realm Trial (' + R.name + '): ' + right + ' of 4 correct, +' + right * 10 + ' coins.');
+  closeModal();
+}
+async function shop(l) {
+  const cart = { food: 0, water: 0, meds: 0, parts: 0 };
+  const cost = () => Object.keys(cart).reduce((s, k) => s + cart[k] * TRAIL_PRICES[k][1], 0);
+  const draw = () => {
+    modal('<span class="ch">🏪 Trading post · ' + esc(l.name) + '</span><h2>Stock up</h2><p class="dim">You have <b>' + S.res.coins + '</b> coins. Cart: <b>' + cost() + '</b> coins.</p>' +
+      Object.keys(cart).map(k => { const [q, p, n] = TRAIL_PRICES[k]; return '<div class="shop"><div><b>' + q + ' ' + n + '</b><div class="dim small">' + p + ' coins · you have ' + S.res[k] + '</div></div><button data-m="' + k + '">−</button><div class="q">' + cart[k] + '</div><button data-p="' + k + '">+</button></div>'; }).join('') +
+      '<button class="btn gold block" id="buy">' + (cost() ? 'Buy for ' + cost() + ' coins' : 'Leave the trading post') + '</button>');
+    $('sheet').querySelectorAll('[data-p]').forEach(b => b.onclick = () => { const k = b.dataset.p; if (cost() + TRAIL_PRICES[k][1] <= S.res.coins) { cart[k]++; draw(); } });
+    $('sheet').querySelectorAll('[data-m]').forEach(b => b.onclick = () => { const k = b.dataset.m; if (cart[k]) { cart[k]--; draw(); } });
+  };
+  draw();
+  let mo;
+  await new Promise(res => { const tick = () => { const b = $('buy'); if (b) b.onclick = res; }; tick(); mo = new MutationObserver(tick); mo.observe($('sheet'), { childList: true }); });
+  mo.disconnect();
+  if (cost()) { S.res.coins -= cost(); Object.keys(cart).forEach(k => S.res[k] += cart[k] * TRAIL_PRICES[k][0]); log('🏪 Bought supplies at ' + l.name + '.'); }
+  closeModal();
+}
+async function forage(free) {
+  if (!free && S.day - S.forageDay < 3) { throw new Error('You foraged recently. The bushes nearby are picked clean. Try again in a few days.'); }
+  if (!free) S.forageDay = S.day;
+  const good = ['🫐', '🍎', '🥬', '🌰', '🥕', '🍐'], bad = ['🍄'];
+  let got = 0, oops = 0, t = 12, live = true;
+  modal('<span class="ch">🫐 Foraging · Ch 10</span><h2>Gather healthy food!</h2><p class="dim">Tap fruits, nuts and greens. <b>Skip the wild mushrooms 🍄</b>: never eat a mushroom unless an expert has identified it.</p><div class="timer"><i id="ft" style="width:100%"></i></div><div class="fgrid" id="fg"></div><p class="big" id="fs">0 lb</p>');
+  const tiles = [];
+  for (let i = 0; i < 16; i++) { const d = document.createElement('div'); d.className = 'ft'; d.onclick = () => tap(i); $('fg').appendChild(d); tiles.push({ el: d, v: '' }); }
+  function fill() { tiles.forEach(x => { if (!x.v && Math.random() < .35) { x.v = Math.random() < .22 ? pick(bad) : pick(good); x.el.textContent = x.v; x.el.className = 'ft'; x.ttl = 3 + rnd(4); } else if (x.v && --x.ttl <= 0) { x.v = ''; x.el.textContent = ''; } }); }
+  function tap(i) { const x = tiles[i]; if (!live || !x.v) return; if (bad.includes(x.v)) { oops++; x.el.className = 'ft bad'; } else { got += 2; x.el.className = 'ft got'; } x.v = ''; setTimeout(() => { x.el.textContent = ''; x.el.className = 'ft'; }, 180); $('fs').textContent = got + ' lb'; }
+  fill();
+  await new Promise(res => { const iv = setInterval(() => { t -= .25; $('ft').style.width = (t / 12 * 100) + '%'; if (Math.round(t * 4) % 3 === 0) fill(); if (t <= 0) { clearInterval(iv); live = false; res(); } }, 250); });
+  got = Math.min(got, free ? 60 : 40);
+  S.res.food += got;
+  let txt = 'You gathered ' + got + ' lb of food.';
+  if (oops) { const r = applyFx({ sick: 1 }, { sick: 'mushroom poisoning' }); txt += ' But someone ate a wild mushroom: ' + r.join(', ') + '.'; }
+  log('🫐 ' + txt);
+  $('sheet').insertAdjacentHTML('beforeend', '<div class="fb ' + (oops ? 'bad' : 'good') + '">' + esc(txt) + '</div><button class="btn gold block" id="evOk">Continue</button>');
+  await waitClick('#evOk'); closeModal();
+}
+function useMeds() {
+  if (BUSY) return;
+  const t = alive().find(p => p.st !== 'ok');
+  if (!t) return toast('Nobody needs medicine right now.');
+  if (!S.res.meds) return toast('You\'re out of medicine kits. Buy more at a fort.');
+  S.res.meds--; t.st = 'ok'; t.cond = ''; t.hp = clamp(t.hp + 15, 0, 100);
+  log('💊 Used a medicine kit on ' + t.n + '.');
+  quickSave();
+}
+
+// ---------- finish / over ----------
+async function finish() {
+  S.done = true;
+  const sc = score();
+  let r = null;
+  try { r = await save('done'); } catch (e) {}
+  const a = alive();
+  modal('<span class="ch">🌄 Mile 1,200</span><h2>You reached Wellness Valley!</h2><p class="big">' + sc + ' pts</p>' +
+    '<p class="txt">' + a.length + ' of 4 travelers made it' + (S.bots.length ? ', plus ' + S.bots.filter(b => !b.out).length + ' of ' + S.bots.length + ' partner wagons' : '') +
+    '. You answered ' + S.right + ' of ' + S.asked + ' trail questions well, in ' + S.day + ' trail days.</p>' +
+    (LOCAL ? '<p class="dim">Log in on the Quest page next time so your score posts to the leaderboard.</p>' : '<p class="dim">Your score is on the arcade leaderboard. 🏆</p>') +
+    '<button class="btn gold block" id="evOk">Start a new journey</button><a class="btn block" href="arcade.html" style="text-decoration:none">Back to the Arcade</a>');
+  await waitClick('#evOk'); closeModal();
+  if (LOCAL) store.del('trail_local');
+  INFO.run = null; INFO.finished = (INFO.finished || 0) + 1; INFO.best = Math.max(INFO.best || 0, sc);
+  S = null; RUN = null; showStart();
+}
+function overScreen() {
+  modal('<span class="ch">🪦 The trail is over</span><h2>Your whole party was benched</h2><p class="txt">You made it ' + S.miles + ' miles. Balanced meals, enough water, rest, and smart choices keep a party going. Start a new journey and try again!</p>' +
+    '<p class="dim small">Note: your daily miles don\'t reset when you start over.</p><button class="btn gold block" id="evOk">Start a new journey</button>');
+  waitClick('#evOk').then(() => { closeModal(); if (LOCAL) store.del('trail_local'); INFO.run = null; S = null; RUN = null; showStart(); });
+}
+
+// ---------- scene ----------
+function sceneSVG() {
+  const R = realmAt(S.miles), off = -((S.miles * 6) % 400);
+  const hill = (y, h, c, o) => '<g transform="translate(' + (o % 400) + ' 0)"><path d="M0 ' + y + ' Q100 ' + (y - h) + ' 200 ' + y + ' T400 ' + y + ' T600 ' + y + ' T800 ' + y + ' V200 H0Z" fill="' + c + '"/></g>';
+  const lm = nextLm(), dist = lm.mi - S.miles;
+  return '<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + R.sky[0] + '"/><stop offset="1" stop-color="' + R.sky[1] + '"/></linearGradient></defs>' +
+    '<rect width="400" height="170" fill="url(#sky)"/><circle cx="320" cy="42" r="18" fill="#FFF3B0" opacity=".9"/>' +
+    hill(110, 30, shade(R.color, -.35), off * .3) + hill(128, 22, shade(R.color, -.15), off * .6) +
+    (dist <= 40 && dist > 0 ? '<text x="' + (360 - dist * 4) + '" y="128" font-size="26" text-anchor="middle">' + lm.icon + '</text>' : '') +
+    hill(146, 12, R.color, off) + '<rect y="146" width="400" height="24" fill="' + shade(R.color, -.45) + '"/><rect y="150" width="400" height="6" fill="#c9a66b" opacity=".75"/>' +
+    '<g class="wagon" transform="translate(150 104)">' +
+      '<path d="M8 30 Q8 2 40 2 Q72 2 72 30Z" fill="#f4ecd8" stroke="#1A1030" stroke-width="3"/>' +
+      '<path d="M22 30 Q22 8 40 8 M58 30 Q58 8 40 8" fill="none" stroke="#d8ccb0" stroke-width="2"/>' +
+      '<rect x="4" y="28" width="72" height="14" rx="3" fill="#8a5a2b" stroke="#1A1030" stroke-width="3"/>' +
+      '<g class="wheel"><circle cx="18" cy="44" r="9" fill="#5a3a1a" stroke="#1A1030" stroke-width="3"/><path d="M18 35 V53 M9 44 H27" stroke="#c9a66b" stroke-width="2"/></g>' +
+      '<g class="wheel"><circle cx="62" cy="44" r="9" fill="#5a3a1a" stroke="#1A1030" stroke-width="3"/><path d="M62 35 V53 M53 44 H71" stroke="#c9a66b" stroke-width="2"/></g>' +
+      '<path d="M76 34 L96 34" stroke="#1A1030" stroke-width="3"/>' +
+      '<g transform="translate(96 22)"><ellipse cx="14" cy="14" rx="15" ry="10" fill="#7a4e2a" stroke="#1A1030" stroke-width="3"/><circle cx="30" cy="9" r="6" fill="#7a4e2a" stroke="#1A1030" stroke-width="3"/><path d="M27 3 l-3 -4 M33 3 l3 -4" stroke="#f4ecd8" stroke-width="2.5"/><path d="M4 22 v8 M12 23 v8 M20 23 v8 M26 22 v8" stroke="#1A1030" stroke-width="3"/></g>' +
+    '</g></svg>';
+}
+function shade(hex, f) { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; const t = f < 0 ? 0 : 255, p = Math.abs(f); r = Math.round((t - r) * p + r); g = Math.round((t - g) * p + g); b = Math.round((t - b) * p + b); return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); }
+function animate() { const s = $('scene'); s.classList.add('rolling'); clearTimeout(animate.t); animate.t = setTimeout(() => s.classList.remove('rolling'), 900); }
+
+// ---------- render ----------
+function render() {
+  if (!S) return;
+  const R = realmAt(S.miles), nx = nextLm(), left = LOCAL ? localLeft() : LEFT;
+  $('realmTag').textContent = 'Realm ' + R.n + ' · ' + R.name;
+  $('dayTag').textContent = 'Trail day ' + S.day;
+  $('sceneSvg').innerHTML = sceneSVG();
+  $('prog').innerHTML = '<div class="bar"></div><div class="fill" style="width:' + (S.miles / TOTAL * 100) + '%"></div>' +
+    LMS.map(l => '<div class="lm' + (l.mi <= S.miles ? ' past' : '') + '" style="left:' + (l.mi / TOTAL * 100) + '%" title="' + esc(l.name) + '">' + l.icon + '</div>').join('') +
+    '<div class="me" style="left:' + clamp(S.miles / TOTAL * 100, 3, 97) + '%">' + S.miles + ' mi</div>';
+  $('today').className = 'today' + (left <= 0 ? ' capped' : '');
+  $('today').innerHTML = left > 0 ? '🐂 Miles left today: <b>' + left + '</b> of ' + CAP : '⛺ Camp is set for today. You traveled your 200 miles. The trail opens again at midnight.';
+  $('sMiles').textContent = S.miles; $('sNext').textContent = Math.max(0, nx.mi - S.miles) + ' mi'; $('sNextName').textContent = 'to ' + nx.name;
+  $('sRight').textContent = S.right; $('sScore').textContent = score();
+  const bar = (k, c, label) => '<div class="meter"><span style="color:' + c + '">' + label + '</span><div class="m"><i style="width:' + S.tri[k] + '%;background:' + c + '"></i></div><span>' + S.tri[k] + '</span></div>';
+  $('tri').innerHTML = bar('body', 'var(--body)', '💪 Body') + bar('mind', 'var(--mind)', '🧠 Mind') + bar('social', 'var(--social)', '🤝 Social');
+  $('party').innerHTML = S.party.map(p => '<div class="trav ' + p.st + '"><div><div class="nm">' + esc(p.n) + '</div><div class="st">' +
+    (p.st === 'out' ? 'Benched' : p.st === 'ok' ? (p.hp > 70 ? 'Healthy' : p.hp > 35 ? 'Tired' : 'Very weak') : 'Has ' + esc(p.cond)) + '</div></div><div class="hp"><i style="width:' + p.hp + '%;background:' + (p.hp > 60 ? 'var(--emerald)' : p.hp > 30 ? 'var(--gold)' : 'var(--crimson)') + '"></i></div></div>').join('');
+  const n = alive().length, days = Math.floor(S.res.food / Math.max(1, RAT[S.rations].food * n));
+  $('sup').innerHTML = [['🥖', S.res.food, 'lb food'], ['💧', S.res.water, 'days water'], ['💊', S.res.meds, 'medicine'], ['🔧', S.res.parts, 'parts'], ['🪙', S.res.coins, 'coins']]
+    .map(x => '<div><b>' + x[0] + ' ' + x[1] + '</b><span>' + x[2] + '</span></div>').join('');
+  $('pace').innerHTML = Object.keys(PACE).map(k => '<option value="' + k + '"' + (k === S.pace ? ' selected' : '') + '>' + PACE[k].label + '</option>').join('');
+  $('rations').innerHTML = Object.keys(RAT).map(k => '<option value="' + k + '"' + (k === S.rations ? ' selected' : '') + '>' + RAT[k].label + '</option>').join('');
+  $('planNote').textContent = PACE[S.pace].note + ' · ' + RAT[S.rations].note + '. Food lasts about ' + (RAT[S.rations].food ? days + ' days' : '—') + ', water ' + S.res.water + ' days. Next water: ' + nextWater() + '.';
+  const off = BUSY || S.done || S.over || left <= 0;
+  ['goBtn', 'restBtn', 'fireBtn', 'forageBtn'].forEach(id => $(id).disabled = off);
+  $('medBtn').disabled = BUSY;
+  $('log').innerHTML = S.log.slice(0, 8).map(t => '<div>' + esc(t) + '</div>').join('');
+  renderConvoy($('convoyGame'));
+}
+$('pace').onchange = e => { S.pace = e.target.value; render(); };
+$('rations').onchange = e => { S.rations = e.target.value; render(); };
+$('goBtn').onclick = () => act('travel'); $('restBtn').onclick = () => act('rest'); $('fireBtn').onclick = () => act('fire');
+$('forageBtn').onclick = () => act('forage'); $('medBtn').onclick = useMeds;
+$('quitBtn').onclick = () => { if (confirm('End this journey and start a new one? Your daily miles don\'t reset.')) { S = null; RUN = null; if (LOCAL) store.del('trail_local'); showStart(); } };
+
+// ---------- convoy panel ----------
+function renderConvoy(box) {
+  let h = '<h3>🤝 Your convoy</h3>';
+  if (S && S.bots.length) h += S.bots.map(b => '<div class="mem"><span class="nm">🤖 ' + esc(b.n) + ' <span class="pill">computer partner</span></span><span class="pill">' + (b.out ? 'turned back' : b.sick ? 'sick' : b.food < 25 ? 'low on food' : 'doing fine') + '</span>' +
+    '<div class="pb"><i style="width:' + (b.out ? 0 : b.hp) + '%"></i></div>' + (b.out ? '' : '<div class="sub">Food ' + b.food + ' lb · ' +
+    '<a href="#" data-bf="' + esc(b.n) + '">share 15 lb food</a>' + (b.sick ? ' · <a href="#" data-bm="' + esc(b.n) + '">give medicine</a>' : '') + '</div>') + '</div>').join('');
+  if (LOCAL) h += '<p class="dim small">Log in on the <a href="quest.html">Quest page</a> to travel in a convoy with classmates.</p>';
+  else if (!TEAM) h += '<p class="dim small">Travel with up to 3 classmates. Each of you drives your own wagon, so nobody can mess up your journey. Teammates can only send help.</p>' +
+    '<div class="row"><input id="tName" maxlength="20" placeholder="Convoy name"><button class="btn green" id="tCreate">Create convoy</button></div>' +
+    '<div class="row" style="margin-top:8px"><input id="tCode" class="code" maxlength="4" placeholder="CODE"><button class="btn" id="tJoin">Join with code</button></div><div class="err" id="tErr"></div>';
+  else {
+    h += '<p class="dim small">Convoy <b>' + esc(TEAM.name) + '</b> · code <b style="letter-spacing:3px;color:var(--gold)">' + esc(TEAM.code) + '</b> (share it with up to 3 classmates)</p>';
+    h += TEAM.members.map(m => '<div class="mem"><span class="nm">' + (m.me ? '⭐ ' : '🛞 ') + esc(m.name) + (m.me ? ' (you)' : '') + '</span><span class="pill">' +
+      (m.status === 'active' ? (m.miles || 0) + ' mi' : m.status === 'none' ? 'not started' : m.status === 'done' ? 'arrived' : 'starting over') + '</span>' +
+      '<div class="pb"><i style="width:' + ((m.miles || 0) / TOTAL * 100) + '%"></i></div><div class="sub">' +
+      (m.status === 'active' ? m.left + ' of 4 travelers · body ' + m.body + ' · mind ' + m.mind + ' · social ' + m.social + (m.bots ? ' · ' + m.bots + ' computer partners' : '') : '') +
+      (m.finished ? ' · finished ' + m.finished + '×' : '') + (!m.me && S && m.status === 'active' ? ' · <a href="#" data-gift="' + m.id + '" data-nm="' + esc(m.name) + '">send supplies</a>' : '') + '</div></div>').join('');
+    h += '<div class="row" style="margin-top:6px"><button class="btn" id="tRefresh">↻ Refresh convoy</button><button class="btn" id="tLeave">Leave convoy</button></div><div class="err" id="tErr"></div>';
+  }
+  box.innerHTML = h;
+  box.querySelectorAll('[data-bf]').forEach(a => a.onclick = e => { e.preventDefault(); const b = S.bots.find(x => x.n === a.dataset.bf); if (S.res.food < 15) return toast('You need 15 lb to share.'); S.res.food -= 15; b.food += 15; S.helped++; S.tri.social = clamp(S.tri.social + 4, 0, 100); log('🤝 Shared 15 lb of food with ' + b.n + '.'); quickSave(); });
+  box.querySelectorAll('[data-bm]').forEach(a => a.onclick = e => { e.preventDefault(); const b = S.bots.find(x => x.n === a.dataset.bm); if (!S.res.meds) return toast('No medicine kits left.'); S.res.meds--; b.sick = false; b.hp = Math.min(100, b.hp + 15); S.helped++; S.tri.social = clamp(S.tri.social + 4, 0, 100); log('🤝 Gave medicine to ' + b.n + '.'); quickSave(); });
+  box.querySelectorAll('[data-gift]').forEach(a => a.onclick = e => { e.preventDefault(); giftUI(a.dataset.gift, a.dataset.nm); });
+  const err = m => { const el = box.querySelector('#tErr'); if (el) el.textContent = m; };
+  const c = box.querySelector('#tCreate'), j = box.querySelector('#tJoin'), r = box.querySelector('#tRefresh'), l = box.querySelector('#tLeave');
+  if (c) c.onclick = async () => { try { TEAM = await rpc('trail_team_create', auth({ p_name: box.querySelector('#tName').value })); rerenderConvoy(); } catch (e) { err(e.message); } };
+  if (j) j.onclick = async () => { try { TEAM = await rpc('trail_team_join', auth({ p_code: box.querySelector('#tCode').value })); rerenderConvoy(); } catch (e) { err(e.message); } };
+  if (r) r.onclick = () => refreshTeam();
+  if (l) l.onclick = async () => { if (!confirm('Leave this convoy? Your own journey keeps going.')) return; try { await rpc('trail_team_leave', auth()); TEAM = null; rerenderConvoy(); } catch (e) { err(e.message); } };
+  const code = box.querySelector('#tCode'); if (code) code.oninput = () => code.value = code.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+function rerenderConvoy() { if (S && !$('game').classList.contains('hide')) render(); else renderConvoy($('convoyStart')); }
+async function refreshTeam() {
+  if (LOCAL) return;
+  try {
+    // every action already saves, so the server copy is current; loading it also collects any gifts
+    const L = await rpc('trail_load', auth());
+    TEAM = L.team;
+    if (S && L.run && L.run.id === RUN) {
+      S = L.run.state; LEFT = L.left_today;
+      (L.gifts || []).forEach(g => { const t = '📦 ' + g.from.split(' ')[0] + ' sent you ' + g.qty + ' ' + itemName(g.item, g.qty) + '!'; log(t); toast(t); });
+      if ((L.gifts || []).length) await save();
+    }
+  } catch (e) { toast(e.message); }
+  rerenderConvoy();
+}
+async function giftUI(to, nm) {
+  modal('<span class="ch">📦 Send supplies</span><h2>Help ' + esc(nm) + '</h2><p class="dim">This comes out of your own supplies. You can only ever give, never take.</p>' +
+    '<label>What to send</label><select id="gItem"><option value="food">Food (up to 50 lb) · you have ' + S.res.food + '</option><option value="water">Water (up to 5) · you have ' + S.res.water + '</option><option value="meds">Medicine (up to 2) · you have ' + S.res.meds + '</option><option value="coins">Coins (up to 50) · you have ' + S.res.coins + '</option></select>' +
+    '<label>How much</label><input id="gQty" type="number" min="1" value="10"><div class="row" style="margin-top:12px"><button class="btn" id="gNo">Cancel</button><button class="btn green" id="gYes">Send</button></div><div class="err" id="gErr"></div>');
+  $('gNo').onclick = closeModal;
+  $('gYes').onclick = async () => {
+    $('gYes').disabled = true;
+    try {
+      await save();
+      const r = await rpc('trail_gift', auth({ p_to: to, p_item: $('gItem').value, p_qty: +$('gQty').value }));
+      S = r.state; S.helped = (S.helped || 0) + 1; S.tri.social = clamp(S.tri.social + 5, 0, 100);
+      log('📦 You sent ' + $('gQty').value + ' ' + itemName($('gItem').value, +$('gQty').value) + ' to ' + nm.split(' ')[0] + '. (+5 social)');
+      await save(); closeModal(); render();
+    } catch (e) { $('gErr').textContent = e.message; $('gYes').disabled = false; }
+  };
+}
+async function refreshMarkers() {
+  if (LOCAL || !S) return;
+  try { MARKERS = await rpc('trail_markers_near', { p_trimester: TRI, p_from: S.miles, p_to: S.miles + 260 }) || []; } catch (e) { MARKERS = []; }
+}
+
+// ---------- start screen ----------
+function showStart() {
+  $('game').classList.add('hide'); $('start').classList.remove('hide');
+  $('who').innerHTML = ME ? '<span class="ok">✓ Signed in.</span> <span class="dim">Your journey saves to your Quest login, and your finish posts to the leaderboard.</span>'
+    : '<span class="dim">Not signed in, so your journey saves on this device only. <a href="quest.html">Log in on the Quest page</a> to save it, join a convoy, and post your score.</span>';
+  const names = TRAIL_COMPANIONS.slice().sort(() => Math.random() - .5);
+  ['c1', 'c2', 'c3'].forEach((id, i) => { if (!$(id).value) $(id).value = names[i]; });
+  const has = INFO.run || (LOCAL && store.get('trail_local'));
+  $('resumeCard').classList.toggle('hide', !has);
+  if (has) {
+    const st = INFO.run ? INFO.run.state : JSON.parse(store.get('trail_local'));
+    $('resumeInfo').textContent = 'Mile ' + st.miles + ' of 1,200 · trail day ' + st.day + ' · ' + st.party.filter(p => p.st !== 'out').length + ' of 4 travelers';
+    $('setupTitle').textContent = 'Or start over with a new journey';
+  } else $('setupTitle').textContent = 'Start a new journey';
+  $('resumeTitle').textContent = INFO.finished ? 'Your journey (finished ' + INFO.finished + '× · best ' + (INFO.best || 0) + ' pts)' : 'Your journey';
+  if (!has && INFO.finished) $('setupTitle').textContent = 'Start journey #' + (INFO.finished + 1) + ' (best so far: ' + (INFO.best || 0) + ' pts)';
+  renderConvoy($('convoyStart'));
+}
+function enterGame() { $('start').classList.add('hide'); $('game').classList.remove('hide'); window.scrollTo(0, 0); render(); refreshMarkers(); }
+$('resumeBtn').onclick = () => {
+  if (LOCAL) { S = JSON.parse(store.get('trail_local')); }
+  else { S = INFO.run.state; RUN = INFO.run.id; }
+  enterGame();
+};
+$('newBtn').onclick = async () => {
+  if ((INFO.run || (LOCAL && store.get('trail_local'))) && !confirm('Start a new journey? This ends the one you\'re on. Your daily miles don\'t reset.')) return;
+  const names = ['c1', 'c2', 'c3'].map(id => $(id).value.trim().replace(/[<>]/g, '').slice(0, 12) || pick(TRAIL_COMPANIONS));
+  const st = newState(names, +$('bots').value);
+  st.log = ['🏰 Day 1: Your party leaves Foundation Keep. 1,200 miles to Wellness Valley!'];
+  $('newBtn').disabled = true; $('startErr').textContent = '';
+  try {
+    if (LOCAL) { S = st; store.set('trail_local', JSON.stringify(S)); }
+    else { const r = await rpc('trail_start', auth({ p_state: st })); S = r.state; RUN = r.id; LEFT = r.left_today; INFO.run = { id: r.id, state: S }; }
+    enterGame();
+  } catch (e) { $('startErr').textContent = e.message; }
+  $('newBtn').disabled = false;
+};
+
+// ---------- boot ----------
+(async () => {
+  if (!LOCAL) {
+    try { INFO = await rpc('trail_load', auth()); TEAM = INFO.team; LEFT = INFO.left_today;
+          (INFO.gifts || []).forEach(g => toast('📦 ' + g.from.split(' ')[0] + ' sent you ' + g.qty + ' ' + itemName(g.item, g.qty) + '!')); }
+    catch (e) { $('startErr').textContent = /signed in/i.test(e.message) ? 'Your login expired. Log in again on the Quest page.' : e.message; }
+  }
+  showStart();
+})();
+window.__trail = () => ({ S, LEFT, TEAM, RUN });   // for automated tests
+})();
+</script>
+</body>
+</html>

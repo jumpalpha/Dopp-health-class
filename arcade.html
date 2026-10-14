@@ -365,9 +365,14 @@ const PARTNER = [
   { key:'memory_duel', title:'Dopp Memory', file:'partner.html?g=memory', icon:'🧔', desc:'Take turns flipping cards to match Mr. Dopp\'s wildest hair and beard styles. Most pairs wins!',
     medals:[[100,'🥉 1 win'],[500,'🥈 5 wins'],[1000,'🥇 10 wins'],[2000,'💎 20 wins']], goal:'Beat a classmate', winBy:'wins' }
 ];
+// Team games with their own leaderboard. (icon is listed before file on purpose: the web-app builder skips it, since it needs the internet.)
+const TEAMS = [
+  { key:'wellness_trail', title:'The Wellness Trail', icon:'🌄', file:'trail.html', desc:'Oregon Trail style journey through Realms 1–5. Lead your wagon 1,200 miles with a classmate convoy or computer partners. Takes at least 6 days!',
+    medals:[[800,'🥉 Bronze'],[1400,'🥈 Silver'],[2000,'🥇 Gold'],[2600,'💎 Legend']], goal:'Reach Wellness Valley', winBy:'wins' }
+];
 const GROUPS = [
   { merged:true, color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },   // shown right under the Sprite Arcade posters, no heading of its own
-  { name:'👥 Team Games', sub:'Big groups on their own devices. Team up against the germs or go red vs. blue.', color:'#FF3B5C', games: [['🦠', 'Germ Snipes', 'Multiplayer maze shooter (2–8 players) inspired by the \'80s classic Snipes. Co-op or red vs. blue teams!', 'germ_snipes.html']] },
+  { name:'👥 Team Games', sub:'Team up with classmates, each on your own device.', color:'#FF3B5C', games: [...TEAMS.map(g => [g.icon, g.title, g.desc, g.file]), ['🦠', 'Germ Snipes', 'Multiplayer maze shooter (2–8 players) inspired by the \'80s classic Snipes. Co-op or red vs. blue teams!', 'germ_snipes.html']] },
   { name:'🤝 Partner Games', sub:'1 vs. 1 against a classmate on two devices. Wins count when you\'re both signed in.', color:'#38BFFF', games: PARTNER.map(g => [g.icon, g.title, g.desc, g.file]) },
 ];
 const CLASSROOM = [
@@ -482,7 +487,7 @@ async function loadMine() {
     renderBoardFilters(); loadBoard();
   } catch (e) { $('who').innerHTML = '🔒 Your login has expired. <a href="quest.html">Log in again</a> to post scores.'; }
 }
-const BOARD_GAMES = [{ key: 'champions', title: '🏆 Champions' }, ...[...SPRITE, ...CLASSICS, ...PARTNER].map(g => ({ key: g.key, title: g.icon + ' ' + g.title }))];
+const BOARD_GAMES = [{ key: 'champions', title: '🏆 Champions' }, ...[...SPRITE, ...CLASSICS, ...TEAMS, ...PARTNER].map(g => ({ key: g.key, title: g.icon + ' ' + g.title }))];
 let lbGame = 'champions', lbGroup = 'all';
 function groupOptions() {
   const o = [['all', 'All classes']];
@@ -514,7 +519,7 @@ async function loadBoard() {
 renderBoardFilters(); loadBoard(); loadMine();
 
 function renderStats() {
-  $('statGrid').innerHTML = [...SPRITE, ...CLASSICS, ...PARTNER].map(g => {
+  $('statGrid').innerHTML = [...SPRITE, ...CLASSICS, ...TEAMS, ...PARTNER].map(g => {
     const srv = mine && mine.scores && mine.scores[g.key];
     const best = Math.max(get(g.key + '_best', 0), srv ? srv.best : 0), wins = Math.max(get(g.key + '_wins', 0), srv ? srv.wins : 0);
     const done = g.winBy === 'wins' ? wins > 0 : best >= g.goal;
