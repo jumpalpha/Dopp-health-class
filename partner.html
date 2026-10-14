@@ -5,7 +5,7 @@
 <script src="term.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <title>Partner Games — Dopp's Arcade</title>
-<meta name="description" content="Play Connect 4 or Tic-Tac-Toe with a classmate on two devices. One makes a game, the other types the 4-letter code.">
+<meta name="description" content="Play Connect 4, Tic-Tac-Toe, Dopp Memory or Battleship with a classmate on two devices. One makes a game, the other types the 4-letter code.">
 <link rel="canonical" href="https://doppsclass.com/partner.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,6 +78,23 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
 .ttt .t.p1{color:var(--p1)} .ttt .t.p2{color:var(--p2)}
 .ttt .t.pop{animation:pop .25s ease-out}
 @keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+/* battleship */
+.bs-h{font-weight:900;font-size:14px;margin:10px 0 6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.bs-h small{font-weight:800;font-size:12px;color:rgba(244,239,255,.7)}
+.bs{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:#0b2f57;padding:5px;border-radius:14px;border:3px solid var(--ink);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.bs.mini{width:72%;margin:0 auto;gap:2px;padding:4px}
+.bs .q{aspect-ratio:1;border-radius:5px;background:linear-gradient(160deg,#1a6fbf,#12508f);position:relative;display:flex;align-items:center;justify-content:center;font:900 15px Nunito,sans-serif;color:#fff}
+.bs.mini .q{border-radius:3px;font-size:11px}
+.bs.can .q.open{cursor:pointer}
+.bs.can .q.open:hover,.bs.can .q.open:active{background:#2a8ee6;box-shadow:inset 0 0 0 2px var(--gold)}
+.bs .q.ship{background:linear-gradient(160deg,#b9c2d0,#7c8799);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.bs .q.ghost{background:linear-gradient(160deg,rgba(185,194,208,.55),rgba(124,135,153,.55))}
+.bs .q.m::after{content:'';width:30%;height:30%;border-radius:50%;background:#dff0ff;opacity:.85}
+.bs .q.h{background:radial-gradient(circle,#ffd23f 0,#ff7a1a 55%,#d6371a 100%)}
+.bs .q.s{background:linear-gradient(160deg,#8f1d33,#5a0f20)}
+.bs .q.h::after,.bs .q.s::after{content:'✕';text-shadow:0 1px 0 #000}
+.bs .q.last{animation:pop .3s ease-out;box-shadow:0 0 0 2px #fff,0 0 12px 2px rgba(255,255,255,.7);z-index:1}
+.bs-msg{text-align:center;font-weight:900;font-size:15px;min-height:20px;margin:2px 0 4px}
 .row{display:flex;gap:10px}.row .btn{flex:1}
 .hide{display:none}
 .result{text-align:center;font:900 24px Cinzel,serif;color:var(--gold);margin:6px 0}
@@ -95,7 +112,8 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
     <div class="picker">
       <button class="pick" data-g="connect4"><span class="ic">🔴</span>Connect 4</button>
       <button class="pick" data-g="tictactoe"><span class="ic">⭕</span>Tic-Tac-Toe</button>
-      <button class="pick" data-g="memory" style="grid-column:1/-1"><span class="ic" id="memIcon" style="width:44px;height:44px;margin:0 auto 4px"></span>Dopp Memory</button>
+      <button class="pick" data-g="memory"><span class="ic" id="memIcon" style="width:36px;height:36px;margin:0 auto 4px"></span>Dopp Memory</button>
+      <button class="pick" data-g="battleship"><span class="ic">🚢</span>Battleship</button>
     </div>
     <div id="who"></div>
     <div id="nameBox"><label for="name">Your name</label><input id="name" maxlength="16" placeholder="First name" autocomplete="off"></div>
@@ -144,7 +162,7 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
 (() => {
 const URL = 'https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
 const TRI = (window.TERM && TERM.id) || '2026-T1';
-const NAMES = { connect4: 'Connect 4', tictactoe: 'Tic-Tac-Toe', memory: 'Dopp Memory' };
+const NAMES = { connect4: 'Connect 4', tictactoe: 'Tic-Tac-Toe', memory: 'Dopp Memory', battleship: 'Battleship' };
 const $ = id => document.getElementById(id);
 const store = { get: (k, s) => { try { return (s ? sessionStorage : localStorage).getItem(k); } catch (e) { return null; } },
                 set: (k, v, s) => { try { (s ? sessionStorage : localStorage).setItem(k, v); } catch (e) {} },
@@ -162,7 +180,7 @@ function token() {   // this tab's secret for the game
 }
 const signedIn = () => { const id = store.get('qSID_' + TRI), pin = store.get('qPIN_' + TRI, true); return id && pin ? { id, pin } : null; };
 
-let game = ['tictactoe', 'memory'].includes(new URLSearchParams(location.search).get('g')) ? new URLSearchParams(location.search).get('g') : 'connect4';
+let game = ['tictactoe', 'memory', 'battleship'].includes(new URLSearchParams(location.search).get('g')) ? new URLSearchParams(location.search).get('g') : 'connect4';
 let peekFaces = {}, peekUntil = 0, peekTimer = null;
 $('memIcon').innerHTML = doppFace('Mullet');
 let S = null, timer = null, busy = false, lastBoard = '';
@@ -235,7 +253,8 @@ function render() {
   $('pl1').classList.toggle('turn', S.status === 'playing' && S.turn === 1); $('pl2').classList.toggle('turn', S.status === 'playing' && S.turn === 2);
   const oppName = S.me === 1 ? S.p2_name : S.p1_name;
   $('status').className = 'status' + (mine ? ' mine' : '');
-  if (S.status === 'playing' && S.game === 'memory' && Date.now() < peekUntil) { $('status').className = 'status'; $('status').textContent = '❌ No match!'; }
+  if (S.game === 'battleship') { $('status').className = 'status'; $('status').innerHTML = bsStatus(); }
+  else if (S.status === 'playing' && S.game === 'memory' && Date.now() < peekUntil) { $('status').className = 'status'; $('status').textContent = '❌ No match!'; }
   else $('status').textContent = S.status === 'playing' ? (mine ? (S.game === 'memory' ? (S.flip1 != null ? 'Your turn — flip one more' : 'Your turn — flip two cards') : 'Your turn!') : oppName + (S.game === 'memory' ? ' is flipping…' : ' is thinking…')) : '';
   $('offline').textContent = S.status === 'playing' && !S.opp_online ? '⚠ ' + oppName + ' seems disconnected. If they don\'t come back within a minute, you win.' : '';
   $('rankNote').textContent = S.ranked ? '🏆 Both players signed in — wins count on the class leaderboard.' : 'Practice game — wins only count when both players are signed in.';
@@ -267,6 +286,8 @@ function drawBoard(mine) {
     }
     box.innerHTML = html + '</div>';
     box.querySelectorAll('.col').forEach(el => el.onclick = () => move(+el.dataset.c));
+  } else if (S.game === 'battleship') {
+    drawBattleship(mine, fresh);
   } else if (S.game === 'memory') {
     const faces = Object.assign({}, Date.now() < peekUntil ? peekFaces : {}, S.faces || {});
     const n1 = (b.match(/1/g) || []).length / 2, n2 = (b.match(/2/g) || []).length / 2;
@@ -286,9 +307,74 @@ function drawBoard(mine) {
   }
   lastBoard = b;
 }
+// ---------- battleship ----------
+const bsSetup = () => S.status === 'playing' && !(S.ready1 && S.ready2);
+const bsOff = () => ({ mine: S.me === 1 ? 0 : 64, theirs: S.me === 1 ? 64 : 0 });   // where my shots / their shots sit in the board
+function bsSunk(seg) {   // ships never touch, so each group of sunk squares is one ship
+  const seen = new Set(); let n = 0;
+  for (let i = 0; i < 64; i++) {
+    if (seg[i] !== 's' || seen.has(i)) continue; n++;
+    const st = [i]; seen.add(i);
+    while (st.length) { const j = st.pop(), r = j >> 3, c = j & 7;
+      [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([rr, cc]) => { const k = rr * 8 + cc; if (rr >= 0 && rr < 8 && cc >= 0 && cc < 8 && seg[k] === 's' && !seen.has(k)) { seen.add(k); st.push(k); } }); }
+  }
+  return n;
+}
+function bsStatus() {
+  const opp = esc(S.me === 1 ? S.p2_name : S.p1_name);
+  if (S.status !== 'playing') return '';
+  if (bsSetup()) {
+    const meReady = S.me === 1 ? S.ready1 : S.ready2;
+    return meReady ? '⏳ Waiting for ' + opp + ' to place their ships…' : '🚢 Place your fleet, then tap Ready';
+  }
+  return S.turn === S.me ? '<span style="color:var(--emerald)">🎯 Your turn — tap a square to fire!</span>' : '🔭 ' + opp + ' is aiming…';
+}
+function bsLastMsg() {   // what the most recent shot did
+  if (S.last_move == null || bsSetup()) return '';
+  const lm = S.last_move, mineShot = (S.me === 1) === (lm < 64), ch = S.board[lm];
+  const who = mineShot ? 'You' : esc(S.me === 1 ? S.p2_name : S.p1_name);
+  return ch === 's' ? '🔥 ' + who + ' sank a ship!' : ch === 'h' ? '💥 ' + who + (mineShot ? ' hit!' : ' hit your ship!') : '💧 ' + who + ' missed.';
+}
+function drawBattleship(mine, fresh) {
+  const box = $('board'), o = bsOff(), b = S.board, fleet = S.my_fleet || '', theirFleet = S.opp_fleet || '';
+  const myShots = b.substr(o.mine, 64), theirShots = b.substr(o.theirs, 64);
+  if (bsSetup()) {
+    const meReady = S.me === 1 ? S.ready1 : S.ready2;
+    let html = '<div class="bs-h">🚢 Your fleet <small>5 ships · 4, 3, 3, 2, 2 squares</small></div><div class="bs">';
+    for (let i = 0; i < 64; i++) html += '<div class="q' + (fleet[i] !== '0' ? ' ship' : '') + '"></div>';
+    html += '</div><p class="dim" style="text-align:center;margin-top:8px">Your partner can\'t see your ships. Don\'t like this layout? Shuffle until you do.</p>';
+    html += meReady ? '' : '<div class="row"><button class="btn ghost" id="bsShuffle">🔀 Shuffle</button><button class="btn green" id="bsReady">✅ Ready</button></div>';
+    box.innerHTML = html;
+    if (!meReady) { $('bsShuffle').onclick = () => bsSetupAct('shuffle'); $('bsReady').onclick = () => bsSetupAct('ready'); }
+    lastBoard = b; return;
+  }
+  const done = S.status === 'done';
+  let html = '<div class="bs-msg">' + bsLastMsg() + '</div>';
+  html += '<div class="bs-h">🎯 Enemy waters <small>Sunk ' + bsSunk(myShots) + ' of 5</small></div><div class="bs' + (mine ? ' can' : '') + '">';
+  for (let i = 0; i < 64; i++) {
+    const v = myShots[i], last = fresh && S.last_move === o.mine + i;
+    const cls = v === 'm' ? ' m' : v === 'h' ? ' h' : v === 's' ? ' s' : (done && theirFleet[i] && theirFleet[i] !== '0') ? ' ghost' : ' open';
+    html += '<div class="q' + cls + (last ? ' last' : '') + '" data-i="' + i + '"></div>';
+  }
+  html += '</div><div class="bs-h" style="margin-top:14px">🚢 Your fleet <small>' + bsSunk(theirShots) + ' of 5 lost</small></div><div class="bs mini">';
+  for (let i = 0; i < 64; i++) {
+    const v = theirShots[i], last = fresh && S.last_move === o.theirs + i;
+    const cls = v === 'm' ? ' m' : v === 'h' ? ' h' : v === 's' ? ' s' : fleet[i] !== '0' ? ' ship' : '';
+    html += '<div class="q' + cls + (last ? ' last' : '') + '"></div>';
+  }
+  box.innerHTML = html + '</div>';
+  box.querySelectorAll('.bs.can .q.open').forEach(el => el.onclick = () => move(+el.dataset.i));
+}
+async function bsSetupAct(action) {
+  if (busy) return; busy = true;
+  try { S = await rpc('duel_setup', { p_id: S.id, p_token: token(), p_action: action }); } catch (e) { $('status').textContent = e.message; }
+  busy = false; render();
+}
+
 async function move(cell) {
   if (!S || S.status !== 'playing' || S.turn !== S.me || busy) return;
   if (S.game === 'tictactoe' && S.board[cell] !== '0') return;
+  if (S.game === 'battleship' && (bsSetup() || S.board[bsOff().mine + cell] !== '0')) return;
   if (S.game === 'memory' && (S.board[cell] !== '0' || S.flip1 === cell || Date.now() < peekUntil)) return;
   if (S.game === 'connect4' && S.board[cell] !== '0') { $('status').textContent = 'That column is full.'; return; }
   busy = true;
