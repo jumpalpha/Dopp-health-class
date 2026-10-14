@@ -424,3 +424,13 @@ window.TRAIL_LUCK = [
 ];
 
 })();
+
+// Rigs: each finish this trimester upgrades the student's wagon team. Shown to everyone next to their name.
+window.TRAIL_RIGS = [
+  { n: 0, icon: '🐂', animal: 'Ox',          wagon: 'Canvas wagon',  title: 'Greenhorn' },
+  { n: 1, icon: '🐎', animal: 'Horse',       wagon: 'Bronze wagon',  title: 'Trailblazer' },
+  { n: 2, icon: '🦬', animal: 'Bison',       wagon: 'Silver wagon',  title: 'Pathfinder' },
+  { n: 3, icon: '🦕', animal: 'Triceratops', wagon: 'Gold wagon',    title: 'Legend of the Trail' },
+  { n: 4, icon: '🐉', animal: 'Dragon',      wagon: 'Diamond wagon', title: 'Mythic Voyager' },
+  { n: 5, icon: '👑', animal: 'Crowned Dragon', wagon: 'Diamond wagon', title: 'Grand Wagon Master' }
+];

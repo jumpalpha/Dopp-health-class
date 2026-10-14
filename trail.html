@@ -120,6 +120,16 @@ input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-si
 .lb .n{font-weight:900;font-size:16px;text-align:center}
 .lb .nm{font-weight:900;font-size:14px}.lb .sub{font-size:12px;color:var(--dim);font-weight:800}
 .lb .v{font-weight:900;font-size:16px;color:var(--gold);text-align:right}
+.rig{display:inline-block;padding:1px 7px;border-radius:8px;font-size:11px;font-weight:900;margin-left:4px;vertical-align:1px;background:rgba(255,215,0,.14);color:var(--gold);border:1px solid rgba(255,215,0,.35);white-space:nowrap}
+.rig.t1{background:rgba(205,127,50,.18);color:#f0a868;border-color:rgba(205,127,50,.5)}
+.rig.t2{background:rgba(192,199,208,.16);color:#dfe5ee;border-color:rgba(192,199,208,.5)}
+.rig.t4,.rig.t5{background:linear-gradient(90deg,rgba(127,227,255,.22),rgba(181,124,255,.22));color:#cfefff;border-color:rgba(127,227,255,.55)}
+.rigcard{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center}
+.rigcard svg{width:120px;height:auto;border-radius:12px;background:linear-gradient(#7fb5ff,#f6e7b4)}
+.unlock{text-align:center;padding:12px;border-radius:16px;background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,140,0,.12));border:1.5px solid var(--gold);margin:10px 0}
+.unlock svg{width:180px;height:auto;border-radius:12px;background:linear-gradient(#7fb5ff,#f6e7b4);margin:6px auto;display:block}
+.twinkle{animation:tw 1.4s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.2}to{opacity:1}}
 .big{font:900 30px Cinzel,serif;color:var(--gold);text-align:center;margin:6px 0;text-shadow:0 3px 0 #000}
 </style>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
@@ -133,7 +143,7 @@ input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-si
   <div class="card">
     <h2>The Wellness Trail</h2>
     <p class="dim">Lead your wagon 1,200 miles through Realms 1–5 to Wellness Valley. Keep your party's health triangle balanced: <b style="color:var(--body)">body</b>, <b style="color:var(--mind)">mind</b> and <b style="color:var(--social)">social</b>. Every choice on the trail comes from what we learn in class.</p>
-    <p class="dim small" style="margin-top:8px">⏳ Your wagon can travel up to <b>200 miles a day</b>, so the fastest anyone can finish is 6 days. When you finish, you can start a new journey and try for a better score.</p>
+    <p class="dim small" style="margin-top:8px">⏳ Your wagon can travel up to <b>200 miles a day</b>, so the fastest anyone can finish is 6 days. Every finish unlocks a new animal and wagon (horse, bison, triceratops, dragon…) that everyone can see. ⭐ Signed-in players earn <b>5 Verified XP</b> each day they play.</p>
     <div id="who" style="margin-top:10px"></div>
   </div>
   <div class="card hide" id="resumeCard">
@@ -141,6 +151,7 @@ input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-si
     <p class="dim" id="resumeInfo"></p>
     <button class="btn gold block" id="resumeBtn">Continue the trail ▶</button>
   </div>
+  <div class="card" id="rigCard"></div>
   <div class="card" id="setupCard">
     <h3 id="setupTitle">Start a new journey</h3>
     <label>Your three travel companions</label>
@@ -270,6 +281,7 @@ async function save(status) {
   S = r.state; LEFT = r.left_today; INFO.run = { id: RUN, state: S };
   if (r.clamped && r.miles < keepMiles) log('⛺ The trail is closed for today. Your wagon stopped at mile ' + r.miles + '.');
   (r.gifts || []).forEach(g => { const t = '📦 ' + g.from.split(' ')[0] + ' sent you ' + g.qty + ' ' + itemName(g.item, g.qty) + '!'; log(t); toast(t); });
+  if (r.xp) { const t = '⭐ +' + r.xp + ' Verified XP for hitting the trail today!'; log(t); toast(t); }
   return r;
 }
 const itemName = (k, q) => ({ food: 'lb of food', water: q === 1 ? 'day of water' : 'days of water', meds: q === 1 ? 'medicine kit' : 'medicine kits', coins: 'coins', parts: 'spare parts' }[k] || k);
@@ -568,18 +580,25 @@ function useMeds() {
 // ---------- finish / over ----------
 async function finish() {
   S.done = true;
-  const sc = score();
+  const sc = score(), before = myFinishes();
   let r = null;
   try { r = await save('done'); } catch (e) {}
+  const after = LOCAL ? before + 1 : (r && r.finished) || before + 1;
+  if (LOCAL) store.set('trail_local_finishes', String(after));
+  INFO.finished = after;
+  const oldRig = rigOf(before), newRig = rigOf(after);
+  const unlock = newRig.n > oldRig.n ? '<div class="unlock"><b style="color:var(--gold);font-size:17px">🎉 New rig unlocked!</b>' + rigSVG(newRig.n) +
+    '<div style="font-weight:900">' + newRig.icon + ' ' + esc(newRig.animal) + ' · ' + esc(newRig.wagon) + '</div><div class="dim small">Your new title: <b>"' + esc(newRig.title) + '"</b>. It shows next to your name on the leaderboard and in your convoy.</div></div>'
+    : after >= 5 ? '<div class="unlock"><b style="color:var(--gold)">👑 Grand Wagon Master ×' + after + '</b><div class="dim small">Every finish adds to your count for everyone to see.</div></div>' : '';
   const a = alive();
   modal('<span class="ch">🌄 Mile 1,200</span><h2>You reached Wellness Valley!</h2><p class="big">' + sc + ' pts</p>' +
     '<p class="txt">' + a.length + ' of 4 travelers made it' + (S.bots.length ? ', plus ' + S.bots.filter(b => !b.out).length + ' of ' + S.bots.length + ' partner wagons' : '') +
-    '. You answered ' + S.right + ' of ' + S.asked + ' trail questions well, in ' + S.day + ' trail days.</p>' +
+    '. You answered ' + S.right + ' of ' + S.asked + ' trail questions well, in ' + S.day + ' trail days.</p>' + unlock +
     (LOCAL ? '<p class="dim">Log in on the Quest page next time so your score posts to the leaderboard.</p>' : '<p class="dim">Your score is on the arcade leaderboard. 🏆</p>') +
     '<button class="btn gold block" id="evOk">Start a new journey</button><a class="btn block" href="arcade.html" style="text-decoration:none">Back to the Arcade</a>');
   await waitClick('#evOk'); closeModal();
   if (LOCAL) store.del('trail_local');
-  INFO.run = null; INFO.finished = (INFO.finished || 0) + 1; INFO.best = Math.max(INFO.best || 0, sc);
+  INFO.run = null; INFO.best = Math.max(INFO.best || 0, sc);
   S = null; RUN = null; showStart(); loadBoard(true);
 }
 function overScreen() {
@@ -588,25 +607,63 @@ function overScreen() {
   waitClick('#evOk').then(() => { closeModal(); if (LOCAL) store.del('trail_local'); INFO.run = null; S = null; RUN = null; showStart(); });
 }
 
+// ---------- rigs (an upgrade for every finish) ----------
+const myFinishes = () => LOCAL ? (+store.get('trail_local_finishes') || 0) : (INFO.finished || 0);
+const rigOf = n => TRAIL_RIGS[Math.min(Math.max(n || 0, 0), TRAIL_RIGS.length - 1)];
+function badge(n) {
+  n = +n || 0; if (!n) return '';
+  const r = rigOf(n);
+  return '<span class="rig t' + r.n + '" title="' + esc(r.animal + ' · ' + r.wagon + ' · finished ' + n + '×') + '">' + r.icon + ' ' + esc(r.title) + (n >= 5 ? ' ×' + n : '') + '</span>';
+}
+const INK = '#1A1030';
+function animalSVG(t) {
+  const st = 'stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"';
+  if (t === 0) return '<ellipse cx="14" cy="14" rx="15" ry="10" fill="#7a4e2a" ' + st + '/><circle cx="30" cy="9" r="6" fill="#7a4e2a" ' + st + '/><path d="M27 3 l-3 -4 M33 3 l3 -4" stroke="#f4ecd8" stroke-width="2.5"/><path d="M4 22 v8 M12 23 v8 M20 23 v8 M26 22 v8" stroke="' + INK + '" stroke-width="3"/>';
+  if (t === 1) return '<path d="M3 12 q-7 5 -4 13" stroke="#3b2412" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M6 19 v12 M12 20 v11 M24 20 v11 M30 19 v12" stroke="' + INK + '" stroke-width="3"/>' +
+    '<ellipse cx="18" cy="14" rx="15" ry="8" fill="#a8693a" ' + st + '/><path d="M27 12 L33 -3 L41 -1 L34 15Z" fill="#a8693a" ' + st + '/><ellipse cx="41" cy="1" rx="7" ry="4.5" fill="#a8693a" ' + st + ' transform="rotate(25 41 1)"/>' +
+    '<path d="M31 1 L33 -6 L35 -1 L36 -7 L37 0" fill="#3b2412" stroke="#3b2412" stroke-width="2"/><circle cx="40" cy="-1" r="1.3" fill="' + INK + '"/>';
+  if (t === 2) return '<path d="M7 21 v10 M15 22 v9 M26 22 v9 M33 21 v10" stroke="' + INK + '" stroke-width="4"/><path d="M1 22 Q-1 6 13 4 Q23 -3 31 7 Q39 9 39 19 Q30 26 1 22Z" fill="#5a3a20" ' + st + '/>' +
+    '<path d="M6 8 q8 -8 20 -4" stroke="#3a2414" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="37" cy="16" r="7.5" fill="#3a2414" ' + st + '/><path d="M33 9 q-3 -5 1 -7 M41 10 q4 -4 0 -7" stroke="#f4ecd8" stroke-width="2.5" fill="none"/><path d="M33 22 q3 6 7 0" fill="#2a180c"/><circle cx="39" cy="14" r="1.3" fill="#f4ecd8"/>';
+  if (t === 3) return '<path d="M2 15 L-9 21 L3 21Z" fill="#3fae7a" ' + st + '/><path d="M6 23 v9 M13 24 v8 M22 24 v8 M28 23 v9" stroke="' + INK + '" stroke-width="4.5"/><ellipse cx="16" cy="16" rx="16" ry="10" fill="#3fae7a" ' + st + '/>' +
+    '<circle cx="10" cy="12" r="2" fill="#2f8f63"/><circle cx="18" cy="9" r="2.4" fill="#2f8f63"/><circle cx="22" cy="17" r="1.8" fill="#2f8f63"/>' +
+    '<circle cx="32" cy="8" r="10" fill="#f0a35a" ' + st + '/><ellipse cx="38" cy="14" rx="8" ry="6.5" fill="#3fae7a" ' + st + '/>' +
+    '<path d="M37 8 l5 -10 l1 9Z M42 10 l9 -6 l-6 8Z M45 15 l7 -2 l-6 4Z" fill="#f4ecd8" stroke="' + INK + '" stroke-width="2"/><circle cx="40" cy="12" r="1.4" fill="' + INK + '"/>';
+  const crown = t >= 5 ? '<path d="M33 -12 l1 -7 l3 4 l3 -6 l3 6 l3 -4 l1 7Z" fill="#FFD700" stroke="' + INK + '" stroke-width="1.8"/>' : '';
+  return '<path d="M3 15 Q-9 22 -8 10 l-4 -1 l5 -3" stroke="#b8322a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M7 21 v10 M14 22 v9 M22 22 v9 M28 21 v10" stroke="' + INK + '" stroke-width="3.5"/>' +
+    '<ellipse cx="16" cy="15" rx="14" ry="8" fill="#d94a3a" ' + st + '/><path d="M10 10 L15 -14 L21 2 L28 -9 L27 11Z" fill="#ffb347" ' + st + '/>' +
+    '<path d="M26 12 Q33 3 35 -3" stroke="' + INK + '" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M26 12 Q33 3 35 -3" stroke="#d94a3a" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+    '<ellipse cx="39" cy="-5" rx="8" ry="5.5" fill="#d94a3a" ' + st + '/><path d="M38 -10 l2 -6 l2 5" fill="#f4ecd8" stroke="' + INK + '" stroke-width="1.8"/><circle cx="41" cy="-6" r="1.4" fill="' + INK + '"/>' +
+    '<path d="M47 -5 l8 -3 l-3 3 l5 2 l-6 1Z" fill="#ffd23f" class="twinkle"/>' + crown;
+}
+function wagonSVG(t, gid) {
+  const W = [['#f4ecd8', '#8a5a2b', '#5a3a1a'], ['#f4ecd8', '#cd7f32', '#8a5a2b'], ['#eef2f7', '#c0c7d0', '#6f7a88'], ['#fff1b8', '#ffc928', '#a87b06'], ['url(#' + gid + ')', '#7fe3ff', '#3f8fb5'], ['url(#' + gid + ')', '#7fe3ff', '#3f8fb5']][t];
+  const sparkle = t >= 3 ? '<g class="twinkle" fill="' + (t >= 4 ? '#fff' : '#fff6b0') + '"><path d="M2 2 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2Z"/><path d="M70 -4 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 l4 -1.5Z"/></g>' : '';
+  const stripe = t >= 1 && t <= 3 ? '<rect x="4" y="33" width="72" height="3" fill="' + (t === 3 ? '#fff3b0' : 'rgba(255,255,255,.55)') + '"/>' : '';
+  return '<path d="M8 30 Q8 2 40 2 Q72 2 72 30Z" fill="' + W[0] + '" stroke="' + INK + '" stroke-width="3"/>' +
+    '<path d="M22 30 Q22 8 40 8 M58 30 Q58 8 40 8" fill="none" stroke="' + (t >= 4 ? 'rgba(255,255,255,.7)' : '#d8ccb0') + '" stroke-width="2"/>' +
+    '<rect x="4" y="28" width="72" height="14" rx="3" fill="' + W[1] + '" stroke="' + INK + '" stroke-width="3"/>' + stripe +
+    '<g class="wheel"><circle cx="18" cy="44" r="9" fill="' + W[2] + '" stroke="' + INK + '" stroke-width="3"/><path d="M18 35 V53 M9 44 H27" stroke="#f4ecd8" stroke-width="2"/></g>' +
+    '<g class="wheel"><circle cx="62" cy="44" r="9" fill="' + W[2] + '" stroke="' + INK + '" stroke-width="3"/><path d="M62 35 V53 M53 44 H71" stroke="#f4ecd8" stroke-width="2"/></g>' +
+    '<path d="M76 34 L96 34" stroke="' + INK + '" stroke-width="3"/>' + sparkle;
+}
+let RBN = 0;   // each picture gets its own rainbow id (a hidden copy with the same id would blank it out)
+const RB_DEF = id => '<linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb3c7"/><stop offset=".33" stop-color="#fff3a6"/><stop offset=".66" stop-color="#a6f0ff"/><stop offset="1" stop-color="#d4b3ff"/></linearGradient>';
+function rigSVG(t) {   // just the rig, for cards
+  const id = 'rb' + (++RBN);
+  return '<svg viewBox="-14 -26 168 86"><defs>' + RB_DEF(id) + '</defs>' + wagonSVG(t, id) + '<g transform="translate(96 22)">' + animalSVG(t) + '</g></svg>';
+}
+
 // ---------- scene ----------
 function sceneSVG() {
   const R = realmAt(S.miles), off = -((S.miles * 6) % 400);
   const hill = (y, h, c, o) => '<g transform="translate(' + (o % 400) + ' 0)"><path d="M0 ' + y + ' Q100 ' + (y - h) + ' 200 ' + y + ' T400 ' + y + ' T600 ' + y + ' T800 ' + y + ' V200 H0Z" fill="' + c + '"/></g>';
   const lm = nextLm(), dist = lm.mi - S.miles;
-  return '<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + R.sky[0] + '"/><stop offset="1" stop-color="' + R.sky[1] + '"/></linearGradient></defs>' +
+  return '<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><defs>' + RB_DEF('rbScene') + '<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + R.sky[0] + '"/><stop offset="1" stop-color="' + R.sky[1] + '"/></linearGradient></defs>' +
     '<rect width="400" height="170" fill="url(#sky)"/><circle cx="320" cy="42" r="18" fill="#FFF3B0" opacity=".9"/>' +
     hill(110, 30, shade(R.color, -.35), off * .3) + hill(128, 22, shade(R.color, -.15), off * .6) +
     (dist <= 40 && dist > 0 ? '<text x="' + (360 - dist * 4) + '" y="128" font-size="26" text-anchor="middle">' + lm.icon + '</text>' : '') +
     hill(146, 12, R.color, off) + '<rect y="146" width="400" height="24" fill="' + shade(R.color, -.45) + '"/><rect y="150" width="400" height="6" fill="#c9a66b" opacity=".75"/>' +
-    '<g class="wagon" transform="translate(150 104)">' +
-      '<path d="M8 30 Q8 2 40 2 Q72 2 72 30Z" fill="#f4ecd8" stroke="#1A1030" stroke-width="3"/>' +
-      '<path d="M22 30 Q22 8 40 8 M58 30 Q58 8 40 8" fill="none" stroke="#d8ccb0" stroke-width="2"/>' +
-      '<rect x="4" y="28" width="72" height="14" rx="3" fill="#8a5a2b" stroke="#1A1030" stroke-width="3"/>' +
-      '<g class="wheel"><circle cx="18" cy="44" r="9" fill="#5a3a1a" stroke="#1A1030" stroke-width="3"/><path d="M18 35 V53 M9 44 H27" stroke="#c9a66b" stroke-width="2"/></g>' +
-      '<g class="wheel"><circle cx="62" cy="44" r="9" fill="#5a3a1a" stroke="#1A1030" stroke-width="3"/><path d="M62 35 V53 M53 44 H71" stroke="#c9a66b" stroke-width="2"/></g>' +
-      '<path d="M76 34 L96 34" stroke="#1A1030" stroke-width="3"/>' +
-      '<g transform="translate(96 22)"><ellipse cx="14" cy="14" rx="15" ry="10" fill="#7a4e2a" stroke="#1A1030" stroke-width="3"/><circle cx="30" cy="9" r="6" fill="#7a4e2a" stroke="#1A1030" stroke-width="3"/><path d="M27 3 l-3 -4 M33 3 l3 -4" stroke="#f4ecd8" stroke-width="2.5"/><path d="M4 22 v8 M12 23 v8 M20 23 v8 M26 22 v8" stroke="#1A1030" stroke-width="3"/></g>' +
-    '</g></svg>';
+    '<g class="wagon" transform="translate(140 104)">' + wagonSVG(rigOf(myFinishes()).n, 'rbScene') + '<g transform="translate(96 22)">' + animalSVG(rigOf(myFinishes()).n) + '</g></g></svg>';
 }
 function shade(hex, f) { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; const t = f < 0 ? 0 : 255, p = Math.abs(f); r = Math.round((t - r) * p + r); g = Math.round((t - g) * p + g); b = Math.round((t - b) * p + b); return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); }
 function animate() { const s = $('scene'); s.classList.add('rolling'); clearTimeout(animate.t); animate.t = setTimeout(() => s.classList.remove('rolling'), 900); }
@@ -659,7 +716,7 @@ function renderConvoy(box) {
     '<div class="row" style="margin-top:8px"><input id="tCode" class="code" maxlength="4" placeholder="CODE"><button class="btn" id="tJoin">Join with code</button></div><div class="err" id="tErr"></div>';
   else {
     h += '<p class="dim small">Convoy <b>' + esc(TEAM.name) + '</b> · code <b style="letter-spacing:3px;color:var(--gold)">' + esc(TEAM.code) + '</b> (share it with up to 3 classmates)</p>';
-    h += TEAM.members.map(m => '<div class="mem"><span class="nm">' + (m.me ? '⭐ ' : '🛞 ') + esc(m.name) + (m.me ? ' (you)' : '') + '</span><span class="pill">' +
+    h += TEAM.members.map(m => '<div class="mem"><span class="nm">' + (m.me ? '⭐ ' : '🛞 ') + esc(m.name) + (m.me ? ' (you)' : '') + badge(m.finished) + '</span><span class="pill">' +
       (m.status === 'active' ? (m.miles || 0) + ' mi' : m.status === 'none' ? 'not started' : m.status === 'done' ? 'arrived' : 'starting over') + '</span>' +
       '<div class="pb"><i style="width:' + ((m.miles || 0) / TOTAL * 100) + '%"></i></div><div class="sub">' +
       (m.status === 'active' ? m.left + ' of 4 travelers · body ' + m.body + ' · mind ' + m.mind + ' · social ' + m.social + (m.bots ? ' · ' + m.bots + ' computer partners' : '') : '') +
@@ -732,10 +789,10 @@ function drawBoard() {
     if (!rows.length) h += '<p class="dim">' + (BTAB === 'finishers' ? 'Nobody has reached Wellness Valley yet this trimester. It takes at least 6 days, so the first finishers are still out there!'
       : BTAB === 'leaders' ? 'No wagons on the trail yet. Be the first!' : 'No convoys yet. Make one and invite up to 3 classmates.') + '</p>';
     else h += '<div class="lb">' + rows.map((r, i) => {
-      if (BTAB === 'finishers') return '<div class="r"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + '</div><div class="sub">' + esc(r.group || '') + ' · finished ' + r.finishes + '× · best trip ' + r.fastest + ' trail days</div></span><span class="v">' + r.best + '</span></div>';
-      if (BTAB === 'leaders') return '<div class="r"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + '</div><div class="sub">' + esc(r.group || '') + ' · trail day ' + r.day + ' · ' + r.left + ' of 4 travelers</div></span><span class="v">' + r.miles + ' mi</span></div>';
+      if (BTAB === 'finishers') return '<div class="r"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + badge(r.finishes) + '</div><div class="sub">' + esc(r.group || '') + ' · finished ' + r.finishes + '× · best trip ' + r.fastest + ' trail days</div></span><span class="v">' + r.best + '</span></div>';
+      if (BTAB === 'leaders') return '<div class="r"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + badge(r.finishes) + '</div><div class="sub">' + esc(r.group || '') + ' · trail day ' + r.day + ' · ' + r.left + ' of 4 travelers</div></span><span class="v">' + r.miles + ' mi</span></div>';
       const mine = TEAM && TEAM.name === r.name;
-      return '<div class="r' + (mine ? ' me' : '') + '"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + (mine ? ' (yours)' : '') + '</div><div class="sub">' + r.wagons + ' wagon' + (r.wagons === 1 ? '' : 's') + ' · ' + r.miles + ' mi on the trail now' + (r.avg ? ' · avg finish ' + r.avg + ' pts' : '') + '</div></span><span class="v">' + r.finishes + ' 🏁</span></div>';
+      return '<div class="r' + (mine ? ' me' : '') + '"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + (mine ? ' (yours)' : '') + '</div><div class="sub">' + r.wagons + ' wagon' + (r.wagons === 1 ? '' : 's') + ' · ' + r.miles + ' mi on the trail now' + (r.avg ? ' · avg finish ' + r.avg + ' pts' : '') + (r.top ? ' · top rig ' + rigOf(r.top).icon : '') + '</div></span><span class="v">' + r.finishes + ' 🏁</span></div>';
     }).join('') + '</div>';
     h += '<p class="dim small" style="margin-top:8px">' + (BTAB === 'convoys' ? 'Convoys rank by total finishes, then average finishing score.' : BTAB === 'leaders' ? (BOARD.wagons_out || 0) + ' wagons on the trail right now.' : 'Best finishing score this trimester.') + ' <a href="#" id="bRef">↻ Refresh</a></p>';
   }
@@ -761,6 +818,10 @@ function showStart() {
   $('resumeTitle').textContent = INFO.finished ? 'Your journey (finished ' + INFO.finished + '× · best ' + (INFO.best || 0) + ' pts)' : 'Your journey';
   if (!has && INFO.finished) $('setupTitle').textContent = 'Start journey #' + (INFO.finished + 1) + ' (best so far: ' + (INFO.best || 0) + ' pts)';
   renderConvoy($('convoyStart'));
+  const f = myFinishes(), r = rigOf(f), nx = TRAIL_RIGS[r.n + 1];
+  $('rigCard').innerHTML = '<div class="rigcard">' + rigSVG(r.n) + '<div><h3 style="margin-bottom:2px">Your rig: ' + r.icon + ' ' + esc(r.title) + (f >= 5 ? ' ×' + f : '') + '</h3><p class="dim small">' + esc(r.wagon) + ' pulled by ' + (r.n ? 'a ' : 'an ') + esc(r.animal.toLowerCase()) + '. ' +
+    (f ? 'You\'ve reached Wellness Valley ' + f + ' time' + (f === 1 ? '' : 's') + ' this trimester. Everyone sees your title on the leaderboard and in convoys.' : 'Finish the trail to upgrade your rig. Every finish unlocks a new animal and wagon, and everyone can see it.') +
+    (nx ? '</p><p class="dim small" style="margin-top:4px">Next finish unlocks: <b>' + nx.icon + ' ' + esc(nx.animal) + ' · ' + esc(nx.wagon) + '</b> ("' + esc(nx.title) + '")' : '') + '</p></div></div>';
   $('boardGame').innerHTML = ''; loadBoard();
 }
 function enterGame() { $('start').classList.add('hide'); $('game').classList.remove('hide'); window.scrollTo(0, 0); render(); refreshMarkers(); $('boardStart').innerHTML = ''; loadBoard(); }

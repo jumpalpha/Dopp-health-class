@@ -374,3 +374,10 @@ returns jsonb language sql stable security definer set search_path = public as $
 $$;
 revoke all on function public.trail_board(text) from public;
 grant execute on function public.trail_board(text) to anon, authenticated;
+
+-- ---------- 2026-10-14: migration "wellness_trail_xp_and_rigs" ----------
+-- trail_save now also gives 5 Verified XP (xp_events source 'trail', ref 'trail:day:<Denver date>')
+-- the first time a student saves a trail turn each day, returns 'xp' (5 or 0), and on a finish
+-- returns 'finished' (their finish count this trimester). trail_board's 'leaders' rows now include
+-- 'finishes' and 'convoys' rows include 'top' (the most finishes by one member), so the page can
+-- show each student's rig/title (trail_data.js TRAIL_RIGS). See the migration for the full bodies.
