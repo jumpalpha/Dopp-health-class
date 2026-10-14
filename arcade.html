@@ -364,13 +364,14 @@ const PARTNER = [
     medals:[[100,'🥉 1 win'],[500,'🥈 5 wins'],[1000,'🥇 10 wins'],[2000,'💎 20 wins']], goal:'Beat a classmate', winBy:'wins' }
 ];
 const GROUPS = [
-  { name:'🤝 Partner Games', sub:'Play a classmate on two devices. Wins count when you\'re both signed in.', color:'#38BFFF', games: [['🦠', 'Germ Snipes', 'Multiplayer maze shooter (2–8 players) inspired by the \'80s classic Snipes. Co-op or red vs. blue teams!', 'germ_snipes.html'], ...PARTNER.map(g => [g.icon, g.title, g.desc, g.file])] },
+  { name:'👥 Team Games', sub:'Big groups on their own devices. Team up against the germs or go red vs. blue.', color:'#FF3B5C', games: [['🦠', 'Germ Snipes', 'Multiplayer maze shooter (2–8 players) inspired by the \'80s classic Snipes. Co-op or red vs. blue teams!', 'germ_snipes.html']] },
+  { name:'🤝 Partner Games', sub:'1 vs. 1 against a classmate on two devices. Wins count when you\'re both signed in.', color:'#38BFFF', games: PARTNER.map(g => [g.icon, g.title, g.desc, g.file]) },
   { name:'⭐ Sprite Classics', sub:'Arcade favorites, rebuilt with your sprite. Earn medals!', color:'#FFD700', games: CLASSICS.map(g => [g.icon, g.title, g.desc, g.file]) },
 ];
 const CLASSROOM = [
   {icon:"📋",title:"Health Jeopardy",type:"Boss",realm:"Any Realm Boss Battle",desc:"5 health categories × 5 dollar values. Hidden Daily Doubles, 2–4 team scoring, Final Jeopardy with wagers.",features:["2–4 Teams","Daily Double","Final Jeopardy","25 Questions"],file:"game01_jeopardy.html"},
-  {icon:"💼",title:"Deal or No Deal",type:"Team",realm:"Shadow World (Ch 19–22)",desc:"26 briefcases hide point values, health hazard cards and bonus challenges. Banker offers after each round.",features:["Solo Play","Risk Decisions","Health Hazard Cards"],file:"game02_deal_or_no_deal.html"},
-  {icon:"🎡",title:"Wheel of Fortune",type:"Solo",realm:"Vocab Quests — Any Chapter",desc:"Animated wheel with Bankrupt and Free Spin. Guess health vocabulary phrases letter by letter.",features:["2–4 Teams","Animated Wheel","Bankrupt Rule","13 Phrases"],file:"game03_wheel_of_fortune.html"},
+  {icon:"💼",title:"Deal or No Deal",type:"Solo",realm:"Shadow World (Ch 19–22)",desc:"26 briefcases hide point values, health hazard cards and bonus challenges. Banker offers after each round.",features:["Solo Play","Risk Decisions","Health Hazard Cards"],file:"game02_deal_or_no_deal.html"},
+  {icon:"🎡",title:"Wheel of Fortune",type:"Team",realm:"Vocab Quests — Any Chapter",desc:"Animated wheel with Bankrupt and Free Spin. Guess health vocabulary phrases letter by letter.",features:["2–4 Teams","Animated Wheel","Bankrupt Rule","13 Phrases"],file:"game03_wheel_of_fortune.html"},
   {icon:"💰",title:"Who Wants to Be a Millionaire",type:"Boss",realm:"Any Realm Boss Battle",desc:"12 escalating questions, three lifelines, safe havens at Q5 and Q9, and a walk-away option.",features:["12 Questions","3 Lifelines","Walk Away","Safe Havens"],file:"game04_millionaire.html"},
   {icon:"⚡",title:"Hot Takes Buzzer Battle",type:"Daily",realm:"Any Chapter Opener",desc:"4-player buzzers with Hot Takes, Rapid Fire and 60-Second Blitz rounds. Streak multipliers.",features:["4 Players","Streak Bonuses","3 Question Types","Timed"],file:"game05_hot_takes.html"},
   {icon:"🔐",title:"Health Escape Room",type:"Team",realm:"Any Realm Team Event",desc:"3 rooms: Opioid Emergency, Disease Outbreak, Cardiac Emergency. 5 chained clues each, 5-minute timer.",features:["3 Rooms","Chained Clues","5-Min Timer","Hint System"],file:"game06_escape_room.html"},
@@ -404,7 +405,8 @@ if (sprURL) $('heroSprite').src = sprURL; else $('heroSprite').parentNode.style.
 // ── hero chips ──
 const nOrig = GROUPS.reduce((n, g) => n + g.games.length, 0);
 $('chips').innerHTML =
-  `<span class="chip"><b>${SPRITE.length + nOrig + CLASSROOM.length}</b> games</span>` +
+  `<a class="chip" href="#play" data-tab="play" style="text-decoration:none"><b>${SPRITE.length + nOrig}</b> arcade games</a>` +
+  `<a class="chip" href="#classroom" data-tab="classroom" style="text-decoration:none"><b>${CLASSROOM.length}</b> classroom games 🎓</a>` +
   `<span class="chip">📱 Works on phones & Chromebooks</span>` +
   `<span class="chip">🚫 No install</span>` +
   `<a class="chip" href="visitor.html" style="text-decoration:none;color:var(--emerald)">👋 Past student? Join as a visitor</a>`;
@@ -536,6 +538,7 @@ function show(name, push) {
   if ($('q').value) { $('q').value = ''; search(); }
 }
 TABS.forEach(t => $('tab-' + t).addEventListener('click', () => show(t, true)));
+$('chips').addEventListener('click', e => { const c = e.target.closest('[data-tab]'); if (c) { e.preventDefault(); show(c.dataset.tab, true); $('tab-' + c.dataset.tab).scrollIntoView({ behavior:'smooth', block:'start' }); } });
 window.addEventListener('hashchange', () => show(location.hash.slice(1)));
 show(location.hash.slice(1) || get('arcade_tab', 'play'));
 
