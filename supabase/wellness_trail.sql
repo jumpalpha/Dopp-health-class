@@ -336,3 +336,41 @@ grant execute on function public.trail_marker(uuid, text, text, uuid, int) to an
 grant execute on function public.trail_markers_near(text, int, int) to anon, authenticated;
 grant execute on function public.trail_teacher_teams(text, text) to anon, authenticated;
 grant execute on function public.trail_teacher_remove(text, uuid, text) to anon, authenticated;
+
+-- ---------- leaderboard (migration "wellness_trail_board") ----------
+-- Same rules as arcade_board: test classes hidden, visitors left out, names via _arcade_name.
+create or replace function public.trail_board(p_trimester text)
+returns jsonb language sql stable security definer set search_path = public as $$
+  with kids as (
+    select s as st, s.id, s.class_code, p.name as pet from public.students s left join public.student_pets p on p.student_id = s.id
+    where s.trimester = p_trimester and s.class_code !~* 'test' and not public._is_visitor(s.class_code)
+  ),
+  fin as (
+    select r.student_id, max(r.score) best, count(*) finishes, min((r.state->>'day')::int) fastest
+    from public.trail_runs r where r.trimester = p_trimester and r.status = 'done' group by r.student_id
+  ),
+  act as (
+    select r.student_id, r.miles, (r.state->>'day')::int as day, r.updated_at,
+           (select count(*) from jsonb_array_elements(coalesce(r.state->'party', '[]'::jsonb)) e where e->>'st' <> 'out') as left_n
+    from public.trail_runs r where r.trimester = p_trimester and r.status = 'active'
+  )
+  select jsonb_build_object(
+    'finishers', (select coalesce(jsonb_agg(x order by (x->>'best')::int desc), '[]'::jsonb) from (
+        select jsonb_build_object('name', public._arcade_name(k.st, k.pet), 'group', public._arcade_group(k.class_code),
+                                  'best', f.best, 'finishes', f.finishes, 'fastest', f.fastest) x
+        from fin f join kids k on k.id = f.student_id order by f.best desc limit 15) t),
+    'leaders', (select coalesce(jsonb_agg(x order by (x->>'miles')::int desc), '[]'::jsonb) from (
+        select jsonb_build_object('name', public._arcade_name(k.st, k.pet), 'group', public._arcade_group(k.class_code),
+                                  'miles', a.miles, 'day', a.day, 'left', a.left_n) x
+        from act a join kids k on k.id = a.student_id where a.miles > 0 order by a.miles desc, a.updated_at limit 10) t),
+    'convoys', (select coalesce(jsonb_agg(x order by (x->>'finishes')::int desc, (x->>'avg')::int desc, (x->>'miles')::int desc), '[]'::jsonb) from (
+        select jsonb_build_object('name', t.name, 'wagons', count(m.student_id),
+                                  'finishes', coalesce(sum(f.finishes), 0), 'avg', coalesce(round(avg(f.best)), 0),
+                                  'miles', coalesce(sum(a.miles), 0)) x
+        from public.trail_teams t join public.trail_members m on m.team_id = t.id join kids k on k.id = m.student_id
+        left join fin f on f.student_id = m.student_id left join act a on a.student_id = m.student_id
+        where t.trimester = p_trimester group by t.id, t.name limit 15) t),
+    'wagons_out', (select count(*) from act a join kids k on k.id = a.student_id));
+$$;
+revoke all on function public.trail_board(text) from public;
+grant execute on function public.trail_board(text) to anon, authenticated;

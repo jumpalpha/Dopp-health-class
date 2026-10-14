@@ -111,6 +111,15 @@ input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-si
 .ft.got{background:rgba(0,229,160,.3)}.ft.bad{background:rgba(255,59,92,.35)}
 .timer{height:8px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden}.timer i{display:block;height:100%;background:var(--gold);transition:width .1s linear}
 .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#123d30;border:1.5px solid var(--emerald);color:#eafff7;padding:10px 16px;border-radius:14px;font-weight:900;z-index:60;max-width:92vw;text-align:center}
+.tabs{display:flex;gap:6px;margin:4px 0 10px;flex-wrap:wrap}
+.tabs button{flex:1;padding:8px 6px;border-radius:10px;border:1.5px solid rgba(255,255,255,.2);background:transparent;color:#fff;font:900 13px Nunito,sans-serif;cursor:pointer}
+.tabs button.on{background:rgba(255,215,0,.15);border-color:var(--gold);color:var(--gold)}
+.lb{display:grid;gap:5px}
+.lb .r{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04)}
+.lb .r.me{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.35)}
+.lb .n{font-weight:900;font-size:16px;text-align:center}
+.lb .nm{font-weight:900;font-size:14px}.lb .sub{font-size:12px;color:var(--dim);font-weight:800}
+.lb .v{font-weight:900;font-size:16px;color:var(--gold);text-align:right}
 .big{font:900 30px Cinzel,serif;color:var(--gold);text-align:center;margin:6px 0;text-shadow:0 3px 0 #000}
 </style>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
@@ -143,6 +152,7 @@ input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-si
     <div class="err" id="startErr"></div>
   </div>
   <div class="card" id="convoyStart"></div>
+  <div class="card" id="boardStart"></div>
 </section>
 
 <!-- GAME -->
@@ -180,6 +190,7 @@ input.code{text-transform:uppercase;letter-spacing:6px;text-align:center;font-si
   </div>
   <div class="card"><h3>Trail journal</h3><div class="log" id="log"></div></div>
   <div class="card" id="convoyGame"></div>
+  <div class="card" id="boardGame"></div>
   <div style="text-align:center;margin-top:6px"><button class="btn" id="quitBtn" style="font-size:13px;padding:8px 12px">Start over with a new journey</button></div>
 </section>
 </main>
@@ -569,7 +580,7 @@ async function finish() {
   await waitClick('#evOk'); closeModal();
   if (LOCAL) store.del('trail_local');
   INFO.run = null; INFO.finished = (INFO.finished || 0) + 1; INFO.best = Math.max(INFO.best || 0, sc);
-  S = null; RUN = null; showStart();
+  S = null; RUN = null; showStart(); loadBoard(true);
 }
 function overScreen() {
   modal('<span class="ch">🪦 The trail is over</span><h2>Your whole party was benched</h2><p class="txt">You made it ' + S.miles + ' miles. Balanced meals, enough water, rest, and smart choices keep a party going. Start a new journey and try again!</p>' +
@@ -703,6 +714,36 @@ async function refreshMarkers() {
   try { MARKERS = await rpc('trail_markers_near', { p_trimester: TRI, p_from: S.miles, p_to: S.miles + 260 }) || []; } catch (e) { MARKERS = []; }
 }
 
+// ---------- leaderboard ----------
+let BOARD = null, BTAB = 'finishers', BTIME = 0;
+async function loadBoard(force) {
+  if (!force && BOARD && Date.now() - BTIME < 60000) return drawBoard();
+  try { BOARD = await rpc('trail_board', { p_trimester: TRI }); BTIME = Date.now(); } catch (e) { BOARD = BOARD || { error: true }; }
+  drawBoard();
+}
+function drawBoard() {
+  const box = $(S && !$('game').classList.contains('hide') ? 'boardGame' : 'boardStart'); if (!box) return;
+  const tabs = [['finishers', '🏁 Top finishers'], ['leaders', '🐂 Farthest now'], ['convoys', '🤝 Convoys']];
+  let h = '<h3>🏆 Wellness Trail leaderboard</h3><div class="tabs">' + tabs.map(t => '<button data-bt="' + t[0] + '"' + (BTAB === t[0] ? ' class="on"' : '') + '>' + t[1] + '</button>').join('') + '</div>';
+  if (!BOARD) h += '<p class="dim">Loading…</p>';
+  else if (BOARD.error) h += '<p class="dim">Couldn\'t load the leaderboard right now.</p>';
+  else {
+    const rows = BOARD[BTAB] || [], medal = i => ['🥇', '🥈', '🥉'][i] || (i + 1);
+    if (!rows.length) h += '<p class="dim">' + (BTAB === 'finishers' ? 'Nobody has reached Wellness Valley yet this trimester. It takes at least 6 days, so the first finishers are still out there!'
+      : BTAB === 'leaders' ? 'No wagons on the trail yet. Be the first!' : 'No convoys yet. Make one and invite up to 3 classmates.') + '</p>';
+    else h += '<div class="lb">' + rows.map((r, i) => {
+      if (BTAB === 'finishers') return '<div class="r"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + '</div><div class="sub">' + esc(r.group || '') + ' · finished ' + r.finishes + '× · best trip ' + r.fastest + ' trail days</div></span><span class="v">' + r.best + '</span></div>';
+      if (BTAB === 'leaders') return '<div class="r"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + '</div><div class="sub">' + esc(r.group || '') + ' · trail day ' + r.day + ' · ' + r.left + ' of 4 travelers</div></span><span class="v">' + r.miles + ' mi</span></div>';
+      const mine = TEAM && TEAM.name === r.name;
+      return '<div class="r' + (mine ? ' me' : '') + '"><span class="n">' + medal(i) + '</span><span><div class="nm">' + esc(r.name) + (mine ? ' (yours)' : '') + '</div><div class="sub">' + r.wagons + ' wagon' + (r.wagons === 1 ? '' : 's') + ' · ' + r.miles + ' mi on the trail now' + (r.avg ? ' · avg finish ' + r.avg + ' pts' : '') + '</div></span><span class="v">' + r.finishes + ' 🏁</span></div>';
+    }).join('') + '</div>';
+    h += '<p class="dim small" style="margin-top:8px">' + (BTAB === 'convoys' ? 'Convoys rank by total finishes, then average finishing score.' : BTAB === 'leaders' ? (BOARD.wagons_out || 0) + ' wagons on the trail right now.' : 'Best finishing score this trimester.') + ' <a href="#" id="bRef">↻ Refresh</a></p>';
+  }
+  box.innerHTML = h;
+  box.querySelectorAll('[data-bt]').forEach(b => b.onclick = () => { BTAB = b.dataset.bt; drawBoard(); });
+  const rf = box.querySelector('#bRef'); if (rf) rf.onclick = e => { e.preventDefault(); loadBoard(true); };
+}
+
 // ---------- start screen ----------
 function showStart() {
   $('game').classList.add('hide'); $('start').classList.remove('hide');
@@ -720,8 +761,9 @@ function showStart() {
   $('resumeTitle').textContent = INFO.finished ? 'Your journey (finished ' + INFO.finished + '× · best ' + (INFO.best || 0) + ' pts)' : 'Your journey';
   if (!has && INFO.finished) $('setupTitle').textContent = 'Start journey #' + (INFO.finished + 1) + ' (best so far: ' + (INFO.best || 0) + ' pts)';
   renderConvoy($('convoyStart'));
+  $('boardGame').innerHTML = ''; loadBoard();
 }
-function enterGame() { $('start').classList.add('hide'); $('game').classList.remove('hide'); window.scrollTo(0, 0); render(); refreshMarkers(); }
+function enterGame() { $('start').classList.add('hide'); $('game').classList.remove('hide'); window.scrollTo(0, 0); render(); refreshMarkers(); $('boardStart').innerHTML = ''; loadBoard(); }
 $('resumeBtn').onclick = () => {
   if (LOCAL) { S = JSON.parse(store.get('trail_local')); }
   else { S = INFO.run.state; RUN = INFO.run.id; }
