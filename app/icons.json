@@ -18,122 +18,127 @@
  {
   "name": "sprite_run",
   "emoji": "🛕",
-  "hue": 227
+  "hue": 226
  },
  {
   "name": "sprite_sling",
   "emoji": "🎯",
-  "hue": 240
+  "hue": 239
  },
  {
   "name": "germ_invaders",
   "emoji": "🦠",
-  "hue": 253
+  "hue": 251
  },
  {
   "name": "sprite_maze",
   "emoji": "🍎",
-  "hue": 267
+  "hue": 264
  },
  {
   "name": "habit_breaker",
   "emoji": "🧱",
-  "hue": 280
+  "hue": 277
  },
  {
   "name": "sprite_snake",
   "emoji": "🐍",
-  "hue": 293
+  "hue": 290
  },
  {
   "name": "field_day",
   "emoji": "🏅",
-  "hue": 307
+  "hue": 303
  },
  {
   "name": "habit_showdown",
   "emoji": "⚖️",
-  "hue": 320
+  "hue": 316
  },
  {
   "name": "sprite_climb",
   "emoji": "🧗",
-  "hue": 333
+  "hue": 329
  },
  {
   "name": "sprite_rider",
   "emoji": "🏍️",
-  "hue": 347
+  "hue": 341
  },
  {
   "name": "word_quest",
   "emoji": "🔤",
-  "hue": 0
+  "hue": 354
  },
  {
   "name": "snack_2048",
   "emoji": "🔢",
-  "hue": 13
+  "hue": 7
  },
  {
   "name": "sprite_memory",
   "emoji": "🧠",
-  "hue": 27
+  "hue": 20
  },
  {
   "name": "snack_stack",
   "emoji": "🟦",
-  "hue": 40
+  "hue": 33
  },
  {
   "name": "sprite_catch",
   "emoji": "🧺",
-  "hue": 53
+  "hue": 46
  },
  {
   "name": "sprite_slice",
   "emoji": "🔪",
-  "hue": 67
+  "hue": 59
  },
  {
   "name": "vocab_slice",
   "emoji": "🥕",
-  "hue": 80
+  "hue": 71
  },
  {
   "name": "sprite_dodge",
   "emoji": "👑",
-  "hue": 93
+  "hue": 84
  },
  {
   "name": "sprite_hoops",
   "emoji": "🏀",
-  "hue": 107
+  "hue": 97
  },
  {
   "name": "cup_pong",
   "emoji": "🏓",
-  "hue": 120
+  "hue": 110
+ },
+ {
+  "name": "sprite_siege",
+  "emoji": "🛡",
+  "hue": 123
  },
  {
   "name": "immune_defense",
   "emoji": "🛡️",
-  "hue": 133
+  "hue": 136
  },
  {
   "name": "germ_sweeper",
   "emoji": "🦠",
-  "hue": 147
+  "hue": 149
  },
  {
   "name": "tic_tac_toe",
   "emoji": "⭕",
-  "hue": 160
+  "hue": 161
  },
  {
   "name": "blast_blocks",
   "emoji": "🧊",
-  "hue": 173
+  "hue": 174
  },
  {
   "name": "how_smart",

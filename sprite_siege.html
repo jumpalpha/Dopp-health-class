@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html data-app-name="Sprite Siege" lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Sprite Siege — Dopp's Arcade</title>
+<meta name="description" content="Your Wellness Sprite holds the center while unhealthy habits swarm in. Build healthy habits to power up, and answer questions to earn diamonds for permanent upgrades.">
+<link rel="canonical" href="https://doppsclass.com/sprite_siege.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#04070d}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#0d2238 0%,#04070d 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 8px}
+/* permanent upgrade shop (below the game) */
+.shop{max-width:440px;margin:0 auto 30px;padding:0 10px}
+.shop h2{font-family:Cinzel,serif;font-size:17px;color:#FFD700;display:flex;justify-content:space-between;align-items:center;margin:8px 2px}
+.shop h2 span{font-family:Nunito,sans-serif;font-size:16px;color:#7ee8ff}
+.shop .note{font-size:12.5px;opacity:.8;margin:0 2px 8px;line-height:1.4}
+.perm{display:flex;gap:10px;align-items:center;background:linear-gradient(180deg,#14233d,#0b1424);border:2px solid rgba(126,232,255,.25);border-radius:14px;padding:10px 12px;margin-bottom:7px}
+.perm b{display:block;font-size:14.5px}.perm small{display:block;font-size:12px;opacity:.8}
+.perm .lv{font-size:11.5px;opacity:.7;margin-left:auto;white-space:nowrap;text-align:right}
+.perm button{flex:none;font:900 13px Nunito,sans-serif;padding:8px 11px;border-radius:10px;border:2px solid #0b1424;background:#7ee8ff;color:#06202b;cursor:pointer;min-width:66px}
+.perm button:disabled{background:#3a4658;color:#8a96a8;cursor:default}
+.shop .saved{font-size:12px;opacity:.7;margin:6px 2px}
+/* questions */
+.sg-q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(3,8,16,.74);z-index:5}
+.sg-q.hidden{display:none}
+.sg-card{background:linear-gradient(180deg,#14233d,#0b1424);border:3px solid #06101c;box-shadow:0 0 0 3px rgba(126,232,255,.5),0 10px 30px rgba(0,0,0,.5);border-radius:18px;padding:14px;max-width:360px;width:100%;max-height:100%;overflow:auto}
+.sg-tag{font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#7ee8ff}
+.sg-sub{font-size:13px;opacity:.85;margin-top:2px}
+.sg-prompt{font-size:14.5px;line-height:1.35;background:rgba(255,255,255,.07);border-left:4px solid #FFD700;border-radius:10px;padding:8px 10px;margin:8px 0}
+.sg-opts{display:grid;gap:6px}
+.sg-opt{padding:8px 11px;border:2px solid rgba(255,255,255,.18);border-radius:11px;background:rgba(255,255,255,.06);color:#f4efff;font:800 14px Nunito,sans-serif;text-align:left;cursor:pointer;line-height:1.3}
+.sg-opt.ok{background:#0b6b4c;border-color:#3ff0b5}.sg-opt.bad{background:#7a1830;border-color:#FF3B5C}.sg-opt:disabled{cursor:default}
+.sg-fb{margin-top:8px;font-size:14px;line-height:1.4}.sg-fb b{color:#FFD700}
+.sg-go{margin-top:10px;width:100%;padding:11px;border:3px solid #06101c;border-radius:14px;background:linear-gradient(180deg,#9df0ff,#38bfff);color:#04202c;font:900 18px Nunito,sans-serif;cursor:pointer;box-shadow:0 4px 0 #06101c}
+.sg-go:disabled{filter:grayscale(.7);opacity:.6;cursor:wait}
+</style>
+<!-- PWA --><link rel="manifest" href="app/sprite_siege.webmanifest"><link rel="apple-touch-icon" href="app/sprite_siege-180.png"><meta name="apple-mobile-web-app-title" content="Sprite Siege"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Sprite Siege</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<section class="shop" id="shop"></section>
+<script src="pet_sprite.js"></script>
+<script src="pet_vocab.js"></script>
+<script src="student-save.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 420, H = 700, CX = 210, CY = 318, CORE_R = 26, PANEL_Y = 598;
+const WIN_WAVE = 20, Q_EVERY = 3;
+
+// ───────── unhealthy pressures (enemies) ─────────
+const FOES = {
+  burger: { name: 'Junk Food', hp: 14, spd: 34, dmg: 10, coins: 3, pts: 3, r: 12, from: 1,
+    fact: 'Fast food is often high in salt, sugar and saturated fat. Fine sometimes — not every day.' },
+  soda: { name: 'Soda', hp: 9, spd: 62, dmg: 6, coins: 2, pts: 2, r: 10, from: 2,
+    fact: 'A 20-oz soda has about 16 teaspoons of sugar — more than the daily limit for teens.' },
+  germ: { name: 'Germs', hp: 5, spd: 84, dmg: 3, coins: 1, pts: 1, r: 7, from: 3,
+    fact: 'Washing hands with soap for 20 seconds stops most germs from spreading.' },
+  phone: { name: 'Late-Night Scrolling', hp: 35, spd: 34, dmg: 12, coins: 5, pts: 5, r: 12, from: 5,
+    fact: 'Screens before bed delay sleep. Teens need 8–10 hours a night to stay healthy.' },
+  stress: { name: 'Stress Cloud', hp: 80, spd: 24, dmg: 20, coins: 8, pts: 8, r: 17, from: 7,
+    fact: 'Long-term stress weakens your immune system. Exercise, sleep and talking it out help.' },
+  vape: { name: 'Vape Cloud', hp: 45, spd: 50, dmg: 14, coins: 6, pts: 6, r: 13, from: 9,
+    fact: 'Vapes deliver nicotine, which is highly addictive and harms the developing teen brain.' },
+  boss: { name: 'King Junk', hp: 900, spd: 17, dmg: 60, coins: 60, pts: 100, r: 30, from: 10,
+    fact: 'King Junk shows up every 10 waves. Healthy habits stacked together are how you beat him.' }
+};
+
+// ───────── healthy habits (in-run upgrades, bought with coins) ─────────
+const HABITS = [
+  { k: 'exercise', name: 'Exercise', icon: '💪', base: 10, max: 30, what: '+damage', fact: 'Exercise makes your heart, lungs and muscles stronger.' },
+  { k: 'water', name: 'Hydration', icon: '💧', base: 12, max: 20, what: 'faster shots', fact: 'Even mild dehydration makes you tired and slows your thinking.' },
+  { k: 'food', name: 'Nutrition', icon: '🥦', base: 12, max: 30, what: '+max health', fact: 'Fruits, vegetables and protein give your body the fuel to repair itself.' },
+  { k: 'sleep', name: 'Sleep', icon: '🌙', base: 18, max: 20, what: 'heal over time', fact: 'Your body repairs itself and fights infection while you sleep.' },
+  { k: 'friends', name: 'Friends', icon: '🤝', base: 15, max: 10, what: '+range', fact: 'Strong friendships lower stress and help you stay on track.' },
+  { k: 'calm', name: 'Mindfulness', icon: '🧘', base: 25, max: 6, what: 'slows nearby foes', fact: 'Slow breathing calms your stress response in under a minute.' }
+];
+const costOf = (h, lvl) => Math.round(h.base * Math.pow(1.32, lvl));
+
+// ───────── permanent upgrades (bought with diamonds; diamonds only come from right answers) ─────────
+const PERMS = [
+  { k: 'heart', name: 'Strong Heart', desc: '+25 starting max health', cost: l => 3 + l, max: 8 },
+  { k: 'allow', name: 'Allowance', desc: '+20% coins from every foe', cost: l => 4 + l * 2, max: 5 },
+  { k: 'routine', name: 'Healthy Routine', desc: '+0.5 health / second from the start', cost: l => 5 + l * 2, max: 5 },
+  { k: 'start', name: 'Head Start', desc: '+40 starting coins', cost: l => 3 + l, max: 5 },
+  { k: 'multi', name: 'Double Shot', desc: '+1 extra shot each time you fire', cost: l => 12 + l * 8, max: 3 }
+];
+let META = { diamonds: 0, perm: {}, right: 0, best: 0 };
+const pl = k => META.perm[k] || 0;
+
+// ───────── run state ─────────
+let S;
+function reset(A) {
+  S = { wave: 0, between: 1.2, queue: [], spawnT: 0, foes: [], shots: [], lv: {}, coins: 20 + 40 * pl('start'),
+        maxHp: 100 + 25 * pl('heart'), hp: 100 + 25 * pl('heart'), cd: 0, seen: {}, paused: false, kills: 0,
+        msg: 'Your Wellness Sprite is under siege! Tap a healthy habit below to power up.', msgT: 6, lastPtr: 0 };
+  HABITS.forEach(h => { S.lv[h.k] = 0; });
+  if (A) A.setScore(0);
+}
+const stat = {
+  dmg: () => 10 + 4 * S.lv.exercise,
+  rate: () => Math.max(0.1, 0.6 * Math.pow(0.88, S.lv.water)),
+  range: () => 140 + 18 * S.lv.friends,
+  regen: () => 0.8 * S.lv.sleep + 0.5 * pl('routine'),
+  slow: () => 0.08 * S.lv.calm,
+  shots: () => 1 + pl('multi')
+};
+function say(t, s) { S.msg = t; S.msgT = s || 4; }
+
+function buildWave(n) {
+  const list = [], count = 5 + n * 2;
+  const pool = Object.keys(FOES).filter(k => k !== 'boss' && FOES[k].from <= n);
+  for (let i = 0; i < count; i++) {
+    const k = pool[Math.floor(Math.random() * pool.length)];
+    list.push(k); if (k === 'germ') list.push('germ');          // germs come in pairs
+  }
+  if (n % 10 === 0) list.push('boss');
+  return list;
+}
+function nextWave(A) {
+  S.wave++; S.queue = buildWave(S.wave); S.spawnT = 0.4;
+  A.setScore(Math.max(A.score, (S.wave - 1) * 100 + S.kills));
+  if (S.wave === WIN_WAVE) A.win('You reached wave ' + WIN_WAVE + '! Keep going for a new best.');
+  if (S.wave % 10 === 0) say('👑 King Junk is coming! ' + FOES.boss.fact, 5);
+}
+function spawn(k) {
+  const f = FOES[k], a = Math.random() * Math.PI * 2, d = 330, m = 1 + 0.15 * (S.wave - 1);
+  S.foes.push({ k, f, x: CX + Math.cos(a) * d, y: CY + Math.sin(a) * d * 0.95, hp: f.hp * m, max: f.hp * m, wob: Math.random() * 6 });
+  if (!S.seen[k] && k !== 'boss') { S.seen[k] = true; say('New: ' + f.name + ' — ' + f.fact, 6); }
+}
+function kill(A, e) {
+  e.dead = true; S.kills++;
+  S.coins += Math.round(e.f.coins * (1 + 0.2 * pl('allow')));
+  A.addScore(e.f.pts);
+  A.particles.burst(e.x, e.y, e.k === 'boss' ? '#FFD700' : '#7ee8ff', e.k === 'boss' ? 40 : 8, 140, 3);
+  if (e.k === 'boss') A.sfx('medal'); else A.sfx('point');
+}
+
+function update(dt, A) {
+  if (!S) reset(A);
+  if (S.msgT > 0) S.msgT -= dt;
+  if (A.state !== 'play' || S.paused) return;
+  // heal
+  S.hp = Math.min(S.maxHp, S.hp + stat.regen() * dt);
+  // waves
+  if (!S.queue.length && !S.foes.length) {
+    S.between -= dt;
+    if (S.between <= 0) {
+      if (S.wave > 0 && S.wave % Q_EVERY === 0 && !S.askedFor) { S.askedFor = S.wave; return ask(A); }
+      S.between = 1.6; S.askedFor = 0; nextWave(A);
+    }
+  }
+  S.spawnT -= dt;
+  if (S.queue.length && S.spawnT <= 0) { spawn(S.queue.shift()); S.spawnT = Math.max(0.25, 1.1 - S.wave * 0.035); }
+  // move foes
+  const slow = stat.slow();
+  for (const e of S.foes) {
+    const dx = CX - e.x, dy = CY - e.y, dist = Math.hypot(dx, dy);
+    let sp = e.f.spd * (1 + Math.min(0.5, S.wave * 0.01));
+    if (slow && dist < 110) sp *= 1 - slow;
+    if (e.k === 'phone') { e.wob += dt * 4; }
+    const nx = dx / dist, ny = dy / dist, zig = e.k === 'phone' ? Math.sin(e.wob) * 30 : 0;
+    e.x += (nx * sp - ny * zig) * dt; e.y += (ny * sp + nx * zig) * dt;
+    if (dist < CORE_R + e.f.r) {
+      e.dead = true; S.hp -= e.f.dmg; A.shake(5, 0.2); A.sfx('hit'); A.float('-' + e.f.dmg, CX, CY - 40, '#FF3B5C');
+      if (S.hp <= 0) { S.hp = 0; finishRun(A); return; }
+    }
+  }
+  // fire
+  S.cd -= dt;
+  if (S.cd <= 0) {
+    const R = stat.range(), targets = S.foes.filter(e => !e.dead && Math.hypot(e.x - CX, e.y - CY) <= R)
+      .sort((a, b) => Math.hypot(a.x - CX, a.y - CY) - Math.hypot(b.x - CX, b.y - CY)).slice(0, stat.shots());
+    if (targets.length) {
+      S.cd = stat.rate();
+      targets.forEach(t => S.shots.push({ x: CX, y: CY, t, sp: 420 }));
+      A.sfx('flap');
+    }
+  }
+  // shots
+  for (const s of S.shots) {
+    if (s.t.dead) { s.done = true; continue; }
+    const dx = s.t.x - s.x, dy = s.t.y - s.y, d = Math.hypot(dx, dy), stp = s.sp * dt;
+    if (d <= stp + s.t.f.r) { s.done = true; s.t.hp -= stat.dmg(); if (s.t.hp <= 0) kill(A, s.t); }
+    else { s.x += dx / d * stp; s.y += dy / d * stp; }
+  }
+  S.shots = S.shots.filter(s => !s.done);
+  S.foes = S.foes.filter(e => !e.dead);
+}
+function finishRun(A) {
+  if (S.wave > (META.best || 0)) { META.best = S.wave; saveMeta(); }
+  A.gameOver();
+}
+
+// ───────── drawing ─────────
+function wrap(ctx, text, x, y, maxW, lh, maxLines) {
+  const words = String(text).split(' '); let line = '', n = 0;
+  for (const w of words) {
+    const t = line ? line + ' ' + w : w;
+    if (ctx.measureText(t).width > maxW && line) { if (maxLines && n === maxLines - 1) { ctx.fillText(line + '…', x, y + n * lh); return; } ctx.fillText(line, x, y + n * lh); n++; line = w; }
+    else line = t;
+  }
+  ctx.fillText(line, x, y + n * lh);
+}
+function drawFoe(ctx, A, e) {
+  const r = e.f.r, b = Math.sin(A.time * 6 + e.wob) * 1.5;
+  ctx.save(); ctx.translate(e.x, e.y + b);
+  if (e.k === 'burger') {
+    A.rr(-r, -r * .8, r * 2, r * .7, r * .35); A.ink('#e9a24c', 2.5);
+    A.rr(-r * 1.05, -r * .15, r * 2.1, r * .35, 3); A.ink('#6b3b1f', 2);
+    A.rr(-r, r * .2, r * 2, r * .55, r * .25); A.ink('#e9a24c', 2.5);
+  } else if (e.k === 'soda') {
+    A.rr(-r * .6, -r, r * 1.2, r * 2, 4); A.ink('#e8364f', 2.5);
+    ctx.fillStyle = '#fff'; ctx.fillRect(-r * .6 + 2, -r * .2, r * 1.2 - 4, r * .35);
+  } else if (e.k === 'germ') {
+    ctx.strokeStyle = '#1A1030'; ctx.lineWidth = 2;
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + A.time * 2; ctx.beginPath(); ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r); ctx.lineTo(Math.cos(a) * r * 1.6, Math.sin(a) * r * 1.6); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); A.ink('#7CFF6B', 2);
+  } else if (e.k === 'phone') {
+    A.rr(-r * .7, -r * 1.1, r * 1.4, r * 2.2, 5); A.ink('#22262e', 2.5);
+    A.rr(-r * .5, -r * .9, r * 1.0, r * 1.6, 3); ctx.fillStyle = 'rgba(126,232,255,' + (0.6 + Math.sin(A.time * 8) * 0.3) + ')'; ctx.fill();
+  } else if (e.k === 'stress' || e.k === 'vape') {
+    const c = e.k === 'stress' ? '#7c8597' : '#e6dcff';
+    [[-r * .5, 0, .6], [r * .45, -r * .1, .55], [0, -r * .4, .6], [0, r * .25, .55]].forEach(([x, y, s]) => { ctx.beginPath(); ctx.arc(x, y, r * s, 0, 7); A.ink(c, 2); });
+    if (e.k === 'stress') { ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-3, r * .5); ctx.lineTo(3, r * .9); ctx.lineTo(-2, r * .9); ctx.lineTo(4, r * 1.4); ctx.stroke(); }
+    else { ctx.fillStyle = '#a855f7'; ctx.font = '900 10px Nunito'; ctx.textAlign = 'center'; ctx.fillText('NIC', 0, 4); }
+  } else if (e.k === 'boss') {
+    A.rr(-r, -r * .5, r * 2, r * 1.3, r * .4); A.ink('#e9a24c', 3);
+    ctx.beginPath(); ctx.moveTo(-r * .8, -r * .5); ctx.lineTo(-r * .8, -r * 1.2); ctx.lineTo(-r * .4, -r * .8); ctx.lineTo(0, -r * 1.3); ctx.lineTo(r * .4, -r * .8); ctx.lineTo(r * .8, -r * 1.2); ctx.lineTo(r * .8, -r * .5); ctx.closePath(); A.ink('#FFD700', 3);
+    ctx.fillStyle = '#1A1030'; ctx.beginPath(); ctx.arc(-r * .35, 0, 4, 0, 7); ctx.arc(r * .35, 0, 4, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+  if (e.hp < e.max) {
+    const w = Math.max(22, r * 2.2);
+    ctx.fillStyle = '#06101c'; ctx.fillRect(e.x - w / 2, e.y - r - 12, w, 5);
+    ctx.fillStyle = '#ff6b8a'; ctx.fillRect(e.x - w / 2 + 1, e.y - r - 11, (w - 2) * Math.max(0, e.hp / e.max), 3);
+  }
+}
+function draw(ctx, A) {
+  if (!S) reset(A);
+  ctx.fillStyle = '#060c18'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(126,232,255,.06)'; ctx.lineWidth = 1;
+  for (let x = 0; x <= W; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, PANEL_Y); ctx.stroke(); }
+  for (let y = 0; y <= PANEL_Y; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  // range + calm aura
+  ctx.beginPath(); ctx.arc(CX, CY, stat.range(), 0, 7); ctx.strokeStyle = 'rgba(126,232,255,.25)'; ctx.lineWidth = 2; ctx.setLineDash([6, 8]); ctx.stroke(); ctx.setLineDash([]);
+  if (stat.slow()) { ctx.beginPath(); ctx.arc(CX, CY, 110, 0, 7); ctx.fillStyle = 'rgba(168,85,247,' + (0.05 + stat.slow() * 0.2) + ')'; ctx.fill(); }
+  // sprite core
+  const glow = 0.3 + Math.sin(A.time * 3) * 0.1;
+  ctx.beginPath(); ctx.arc(CX, CY, CORE_R + 10, 0, 7); ctx.fillStyle = 'rgba(126,232,255,' + glow + ')'; ctx.fill();
+  A.drawHero(CX, CY, 58, 0, S.hp < S.maxHp * 0.3 ? 'tired' : 'happy');
+  // health bar under sprite
+  ctx.fillStyle = '#06101c'; ctx.fillRect(CX - 40, CY + 38, 80, 8);
+  ctx.fillStyle = S.hp > S.maxHp * 0.3 ? '#3ff0b5' : '#FF3B5C'; ctx.fillRect(CX - 39, CY + 39, 78 * S.hp / S.maxHp, 6);
+  S.foes.forEach(e => drawFoe(ctx, A, e));
+  S.shots.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, 7); ctx.fillStyle = '#9df0ff'; ctx.fill(); });
+  // HUD (right side, under the sound button)
+  ctx.font = '900 15px Nunito, sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = '#06101c'; ctx.textAlign = 'right';
+  const hud = (t, y, c) => { ctx.strokeText(t, 408, y); ctx.fillStyle = c; ctx.fillText(t, 408, y); };
+  hud('🪙 ' + S.coins, 68, '#FFD700');
+  hud('💎 ' + META.diamonds, 90, '#7ee8ff');
+  hud('Wave ' + Math.max(1, S.wave), 112, '#f4efff');
+  hud('❤ ' + Math.ceil(S.hp) + '/' + S.maxHp, 134, '#ff8fa3');
+  // message
+  if (S.msgT > 0) {
+    ctx.textAlign = 'center'; ctx.font = '800 13px Nunito'; ctx.fillStyle = 'rgba(6,16,28,.85)'; A.rr(16, PANEL_Y - 62, W - 32, 52, 10); ctx.fill();
+    ctx.fillStyle = '#e7f9ff'; wrap(ctx, S.msg, CX, PANEL_Y - 41, W - 52, 16, 2);
+  }
+  // habit buttons
+  ctx.fillStyle = '#0b1424'; ctx.fillRect(0, PANEL_Y, W, H - PANEL_Y);
+  ctx.fillStyle = 'rgba(126,232,255,.5)'; ctx.fillRect(0, PANEL_Y, W, 2);
+  HABITS.forEach((h, i) => {
+    const x = 6 + (i % 3) * 137, y = PANEL_Y + 8 + Math.floor(i / 3) * 46, lvl = S.lv[h.k], maxed = lvl >= h.max, c = costOf(h, lvl), can = !maxed && S.coins >= c;
+    A.rr(x, y, 133, 42, 10); A.ink(can ? '#163a52' : '#121b2b', 2.5);
+    ctx.textAlign = 'left'; ctx.font = '900 13px Nunito'; ctx.fillStyle = can ? '#f4efff' : '#7f8aa0';
+    ctx.fillText(h.icon + ' ' + h.name + (lvl ? ' ' + lvl : ''), x + 8, y + 18);
+    ctx.font = '800 11px Nunito'; ctx.fillStyle = can ? '#FFD700' : '#6d7890';
+    ctx.fillText(maxed ? 'MAX · ' + h.what : '🪙' + c + ' · ' + h.what, x + 8, y + 34);
+  });
+}
+
+// ───────── input ─────────
+function pointer(type, x, y, A) {
+  if (type !== 'down' || !S || S.paused) return;
+  S.lastPtr = Date.now();
+  if (y < PANEL_Y) return;
+  const col = Math.floor((x - 6) / 137), row = Math.floor((y - PANEL_Y - 8) / 46);
+  const i = row * 3 + col, h = HABITS[i];
+  if (!h || col < 0 || col > 2 || row < 0 || row > 1) return;
+  const lvl = S.lv[h.k], c = costOf(h, lvl);
+  if (lvl >= h.max) return say(h.name + ' is maxed out!', 2);
+  if (S.coins < c) return say('Need 🪙' + c + ' for ' + h.name + '.', 2);
+  S.coins -= c; S.lv[h.k]++;
+  if (h.k === 'food') { S.maxHp += 20; S.hp = Math.min(S.maxHp, S.hp + 20); }
+  A.sfx('coin'); A.particles.burst(CX, CY, '#FFD700', 10, 120, 3);
+  say(h.icon + ' ' + h.name + ' ' + S.lv[h.k] + ': ' + h.fact, 4);
+}
+function input(type, A) { /* everything is tap-based on the habit buttons */ }
+
+// ───────── questions → diamonds ─────────
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function makeQ() {
+  const V = window.PET_VOCAB; if (!V) return null;
+  const chs = Object.keys(V).filter(k => V[k].terms.length >= 4), ch = chs[Math.floor(Math.random() * chs.length)];
+  const terms = V[ch].terms, pick = terms[Math.floor(Math.random() * terms.length)];
+  const others = terms.filter(t => t[0] !== pick[0]).sort(() => Math.random() - 0.5).slice(0, 3);
+  const re = new RegExp(pick[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+  return { ch, title: V[ch].title, term: pick[0], prompt: pick[1].replace(re, '_____'), opts: [pick, ...others].sort(() => Math.random() - 0.5).map(t => t[0]) };
+}
+function feedSprite() {
+  try {
+    const T = (window.TERM && TERM.id) || '2026-T1', id = localStorage.getItem('qSID_' + T), pin = sessionStorage.getItem('qPIN_' + T);
+    if (!id || !pin) return;
+    const K = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+    fetch('https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/pet_action', { method: 'POST', headers: { apikey: K, Authorization: 'Bearer ' + K, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_student_id: id, p_pin_hash: pin, p_trimester: T, p_action: 'quiz' }) }).catch(() => {});
+  } catch (e) {}
+}
+let qBox = null;
+function ask(A) {
+  const q = makeQ(); if (!q) { S.between = 1.6; S.askedFor = 0; return nextWave(A); }
+  const gems = 1 + Math.floor(S.wave / 10);
+  S.paused = true;
+  if (!qBox) { qBox = document.createElement('div'); qBox.className = 'sg-q hidden'; document.querySelector('#game .ak-stage').appendChild(qBox); }
+  qBox.innerHTML = `<div class="sg-card"><div class="sg-tag">💎 Diamond question · after wave ${S.wave}</div>
+    <div class="sg-sub">Right answer = +${gems} 💎 for permanent upgrades · Ch ${esc(q.ch)} ${esc(q.title)}</div>
+    <div class="sg-prompt">${esc(q.prompt)}</div>
+    <div class="sg-opts">${q.opts.map((o, i) => `<button class="sg-opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>
+    <div class="sg-fb"></div><button class="sg-go" style="display:none">Back to the siege →</button></div>`;
+  qBox.classList.remove('hidden');
+  const go = qBox.querySelector('.sg-go'), fb = qBox.querySelector('.sg-fb');
+  qBox.querySelectorAll('.sg-opt').forEach(b => b.onclick = ev => {
+    ev.stopPropagation();
+    const ok = q.opts[+b.dataset.i] === q.term;
+    qBox.querySelectorAll('.sg-opt').forEach((x, i) => { x.disabled = true; if (q.opts[i] === q.term) x.classList.add('ok'); });
+    go.style.display = '';
+    if (ok) {
+      b.classList.add('ok'); META.diamonds += gems; META.right = (META.right || 0) + 1; saveMeta(); renderShop();
+      fb.innerHTML = '✅ <b>Nice!</b> +' + gems + ' 💎'; A.sfx('coin'); feedSprite();
+    } else {
+      b.classList.add('bad'); fb.innerHTML = '❌ The answer is <b>' + esc(q.term) + '</b> (in green).';
+      go.disabled = true; let s = 2; go.textContent = 'Read it… ' + s;
+      const t = setInterval(() => { s--; if (s <= 0) { clearInterval(t); go.disabled = false; go.textContent = 'Back to the siege →'; } else go.textContent = 'Read it… ' + s; }, 1000);
+    }
+    setTimeout(() => go.scrollIntoView({ block: 'nearest' }), 30);
+  });
+  go.onclick = ev => { ev.stopPropagation(); if (go.disabled) return; qBox.classList.add('hidden'); S.paused = false; S.between = 1.2; S.askedFor = 0; nextWave(A); };
+}
+
+// ───────── permanent upgrades: saved to the student's Quest login (any device) ─────────
+const KEY = 'sprite_siege';
+async function loadMeta() {
+  try { const r = await StudentSave.load(KEY); if (r && r.data) META = Object.assign({ diamonds: 0, perm: {}, right: 0, best: 0 }, r.data); } catch (e) {}
+  renderShop();
+}
+let saveT = null;
+function saveMeta() { clearTimeout(saveT); saveT = setTimeout(() => { StudentSave.save(KEY, META).then(r => { const el = document.getElementById('savedNote'); if (el) el.textContent = r && r.source === 'cloud' ? '✓ Saved to your Quest login (works on any device).' : 'Saved on this device. Sign in on the Quest page to keep upgrades on every device.'; }).catch(() => {}); }, 300); }
+function renderShop() {
+  const el = document.getElementById('shop'), playing = window.game && (game.state === 'play' || game.state === 'dying');
+  el.innerHTML = `<h2>Permanent upgrades <span>💎 ${META.diamonds}</span></h2>
+    <div class="note">Diamonds only come from answering questions right (one every ${Q_EVERY} waves). These upgrades last forever, every run.${META.best ? ' Your best: wave ' + META.best + '.' : ''}</div>` +
+    PERMS.map(p => { const l = pl(p.k), maxed = l >= p.max, c = p.cost(l);
+      return `<div class="perm"><div><b>${p.name}</b><small>${p.desc}</small></div><div class="lv">Lv ${l}/${p.max}</div>
+        <button data-perm="${p.k}" ${maxed || META.diamonds < c || playing ? 'disabled' : ''}>${maxed ? 'MAX' : '💎 ' + c}</button></div>`; }).join('') +
+    `<div class="saved" id="savedNote">${playing ? 'Upgrades can be bought between runs.' : (window.StudentSave && StudentSave.isSignedIn() ? '✓ Saved to your Quest login.' : 'Sign in on the Quest page to keep upgrades on every device.')}</div>`;
+}
+document.getElementById('shop').addEventListener('click', e => {
+  const b = e.target.closest('button[data-perm]'); if (!b || b.disabled) return;
+  if (window.game && (game.state === 'play' || game.state === 'dying')) return;   // only between runs
+  const p = PERMS.find(x => x.k === b.dataset.perm), l = pl(p.k), c = p.cost(l);
+  if (l >= p.max || META.diamonds < c) return;
+  META.diamonds -= c; META.perm[p.k] = l + 1; saveMeta(); renderShop();
+  if (window.game && game.state !== 'play') reset(game);
+});
+
+window.game = Arcade({
+  mount: '#game', title: 'Sprite Siege', subtitle: 'Healthy habits vs. everything else!', W, H, reserveH: 70,
+  storageKey: 'sprite_siege', winText: 'Wave ' + WIN_WAVE + ' reached!', deathDelay: 800, overTitle: 'Your sprite needs a rest!',
+  medals: [{ at: 600, name: 'Bronze', icon: '🥉' }, { at: 1200, name: 'Silver', icon: '🥈' }, { at: 2000, name: 'Gold', icon: '🥇' }, { at: 3000, name: 'Legend', icon: '💎' }],
+  howTo: 'Your Wellness Sprite fires on its own. Junk food, soda, stress, late-night scrolling and more swarm in. ' +
+    'Spend 🪙 coins on <b>healthy habits</b> to power up. Every ' + Q_EVERY + ' waves, answer a question for 💎 diamonds — ' +
+    'they buy <b>permanent upgrades</b> (below the game). Reach <b>wave ' + WIN_WAVE + '</b> to win!',
+  controls: 'Tap a habit to buy it · P pause',
+  facts: HABITS.map(h => h.icon + ' ' + h.fact).concat(['Small healthy habits stack up — that\'s how real health works too.']),
+  reset, update, draw, input, pointer
+});
+// keep the shop in sync with play / game over
+let lastState = '';
+setInterval(() => { if (game.state !== lastState) { lastState = game.state; renderShop(); if (game.state === 'over' && S && S.wave > (META.best || 0)) { META.best = S.wave; saveMeta(); } } }, 400);
+loadMeta();
+})();
+</script>
+</body>
+</html>
