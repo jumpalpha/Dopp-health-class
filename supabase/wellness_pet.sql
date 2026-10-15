@@ -151,7 +151,7 @@ begin
       'best_streak', r.best_streak, 'care_points', r.care_points,
       'deaths', r.deaths, 'revive_progress', r.revive_progress, 'revive_needed', 10,
       'today', counts,
-      'caps', '{"meal":2,"water":1,"sleep":1,"exercise":1,"relax":1,"hygiene":1,"quiz":10,"treat":3,"play":3}'::jsonb,
+      'caps', '{"meal":2,"water":1,"sleep":1,"exercise":1,"relax":1,"hygiene":1,"quiz":15,"treat":3,"play":3}'::jsonb,
       'next_stage_points', case stage when 'egg' then 1 when 'baby' then 10 when 'child' then 35 when 'teen' then 80 else null end,
       'next_stage_days',   case stage when 'baby' then 3 when 'child' then 10 when 'teen' then 24 else null end);
   end if;
@@ -201,7 +201,7 @@ create or replace function public.pet_action(p_student_id uuid, p_pin_hash text,
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
   r public.student_pets;
-  caps jsonb := '{"meal":2,"water":1,"sleep":1,"exercise":1,"relax":1,"hygiene":1,"quiz":10,"treat":3,"play":3}';
+  caps jsonb := '{"meal":2,"water":1,"sleep":1,"exercise":1,"relax":1,"hygiene":1,"quiz":15,"treat":3,"play":3}';
   habits text[] := array['meal','water','sleep','exercise','relax','hygiene'];
   today date := (now() at time zone 'America/Denver')::date;
   used int; habit_kinds int; msg text;

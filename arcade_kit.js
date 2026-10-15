@@ -55,6 +55,11 @@
 
   function Arcade(cfg) {
     const A = { W: cfg.W, H: cfg.H, state: 'menu', score: 0, time: 0, won: false, muted: false };
+    // learning check between rounds (arcade_quiz.js); quiz games themselves are skipped
+    const QUIZ = cfg.quiz !== false && ['vocab_slice', 'how_smart'].indexOf(cfg.storageKey) === -1;
+    if (QUIZ && !window.ArcadeQuiz && !document.querySelector('script[src="arcade_quiz.js"]')) {
+      const qs = document.createElement('script'); qs.src = 'arcade_quiz.js'; document.head.appendChild(qs);
+    }
     const store = {
       get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
       set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
@@ -235,7 +240,8 @@
           '<button class="ak-play">↻ Play again</button>' +
           '<a class="ak-link" href="arcade.html">🎮 More games</a>' +
         '</div>';
-      over.querySelector('.ak-play').onclick = e => { e.stopPropagation(); start(); };
+      if (QUIZ && window.ArcadeQuiz) ArcadeQuiz.roundDone();
+      over.querySelector('.ak-play').onclick = e => { e.stopPropagation(); replay(); };
       over.classList.remove('hidden');
       postScore(over.querySelector('.ak-net'));
     }
@@ -258,6 +264,11 @@
     }
 
     // ---------- flow ----------
+    // from the game-over screen: every few rounds, one quick question first (never blocks play)
+    function replay() {
+      if (QUIZ && window.ArcadeQuiz && ArcadeQuiz.due()) { A.state = 'quiz'; ArcadeQuiz.show(over, NET, start); return; }
+      start();
+    }
     function start() {
       A.state = 'play'; A.score = 0; A.time = 0; A.won = false; lastMedal = null;
       scoreEl.textContent = '0'; parts.length = 0; floats.length = 0;
@@ -281,14 +292,15 @@
     // ---------- input: tap / keys / swipe ----------
     function send(type) {
       if (A.state === 'menu' && (type === 'tap' || type === 'up')) return;   // menu uses the Play button
-      if (A.state === 'over') { if ((type === 'tap' || type === 'up') && Date.now() > overLock) start(); return; }
+      if (A.state === 'over') { if ((type === 'tap' || type === 'up') && Date.now() > overLock) replay(); return; }
       if (A.state === 'paused') return;
       if (A.state === 'play' && cfg.input) cfg.input(type, A);
     }
     const KEYS = { Space: 'tap', ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
     document.addEventListener('keydown', e => {
       if (e.code === 'KeyP' || e.code === 'Escape'){ A.state === 'paused' ? resume() : pause(); return; }
-      if (e.code === 'Enter' && (A.state === 'menu' || (A.state === 'over' && Date.now() > overLock))){ start(); return; }
+      if (e.code === 'Enter' && A.state === 'menu'){ start(); return; }
+      if (e.code === 'Enter' && A.state === 'over' && Date.now() > overLock){ replay(); return; }
       const t = KEYS[e.code]; if (!t) return;
       e.preventDefault(); if (e.repeat && !cfg.repeatKeys) return;
       send(t);
