@@ -182,30 +182,30 @@
         href: 'chapter' + String(c).padStart(2, '0') + '.html' }, required && tgt[c]));
       VOCAB_MODES.forEach(([m, name]) => {
         const v = vocab[c + ':' + m];
-        items.push(untracked({ id: 'vocab:ch' + c + ':' + m, kind: 'auto', label: name,
+        items.push(untracked({ id: 'vocab:ch' + c + ':' + m, kind: 'auto', label: 'Vocab game: ' + name,
           status: v ? 'complete' : 'not_started',
-          detail: v ? ('best ' + (v.meta && v.meta.best_pct != null ? v.meta.best_pct : v.meta && v.meta.pct) + '% · finished ' + v.n + '×') : 'finish a full round',
+          detail: v ? ('best score ' + (v.meta && v.meta.best_pct != null ? v.meta.best_pct : v.meta && v.meta.pct) + '% · played ' + v.n + '×') : 'play one full round — skipping doesn\'t count',
           href: 'vocab_engine.html?ch=' + c + (m === 'flashcard' ? '' : '#' + m), group: 'vocab' }, required && tgt[c]));
       });
       const ms = mastery[c];
-      items.push({ id: 'mastery:ch' + c, kind: 'auto', label: 'Chapter Mastery practice (not your formal test)',
+      items.push({ id: 'mastery:ch' + c, kind: 'auto', label: 'Chapter Mastery check (practice — not your real test)',
         status: ms && ms.passed ? 'complete' : ms && ms.attempts ? 'in_progress' : 'not_started',
-        detail: ms ? (ms.passed ? 'passed' : 'best ' + (ms.best || 0) + '/10 · need 8') + ' · ' + ms.attempts + ' attempt' + (ms.attempts === 1 ? '' : 's') : 'pass with 8/10',
+        detail: ms ? (ms.passed ? 'passed' : 'best ' + (ms.best || 0) + '/10 · need 8') + ' · ' + ms.attempts + ' tr' + (ms.attempts === 1 ? 'y' : 'ies') : 'get 8 of 10 right to pass',
         href: 'mastery.html?ch=' + c });
       if (!required) return items.map(it => finish(it));
       if (cfg.hw[c] !== false) {
         const mk = 'hw:ch' + c;
-        items.push({ id: mk, kind: 'manual', label: 'Homework completed in Schoology',
+        items.push({ id: mk, kind: 'manual', label: 'Homework done in Schoology',
           status: manual[mk] && manual[mk].on ? 'reported' : 'not_started', key: mk,
-          detail: 'Student reported · Schoology is the official record' });
+          detail: 'Tick this yourself once it\'s turned in on Schoology' });
       }
       cfg.tests.forEach(t => {
         const chs = (t.chapters || []).map(Number);
         if (!chs.length || Math.max.apply(null, chs) !== c) return;     // show a test on its last chapter
         const mk = 'test:' + t.id;
-        items.push({ id: mk, kind: 'manual', label: 'Test completed outside DoppsClass — ' + t.label + (chs.length > 1 ? ' (Ch ' + chs.join(', ') + ')' : ''),
+        items.push({ id: mk, kind: 'manual', label: 'Test taken outside DoppsClass — ' + t.label + (chs.length > 1 ? ' (Ch ' + chs.join(', ') + ')' : ''),
           status: manual[mk] && manual[mk].on ? 'reported' : 'not_started', key: mk,
-          detail: 'Student reported · not a grade' });
+          detail: 'Tick this yourself after you take it in class' });
       });
       return items.map(it => finish(it, c));
     }
@@ -228,24 +228,24 @@
 
     const ongoing = [
       finish({ id: 'sprite:hatch', kind: 'auto', label: 'Hatch your Wellness Sprite', status: ev.pet ? 'complete' : 'not_started',
-        detail: ev.pet ? 'hatched ' + fmt(iso(ev.pet.born)) + (ev.pet.alive === false ? ' · needs reviving' : '') : 'Sprite page', href: 'pet.html' }),
+        detail: ev.pet ? 'hatched ' + fmt(iso(ev.pet.born)) + (ev.pet.alive === false ? ' · needs reviving' : '') : 'hatch one on the Sprite page', href: 'pet.html' }),
       finish({ id: 'sprite:care', kind: 'auto', label: 'Care for your sprite on ' + cfg.sprite_days + ' different days',
         status: careDays >= cfg.sprite_days ? 'complete' : careDays ? 'in_progress' : 'not_started',
-        detail: careDays + ' of ' + cfg.sprite_days + ' days · healthy habits are self-logged · best streak ' + ((ev.pet && ev.pet.best_streak) || 0),
+        detail: careDays + ' of ' + cfg.sprite_days + ' days · log at least one healthy habit a day · best streak ' + ((ev.pet && ev.pet.best_streak) || 0),
         href: 'pet.html' }),
       finish({ id: 'sprite:quiz', kind: 'auto', label: 'Feed your sprite knowledge: ' + cfg.sprite_quiz + ' chapter questions right',
         status: quizTotal >= cfg.sprite_quiz ? 'complete' : quizTotal ? 'in_progress' : 'not_started',
-        detail: quizTotal + ' of ' + cfg.sprite_quiz + ' · answers are checked on the student\'s device', href: 'pet.html' }),
+        detail: quizTotal + ' of ' + cfg.sprite_quiz + ' right · use "Ask me a question" on the Sprite page', href: 'pet.html' }),
       finish({ id: 'trail:days', kind: 'auto', label: 'Wellness Trail: play on ' + cfg.trail_days + ' different days',
         status: trailDays.length >= cfg.trail_days ? 'complete' : trailDays.length ? 'in_progress' : 'not_started',
-        detail: trailDays.length + ' of ' + cfg.trail_days + ' play days · a full 1,200-mile journey takes 6+ days' +
+        detail: trailDays.length + ' of ' + cfg.trail_days + ' days played · you can travel 200 miles a day' +
           (ev.trail && ev.trail.finished ? ' · ' + ev.trail.finished + ' journey(s) finished' : ''), href: 'trail.html' }),
       finish({ id: 'live:games', kind: 'auto', label: 'Take part in ' + cfg.live_min + ' live class games',
         status: liveIn.length >= cfg.live_min ? 'complete' : liveIn.length ? 'in_progress' : 'not_started',
-        detail: liveIn.length + ' of ' + cfg.live_min + ' (joined signed-in and answered at least once)' }),
-      finish({ id: 'review:weak', kind: 'auto', label: 'Revisit weak areas (' + cfg.review_min + ' reviews)',
+        detail: liveIn.length + ' of ' + cfg.live_min + ' · sign in first, then join and answer when we play in class' }),
+      finish({ id: 'review:weak', kind: 'auto', label: 'Go back over your weak spots (' + cfg.review_min + ' times)',
         status: reviews >= cfg.review_min ? 'complete' : reviews ? 'in_progress' : 'not_started',
-        detail: reviews + ' of ' + cfg.review_min + ' · counts a vocab round replayed after scoring under 80%, or a Mastery check retaken after missing it' })
+        detail: reviews + ' of ' + cfg.review_min + ' · replay a vocab game you scored under 80% on, or retake a Mastery check you missed' })
     ];
 
     // ── games ──
@@ -263,10 +263,10 @@
       items: [
         finish({ id: 'games:solo', kind: 'auto', label: cfg.solo_required === 'all' ? 'Play every solo arcade game at least once' : 'Play ' + soloNeed + ' different solo arcade games',
           status: soloDone >= soloNeed ? 'complete' : soloDone ? 'in_progress' : 'not_started',
-          detail: soloDone + ' of ' + soloNeed + ' played (a finished round with a score) · winning is separate', href: 'arcade.html' }),
+          detail: soloDone + ' of ' + soloNeed + ' played · finish a round with a score · you don\'t have to win', href: 'arcade.html' }),
         cfg.partner_required ? finish({ id: 'games:partner', kind: 'auto', label: 'Play each partner game with a classmate',
           status: partnerDone >= partnerNeed ? 'complete' : partnerDone ? 'in_progress' : 'not_started',
-          detail: partnerDone + ' of ' + partnerNeed + ' · counts only when both players are signed in', href: 'arcade.html' }) : null
+          detail: partnerDone + ' of ' + partnerNeed + ' · both of you must be signed in', href: 'arcade.html' }) : null
       ].filter(Boolean)
     };
 
@@ -287,7 +287,7 @@
       let st = 'not_started', detail = 'Optional';
       if (k === 'wcq' && b.wcq) { st = b.wcq.submitted ? 'complete' : 'in_progress'; detail = b.wcq.submitted ? 'submitted' : 'stage ' + (b.wcq.stage || 0); }
       if (k === 'song' && [...projects].some(p => /song/.test(p))) { st = 'in_progress'; detail = 'saved work found (not verified)'; }
-      if (k === 'reflection' || k === 'whatif') detail = 'Opens an AI guide — opening it is not proof of finishing';
+      if (k === 'reflection' || k === 'whatif') detail = 'Optional AI-guided activity';
       return { key: k, title: t, href, status: st, detail, label_status: LABEL[st] };
     });
 
@@ -310,54 +310,73 @@
   const ICON = { complete: '✓', teacher_done: '✓', reported: '☑', in_progress: '◐', not_started: '○', no_record: '–', needs_teacher: '👁', excused: '⤫' };
 
   function itemHTML(it, o) {
-    const kindTag = it.kind === 'manual' ? '<span class="cl-tag cl-tag-rep">Student reported</span>'
-      : it.kind === 'teacher' ? '<span class="cl-tag cl-tag-tch">Teacher</span>'
-      : '<span class="cl-tag cl-tag-auto">Auto</span>';
+    if (!o.teacher && it.status === 'no_record') it = Object.assign({}, it, { status: 'not_started', label_status: 'Not done yet', note: '' });   // students: keep it simple
+    const kindTag = it.kind === 'manual' ? '<span class="cl-tag cl-tag-rep">You tick this</span>'
+      : it.kind === 'teacher' ? '<span class="cl-tag cl-tag-tch">Teacher</span>' : '';
     let control = '';
     if (it.kind === 'manual') {
       const can = !!o.manualEnabled;
       control = `<label class="cl-box"><input type="checkbox" data-manual="${esc(it.key)}"${it.status === 'reported' ? ' checked' : ''}${can ? '' : ' disabled'}>` +
-        `<span>${it.status === 'reported' ? 'Checked' : 'Not checked'}</span></label>`;
-    } else {
-      control = `<span class="cl-lock" title="Checks itself off from site activity">🔒</span>`;    // never a checkbox
+        `<span>${it.status === 'reported' ? 'Done' : 'Tick when done'}</span></label>`;
     }
     const tctl = o.teacher ? `<span class="cl-tctl">` +
-      (it.kind !== 'manual' && it.status !== 'teacher_done' && !it.done ? `<button data-verify="${esc(it.id)}" data-st="done">Confirm</button>` : '') +
-      (it.status === 'teacher_done' ? `<button data-verify="${esc(it.id)}" data-st="">Undo confirm</button>` : '') +
+      (it.kind !== 'manual' && it.status !== 'teacher_done' && !it.done ? `<button data-verify="${esc(it.id)}" data-st="done">Mark done</button>` : '') +
+      (it.status === 'teacher_done' ? `<button data-verify="${esc(it.id)}" data-st="">Undo</button>` : '') +
       (it.status === 'excused' && !/whole class/.test(it.why || '') ? `<button data-verify="${esc(it.id)}" data-st="">Un-excuse</button>`
         : it.status !== 'excused' ? `<button data-verify="${esc(it.id)}" data-st="excused">Excuse</button>` : '') + `</span>` : '';
     const label = it.href && !o.teacher ? `<a href="${esc(it.href)}">${esc(it.label)}</a>` : esc(it.label);
+    const st = it.kind === 'manual' ? '' : `<span class="cl-st">${it.done || it.status === 'excused' ? '' : '<span title="Checks itself off when you do it">🔒</span> '}${esc(it.label_status)}</span>`;
     return `<li class="cl-item cl-${it.status}"><span class="cl-ic" aria-hidden="true">${ICON[it.status] || '○'}</span>
-      <span class="cl-main"><span class="cl-label">${label} ${kindTag}</span>
-      <span class="cl-detail">${esc(it.detail || '')}${it.note ? ' · ' + esc(it.note) : ''}</span></span>
-      <span class="cl-st">${esc(it.label_status)}</span>${control}${tctl}</li>`;
+      <span class="cl-main"><span class="cl-label">${label}${kindTag ? ' ' + kindTag : ''}</span>
+      <span class="cl-detail">${esc(it.detail || '')}${it.note ? ' · ' + esc(it.note) : ''}</span>${st}${control}</span>${tctl}</li>`;
   }
 
   function render(v, o) {
     o = o || {};
-    const s = v.summary, xp = v.xp;
-    const tallyHTML = ['complete', 'reported', 'teacher_done', 'in_progress', 'needs_teacher', 'not_started', 'no_record']
-      .filter(k => s.tally[k]).map(k => `<span class="cl-pill cl-${k}">${esc(LABEL[k])}: ${s.tally[k]}</span>`).join('');
+    const s = v.summary, xp = v.xp, student = !o.teacher;
+    const tallyHTML = student
+      ? `<span class="cl-pill cl-complete">✓ ${s.done} done</span>` + (s.tally.in_progress ? `<span class="cl-pill cl-in_progress">◐ ${s.tally.in_progress} started</span>` : '') +
+        `<span class="cl-pill">${s.total - s.done - (s.tally.in_progress || 0)} to go</span>`
+      : ['complete', 'reported', 'teacher_done', 'in_progress', 'needs_teacher', 'not_started', 'no_record']
+          .filter(k => s.tally[k]).map(k => `<span class="cl-pill cl-${k}">${esc(LABEL[k])}: ${s.tally[k]}</span>`).join('') +
+        (s.excused ? `<span class="cl-pill cl-excused">Excused: ${s.excused}</span>` : '');
     let h = `<div class="cl-wrap">`;
     if (o.banner) h += `<div class="cl-banner">${o.banner}</div>`;
     h += `<div class="cl-head">
       <div><div class="cl-name">${esc(o.title || 'My Trimester Checklist')}</div>
-        <div class="cl-sub">${esc(fmt(v.cfg.start))} – ${esc(fmt(v.cfg.end))} · Required: Chapters 1–16 (Realms 1–5). Chapters 17–28 are bonus only.</div></div>
-      <div class="cl-pct"><b>${s.pct}%</b><span>${s.done} of ${s.total} required done</span></div></div>
+        <div class="cl-sub">${esc(fmt(v.cfg.start))} – ${esc(fmt(v.cfg.end))} · Chapters ${Number(v.cfg.excuse_before) > 1 ? v.cfg.excuse_before : 1}–16 are required. Chapters 17–28 are bonus.</div></div>
+      <div class="cl-pct"><b>${s.pct}%</b><span>${s.done} of ${s.total} done</span></div></div>
       <div class="cl-bar"><i style="width:${s.pct}%"></i></div>
-      <div class="cl-pills">${tallyHTML}${s.excused ? `<span class="cl-pill cl-excused">Excused: ${s.excused}</span>` : ''}</div>
-      <div class="cl-xp">
-        <div><b>${xp.verifiedTotal}</b><span>Verified XP</span><small>${Object.keys(xp.verified).map(k => esc(k) + ' ' + xp.verified[k]).join(' · ') || 'none yet'}</small></div>
-        <div><b>${xp.questTotal}</b><span>Quest XP</span><small>${xp.questTasks} self-checked tasks × 25 + ${xp.questDays} login days × 5</small></div>
-        <div class="cl-xpnote">Checklist boxes never give XP. Student-reported boxes are reminders, not grades — Schoology is the official record.</div>
+      <div class="cl-pills">${tallyHTML}</div>`;
+    if (o.intro) h += o.intro;
+    if (o.afterHead) h += o.afterHead;
+    h += `<div class="cl-xp">
+        <div><b>${xp.verifiedTotal}</b><span>Verified XP</span><small>${Object.keys(xp.verified).map(k => esc(XP_NAMES[k] || k) + ' ' + xp.verified[k]).join(' · ') || 'none yet'}</small></div>
+        <div><b>${xp.questTotal}</b><span>Quest XP</span><small>${xp.questTasks} Quest tasks × 25 + ${xp.questDays} login days × 5</small></div>
       </div>`;
 
+    // which chapter to open for a student: the first one still in progress, else the first unfinished one
+    const chs = v.realms.flatMap(r => r.chapters);
+    const liveCh = ch => ch.items.filter(i => i.status !== 'excused' && !i.notRequired);
+    const openCh = (chs.find(ch => liveCh(ch).some(i => i.status === 'in_progress')) || chs.find(ch => liveCh(ch).some(i => !i.done)) || {}).n;
+
     v.realms.forEach(r => {
-      h += `<section class="cl-realm" style="--rc:${r.color}"><h3>${r.icon} Realm ${r.n} · ${esc(r.name)} <small>wrap up by ${esc(fmt(r.due))}</small></h3>`;
+      const realmLive = r.chapters.some(ch => liveCh(ch).length);
+      if (!realmLive) {   // whole realm excused: one quiet line
+        h += `<section class="cl-realm cl-realm-off" style="--rc:${r.color}"><h3>${r.icon} Realm ${r.n} · ${esc(r.name)} <small>Ch ${r.chapters.map(c => c.n).join(', ')} · not required this trimester</small></h3></section>`;
+        return;
+      }
+      h += `<section class="cl-realm" style="--rc:${r.color}"><h3>${r.icon} Realm ${r.n} · ${esc(r.name)} <small>finish by ${esc(fmt(r.due))}</small></h3>`;
       r.chapters.forEach(ch => {
-        const live = ch.items.filter(i => i.status !== 'excused' && !i.notRequired), d = live.filter(i => i.done).length, t = live.length;
-        h += `<details class="cl-ch"${o.open ? ' open' : ''}><summary><span class="cl-chn">Ch ${ch.n}</span> ${esc(ch.title)}
-          <span class="cl-chm">target ${esc(fmt(ch.target))} · ${d}/${t}</span></summary><ul>${ch.items.map(i => itemHTML(i, o)).join('')}</ul></details>`;
+        const live = liveCh(ch), d = live.filter(i => i.done).length, t = live.length;
+        if (!t && student) {
+          h += `<div class="cl-ch cl-ch-off"><span class="cl-chn">Ch ${ch.n}</span> ${esc(ch.title)} <span class="cl-chm">not required</span></div>`;
+          return;
+        }
+        const open = o.open || (student && ch.n === openCh);
+        const badge = t && d === t ? '<span class="cl-done">✓ Done</span>' : `${d}/${t}`;
+        h += `<details class="cl-ch"${open ? ' open' : ''}><summary><span class="cl-chn">Ch ${ch.n}</span> ${esc(ch.title)}
+          <span class="cl-chm">${t ? 'by ' + esc(fmt(ch.target)) + ' · ' : ''}${t ? badge : 'not required'}</span></summary><ul>${ch.items.map(i => itemHTML(i, o)).join('')}</ul></details>`;
       });
       if (r.items.length) h += `<div class="cl-sub2">Realm activities & boss battle</div><ul>${r.items.map(i => itemHTML(i, o)).join('')}</ul>`;
       h += `</section>`;
@@ -368,21 +387,23 @@
     const g = v.games;
     const chip = (on, t) => `<span class="cl-gc${on ? ' on' : ''}">${t}</span>`;
     h += `<section class="cl-realm" style="--rc:#FFD700"><h3>🎮 Games</h3><ul>${g.items.map(i => itemHTML(i, o)).join('')}</ul>
-      <details class="cl-ch"${o.open ? ' open' : ''}><summary>Solo arcade games (${g.solo.filter(x => x.played).length}/${g.solo.length} played)</summary><div class="cl-games">` +
-      g.solo.map(x => `<div class="cl-game${x.off ? ' off' : ''}"><b>${esc(x.title)}</b>${chip(x.played, 'Played')}${chip(x.won, 'Won')}${chip(x.xp, '+10 XP earned')}</div>`).join('') +
-      `</div></details><details class="cl-ch"${o.open ? ' open' : ''}><summary>Partner games — need a classmate (${g.partner.filter(x => x.played).length}/${g.partner.length})</summary><div class="cl-games">` +
-      g.partner.map(x => `<div class="cl-game${x.off ? ' off' : ''}"><b>${esc(x.title)}</b>${chip(x.played, 'Played')}${chip(x.won, 'Won')}</div>`).join('') +
-      `</div></details><details class="cl-ch"><summary>Classroom games (teacher-run, ${g.classroom.length})</summary>
-      <p class="cl-detail" style="padding:6px 10px">Played together on the board. Launching one never checks anyone off. They are not tracked on this checklist.</p><div class="cl-games">` +
-      g.classroom.map(x => `<div class="cl-game"><b>${esc(x.title)}</b><span class="cl-gc">${esc(x.tag)}</span></div>`).join('') + `</div></details></section>`;
+      <details class="cl-ch"${o.open ? ' open' : ''}><summary>Which solo games have I played? (${g.solo.filter(x => x.played).length}/${g.solo.length})</summary><div class="cl-games">` +
+      g.solo.map(x => `<div class="cl-game${x.off ? ' off' : ''}"><b>${esc(x.title)}</b>${chip(x.played, x.played ? '✓ Played' : 'Not played')}${x.won ? chip(true, 'Won · +10 XP') : ''}</div>`).join('') +
+      `</div></details><details class="cl-ch"${o.open ? ' open' : ''}><summary>Partner games — play with a classmate (${g.partner.filter(x => x.played).length}/${g.partner.length})</summary><div class="cl-games">` +
+      g.partner.map(x => `<div class="cl-game${x.off ? ' off' : ''}"><b>${esc(x.title)}</b>${chip(x.played, x.played ? '✓ Played' : 'Not played')}${x.won ? chip(true, 'Won') : ''}</div>`).join('') +
+      `</div></details>` +
+      (student ? '' : `<details class="cl-ch"><summary>Classroom games (teacher-run, ${g.classroom.length}) — not tracked</summary><div class="cl-games">` +
+        g.classroom.map(x => `<div class="cl-game"><b>${esc(x.title)}</b><span class="cl-gc">${esc(x.tag)}</span></div>`).join('') + `</div></details>`) + `</section>`;
 
-    h += `<section class="cl-realm cl-bonus" style="--rc:#a855f7"><h3>⭐ Bonus XP — optional <small>never required, never overdue</small></h3>
+    h += `<section class="cl-realm cl-bonus" style="--rc:#a855f7"><h3>⭐ Bonus XP — optional <small>never required</small></h3>
       <details class="cl-ch"><summary>Chapters 17–28 (${v.bonus.chapters.filter(c => c.any).length} started)</summary>` +
       v.bonus.chapters.map(c => `<details class="cl-ch"><summary><span class="cl-chn">Ch ${c.n}</span> ${esc(c.title)}</summary><ul>${c.items.map(i => itemHTML(i, Object.assign({}, o, { teacher: false }))).join('')}</ul></details>`).join('') +
-      `</details><ul>` + v.bonus.quests.map(q => `<li class="cl-item cl-${q.status}"><span class="cl-ic">${ICON[q.status]}</span><span class="cl-main"><span class="cl-label">${esc(q.title)} <span class="cl-tag">Side quest</span></span><span class="cl-detail">${esc(q.detail)}</span></span><span class="cl-st">${esc(q.label_status)}</span></li>`).join('') +
+      `</details><ul>` + v.bonus.quests.map(q => `<li class="cl-item cl-${q.status}"><span class="cl-ic">${q.status === 'not_started' ? '☆' : ICON[q.status]}</span><span class="cl-main"><span class="cl-label">${student ? `<a href="${esc(q.href)}">${esc(q.title)}</a>` : esc(q.title)} <span class="cl-tag">Side quest</span></span><span class="cl-detail">${esc(q.detail)}</span>${q.status !== 'not_started' ? `<span class="cl-st">${esc(q.label_status)}</span>` : ''}</span></li>`).join('') +
       `</ul></section></div>`;
     return h;
   }
+
+  const XP_NAMES = { mastery: 'Mastery', arcade: 'Arcade wins', trail: 'Trail', live: 'Live games', live_bonus: 'Live bonus' };
 
   const CSS = `
 .cl-wrap{--cl-bg:#fff;--cl-tx:#1C1A2E;--cl-dim:rgba(28,26,46,.66);--cl-bd:rgba(28,26,46,.13);font-family:'Nunito',sans-serif;color:var(--cl-tx);max-width:980px}
@@ -402,23 +423,24 @@
 .cl-ch>summary{cursor:pointer;padding:9px 10px;font-weight:700;font-size:14px;list-style-position:inside}
 .cl-chn{display:inline-block;min-width:44px;font-weight:800;color:var(--rc,#7a5c00)}.cl-chm{float:right;font-size:12px;color:var(--cl-dim);font-weight:600}
 .cl-ch ul,.cl-realm>ul{list-style:none;margin:0;padding:0 6px 6px}
-.cl-item{display:grid;grid-template-columns:24px 1fr auto auto;gap:4px 10px;align-items:center;padding:8px 6px;border-top:1px solid var(--cl-bd);font-size:14px}
+.cl-item{display:grid;grid-template-columns:24px 1fr;gap:2px 10px;align-items:start;padding:9px 6px;border-top:1px solid var(--cl-bd);font-size:14.5px}
 .cl-ic{font-weight:900;text-align:center}.cl-label{font-weight:700}.cl-label a{color:inherit}.cl-detail{display:block;font-size:12px;color:var(--cl-dim)}
-.cl-st{font-size:12px;font-weight:800;white-space:nowrap}
+.cl-st{display:inline-block;font-size:12px;font-weight:800;margin-top:3px}.cl-done{color:#00875f;font-weight:800}
+.cl-realm-off{opacity:.6;padding:9px 14px}.cl-realm-off h3{margin:0;font-size:14px}.cl-ch-off{padding:8px 10px;font-size:13.5px;color:var(--cl-dim);opacity:.75}
 .cl-tag{font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:5px;background:rgba(28,26,46,.07);margin-left:4px;vertical-align:middle}
 .cl-tag-rep{background:#ffe9c2;color:#7a4b00}.cl-tag-tch{background:#e7dcff;color:#4b2a99}.cl-tag-auto{background:#d6f6ea;color:#035c40}
 .cl-complete .cl-ic,.cl-complete .cl-st,.cl-teacher_done .cl-ic,.cl-teacher_done .cl-st{color:#00875f}
 .cl-reported .cl-ic,.cl-reported .cl-st{color:#a86400}.cl-in_progress .cl-ic,.cl-in_progress .cl-st{color:#0a72b5}
 .cl-needs_teacher .cl-st{color:#6b3fd1}.cl-no_record .cl-st,.cl-not_started .cl-st{color:var(--cl-dim)}.cl-excused{opacity:.6}.cl-excused .cl-label{text-decoration:line-through}
 .cl-pill.cl-complete{background:#d6f6ea}.cl-pill.cl-reported{background:#ffe9c2}.cl-pill.cl-in_progress{background:#d8efff}.cl-pill.cl-needs_teacher{background:#e7dcff}
-.cl-box{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;cursor:pointer}.cl-box input{width:20px;height:20px;accent-color:#a86400}
+.cl-box{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;cursor:pointer;margin-top:5px;padding:6px 12px 6px 8px;border:2px solid #e2b04a;border-radius:10px;background:#fff8e6;color:#7a4b00}.cl-box input{width:22px;height:22px;accent-color:#a86400}
 .cl-lock{font-size:13px;opacity:.55}
 .cl-tctl{grid-column:2/-1;display:flex;gap:6px;flex-wrap:wrap}.cl-tctl button{font:700 11.5px 'Nunito',sans-serif;border:1px solid var(--cl-bd);background:#fff;border-radius:7px;padding:3px 9px;cursor:pointer}
 .cl-tctl button:hover{border-color:#6b3fd1;color:#6b3fd1}
 .cl-games{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px;padding:6px 10px 10px}
 .cl-game{border:1px solid var(--cl-bd);border-radius:9px;padding:7px 9px;font-size:13px;background:#fff}.cl-game b{display:block;margin-bottom:4px}.cl-game.off{opacity:.45}
 .cl-gc{display:inline-block;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:5px;margin:0 4px 2px 0;background:rgba(28,26,46,.06);color:var(--cl-dim)}.cl-gc.on{background:#d6f6ea;color:#035c40}
-@media(max-width:640px){.cl-item{grid-template-columns:22px 1fr;}.cl-st,.cl-box,.cl-lock{grid-column:2}.cl-xp{grid-template-columns:1fr}.cl-chm{float:none;display:block;margin-top:2px}.cl-pct{text-align:left}}
+@media(max-width:640px){.cl-xp{grid-template-columns:1fr 1fr}.cl-xp b{font-size:18px}.cl-chm{float:none;display:block;margin-top:2px}.cl-pct{text-align:left}}
 @media print{.cl-tctl,.cl-lock{display:none!important}.cl-ch{break-inside:avoid}.cl-realm{break-inside:avoid-page}.cl-banner{border-style:solid}}
 `;
   function injectCSS() {

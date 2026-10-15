@@ -36,7 +36,11 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
 .next li:first-child { border-top:none; }
 .next a { color:var(--text); font-weight:700; }
 .next small { color:var(--dim); }
-.how { font-size:13px; color:var(--dim); line-height:1.6; background:#fff; border:1px dashed var(--border); border-radius:12px; padding:12px 14px; margin-top:14px; }
+.how { font-size:14px; line-height:1.55; background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px 14px; margin-bottom:12px; }
+.how summary { font-weight:800; cursor:pointer; }
+.how ul { margin:8px 0 2px 18px; }
+.how li { margin:4px 0; }
+.toolbar { margin-top:16px; }
 .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1C1A2E; color:#FFD700; padding:10px 18px;
   border-radius:10px; font-weight:800; font-size:14px; opacity:0; transition:opacity .3s; pointer-events:none; z-index:50; }
 .toast.on { opacity:1; }
@@ -58,13 +62,6 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
 
 <div class="wrap">
   <div id="app"><div class="msg">Loading your checklist…</div></div>
-  <div class="how" id="how" style="display:none">
-    <b>How your checklist works.</b> Items with 🔒 check themselves off when you really do the activity while signed in on the
-    Quest page — opening a page isn't enough. Read each lesson in the chapter reader all the way through, and finish whole vocab rounds.
-    The only boxes you tick yourself are <b>Homework completed in Schoology</b> and <b>Test completed outside DoppsClass</b>.
-    Those are reminders for you, not grades, and they don't give XP — Schoology is the official record.
-    Items marked <b>Teacher</b> are checked off by Mr. Dopp. Chapters 17–28 are optional bonus XP.
-  </div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -92,12 +89,12 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
     // first unfinished required items from the earliest chapters, plus anything ongoing
     const out = [];
     v.realms.forEach(r => r.chapters.forEach(ch => ch.items.forEach(i => {
-      if (out.length < 5 && !i.done && i.status !== 'excused' && i.status !== 'no_record' && i.kind !== 'teacher')
-        out.push({ i, where: 'Ch ' + ch.n + ' · target ' + Checklist.fmt(ch.target) });
+      if (out.length < 4 && !i.done && i.status !== 'excused' && i.status !== 'no_record' && i.kind !== 'teacher')
+        out.push({ i, where: 'Ch ' + ch.n });
     })));
-    v.ongoing.forEach(i => { if (out.length < 7 && !i.done && i.kind === 'auto' && i.status !== 'excused') out.push({ i, where: 'All trimester' }); });
+    v.ongoing.forEach(i => { if (out.length < 6 && !i.done && i.kind === 'auto' && i.status !== 'excused') out.push({ i, where: 'All trimester' }); });
     if (!out.length) return '';
-    return `<div class="next"><h3>⭐ Up next</h3><ul>${out.map(o => `<li>${o.i.href ? `<a href="${esc(o.i.href)}">${esc(o.i.label)}</a>` : `<b>${esc(o.i.label)}</b>`}
+    return `<div class="next"><h3>⭐ Do these next</h3><ul>${out.map(o => `<li>${o.i.href ? `<a href="${esc(o.i.href)}">${esc(o.i.label)}</a>` : `<b>${esc(o.i.label)}</b>`}
       <small> — ${esc(o.where)} · ${esc(o.i.detail || '')}</small></li>`).join('')}</ul></div>`;
   }
 
@@ -119,14 +116,18 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
     const cfg = Checklist.config(data.config, TRIMESTER);
     const v = Checklist.build(data.evidence, cfg);
     const released = !!(data.config && data.config.released);
+    const intro = `<details class="how"><summary>How does this work?</summary><ul>
+        <li><b>Most items check themselves off</b> when you really do them while signed in on the Quest page. Just opening a page doesn't count.</li>
+        <li><b>Reading:</b> scroll through each lesson in the chapter reader and actually read it.</li>
+        <li><b>Vocab games:</b> play a whole round. Skipping words doesn't count.</li>
+        <li><b>Only two boxes are yours to tick:</b> Schoology homework and tests taken in class. They're reminders, not grades, and give no XP.</li>
+        <li>Tap a chapter to open it. Tap an item's name to go do it.</li></ul></details>`;
     $('app').innerHTML =
+      Checklist.render(v, { manualEnabled: true, title: (name ? name + '’s' : 'My') + ' Trimester Checklist',
+        banner: released ? '' : 'Preview — this checklist is not open to the class yet.', intro, afterHead: upNext(v) }) +
       `<div class="toolbar"><button class="btn" data-act="print">🖨 Print my progress</button>
         <button class="btn" data-act="expand">Open all chapters</button><button class="btn" data-act="refresh">↻ Refresh</button>
-        <span class="dim">Saved to your Quest login · ${esc(TERM.label || TRIMESTER)}</span></div>` +
-      upNext(v) +
-      Checklist.render(v, { manualEnabled: true, title: (name ? name + '’s' : 'My') + ' Trimester Checklist',
-        banner: released ? '' : 'Preview — this checklist is not open to the class yet.' });
-    $('how').style.display = '';
+        <span class="dim">Saved to your Quest login · ${esc(TERM.label || TRIMESTER)}</span></div>`;
   }
 
   document.addEventListener('click', async e => {
