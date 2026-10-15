@@ -213,18 +213,7 @@
     const realms = REALMS.map(r => {
       const chapters = r.chapters.map(c => ({ n: c, title: CHAPTERS[c], target: tgt[c], items: chapterItems(c, true) }));
       const due = tgt[r.chapters[r.chapters.length - 1]];
-      const items = [];
-      r.acts.forEach(([k, name]) => {
-        const qk = r.id + '_' + k;
-        if (cfg.acts[qk] === false) return;
-        items.push(finish({ id: 'act:' + qk, kind: 'teacher', label: name, status: 'needs_teacher',
-          detail: quest.has(qk) ? 'Student checked it on the Quest page (self-reported)' : 'Assigned activity' }, Math.max.apply(null, r.chapters)));
-      });
-      if (cfg.boss[r.id] !== false) {
-        const qk = r.id + '_' + r.boss[0];
-        items.push(finish({ id: 'boss:' + r.id, kind: 'teacher', label: 'Boss battle — ' + r.boss[1], status: 'needs_teacher',
-          detail: 'Classroom game: the teacher confirms who took part' + (quest.has(qk) ? ' · student self-checked on Quest page' : '') }, Math.max.apply(null, r.chapters)));
-      }
+      const items = [];   // realm activities & boss battles are not tracked (no per-student record; teacher chose not to verify)
       return { id: r.id, n: r.n, name: r.name, icon: r.icon, color: r.color, due, chapters, items };
     });
 
@@ -254,8 +243,6 @@
       finish({ id: 'live:games', kind: 'auto', label: 'Take part in ' + cfg.live_min + ' live class games',
         status: liveIn.length >= cfg.live_min ? 'complete' : liveIn.length ? 'in_progress' : 'not_started',
         detail: liveIn.length + ' of ' + cfg.live_min + ' (joined signed-in and answered at least once)' }),
-      finish({ id: 'class:discuss', kind: 'teacher', label: 'Participate in class discussion activities', status: 'needs_teacher',
-        detail: 'The teacher confirms this' }),
       finish({ id: 'review:weak', kind: 'auto', label: 'Revisit weak areas (' + cfg.review_min + ' reviews)',
         status: reviews >= cfg.review_min ? 'complete' : reviews ? 'in_progress' : 'not_started',
         detail: reviews + ' of ' + cfg.review_min + ' · counts a vocab round replayed after scoring under 80%, or a Mastery check retaken after missing it' })
@@ -279,9 +266,7 @@
           detail: soloDone + ' of ' + soloNeed + ' played (a finished round with a score) · winning is separate', href: 'arcade.html' }),
         cfg.partner_required ? finish({ id: 'games:partner', kind: 'auto', label: 'Play each partner game with a classmate',
           status: partnerDone >= partnerNeed ? 'complete' : partnerDone ? 'in_progress' : 'not_started',
-          detail: partnerDone + ' of ' + partnerNeed + ' · counts only when both players are signed in', href: 'arcade.html' }) : null,
-        finish({ id: 'team:germ_snipes', kind: 'teacher', label: 'Germ Snipes (team maze game)', status: 'needs_teacher',
-          detail: 'The site does not save who played — teacher confirms or excuses' })
+          detail: partnerDone + ' of ' + partnerNeed + ' · counts only when both players are signed in', href: 'arcade.html' }) : null
       ].filter(Boolean)
     };
 
@@ -388,7 +373,7 @@
       `</div></details><details class="cl-ch"${o.open ? ' open' : ''}><summary>Partner games — need a classmate (${g.partner.filter(x => x.played).length}/${g.partner.length})</summary><div class="cl-games">` +
       g.partner.map(x => `<div class="cl-game${x.off ? ' off' : ''}"><b>${esc(x.title)}</b>${chip(x.played, 'Played')}${chip(x.won, 'Won')}</div>`).join('') +
       `</div></details><details class="cl-ch"><summary>Classroom games (teacher-run, ${g.classroom.length})</summary>
-      <p class="cl-detail" style="padding:6px 10px">Played together on the board. Launching one never checks anyone off. Required ones are the realm boss battles above.</p><div class="cl-games">` +
+      <p class="cl-detail" style="padding:6px 10px">Played together on the board. Launching one never checks anyone off. They are not tracked on this checklist.</p><div class="cl-games">` +
       g.classroom.map(x => `<div class="cl-game"><b>${esc(x.title)}</b><span class="cl-gc">${esc(x.tag)}</span></div>`).join('') + `</div></details></section>`;
 
     h += `<section class="cl-realm cl-bonus" style="--rc:#a855f7"><h3>⭐ Bonus XP — optional <small>never required, never overdue</small></h3>

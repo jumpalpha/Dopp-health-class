@@ -106,28 +106,13 @@
       g[p].forEach(s => {
         const v = C.build(S.ev[s.id] || {}, S.cfg);
         rows.push(`<tr><td>${esc(nameOf(s))}</td><td>${esc(p)}</td><td><b>${v.summary.pct}%</b> <small>${v.summary.done}/${v.summary.total}</small></td>
-          <td>${v.summary.tally.in_progress || 0}</td><td>${v.summary.tally.needs_teacher || 0}</td><td>${v.summary.tally.reported || 0}</td>
+          <td>${v.summary.tally.in_progress || 0}</td><td>${v.summary.tally.reported || 0}</td>
           <td>${v.xp.verifiedTotal}</td><td><button class="clt-btn" data-open="${s.id}">Open</button></td></tr>`);
       });
     });
-    const items = [];
-    C.REALMS.forEach(r => { items.push(['boss:' + r.id, 'Realm ' + r.n + ' boss battle']); r.acts.forEach(([k, n]) => items.push(['act:' + r.id + '_' + k, 'Realm ' + r.n + ': ' + n])); });
-    items.push(['class:discuss', 'Class discussion activities'], ['team:germ_snipes', 'Germ Snipes']);
-    C.CLASSROOM.forEach(([k, t]) => items.push(['class:' + k, 'Classroom game: ' + t]));
-    let bulk = '';
-    if (S.period !== 'all') {
-      const list = (g[S.period] || []);
-      bulk = `<div class="clt-bulk">${list.map(s => {
-        const st = (S.ev[s.id] && S.ev[s.id].verify || {})[S.bulkItem];
-        return `<label><input type="checkbox" data-bulk="${s.id}"${st === 'done' ? ' checked' : ''}> ${esc(nameOf(s))}${st === 'excused' ? ' <small>(excused)</small>' : ''}</label>`;
-      }).join('')}</div>`;
-    } else bulk = '<p class="cl-detail">Pick one period above to tick students one by one.</p>';
     return `<div class="clt-row">${periodSelect('clt-period', true)}<span class="cl-detail">Only chapters 1–16 count. Bonus work never lowers a percentage.</span></div>
-      <div class="card"><div class="card-title">Confirm participation (one student at a time)</div>
-        <p class="cl-detail">For things the site can't see. Ticking a box confirms that one student. Running a class game never checks anyone off by itself.</p>
-        <div class="clt-row"><select id="clt-bulk-item">${items.map(([k, l]) => `<option value="${k}"${k === S.bulkItem ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>${bulk}</div>
-      <div class="card" style="overflow-x:auto"><table class="clt-table"><thead><tr><th>Student</th><th>Period</th><th>Required done</th><th>In progress</th><th>Needs you</th><th>Reported</th><th>Verified XP</th><th></th></tr></thead>
-      <tbody>${rows.join('') || '<tr><td colspan="8">No students yet.</td></tr>'}</tbody></table></div>`;
+      <div class="card" style="overflow-x:auto"><table class="clt-table"><thead><tr><th>Student</th><th>Period</th><th>Required done</th><th>In progress</th><th>Reported</th><th>Verified XP</th><th></th></tr></thead>
+      <tbody>${rows.join('') || '<tr><td colspan="7">No students yet.</td></tr>'}</tbody></table></div>`;
   }
 
   function studentView() {
@@ -150,9 +135,7 @@
     const c = S.cfg;
     const hw = Array.from({ length: 16 }, (_, i) => i + 1).map(n => `<label class="clt-chk"><input type="checkbox" data-hw="${n}"${c.hw[n] !== false ? ' checked' : ''}> Ch ${n}</label>`).join('');
     const tests = c.tests.map(t => (t.chapters || []).join(',')).join('; ');
-    const acts = C.REALMS.map(r => `<div><b>Realm ${r.n}</b> ` + r.acts.map(([k, n]) => `<label class="clt-chk"><input type="checkbox" data-act-on="${r.id}_${k}"${c.acts[r.id + '_' + k] !== false ? ' checked' : ''}> ${esc(n)}</label>`).join('') +
-      ` <label class="clt-chk"><input type="checkbox" data-boss="${r.id}"${c.boss[r.id] !== false ? ' checked' : ''}> Boss: ${esc(r.boss[1])}</label></div>`).join('');
-    const offList = [...C.SOLO.map(([k, t]) => ['game:' + k, t]), ...C.PARTNER.map(([k, t]) => ['partner:' + k, t + ' (partner)']), ['team:germ_snipes', 'Germ Snipes (team)']];
+    const offList = [...C.SOLO.map(([k, t]) => ['game:' + k, t]), ...C.PARTNER.map(([k, t]) => ['partner:' + k, t + ' (partner)'])];
     const off = offList.map(([k, t]) => `<label class="clt-chk"><input type="checkbox" data-off="${k}"${c.off.includes(k) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
     const num = (k, l, min, max) => `<label class="clt-num">${l} <input type="number" min="${min}" max="${max}" data-num="${k}" value="${esc(c[k])}"></label>`;
     return `<div class="card"><div class="card-title">Trimester dates (${esc(TRIMESTER)})</div>
@@ -163,22 +146,21 @@
       <div class="card"><div class="card-title">Formal tests (taken outside DoppsClass)</div>
         <p class="cl-detail">One test per group, separated by semicolons. Example: <code>1,2; 3,4,5; 6,7,8,9</code> = 3 tests. A chapter in no group has no test box. Leave empty for no test boxes.</p>
         <input type="text" id="clt-tests" value="${esc(tests)}" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border)"></div>
-      <div class="card"><div class="card-title">Assigned realm activities & boss battles</div>${acts}</div>
       <div class="card"><div class="card-title">Minimums</div><div class="clt-row" style="flex-wrap:wrap">
         ${num('trail_days', 'Wellness Trail play days', 1, 30)}${num('sprite_days', 'Sprite care days', 1, 80)}${num('sprite_quiz', 'Sprite chapter questions', 0, 500)}
         ${num('live_min', 'Live games', 0, 30)}${num('review_min', 'Weak-area reviews', 0, 30)}
         ${num('excuse_before', 'Excuse everything before chapter', 1, 17)}
         <label class="clt-num">Solo games required <input type="text" data-num="solo_required" value="${esc(c.solo_required)}" style="width:70px"></label>
         <label class="clt-chk"><input type="checkbox" id="clt-partner"${c.partner_required ? ' checked' : ''}> Require partner games</label></div>
-        <p class="cl-detail">"Excuse everything before chapter 5" excuses reading, vocab, mastery, homework, tests and realm activities for chapters 1–4 for the whole class (1 = excuse nothing). Work students already did still shows as done.</p>
+        <p class="cl-detail">"Excuse everything before chapter 5" excuses reading, vocab, mastery, homework and tests for chapters 1–4 for the whole class (1 = excuse nothing). Work students already did still shows as done.</p>
         <p class="cl-detail">Solo games: "all" or a number. Pick games below to turn off for the whole class (excused for everyone).</p></div>
       <div class="card"><div class="card-title">Turn off for the whole class</div><div class="clt-wrapchk">${off}</div></div>
-      <div class="clt-row"><button class="clt-btn clt-save" data-act="save">💾 Save settings</button><span id="clt-saved" class="cl-detail"></span></div>
       <div class="card"><div class="card-title">Student release</div>
         <label class="clt-chk" style="font-size:15px"><input type="checkbox" id="clt-release"${c.released ? ' checked' : ''}> <b>Open the checklist to students</b></label>
         <p class="cl-detail">${c.released ? 'OPEN: signed-in students see a "📋 My Trimester Checklist" button on their Quest page and can tick their two Schoology/test boxes.'
           : 'CLOSED: only TEST-class accounts can open <a href="checklist.html" target="_blank">checklist.html</a> (sign in on the Quest page as a TEST student to preview it). Real students see nothing.'}
-          Press Save after changing this.</p></div>`;
+          Press Save after changing this.</p></div>
+      <div class="clt-row"><button class="clt-btn clt-save" data-act="save">💾 Save settings</button><span id="clt-saved" class="cl-detail"></span></div>`;
   }
 
   function rulesView() {
@@ -188,7 +170,6 @@
       ['Chapter Mastery practice', 'A saved passing attempt (8/10). Separate from formal tests.', 'mastery_attempts (existing)'],
       ['Homework in Schoology', 'Student ticks/unticks the box. Student reported; no XP; Schoology is the record.', 'checklist_manual'],
       ['Test outside DoppsClass', 'Student ticks/unticks per test group you set. Student reported; no XP.', 'checklist_manual'],
-      ['Realm activities, boss battles, discussion, Germ Snipes, classroom games', 'The site has no per-student record, so they show "Needs teacher verification" until you confirm. A Quest-page self-check is shown only as a hint.', 'checklist_verify'],
       ['Hatch sprite', 'A sprite exists for the student this trimester.', 'student_pets (existing)'],
       ['Sprite care over time', 'Distinct days with at least one healthy habit logged. Habits are self-logged in the game.', 'pet_care_days (new trigger; backfilled from current streaks)'],
       ['Feed sprite knowledge', 'Total chapter questions answered right in the Sprite page (checked on the student\'s device).', 'pet_care_days.quiz'],
@@ -235,24 +216,16 @@
       catch (err) { alert('Could not save: ' + err.message); }
       return reloadStudent(S.student);
     }
-    if (t.dataset.bulk) {
-      const id = t.dataset.bulk, on = t.checked;
-      try { await rpc('cl_teacher_verify', { p_student: id, p_item: S.bulkItem, p_status: on ? 'done' : null }); await reloadStudent(id); }
-      catch (err) { alert('Could not save: ' + err.message); t.checked = !on; }
-    }
   }
   function onChange(e) {
     const t = e.target;
     if (t.id === 'clt-period') { S.period = t.value; draw(); }
-    else if (t.id === 'clt-bulk-item') { S.bulkItem = t.value; draw(); }
     else if (t.id === 'clt-student') { S.student = t.value; draw(); }
   }
   async function saveSettings() {
     const c = JSON.parse(JSON.stringify(S.cfg));
     document.querySelectorAll('[data-date]').forEach(i => { if (i.value) c[i.dataset.date] = i.value; });
     document.querySelectorAll('[data-hw]').forEach(i => { c.hw[i.dataset.hw] = i.checked; });
-    document.querySelectorAll('[data-act-on]').forEach(i => { c.acts[i.dataset.actOn] = i.checked; });
-    document.querySelectorAll('[data-boss]').forEach(i => { c.boss[i.dataset.boss] = i.checked; });
     document.querySelectorAll('[data-num]').forEach(i => {
       if (i.dataset.num === 'solo_required') c.solo_required = /^all$/i.test(i.value.trim()) ? 'all' : Math.max(0, parseInt(i.value, 10) || 0);
       else c[i.dataset.num] = Math.max(0, parseInt(i.value, 10) || 0);
