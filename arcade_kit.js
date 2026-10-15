@@ -56,7 +56,7 @@
   function Arcade(cfg) {
     const A = { W: cfg.W, H: cfg.H, state: 'menu', score: 0, time: 0, won: false, muted: false };
     // learning check between rounds (arcade_quiz.js); quiz games themselves are skipped
-    const QUIZ = cfg.quiz !== false && ['vocab_slice', 'how_smart'].indexOf(cfg.storageKey) === -1;
+    const QUIZ = cfg.quiz !== false && ['vocab_slice', 'how_smart', 'immune_defense'].indexOf(cfg.storageKey) === -1;
     if (QUIZ && !window.ArcadeQuiz && !document.querySelector('script[src="arcade_quiz.js"]')) {
       const qs = document.createElement('script'); qs.src = 'arcade_quiz.js'; document.head.appendChild(qs);
     }

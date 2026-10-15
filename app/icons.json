@@ -13,126 +13,131 @@
  {
   "name": "sprite_dash",
   "emoji": "🏃",
-  "hue": 214
+  "hue": 213
  },
  {
   "name": "sprite_run",
   "emoji": "🛕",
-  "hue": 228
+  "hue": 227
  },
  {
   "name": "sprite_sling",
   "emoji": "🎯",
-  "hue": 242
+  "hue": 240
  },
  {
   "name": "germ_invaders",
   "emoji": "🦠",
-  "hue": 255
+  "hue": 253
  },
  {
   "name": "sprite_maze",
   "emoji": "🍎",
-  "hue": 269
+  "hue": 267
  },
  {
   "name": "habit_breaker",
   "emoji": "🧱",
-  "hue": 283
+  "hue": 280
  },
  {
   "name": "sprite_snake",
   "emoji": "🐍",
-  "hue": 297
+  "hue": 293
  },
  {
   "name": "field_day",
   "emoji": "🏅",
-  "hue": 311
+  "hue": 307
  },
  {
   "name": "habit_showdown",
   "emoji": "⚖️",
-  "hue": 325
+  "hue": 320
  },
  {
   "name": "sprite_climb",
   "emoji": "🧗",
-  "hue": 338
+  "hue": 333
  },
  {
   "name": "sprite_rider",
   "emoji": "🏍️",
-  "hue": 352
+  "hue": 347
  },
  {
   "name": "word_quest",
   "emoji": "🔤",
-  "hue": 6
+  "hue": 0
  },
  {
   "name": "snack_2048",
   "emoji": "🔢",
-  "hue": 20
+  "hue": 13
  },
  {
   "name": "sprite_memory",
   "emoji": "🧠",
-  "hue": 34
+  "hue": 27
  },
  {
   "name": "snack_stack",
   "emoji": "🟦",
-  "hue": 48
+  "hue": 40
  },
  {
   "name": "sprite_catch",
   "emoji": "🧺",
-  "hue": 62
+  "hue": 53
  },
  {
   "name": "sprite_slice",
   "emoji": "🔪",
-  "hue": 75
+  "hue": 67
  },
  {
   "name": "vocab_slice",
   "emoji": "🥕",
-  "hue": 89
+  "hue": 80
  },
  {
   "name": "sprite_dodge",
   "emoji": "👑",
-  "hue": 103
+  "hue": 93
  },
  {
   "name": "sprite_hoops",
   "emoji": "🏀",
-  "hue": 117
+  "hue": 107
  },
  {
   "name": "cup_pong",
   "emoji": "🏓",
-  "hue": 131
+  "hue": 120
+ },
+ {
+  "name": "immune_defense",
+  "emoji": "🛡️",
+  "hue": 133
  },
  {
   "name": "germ_sweeper",
   "emoji": "🦠",
-  "hue": 145
+  "hue": 147
  },
  {
   "name": "tic_tac_toe",
   "emoji": "⭕",
-  "hue": 158
+  "hue": 160
  },
  {
   "name": "blast_blocks",
   "emoji": "🧊",
-  "hue": 172
+  "hue": 173
  },
  {
   "name": "how_smart",
   "emoji": "🧠",
-  "hue": 186
+  "hue": 187
  }
 ]

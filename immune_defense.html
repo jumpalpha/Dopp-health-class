@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html data-app-name="Immune Defense" lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Immune Defense — Dopp's Arcade</title>
+<meta name="description" content="Tower defense inside your bloodstream. Place immune cells to stop germs before they reach the heart — and learn why antibiotics don't work on viruses.">
+<link rel="canonical" href="https://doppsclass.com/immune_defense.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#3a0f22 0%,#0c0408 70%) fixed;color:#f4efff;font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 16px}
+.top a{color:#FFD700;font-weight:800;text-decoration:none}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:#FFD700;text-shadow:0 2px 0 #000}
+#game{padding:0 8px 16px}
+/* between-wave questions */
+.td-q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(10,4,14,.72);z-index:5}
+.td-q.hidden{display:none}
+.td-card{background:linear-gradient(180deg,#22164a,#140d2c);border:3px solid #1A1030;box-shadow:0 0 0 3px rgba(255,215,0,.45),0 10px 30px rgba(0,0,0,.5);border-radius:18px;padding:14px;max-width:360px;width:100%;max-height:100%;overflow:auto}
+.td-tag{font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#FFD700}
+.td-sub{font-size:13px;opacity:.85;margin-top:2px}
+.td-prompt{font-size:14.5px;line-height:1.35;background:rgba(255,255,255,.07);border-left:4px solid #38BFFF;border-radius:10px;padding:8px 10px;margin:8px 0}
+.td-opts{display:grid;gap:6px}
+.td-opt{padding:8px 11px;border:2px solid rgba(255,255,255,.18);border-radius:11px;background:rgba(255,255,255,.06);color:#f4efff;font:800 14px Nunito,sans-serif;text-align:left;cursor:pointer;line-height:1.3}
+.td-opt.ok{background:#0b6b4c;border-color:#3ff0b5}.td-opt.bad{background:#7a1830;border-color:#FF3B5C}.td-opt:disabled{cursor:default}
+.td-fb{margin-top:8px;font-size:14px;line-height:1.4}.td-fb b{color:#FFD700}
+.td-go{margin-top:10px;width:100%;padding:11px;border:3px solid #1A1030;border-radius:14px;background:linear-gradient(180deg,#3ff0b5,#00c98a);color:#05261a;font:900 18px Nunito,sans-serif;cursor:pointer;box-shadow:0 4px 0 #1A1030}
+.td-go:disabled{filter:grayscale(.7);opacity:.6;cursor:wait}
+</style>
+<!-- PWA --><link rel="manifest" href="app/immune_defense.webmanifest"><link rel="apple-touch-icon" href="app/immune_defense-180.png"><meta name="apple-mobile-web-app-title" content="Defense"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Immune Defense</h1><a href="pet.html">🌱 My Sprite</a></div>
+<div id="game"></div>
+<script src="pet_sprite.js"></script>
+<script src="pet_vocab.js"></script>
+<script src="arcade_kit.js"></script>
+<script>
+(() => {
+const W = 420, H = 700, PANEL_Y = 604;
+const WAVES = 10, START_COINS = 120, START_HP = 20, WAVE_BONUS = 30, Q_PER_BREAK = 2, Q_COINS = 20;
+
+// ───────── map: the bloodstream, ending at the heart ─────────
+const PATH = [[60, 44], [60, 170], [360, 170], [360, 300], [60, 300], [60, 430], [360, 430], [360, 548], [210, 548], [210, 566]];
+const HEART = { x: 210, y: 578 };
+const SEG = []; let PATH_LEN = 0;
+for (let i = 0; i < PATH.length - 1; i++) {
+  const [x1, y1] = PATH[i], [x2, y2] = PATH[i + 1], len = Math.hypot(x2 - x1, y2 - y1);
+  SEG.push({ x1, y1, x2, y2, len, at: PATH_LEN }); PATH_LEN += len;
+}
+function posAt(d) {
+  for (const s of SEG) if (d <= s.at + s.len) { const t = (d - s.at) / s.len; return [s.x1 + (s.x2 - s.x1) * t, s.y1 + (s.y2 - s.y1) * t]; }
+  const e = PATH[PATH.length - 1]; return [e[0], e[1]];
+}
+const SLOTS = [[150, 108], [270, 108], [130, 235], [210, 235], [290, 235], [130, 365], [210, 365], [290, 365], [130, 492], [210, 492], [290, 492]]
+  .map(([x, y]) => ({ x, y, tower: null }));
+
+// ───────── immune cells (towers) ─────────
+const TOWERS = {
+  neutro: { name: 'Neutrophil', color: '#5cc8ff', cost: 40, up: [35, 55], dmg: [6, 9, 13], rate: [0.45, 0.42, 0.38], range: [85, 90, 98],
+    fact: 'Neutrophils are the most common white blood cells and the first to rush to an infection.' },
+  macro: { name: 'Macrophage', color: '#c08bff', cost: 70, up: [60, 80], dmg: [10, 16, 24], rate: [1.3, 1.2, 1.1], range: [68, 72, 78], area: true,
+    fact: 'Macrophages ("big eaters") swallow germs whole and call in other immune cells.' },
+  anti: { name: 'Antibody (B cell)', color: '#ffd23f', cost: 55, up: [45, 60], dmg: [2, 3, 4], rate: [0.8, 0.7, 0.6], range: [95, 105, 115], slow: [0.45, 0.55, 0.6], targets: [1, 1, 2],
+    fact: 'B cells make antibodies that latch onto germs — slowing them and marking them so other cells hit harder.' },
+  tcell: { name: 'Killer T cell', color: '#4be38a', cost: 90, up: [75, 100], dmg: [30, 45, 65], rate: [1.1, 1.05, 1.0], range: [100, 105, 112], vsVirus: 2,
+    fact: 'Killer T cells destroy your own cells that a virus has taken over. Extra strong against viruses.' },
+  pill: { name: 'Antibiotic', color: '#ff8fa3', cost: 50, up: [40, 55], dmg: [22, 32, 45], rate: [0.7, 0.65, 0.6], range: [100, 105, 110], bacteriaOnly: true,
+    fact: 'Antibiotics kill bacteria but do NOTHING to viruses or fungi. Overusing them breeds resistant "superbugs."' }
+};
+const ORDER = ['neutro', 'macro', 'anti', 'tcell', 'pill'];
+
+// ───────── germs ─────────
+const GERMS = {
+  bact: { name: 'Bacteria', hp: 30, speed: 42, coins: 6, pts: 10, hurt: 1, kind: 'bacteria', r: 11,
+    fact: 'Bacteria are tiny living cells. Some make you sick — antibiotics can kill them.' },
+  virus: { name: 'Virus', hp: 16, speed: 70, coins: 5, pts: 8, hurt: 1, kind: 'virus', r: 9,
+    fact: 'Viruses hijack your cells to copy themselves. Antibiotics don\'t work on viruses!' },
+  fungus: { name: 'Fungus', hp: 90, speed: 26, coins: 12, pts: 15, hurt: 2, kind: 'fungus', r: 13,
+    fact: 'Fungal infections (like athlete\'s foot) grow slowly and are tough to clear.' },
+  super: { name: 'Superbug', hp: 120, speed: 38, coins: 15, pts: 25, hurt: 3, kind: 'bacteria', resist: true, r: 13,
+    fact: 'Superbugs are bacteria that antibiotics can\'t kill anymore. Antibiotic overuse creates them.' },
+  boss: { name: 'Mega Flu', hp: 1200, speed: 22, coins: 100, pts: 200, hurt: 10, kind: 'virus', r: 24,
+    fact: 'The flu is a virus. A yearly flu shot trains your immune system before it ever meets the real thing.' }
+};
+const WAVE_PLAN = [
+  [['bact', 8]],
+  [['bact', 10], ['virus', 4]],
+  [['virus', 8], ['bact', 6]],
+  [['fungus', 4], ['bact', 10]],
+  [['virus', 14], ['fungus', 4]],
+  [['bact', 16], ['fungus', 6]],
+  [['virus', 18], ['bact', 8]],
+  [['fungus', 8], ['virus', 14], ['bact', 8]],
+  [['bact', 20], ['virus', 14], ['fungus', 6]],
+  [['virus', 12], ['bact', 8], ['boss', 1]]
+];
+const RESIST_PER_SUPERBUG = 70;   // antibiotic shots that "breed" one superbug
+
+// ───────── state ─────────
+let S;
+function reset(A) {
+  SLOTS.forEach(s => { s.tower = null; });
+  S = { wave: 0, phase: 'build', hp: START_HP, coins: START_COINS, germs: [], queue: [], spawnT: 0, sel: null, buildAt: null,
+        shots: [], pulses: [], overuse: 0, superbugs: 0, seen: {}, speed: 1, lastPtr: 0, msg: 'Tap a glowing spot to place an immune cell, then start wave 1.', msgT: 99 };
+  if (A) A.setScore(0);
+}
+function say(t, secs) { S.msg = t; S.msgT = secs || 4; }
+
+function buildQueue(n) {
+  const list = [];
+  WAVE_PLAN[n - 1].forEach(([k, c]) => { for (let i = 0; i < c; i++) list.push(k); });
+  for (let i = 0; i < S.superbugs; i++) list.push('super');
+  // mix the order a little, but keep a boss last
+  const boss = list.filter(k => k === 'boss'), rest = list.filter(k => k !== 'boss');
+  for (let i = rest.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rest[i], rest[j]] = [rest[j], rest[i]]; }
+  return rest.concat(boss);
+}
+function startWave(A) {
+  if (S.phase !== 'build') return;
+  S.wave++; S.phase = 'wave'; S.queue = buildQueue(S.wave); S.spawnT = 0; S.sel = null; S.buildAt = null;
+  if (S.superbugs) say('⚠ Antibiotic overuse bred ' + S.superbugs + ' superbug' + (S.superbugs > 1 ? 's' : '') + '! Antibiotics can\'t hurt them.', 5);
+  S.superbugs = 0;
+  A.sfx('jump');
+}
+function spawn(k) {
+  const g = GERMS[k], m = 1 + 0.12 * (S.wave - 1);
+  S.germs.push({ k, g, d: 0, hp: Math.round(g.hp * m), max: Math.round(g.hp * m), slowT: 0, slowF: 0, tagT: 0, wob: Math.random() * 6 });
+  if (!S.seen[k]) { S.seen[k] = true; say('🦠 New: ' + g.name + ' — ' + g.fact, 6); }
+}
+function waveCleared(A) {
+  A.addScore(50);
+  if (S.wave >= WAVES) {
+    A.addScore(S.hp * 20);
+    A.win('Your body fought off every wave!');
+    S.phase = 'done';
+    A.gameOver(true);
+    return;
+  }
+  S.coins += WAVE_BONUS;
+  S.superbugs = Math.floor(S.overuse / RESIST_PER_SUPERBUG);
+  S.overuse = S.overuse % RESIST_PER_SUPERBUG;
+  S.phase = 'quiz';
+  askQuestions(A, () => { S.phase = 'build'; say('Wave ' + S.wave + ' cleared! Build or upgrade, then start wave ' + (S.wave + 1) + '.', 5); });
+}
+
+// ───────── combat ─────────
+function damage(A, e, amt) {
+  if (e.tagT > 0) amt *= 1.4;
+  e.hp -= amt;
+  if (e.hp <= 0 && !e.dead) {
+    e.dead = true; S.coins += e.g.coins; A.addScore(e.g.pts); A.sfx('point');
+    const [x, y] = posAt(e.d); A.particles.burst(x, y, e.k === 'virus' || e.k === 'boss' ? '#c08bff' : e.k === 'fungus' ? '#ffb347' : '#7CFF6B', e.k === 'boss' ? 40 : 10, 140, 3);
+    A.float('+' + e.g.coins, x, y - 10, '#FFD700');
+  }
+}
+function inRange(t, e) { const [x, y] = posAt(e.d); return Math.hypot(x - t.x, y - t.y) <= TOWERS[t.type].range[t.lvl]; }
+function update(dt, A) {
+  if (!S) reset(A);
+  if (S.msgT > 0 && S.msgT < 90) S.msgT -= dt;
+  if (A.state !== 'play') return;
+  const step = dt * S.speed;
+  S.shots = S.shots.filter(s => (s.t -= dt) > 0);
+  S.pulses = S.pulses.filter(p => (p.t -= dt) > 0);
+  if (S.phase !== 'wave') return;
+
+  // spawn
+  S.spawnT -= step;
+  if (S.queue.length && S.spawnT <= 0) { const k = S.queue.shift(); spawn(k); S.spawnT = k === 'virus' ? 0.55 : k === 'boss' ? 2 : 0.8; }
+
+  // move
+  for (const e of S.germs) {
+    if (e.dead) continue;
+    e.slowT -= step; e.tagT -= step;
+    const sp = e.g.speed * (e.slowT > 0 ? 1 - e.slowF : 1);
+    e.d += sp * step;
+    if (e.d >= PATH_LEN) {
+      e.dead = true; e.leaked = true; S.hp = Math.max(0, S.hp - e.g.hurt);
+      A.shake(6, 0.25); A.sfx('hit'); A.float('-' + e.g.hurt + ' ❤', HEART.x, HEART.y - 30, '#FF3B5C');
+      if (S.hp <= 0) { S.phase = 'done'; A.gameOver(); return; }
+    }
+  }
+
+  // towers
+  for (const sl of SLOTS) {
+    const t = sl.tower; if (!t) continue;
+    const T = TOWERS[t.type]; t.cd -= step; t.spin += step;
+    if (t.cd > 0) continue;
+    let cands = S.germs.filter(e => !e.dead && inRange(t, e));
+    if (T.bacteriaOnly) cands = cands.filter(e => e.g.kind === 'bacteria');
+    if (!cands.length) continue;
+    cands.sort((a, b) => b.d - a.d);
+    t.cd = T.rate[t.lvl];
+    if (T.area) {
+      S.pulses.push({ x: t.x, y: t.y, r: T.range[t.lvl], t: 0.35, c: T.color });
+      cands.forEach(e => damage(A, e, T.dmg[t.lvl]));
+      continue;
+    }
+    const n = T.targets ? T.targets[t.lvl] : 1;
+    cands.slice(0, n).forEach(e => {
+      let amt = T.dmg[t.lvl];
+      if (T.vsVirus && e.g.kind === 'virus') amt *= T.vsVirus;
+      if (T.bacteriaOnly) { S.overuse++; if (e.g.resist) amt = 0; }
+      if (T.slow) { e.slowT = 1.8; e.slowF = T.slow[t.lvl]; e.tagT = 2.2; }
+      const [x, y] = posAt(e.d);
+      S.shots.push({ x1: t.x, y1: t.y, x2: x, y2: y, t: 0.12, c: T.color });
+      if (amt === 0) A.float('resists!', x, y - 14, '#FF3B5C');
+      damage(A, e, amt);
+    });
+  }
+  S.germs = S.germs.filter(e => !e.dead);
+  if (!S.queue.length && !S.germs.length && S.phase === 'wave') waveCleared(A);
+}
+
+// ───────── drawing ─────────
+function wrap(ctx, text, x, y, maxW, lh, maxLines) {
+  const words = String(text).split(' '); let line = '', n = 0;
+  for (let i = 0; i < words.length; i++) {
+    const test = line ? line + ' ' + words[i] : words[i];
+    if (ctx.measureText(test).width > maxW && line) {
+      if (maxLines && n === maxLines - 1) { ctx.fillText(line + '…', x, y + n * lh); return; }
+      ctx.fillText(line, x, y + n * lh); n++; line = words[i];
+    } else line = test;
+  }
+  ctx.fillText(line, x, y + n * lh);
+}
+function btn(ctx, A, x, y, w, h, fill, label, sub, disabled) {
+  A.rr(x, y, w, h, 12); A.ink(disabled ? '#4a4458' : fill, 3);
+  ctx.fillStyle = disabled ? '#aaa' : '#10091f'; ctx.textAlign = 'center';
+  ctx.font = '900 15px Nunito, sans-serif'; ctx.fillText(label, x + w / 2, y + (sub ? h / 2 - 2 : h / 2 + 5));
+  if (sub) { ctx.font = '800 12px Nunito, sans-serif'; ctx.fillText(sub, x + w / 2, y + h / 2 + 14); }
+}
+function drawTowerIcon(ctx, A, type, x, y, r, lvl) {
+  const T = TOWERS[type];
+  ctx.save(); ctx.translate(x, y);
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); A.ink(T.color, 3);
+  ctx.fillStyle = 'rgba(16,9,31,.75)'; ctx.strokeStyle = 'rgba(16,9,31,.75)'; ctx.lineWidth = 3;
+  if (type === 'neutro') { [[-5, -3], [4, -5], [2, 5]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(a * r / 16, b * r / 16, r / 4.5, 0, 7); ctx.fill(); }); }
+  else if (type === 'macro') { ctx.beginPath(); ctx.arc(-r / 4, 0, r / 3, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(r / 3, -r / 4, r / 7, 0, 7); ctx.fill(); }
+  else if (type === 'anti') { ctx.beginPath(); ctx.moveTo(0, r / 2); ctx.lineTo(0, 0); ctx.lineTo(-r / 2.2, -r / 2); ctx.moveTo(0, 0); ctx.lineTo(r / 2.2, -r / 2); ctx.stroke(); }
+  else if (type === 'tcell') { ctx.beginPath(); ctx.arc(0, 0, r / 2.6, 0, 7); ctx.fill(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; ctx.beginPath(); ctx.moveTo(Math.cos(a) * r * .55, Math.sin(a) * r * .55); ctx.lineTo(Math.cos(a) * r * .85, Math.sin(a) * r * .85); ctx.stroke(); } }
+  else if (type === 'pill') { ctx.rotate(-0.6); A.rr(-r * .6, -r * .28, r * 1.2, r * .56, r * .28); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#10091f'; ctx.stroke(); ctx.fillStyle = '#e8364f'; ctx.fillRect(-r * .6 + 2, -r * .26, r * .6 - 2, r * .52); }
+  ctx.restore();
+  if (lvl) for (let i = 0; i < lvl; i++) { ctx.beginPath(); ctx.arc(x - 6 + i * 12, y + r + 6, 4, 0, 7); A.ink('#FFD700', 2); }
+}
+function drawGerm(ctx, A, e) {
+  const [x, y] = posAt(e.d), g = e.g, r = g.r, wob = Math.sin(A.time * 6 + e.wob) * 1.5;
+  ctx.save(); ctx.translate(x, y + wob);
+  if (e.k === 'bact' || e.k === 'super') {
+    ctx.rotate(Math.sin(A.time * 2 + e.wob) * 0.4);
+    A.rr(-r * 1.3, -r * .7, r * 2.6, r * 1.4, r * .7); A.ink(e.k === 'super' ? '#e8364f' : '#7CFF6B', 3);
+    if (e.k === 'super') { ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 2; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(i * 7, -r * .7); ctx.lineTo(i * 7, -r * 1.2); ctx.stroke(); } }
+    ctx.strokeStyle = '#1A1030'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-r * 1.3, 0); ctx.quadraticCurveTo(-r * 1.9, Math.sin(A.time * 10) * 5, -r * 2.3, 0); ctx.stroke();
+  } else if (e.k === 'virus' || e.k === 'boss') {
+    ctx.rotate(A.time * (e.k === 'boss' ? 0.6 : 1.5));
+    ctx.strokeStyle = '#1A1030'; ctx.lineWidth = e.k === 'boss' ? 4 : 2.5;
+    for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5; ctx.beginPath(); ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r); ctx.lineTo(Math.cos(a) * r * 1.45, Math.sin(a) * r * 1.45); ctx.stroke();
+      ctx.beginPath(); ctx.arc(Math.cos(a) * r * 1.5, Math.sin(a) * r * 1.5, e.k === 'boss' ? 4 : 2.5, 0, 7); A.ink('#ff6bd6', 1.5); }
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); A.ink(e.k === 'boss' ? '#8f3fff' : '#b06bff', 3);
+    if (e.k === 'boss') { ctx.rotate(-A.time * 0.6); ctx.fillStyle = '#fff'; ctx.font = '900 12px Nunito'; ctx.textAlign = 'center'; ctx.fillText('FLU', 0, 4); }
+  } else {
+    [[-6, 2], [5, -4], [3, 6], [-2, -7]].forEach(([a, b], i) => { ctx.beginPath(); ctx.arc(a, b, r * (i ? .55 : .7), 0, 7); A.ink('#ffb347', 2.5); });
+  }
+  ctx.restore();
+  if (e.tagT > 0) { ctx.fillStyle = '#ffd23f'; ctx.font = '900 11px Nunito'; ctx.textAlign = 'center'; ctx.fillText('Y', x + r + 4, y - r); }
+  if (e.hp < e.max) {
+    const w = Math.max(20, r * 2.4);
+    ctx.fillStyle = '#1A1030'; ctx.fillRect(x - w / 2, y - r - 12, w, 5);
+    ctx.fillStyle = e.hp / e.max > 0.5 ? '#3ff0b5' : e.hp / e.max > 0.25 ? '#ffd23f' : '#FF3B5C';
+    ctx.fillRect(x - w / 2 + 1, y - r - 11, (w - 2) * Math.max(0, e.hp / e.max), 3);
+  }
+}
+function drawHeart(ctx, A) {
+  const s = 1 + Math.sin(A.time * 5) * 0.05 * (S.hp > 5 ? 1 : 2), x = HEART.x, y = HEART.y;
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  ctx.beginPath(); ctx.moveTo(0, 14); ctx.bezierCurveTo(-30, -6, -16, -30, 0, -14); ctx.bezierCurveTo(16, -30, 30, -6, 0, 14);
+  A.ink(S.hp > 5 ? '#ff4d6d' : '#b3123a', 3); ctx.restore();
+}
+function draw(ctx, A) {
+  if (!S) reset(A);
+  // tissue background
+  const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#4a1530'); bg.addColorStop(1, '#2a0a1c');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,120,160,.06)';
+  for (let i = 0; i < 26; i++) { ctx.beginPath(); ctx.arc((i * 97) % W, (i * 151) % 600, 14 + (i % 4) * 6, 0, 7); ctx.fill(); }
+  // blood vessel
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); PATH.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+  ctx.strokeStyle = '#1A1030'; ctx.lineWidth = 46; ctx.stroke();
+  ctx.strokeStyle = '#a3203f'; ctx.lineWidth = 38; ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,140,160,.25)'; ctx.lineWidth = 14; ctx.setLineDash([10, 18]); ctx.lineDashOffset = -A.time * 30; ctx.stroke(); ctx.setLineDash([]);
+  drawHeart(ctx, A);
+  // slots + towers
+  for (const sl of SLOTS) {
+    if (sl.tower) {
+      if (S.sel === sl) { ctx.beginPath(); ctx.arc(sl.x, sl.y, TOWERS[sl.tower.type].range[sl.tower.lvl], 0, 7); ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 2; ctx.stroke(); }
+      drawTowerIcon(ctx, A, sl.tower.type, sl.x, sl.y, 18, sl.tower.lvl);
+    } else {
+      const glow = S.phase === 'build' || S.buildAt === sl ? 0.35 + Math.sin(A.time * 4) * 0.15 : 0.18;
+      ctx.beginPath(); ctx.arc(sl.x, sl.y, 18, 0, 7); ctx.fillStyle = 'rgba(255,215,0,' + glow + ')'; ctx.fill();
+      ctx.strokeStyle = S.buildAt === sl ? '#FFD700' : 'rgba(255,215,0,.55)'; ctx.lineWidth = S.buildAt === sl ? 4 : 2; ctx.setLineDash([5, 4]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255,215,0,.9)'; ctx.font = '900 18px Nunito'; ctx.textAlign = 'center'; ctx.fillText('+', sl.x, sl.y + 6);
+    }
+  }
+  // germs, shots, pulses
+  S.germs.forEach(e => drawGerm(ctx, A, e));
+  S.shots.forEach(s => { ctx.strokeStyle = s.c; ctx.lineWidth = 3; ctx.globalAlpha = s.t / 0.12; ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke(); ctx.globalAlpha = 1; });
+  S.pulses.forEach(p => { ctx.strokeStyle = p.c; ctx.lineWidth = 4; ctx.globalAlpha = p.t / 0.35; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (1 - p.t / 0.35 * 0.5), 0, 7); ctx.stroke(); ctx.globalAlpha = 1; });
+
+  // top HUD
+  ctx.textAlign = 'left'; ctx.font = '900 15px Nunito, sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = '#1A1030';
+  const hud = (t, y, c) => { ctx.textAlign = 'right'; ctx.strokeText(t, 408, y); ctx.fillStyle = c; ctx.fillText(t, 408, y); };
+  hud('🪙 ' + S.coins, 68, '#FFD700');
+  hud('❤ ' + S.hp + ' / ' + START_HP, 90, S.hp > 5 ? '#ff8fa3' : '#FF3B5C');
+  hud('Wave ' + Math.max(S.wave, 1) + ' of ' + WAVES, 112, '#f4efff');
+
+  // bottom panel
+  ctx.fillStyle = '#140d2c'; ctx.fillRect(0, PANEL_Y, W, H - PANEL_Y);
+  ctx.fillStyle = 'rgba(255,215,0,.5)'; ctx.fillRect(0, PANEL_Y, W, 2);
+  ctx.textAlign = 'left';
+  if (S.buildAt) {
+    ORDER.forEach((k, i) => {
+      const T = TOWERS[k], x = 6 + i * 82, y = PANEL_Y + 8, can = S.coins >= T.cost;
+      A.rr(x, y, 78, 88, 12); A.ink(can ? '#2a1d55' : '#231a35', 3);
+      drawTowerIcon(ctx, A, k, x + 39, y + 28, 16, 0);
+      ctx.textAlign = 'center'; ctx.fillStyle = can ? '#f4efff' : '#8d86a3'; ctx.font = '900 11px Nunito';
+      ctx.fillText(T.name.replace(' (B cell)', ''), x + 39, y + 62);
+      ctx.fillStyle = can ? '#FFD700' : '#8d86a3'; ctx.font = '900 13px Nunito'; ctx.fillText('🪙' + T.cost, x + 39, y + 80);
+    });
+  } else if (S.sel) {
+    const t = S.sel.tower, T = TOWERS[t.type];
+    ctx.textAlign = 'left'; ctx.fillStyle = '#FFD700'; ctx.font = '900 15px Nunito'; ctx.fillText(T.name + ' · level ' + (t.lvl + 1), 12, PANEL_Y + 24);
+    ctx.fillStyle = '#e9e3ff'; ctx.font = '700 12.5px Nunito'; wrap(ctx, T.fact, 12, PANEL_Y + 44, 236, 16, 3);
+    const upCost = t.lvl < 2 ? T.up[t.lvl] : null;
+    btn(ctx, A, 256, PANEL_Y + 10, 156, 44, '#3ff0b5', upCost ? 'Upgrade' : 'Max level', upCost ? '🪙 ' + upCost : '', !upCost || S.coins < upCost);
+    btn(ctx, A, 256, PANEL_Y + 60, 156, 36, '#ffb3c1', 'Remove (+🪙' + sellValue(t) + ')');
+  } else {
+    if (S.phase === 'build') btn(ctx, A, 256, PANEL_Y + 14, 156, 74, '#3ff0b5', '▶ Start wave ' + (S.wave + 1), S.superbugs ? '⚠ superbugs coming' : 'wave bonus +🪙' + WAVE_BONUS);
+    else btn(ctx, A, 256, PANEL_Y + 14, 156, 74, S.speed > 1 ? '#ffd23f' : '#c9c2e6', S.speed > 1 ? '⏩ Fast (2×)' : '▶ Normal speed', 'tap to change');
+    ctx.textAlign = 'left'; ctx.fillStyle = '#e9e3ff'; ctx.font = '700 13px Nunito';
+    wrap(ctx, S.msgT > 0 ? S.msg : 'Tap a + spot to add a cell. Tap a cell to read about it or upgrade it.', 12, PANEL_Y + 24, 234, 17, 5);
+  }
+}
+function sellValue(t) { const T = TOWERS[t.type]; let spent = T.cost; for (let i = 0; i < t.lvl; i++) spent += T.up[i]; return Math.floor(spent * 0.6); }
+
+// ───────── input ─────────
+function pointer(type, x, y, A) {
+  if (type !== 'down' || !S || S.phase === 'quiz' || S.phase === 'done') return;
+  S.lastPtr = Date.now();
+  if (y >= PANEL_Y) {
+    if (S.buildAt) {
+      const i = Math.floor((x - 6) / 82);
+      if (i >= 0 && i < ORDER.length) {
+        const k = ORDER[i], T = TOWERS[k];
+        if (S.coins < T.cost) { say('Not enough coins for a ' + T.name + ' yet.', 3); return; }
+        S.coins -= T.cost; S.buildAt.tower = { type: k, lvl: 0, cd: 0, spin: 0, x: S.buildAt.x, y: S.buildAt.y };
+        S.sel = null; S.buildAt = null; A.sfx('coin'); say(T.name + ': ' + T.fact, 6);
+      }
+      return;
+    }
+    if (S.sel && x >= 256) {
+      const t = S.sel.tower, T = TOWERS[t.type];
+      if (y < PANEL_Y + 56) {
+        const c = t.lvl < 2 ? T.up[t.lvl] : null;
+        if (c && S.coins >= c) { S.coins -= c; t.lvl++; A.sfx('medal'); A.particles.burst(S.sel.x, S.sel.y, '#FFD700', 14, 120, 3); }
+      } else { S.coins += sellValue(t); S.sel.tower = null; S.sel = null; A.sfx('swipe'); }
+      return;
+    }
+    if (!S.sel && x >= 256) { if (S.phase === 'build') startWave(A); else S.speed = S.speed > 1 ? 1 : 2; }
+    return;
+  }
+  const hit = SLOTS.find(s => Math.hypot(s.x - x, s.y - y) <= 26);
+  if (!hit) { S.sel = null; S.buildAt = null; return; }
+  if (hit.tower) { S.sel = S.sel === hit ? null : hit; S.buildAt = null; }
+  else { S.buildAt = S.buildAt === hit ? null : hit; S.sel = null; }
+}
+function input(type, A) {
+  if (type !== 'tap' || !S || Date.now() - S.lastPtr < 120) return;   // taps also arrive as pointer events
+  if (S.phase === 'build' && !S.buildAt && !S.sel) startWave(A);       // Space = start wave
+}
+
+// ───────── between-wave questions (right answer = coins + feeds your sprite) ─────────
+const IMMUNE_CH = ['13', '23', '24', '25'];
+function makeQ() {
+  const V = window.PET_VOCAB; if (!V) return null;
+  const chs = Object.keys(V).filter(k => V[k].terms.length >= 4);
+  const ch = Math.random() < 0.5 ? IMMUNE_CH[Math.floor(Math.random() * IMMUNE_CH.length)] : chs[Math.floor(Math.random() * chs.length)];
+  const terms = V[ch].terms, pick = terms[Math.floor(Math.random() * terms.length)];
+  const others = terms.filter(t => t[0] !== pick[0]).sort(() => Math.random() - 0.5).slice(0, 3);
+  const re = new RegExp(pick[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+  return { ch, title: V[ch].title, term: pick[0], prompt: pick[1].replace(re, '_____'), opts: [pick, ...others].sort(() => Math.random() - 0.5).map(t => t[0]) };
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function feedSprite() {
+  try {
+    const T = (window.TERM && TERM.id) || '2026-T1', id = localStorage.getItem('qSID_' + T), pin = sessionStorage.getItem('qPIN_' + T);
+    if (!id || !pin) return;
+    const K = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+    fetch('https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/pet_action', { method: 'POST', headers: { apikey: K, Authorization: 'Bearer ' + K, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_student_id: id, p_pin_hash: pin, p_trimester: T, p_action: 'quiz' }) }).catch(() => {});
+  } catch (e) {}
+}
+let qBox = null;
+function askQuestions(A, done) {
+  if (!qBox) { qBox = document.createElement('div'); qBox.className = 'td-q hidden'; document.querySelector('#game .ak-stage').appendChild(qBox); }
+  let n = 0, right = 0;
+  const next = () => {
+    if (n >= Q_PER_BREAK) { qBox.classList.add('hidden'); if (right) A.toast('🧠 ' + right + ' right · +🪙' + right * Q_COINS, 2200); done(); return; }
+    const q = makeQ(); if (!q) { n = Q_PER_BREAK; return next(); }
+    n++;
+    qBox.innerHTML = `<div class="td-card"><div class="td-tag">🧠 Wave ${S.wave} cleared · Question ${n} of ${Q_PER_BREAK}</div>
+      <div class="td-sub">Right answer = +🪙${Q_COINS} for more immune cells · Ch ${esc(q.ch)} ${esc(q.title)}</div>
+      <div class="td-prompt">${esc(q.prompt)}</div>
+      <div class="td-opts">${q.opts.map((o, i) => `<button class="td-opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>
+      <div class="td-fb"></div><button class="td-go" style="display:none"></button></div>`;
+    qBox.classList.remove('hidden');
+    const go = qBox.querySelector('.td-go'), fb = qBox.querySelector('.td-fb');
+    qBox.querySelectorAll('.td-opt').forEach(b => b.onclick = ev => {
+      ev.stopPropagation();
+      const pick = q.opts[+b.dataset.i], ok = pick === q.term;
+      qBox.querySelectorAll('.td-opt').forEach((x, i) => { x.disabled = true; if (q.opts[i] === q.term) x.classList.add('ok'); });
+      go.style.display = ''; go.textContent = n < Q_PER_BREAK ? 'Next question →' : 'Back to the battle →';
+      if (ok) { b.classList.add('ok'); right++; S.coins += Q_COINS; fb.innerHTML = '✅ <b>Nice!</b> +🪙' + Q_COINS; A.sfx('coin'); feedSprite(); }
+      else {
+        b.classList.add('bad'); fb.innerHTML = '❌ The answer is <b>' + esc(q.term) + '</b> (in green).';
+        go.disabled = true; const lbl = go.textContent; let s = 2; go.textContent = 'Read it… ' + s;
+        const t = setInterval(() => { s--; if (s <= 0) { clearInterval(t); go.disabled = false; go.textContent = lbl; } else go.textContent = 'Read it… ' + s; }, 1000);
+      }
+      setTimeout(() => go.scrollIntoView({ block: 'nearest' }), 30);
+    });
+    go.onclick = ev => { ev.stopPropagation(); if (!go.disabled) next(); };
+  };
+  next();
+}
+
+window.game = Arcade({
+  mount: '#game', title: 'Immune Defense', subtitle: 'Defend the heart from germs!', W, H, reserveH: 70,
+  storageKey: 'immune_defense', winText: 'Your body fought off every wave!', deathDelay: 700, overTitle: 'The infection won!',
+  medals: [{ at: 600, name: 'Bronze', icon: '🥉' }, { at: 1500, name: 'Silver', icon: '🥈' }, { at: 2500, name: 'Gold', icon: '🥇' }, { at: 3000, name: 'Legend', icon: '💎' }],
+  howTo: 'Germs travel through the bloodstream toward the <b>heart</b>. Tap a glowing <b>+</b> spot to place an immune cell. ' +
+    'Tap a cell to upgrade it. Survive <b>10 waves</b> to win. Between waves, answer questions for bonus coins.<br>' +
+    '⚠ <b>Antibiotics</b> only hit bacteria — and overusing them breeds <b>superbugs</b>!',
+  controls: 'Tap to build and upgrade · Space starts the next wave · P pause',
+  facts: [
+    'Your immune system has two teams: fast first responders (like neutrophils) and slower specialists (like T cells and B cells) that remember germs.',
+    'Vaccines train your immune system to recognize a germ before you ever get sick.',
+    'Antibiotics treat bacterial infections, not viruses like colds or the flu.',
+    'Finishing a prescribed antibiotic exactly as directed helps prevent antibiotic resistance.',
+    'Sleep matters: your body makes more infection-fighting cells while you rest.',
+    'Washing your hands with soap for 20 seconds is one of the best ways to stop germs from spreading.'
+  ],
+  reset, update, draw, input, pointer
+});
+})();
+</script>
+</body>
+</html>
