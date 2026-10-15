@@ -172,7 +172,11 @@
         <p class="cl-detail">Solo games: "all" or a number. Pick games below to turn off for the whole class (excused for everyone).</p></div>
       <div class="card"><div class="card-title">Turn off for the whole class</div><div class="clt-wrapchk">${off}</div></div>
       <div class="clt-row"><button class="clt-btn clt-save" data-act="save">💾 Save settings</button><span id="clt-saved" class="cl-detail"></span></div>
-      <p class="cl-detail">Student release is not in this draft on purpose. When you approve, I'll add the student page and its link.</p>`;
+      <div class="card"><div class="card-title">Student release</div>
+        <label class="clt-chk" style="font-size:15px"><input type="checkbox" id="clt-release"${c.released ? ' checked' : ''}> <b>Open the checklist to students</b></label>
+        <p class="cl-detail">${c.released ? 'OPEN: signed-in students see a "📋 My Trimester Checklist" button on their Quest page and can tick their two Schoology/test boxes.'
+          : 'CLOSED: only TEST-class accounts can open <a href="checklist.html" target="_blank">checklist.html</a> (sign in on the Quest page as a TEST student to preview it). Real students see nothing.'}
+          Press Save after changing this.</p></div>`;
   }
 
   function rulesView() {
@@ -252,6 +256,9 @@
       else c[i.dataset.num] = Math.max(0, parseInt(i.value, 10) || 0);
     });
     c.partner_required = $('clt-partner').checked;
+    const rel = $('clt-release').checked;
+    if (rel && !S.cfg.released && !confirm('Open the checklist to ALL students now? They will see a checklist button on their Quest page.')) return;
+    c.released = rel;
     c.off = [...document.querySelectorAll('[data-off]')].filter(i => i.checked).map(i => i.dataset.off);
     const groups = $('clt-tests').value.split(';').map(g => g.split(/[ ,]+/).map(Number).filter(n => n >= 1 && n <= 16)).filter(g => g.length);
     c.tests = groups.map((g, i) => ({ id: 't' + (i + 1), label: 'Test ' + (i + 1), chapters: [...new Set(g)].sort((a, b) => a - b) }));

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>My Trimester Checklist — Legend of Wellness</title>
+<meta name="description" content="Your Legend of Wellness trimester checklist: chapters 1–16, vocab, mastery, sprite, Wellness Trail and games.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --sky:#38BFFF; --crimson:#FF3B5C;
+  --bg:#FDFAF2; --card:rgba(28,26,46,0.05); --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.65);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:var(--card); }
+.wrap { max-width:1000px; margin:0 auto; padding:22px 16px 60px; }
+.msg { background:#fff; border:1px solid var(--border); border-radius:14px; padding:22px; text-align:center; font-size:15px; line-height:1.6; }
+.msg h2 { font-family:'Cinzel',serif; margin-bottom:8px; }
+.btn { display:inline-block; font:800 14px 'Nunito',sans-serif; padding:10px 16px; border-radius:10px; border:1px solid var(--border);
+  background:#fff; color:var(--text); text-decoration:none; cursor:pointer; }
+.btn-gold { background:#1C1A2E; color:#FFD700; border-color:#1C1A2E; }
+.toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+.toolbar .dim { font-size:12.5px; color:var(--dim); }
+.next { background:#fff; border:1px solid var(--border); border-left:5px solid #FFD700; border-radius:14px; padding:12px 14px; margin-bottom:14px; }
+.next h3 { font-size:15px; margin-bottom:6px; }
+.next ul { list-style:none; }
+.next li { padding:5px 0; border-top:1px solid var(--border); font-size:14px; }
+.next li:first-child { border-top:none; }
+.next a { color:var(--text); font-weight:700; }
+.next small { color:var(--dim); }
+.how { font-size:13px; color:var(--dim); line-height:1.6; background:#fff; border:1px dashed var(--border); border-radius:12px; padding:12px 14px; margin-top:14px; }
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1C1A2E; color:#FFD700; padding:10px 18px;
+  border-radius:10px; font-weight:800; font-size:14px; opacity:0; transition:opacity .3s; pointer-events:none; z-index:50; }
+.toast.on { opacity:1; }
+@media print { nav, .toolbar, .next, .how, .toast { display:none !important; } body { background:#fff; } .wrap { padding:0; } }
+</style>
+<script src="vendor/supabase.js"></script>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div id="app"><div class="msg">Loading your checklist…</div></div>
+  <div class="how" id="how" style="display:none">
+    <b>How your checklist works.</b> Items with 🔒 check themselves off when you really do the activity while signed in on the
+    Quest page — opening a page isn't enough. Read each lesson in the chapter reader all the way through, and finish whole vocab rounds.
+    The only boxes you tick yourself are <b>Homework completed in Schoology</b> and <b>Test completed outside DoppsClass</b>.
+    Those are reminders for you, not grades, and they don't give XP — Schoology is the official record.
+    Items marked <b>Teacher</b> are checked off by Mr. Dopp. Chapters 17–28 are optional bonus XP.
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="checklist.js"></script>
+<script>
+(function () {
+  const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+  const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let ses = null, name = '', busy = false;
+
+  function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
+  function session() {
+    try { const id = localStorage.getItem('qSID_' + TRIMESTER), pin = sessionStorage.getItem('qPIN_' + TRIMESTER); return id && pin ? { id, pin } : null; }
+    catch (e) { return null; }
+  }
+  function message(title, body) {
+    $('app').innerHTML = `<div class="msg"><h2>${title}</h2><p>${body}</p></div>`;
+  }
+
+  function upNext(v) {
+    // first unfinished required items from the earliest chapters, plus anything ongoing
+    const out = [];
+    v.realms.forEach(r => r.chapters.forEach(ch => ch.items.forEach(i => {
+      if (out.length < 5 && !i.done && i.status !== 'excused' && i.status !== 'no_record' && i.kind !== 'teacher')
+        out.push({ i, where: 'Ch ' + ch.n + ' · target ' + Checklist.fmt(ch.target) });
+    })));
+    v.ongoing.forEach(i => { if (out.length < 7 && !i.done && i.kind === 'auto' && i.status !== 'excused') out.push({ i, where: 'All trimester' }); });
+    if (!out.length) return '';
+    return `<div class="next"><h3>⭐ Up next</h3><ul>${out.map(o => `<li>${o.i.href ? `<a href="${esc(o.i.href)}">${esc(o.i.label)}</a>` : `<b>${esc(o.i.label)}</b>`}
+      <small> — ${esc(o.where)} · ${esc(o.i.detail || '')}</small></li>`).join('')}</ul></div>`;
+  }
+
+  async function load() {
+    ses = session();
+    if (!ses) {
+      return message('Sign in first',
+        'Your checklist is tied to your Quest login so it follows you on any device.<br><br><a class="btn btn-gold" href="quest.html">⚔ Go to the Quest page and sign in</a>');
+    }
+    const [{ data, error }, who] = await Promise.all([
+      db.rpc('cl_student', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER }),
+      name ? Promise.resolve(null) : db.rpc('get_student_by_auth', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER })
+    ]);
+    if (who && who.data && who.data[0]) name = who.data[0].display_name || '';
+    if (error) {
+      if (/not open/i.test(error.message)) return message('Coming soon', 'Your trimester checklist isn\'t open yet. Keep questing — everything you do now still counts once it opens!');
+      return message('Can\'t load right now', 'Check your internet and try again. If it keeps happening, sign in again on the <a href="quest.html">Quest page</a>.');
+    }
+    const cfg = Checklist.config(data.config, TRIMESTER);
+    const v = Checklist.build(data.evidence, cfg);
+    const released = !!(data.config && data.config.released);
+    $('app').innerHTML =
+      `<div class="toolbar"><button class="btn" data-act="print">🖨 Print my progress</button>
+        <button class="btn" data-act="expand">Open all chapters</button><button class="btn" data-act="refresh">↻ Refresh</button>
+        <span class="dim">Saved to your Quest login · ${esc(TERM.label || TRIMESTER)}</span></div>` +
+      upNext(v) +
+      Checklist.render(v, { manualEnabled: true, title: (name ? name + '’s' : 'My') + ' Trimester Checklist',
+        banner: released ? '' : 'Preview — this checklist is not open to the class yet.' });
+    $('how').style.display = '';
+  }
+
+  document.addEventListener('click', async e => {
+    const t = e.target.closest('[data-act]');
+    if (!t) return;
+    if (t.dataset.act === 'print') { document.querySelectorAll('#app details').forEach(d => { d.open = true; }); window.print(); }
+    if (t.dataset.act === 'expand') document.querySelectorAll('#app details').forEach(d => { d.open = true; });
+    if (t.dataset.act === 'refresh') load();
+  });
+  document.addEventListener('change', async e => {
+    const box = e.target.closest('input[data-manual]');
+    if (!box || busy) return;
+    busy = true; box.disabled = true;
+    const { error } = await db.rpc('cl_manual_set', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER, p_key: box.dataset.manual, p_checked: box.checked });
+    busy = false;
+    if (error) { box.checked = !box.checked; box.disabled = false; return toast('Could not save — try again'); }
+    toast(box.checked ? 'Marked as done (student reported)' : 'Unchecked');
+    const open = [...document.querySelectorAll('#app details')].map(d => d.open);
+    await load();
+    document.querySelectorAll('#app details').forEach((d, i) => { if (open[i]) d.open = true; });
+  });
+
+  Checklist.injectCSS();
+  load();
+})();
+</script>
+</body>
+</html>

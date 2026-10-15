@@ -164,7 +164,7 @@
     }
     // missing evidence for something due before tracking existed is neutral, not a failure
     function untracked(it, due) {
-      if (it.status === 'not_started' && due && due < cfg.track_start) { it.status = 'no_record'; it.note = 'Site began recording this on ' + fmt(cfg.track_start); }
+      if (it.status === 'not_started' && due && due < cfg.track_start) { it.status = 'no_record'; it.note = 'Recording began ' + fmt(cfg.track_start) + ' — do it again to check it off'; }
       return it;
     }
 

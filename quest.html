@@ -274,6 +274,7 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
         </div>
         <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
       </div>
+      <a id="cl-link" href="checklist.html" style="display:none;margin-top:12px;padding:8px 14px;border-radius:10px;background:#1C1A2E;color:#FFD700;font-weight:800;font-size:14px;text-decoration:none;width:max-content">📋 My Trimester Checklist</a>
     </div>
     <div class="hero-stats">
       <div class="hero-stat"><div class="hs-num" id="stat-badges">0</div><div class="hs-label">Badges</div></div>
@@ -572,6 +573,18 @@ function render() {
   document.getElementById('xp-label').textContent      = `${st.xp.toLocaleString()} / ${TOTAL_XP.toLocaleString()} XP`;
   document.getElementById('xp-fill').style.width       = Math.min(100, st.xp / TOTAL_XP * 100) + '%';
   renderStreak(); renderRealms(st); renderAchievements(st);
+  checklistLink();
+}
+
+// Show the checklist button only once Mr. Dopp has opened it to the class (TEST accounts see it early for review).
+let clChecked = false;
+async function checklistLink() {
+  if (clChecked || !student || !studentPinHash) return;
+  clChecked = true;
+  try {
+    const { error } = await db.rpc('cl_student', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER });
+    if (!error) document.getElementById('cl-link').style.display = 'inline-block';
+  } catch (e) {}
 }
 
 function renderStreak() {
@@ -683,6 +696,7 @@ function showModal() {
       localStorage.removeItem('qSID_' + TRIMESTER);
       sessionStorage.removeItem('qPIN_' + TRIMESTER);
       student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set();
+      clChecked = false; document.getElementById('cl-link').style.display = 'none';
       showStep(1);
       document.getElementById('modal').classList.add('show');
     }
