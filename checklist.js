@@ -105,7 +105,8 @@
       trail_days: 3, sprite_days: 10, sprite_quiz: 30, live_min: 3, review_min: 2,
       solo_required: 'all',                  // 'all' or a number of different solo games
       partner_required: true,
-      off: []                                // items turned off for the whole class (e.g. 'partner:battleship_duel')
+      off: [],                               // items turned off for the whole class (e.g. 'partner:battleship_duel')
+      excuse_before: tri === '2026-T1' || !TERM_DATES[tri] ? 5 : 1   // class-wide: everything for chapters below this is excused (T1 started before tracking)
     };
   }
   function config(saved, tri) {
@@ -153,9 +154,14 @@
     const arcade = {}; (ev.arcade || []).forEach(a => { arcade[a.g] = a; });
     const quest = new Set(ev.quest || []);
 
-    function finish(it) {
+    const exBefore = Number(cfg.excuse_before) || 1;
+    function finish(it, upToCh) {
       it.id = it.id || '';
-      if (off.has(it.id)) { it.status = 'excused'; it.why = 'Turned off for the whole class'; }
+      if (upToCh && upToCh < exBefore) {                       // whole class excused for early chapters
+        it.notRequired = true;
+        if (DONE[it.status]) { it.note = 'Excused for the class — not required'; }
+        else { it.status = 'excused'; it.why = 'Excused for the whole class (before Ch ' + exBefore + ')'; it.note = 'Not required'; }
+      } else if (off.has(it.id)) { it.status = 'excused'; it.why = 'Turned off for the whole class'; }
       else if (verify[it.id] === 'excused') { it.status = 'excused'; it.why = 'Excused by teacher'; }
       else if (verify[it.id] === 'done' && !DONE[it.status]) { it.status = 'teacher_done'; }
       it.label_status = LABEL[it.status];
@@ -186,7 +192,7 @@
         status: ms && ms.passed ? 'complete' : ms && ms.attempts ? 'in_progress' : 'not_started',
         detail: ms ? (ms.passed ? 'passed' : 'best ' + (ms.best || 0) + '/10 · need 8') + ' · ' + ms.attempts + ' attempt' + (ms.attempts === 1 ? '' : 's') : 'pass with 8/10',
         href: 'mastery.html?ch=' + c });
-      if (!required) return items.map(finish);
+      if (!required) return items.map(it => finish(it));
       if (cfg.hw[c] !== false) {
         const mk = 'hw:ch' + c;
         items.push({ id: mk, kind: 'manual', label: 'Homework completed in Schoology',
@@ -201,7 +207,7 @@
           status: manual[mk] && manual[mk].on ? 'reported' : 'not_started', key: mk,
           detail: 'Student reported · not a grade' });
       });
-      return items.map(finish);
+      return items.map(it => finish(it, c));
     }
 
     const realms = REALMS.map(r => {
@@ -212,12 +218,12 @@
         const qk = r.id + '_' + k;
         if (cfg.acts[qk] === false) return;
         items.push(finish({ id: 'act:' + qk, kind: 'teacher', label: name, status: 'needs_teacher',
-          detail: quest.has(qk) ? 'Student checked it on the Quest page (self-reported)' : 'Assigned activity' }));
+          detail: quest.has(qk) ? 'Student checked it on the Quest page (self-reported)' : 'Assigned activity' }, Math.max.apply(null, r.chapters)));
       });
       if (cfg.boss[r.id] !== false) {
         const qk = r.id + '_' + r.boss[0];
         items.push(finish({ id: 'boss:' + r.id, kind: 'teacher', label: 'Boss battle — ' + r.boss[1], status: 'needs_teacher',
-          detail: 'Classroom game: the teacher confirms who took part' + (quest.has(qk) ? ' · student self-checked on Quest page' : '') }));
+          detail: 'Classroom game: the teacher confirms who took part' + (quest.has(qk) ? ' · student self-checked on Quest page' : '') }, Math.max.apply(null, r.chapters)));
       }
       return { id: r.id, n: r.n, name: r.name, icon: r.icon, color: r.color, due, chapters, items };
     });
@@ -304,7 +310,7 @@
     const required = [];
     realms.forEach(r => { r.chapters.forEach(ch => required.push(...ch.items)); required.push(...r.items); });
     required.push(...ongoing, ...games.items);
-    const counted = required.filter(i => i.status !== 'excused');
+    const counted = required.filter(i => i.status !== 'excused' && !i.notRequired);
     const done = counted.filter(i => i.done).length;
     const tally = {}; counted.forEach(i => { tally[i.status] = (tally[i.status] || 0) + 1; });
     return {
@@ -333,7 +339,7 @@
     const tctl = o.teacher ? `<span class="cl-tctl">` +
       (it.kind !== 'manual' && it.status !== 'teacher_done' && !it.done ? `<button data-verify="${esc(it.id)}" data-st="done">Confirm</button>` : '') +
       (it.status === 'teacher_done' ? `<button data-verify="${esc(it.id)}" data-st="">Undo confirm</button>` : '') +
-      (it.status === 'excused' && it.why !== 'Turned off for the whole class' ? `<button data-verify="${esc(it.id)}" data-st="">Un-excuse</button>`
+      (it.status === 'excused' && !/whole class/.test(it.why || '') ? `<button data-verify="${esc(it.id)}" data-st="">Un-excuse</button>`
         : it.status !== 'excused' ? `<button data-verify="${esc(it.id)}" data-st="excused">Excuse</button>` : '') + `</span>` : '';
     const label = it.href && !o.teacher ? `<a href="${esc(it.href)}">${esc(it.label)}</a>` : esc(it.label);
     return `<li class="cl-item cl-${it.status}"><span class="cl-ic" aria-hidden="true">${ICON[it.status] || '○'}</span>
@@ -364,7 +370,7 @@
     v.realms.forEach(r => {
       h += `<section class="cl-realm" style="--rc:${r.color}"><h3>${r.icon} Realm ${r.n} · ${esc(r.name)} <small>wrap up by ${esc(fmt(r.due))}</small></h3>`;
       r.chapters.forEach(ch => {
-        const d = ch.items.filter(i => i.done).length, t = ch.items.filter(i => i.status !== 'excused').length;
+        const live = ch.items.filter(i => i.status !== 'excused' && !i.notRequired), d = live.filter(i => i.done).length, t = live.length;
         h += `<details class="cl-ch"${o.open ? ' open' : ''}><summary><span class="cl-chn">Ch ${ch.n}</span> ${esc(ch.title)}
           <span class="cl-chm">target ${esc(fmt(ch.target))} · ${d}/${t}</span></summary><ul>${ch.items.map(i => itemHTML(i, o)).join('')}</ul></details>`;
       });

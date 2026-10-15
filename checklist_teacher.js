@@ -167,8 +167,10 @@
       <div class="card"><div class="card-title">Minimums</div><div class="clt-row" style="flex-wrap:wrap">
         ${num('trail_days', 'Wellness Trail play days', 1, 30)}${num('sprite_days', 'Sprite care days', 1, 80)}${num('sprite_quiz', 'Sprite chapter questions', 0, 500)}
         ${num('live_min', 'Live games', 0, 30)}${num('review_min', 'Weak-area reviews', 0, 30)}
+        ${num('excuse_before', 'Excuse everything before chapter', 1, 17)}
         <label class="clt-num">Solo games required <input type="text" data-num="solo_required" value="${esc(c.solo_required)}" style="width:70px"></label>
         <label class="clt-chk"><input type="checkbox" id="clt-partner"${c.partner_required ? ' checked' : ''}> Require partner games</label></div>
+        <p class="cl-detail">"Excuse everything before chapter 5" excuses reading, vocab, mastery, homework, tests and realm activities for chapters 1–4 for the whole class (1 = excuse nothing). Work students already did still shows as done.</p>
         <p class="cl-detail">Solo games: "all" or a number. Pick games below to turn off for the whole class (excused for everyone).</p></div>
       <div class="card"><div class="card-title">Turn off for the whole class</div><div class="clt-wrapchk">${off}</div></div>
       <div class="clt-row"><button class="clt-btn clt-save" data-act="save">💾 Save settings</button><span id="clt-saved" class="cl-detail"></span></div>
