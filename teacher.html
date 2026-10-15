@@ -207,10 +207,38 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 .card-title { font-size:14px; }
 .sc-label { color: var(--text); }
 input, select, textarea { color: var(--text); }
+
+/* ── Student Checklist Draft ── */
+.clt-draft { background:#fff4c2; border:2px solid #b38600; color:#5a4300; border-radius:12px; padding:10px 14px; font-weight:800; font-size:14px; margin-bottom:14px; }
+.clt-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.clt-tab, .clt-btn { font:700 13px 'Nunito',sans-serif; border:1px solid var(--border); background:#fff; color:var(--text); border-radius:9px; padding:8px 13px; cursor:pointer; }
+.clt-tab.on { background:#1C1A2E; color:#FFD700; border-color:#1C1A2E; }
+.clt-save { background:#00b37d; color:#fff; border-color:#00b37d; }
+.clt-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+.clt-row select, .clt-num input { font:600 14px 'Nunito',sans-serif; padding:7px 10px; border-radius:8px; border:1px solid var(--border); background:#fff; max-width:100%; }
+.clt-num { font-size:13px; font-weight:700; display:flex; gap:6px; align-items:center; }
+.clt-num input[type=number] { width:76px; }
+.clt-chk { display:inline-flex; gap:5px; align-items:center; font-size:13px; margin:3px 12px 3px 0; }
+.clt-wrapchk { display:flex; flex-wrap:wrap; }
+.clt-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+.clt-table th, .clt-table td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
+.clt-table th { font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--dim); }
+.clt-bulk { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:4px 12px; font-size:14px; }
+.clt-bulk input { width:18px; height:18px; vertical-align:middle; }
+.clt-ul { padding-left:20px; font-size:13.5px; line-height:1.6; }
+#page-checklist .card { margin-bottom:12px; }
+@media print {
+  body.cl-printing .sidebar, body.cl-printing .page-hdr, body.cl-printing .clt-draft, body.cl-printing .clt-tabs,
+  body.cl-printing .clt-row, body.cl-printing #pin-gate, body.cl-printing .lb-error { display:none !important; }
+  body.cl-printing .layout { display:block; } body.cl-printing .main { padding:0; }
+  body.cl-printing .page:not(#page-checklist) { display:none !important; }
+  body.cl-printing { background:#fff; }
+}
 </style>
 <link rel="stylesheet" href="shared.css">
 <script src="vendor/supabase.js"></script>
 <script src="pet_sprite.js"></script>
+<script src="checklist.js"></script>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
 <body>
@@ -246,6 +274,7 @@ input, select, textarea { color: var(--text); }
     <button class="sb-btn" onclick="showPage('progress',this)"><span class="sb-btn-icon">🏆</span>Class Progress</button>
     <button class="sb-btn" onclick="showPage('planner',this)"><span class="sb-btn-icon">📅</span>Week Planner</button>
     <button class="sb-btn" onclick="showPage('tracker',this)"><span class="sb-btn-icon">🗺</span>Realm Tracker</button>
+    <button class="sb-btn" onclick="showPage('checklist',this)"><span class="sb-btn-icon">✅</span>Student Checklist Draft</button>
   </div>
 
   <hr class="sb-divider">
@@ -443,6 +472,15 @@ input, select, textarea { color: var(--text); }
   </div>
 
   <!-- ── WEEK PLANNER ── -->
+  <!-- ── STUDENT CHECKLIST DRAFT (teacher-only until approved) ── -->
+  <div class="page" id="page-checklist">
+    <div class="page-hdr">
+      <div class="page-title">Student Checklist Draft</div>
+      <div class="page-sub">Trimester task checklist for chapters 1–16 — for your review. Not linked anywhere students can see.</div>
+    </div>
+    <div id="cl-root"></div>
+  </div>
+
   <div class="page" id="page-planner">
     <div class="page-hdr">
       <div class="page-title">Week Planner</div>
@@ -1075,6 +1113,7 @@ function renderPage(id) {
   else if(id==='vocab') renderVocabPage();
   else if(id==='chapters') renderChaptersPage();
   else if(id==='notes') loadNotes();
+  else if(id==='checklist' && window.renderChecklistDraft) renderChecklistDraft();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1667,5 +1706,6 @@ function setWqError(msg) {
 // ═══════════════════════════════════════════════════════════
 renderOverview();
 </script>
+<script src="checklist_teacher.js"></script>
 </body>
 </html>

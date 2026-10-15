@@ -18,6 +18,15 @@
   } catch (e) {}
 })();
 
+// Trimester checklist evidence: quietly notes which reader lessons were actually read (see checklist_track.js).
+(function loadChecklistTrack() {
+  try {
+    if (!/chapter\d{2}\.html$/i.test(location.pathname) || window.ChecklistTrack) return;
+    var s = document.createElement('script'); s.src = 'checklist_track.js'; s.async = true;
+    document.head.appendChild(s);
+  } catch (e) {}
+})();
+
 function openAI(url, title, desc) {
   const msg = 'I am working on: ' + title + '. ' + desc;
   navigator.clipboard.writeText(msg).catch(() => {});

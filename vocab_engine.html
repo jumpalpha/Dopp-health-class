@@ -583,6 +583,8 @@ const hashMap = { speedquiz:'speedquiz', wordbuild:'wordbuild', conceptmap:'conc
 let gameMode = hashMap[location.hash.replace('#','')] || 'flashcard';
 let terms = [];
 let idx = 0, correctCount = 0, wrongCount = 0, streak = 0;
+// Checklist evidence: answers that were really attempted (not skipped / revealed / timed out).
+let realAnswered = 0, realCorrect = 0, roundStart = Date.now(), roundLogged = false;
 let timerInt = null;
 
 function load() {
@@ -612,6 +614,7 @@ function switchGame(mode, btn) {
 
 function resetGame() {
   idx = 0; correctCount = 0; wrongCount = 0; streak = 0;
+  realAnswered = 0; realCorrect = 0; roundStart = Date.now(); roundLogged = false;
   terms = shuffle([...ALL_CHAPTERS[chapterNum].terms]);
   clearInterval(timerInt);
   updateHUD();
@@ -672,6 +675,7 @@ function flipCard() {
   if (fc) fc.classList.toggle('flipped', fc_flipped);
 }
 function fcScore(correct) {
+  if (fc_flipped) { realAnswered++; if (correct) realCorrect++; }
   if (correct) { correctCount++; streak++; } else { wrongCount++; streak = 0; }
   idx++;
   updateHUD(); updateProgress(); renderGame();
@@ -706,6 +710,7 @@ function renderSpeedQuiz(gc) {
 }
 function sqPick(i, correct, term) {
   if (sq_answered) return; sq_answered = true; clearInterval(timerInt);
+  realAnswered++; if (correct) realCorrect++;
   const el = document.getElementById('qo' + i);
   if (el) el.classList.add(correct ? 'correct' : 'wrong');
   document.querySelectorAll('.quiz-opt').forEach(o => o.classList.add('disabled'));
@@ -763,6 +768,7 @@ function wbCheck() {
   const inp = document.getElementById('wb-in'); if (!inp) return;
   const val = inp.value.trim().toUpperCase();
   const correct = val === terms[idx].t.toUpperCase();
+  if (val) { realAnswered++; if (correct) realCorrect++; }
   const fb = document.getElementById('wb-fb');
   inp.className = 'wb-input ' + (correct ? 'correct-input' : 'wrong-input');
   if (fb) { fb.className = 'wb-feedback show ' + (correct ? 'good' : 'bad'); fb.textContent = correct ? `✓ Correct! "${terms[idx].t}"` : `✗ The answer was "${terms[idx].t}"`; }
@@ -786,7 +792,7 @@ function wbSkip() { wrongCount++; streak = 0; idx++; updateHUD(); updateProgress
 let cm_placements = {}, cm_checked = false;
 function renderConceptMap(gc) {
   cm_placements = {}; cm_checked = false;
-  const batch = terms.slice(0, Math.min(12, terms.length));
+  const batch = terms.slice(idx, Math.min(idx + 12, terms.length));
   const cats = [...new Set(batch.map(t => t.cat))];
   const catColors = ['#38BFFF','#00E5A0','#FF3B5C','#a855f7','#FFD700','#FF8C00'];
   const shuffled = shuffle([...batch]);
@@ -827,6 +833,8 @@ function cmDrop(e, cat, ci) {
   cmDragData = null;
 }
 function cmCheck() {
+  if (cm_checked) return;
+  cm_checked = true;
   let c = 0, w = 0;
   Object.entries(cm_placements).forEach(([term, data]) => {
     const chip = document.getElementById('chip-' + term.replace(/\s/g, '_'));
@@ -835,14 +843,19 @@ function cmCheck() {
     else { chip.classList.add('wrong-chip'); w++; }
   });
   correctCount += c; wrongCount += w; streak = c > 0 ? streak + c : 0;
+  realAnswered += c + w; realCorrect += c;
   idx = Math.min(idx + 12, terms.length);
   updateHUD(); updateProgress();
 }
-function cmNext() { idx = Math.min(idx + 12, terms.length); updateHUD(); updateProgress(); renderGame(); }
+function cmNext() { if (!cm_checked) idx = Math.min(idx + 12, terms.length); updateHUD(); updateProgress(); renderGame(); }
 
 // ── RESULTS ──
 function renderResults() {
   clearInterval(timerInt);
+  if (!roundLogged && window.ChecklistTrack) {
+    roundLogged = true;
+    ChecklistTrack.vocab(chapterNum, gameMode, { total: terms.length, answered: realAnswered, correct: realCorrect, ms: Date.now() - roundStart });
+  }
   const total = correctCount + wrongCount;
   const pct = total ? Math.round(correctCount / total * 100) : 0;
   const grade = pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : 'D';
@@ -868,5 +881,6 @@ function renderResults() {
 
 load();
 </script>
+<script src="checklist_track.js"></script>
 </body>
 </html>
