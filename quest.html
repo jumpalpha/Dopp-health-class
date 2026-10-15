@@ -265,6 +265,17 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
         <div>
           <div class="hero-name" id="hero-name">Health Hero</div>
           <div class="hero-title-tag" id="hero-title-tag">Wellness Apprentice</div>
+          <div id="nm-box" style="display:none;margin-top:6px;font-size:13px">
+            <a href="#" id="nm-open" style="color:var(--dim);font-weight:700">✏️ Change my name</a>
+            <span id="nm-status" style="color:var(--dim)"></span>
+            <div id="nm-form" style="display:none;margin-top:6px">
+              <input id="nm-input" maxlength="20" placeholder="New first name or nickname" autocomplete="off"
+                style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font:600 14px 'Nunito',sans-serif;width:210px;max-width:100%">
+              <button id="nm-send" style="padding:7px 12px;border-radius:8px;border:none;background:#1C1A2E;color:#FFD700;font:800 13px 'Nunito',sans-serif;cursor:pointer">Ask Mr. Dopp</button>
+              <div style="color:var(--dim);margin-top:4px">Your new name shows up after Mr. Dopp approves it. Your last name and PIN don't change.</div>
+              <div id="nm-err" style="color:#c0233f;font-weight:700"></div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="xp-section">
@@ -574,6 +585,38 @@ function render() {
   document.getElementById('xp-fill').style.width       = Math.min(100, st.xp / TOTAL_XP * 100) + '%';
   renderStreak(); renderRealms(st); renderAchievements(st);
   checklistLink();
+  if (!nmShown) { nmShown = true; nameStatus(); }
+}
+let nmShown = false;
+
+// ── name change requests (teacher approves on the Teacher Dashboard) ──
+let nmWired = false;
+const escapeHtml = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+async function nameStatus() {
+  if (!student || !studentPinHash) return;
+  const box = document.getElementById('nm-box'); box.style.display = '';
+  if (!nmWired) {
+    nmWired = true;
+    document.getElementById('nm-open').onclick = e => { e.preventDefault(); const f = document.getElementById('nm-form'); f.style.display = f.style.display === 'none' ? '' : 'none'; document.getElementById('nm-input').focus(); };
+    document.getElementById('nm-send').onclick = async () => {
+      const err = document.getElementById('nm-err'); err.textContent = '';
+      const v = document.getElementById('nm-input').value.trim();
+      if (!v) { err.textContent = 'Type a name first.'; return; }
+      const { error } = await db.rpc('name_request', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER, p_new_name: v });
+      if (error) { err.textContent = error.message; return; }
+      document.getElementById('nm-form').style.display = 'none'; document.getElementById('nm-input').value = '';
+      showToast('Sent! Mr. Dopp will review it.'); nameStatus();
+    };
+    document.getElementById('nm-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('nm-send').click(); });
+  }
+  const st = document.getElementById('nm-status');
+  const { data, error } = await db.rpc('name_request_status', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER });
+  if (error) { box.style.display = 'none'; return; }            // not set up yet
+  st.innerHTML = '';
+  if (data && data.status === 'pending') st.innerHTML = ' · ⏳ “' + escapeHtml(data.new_name) + '” is waiting for approval <a href="#" id="nm-cancel" style="color:var(--dim)">cancel</a>';
+  else if (data && data.status === 'denied' && Date.now() - Date.parse(data.at) < 7 * 864e5) st.textContent = ' · “' + data.new_name + '” wasn’t approved';
+  const c = document.getElementById('nm-cancel');
+  if (c) c.onclick = async e => { e.preventDefault(); await db.rpc('name_request_cancel', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER }); nameStatus(); };
 }
 
 // Show the checklist button only once Mr. Dopp has opened it to the class (TEST accounts see it early for review).
@@ -697,6 +740,7 @@ function showModal() {
       sessionStorage.removeItem('qPIN_' + TRIMESTER);
       student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set();
       clChecked = false; document.getElementById('cl-link').style.display = 'none';
+      nmShown = false; document.getElementById('nm-box').style.display = 'none';
       showStep(1);
       document.getElementById('modal').classList.add('show');
     }

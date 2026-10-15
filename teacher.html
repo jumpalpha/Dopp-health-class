@@ -346,6 +346,16 @@ input, select, textarea { color: var(--text); }
       <div id="sub-list" style="margin-top:12px;font-size:14px"></div>
     </div>
 
+    <div class="card" id="nr-card" style="border-color:rgba(255,140,0,0.5)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+        <div class="card-title" style="margin-bottom:0">✏️ Name change requests <span id="nr-count" style="font-family:'Nunito',sans-serif"></span></div>
+        <button onclick="nrLoad()" style="font:700 12px 'Nunito',sans-serif;border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer">↻ Refresh</button>
+      </div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Students ask on their Quest page. Nothing changes until you approve. Only the first name / nickname changes; last name (used to sign in) never does.</div>
+      <div id="nr-list" style="font-size:14px"></div>
+      <div id="nr-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
+    </div>
+
     <div class="card" id="pin-card" style="border-color:rgba(56,191,255,0.45)">
       <div class="card-title" style="margin-bottom:4px">🔑 Reset a student PIN</div>
       <div style="font-size:14px;color:var(--dim);margin-bottom:10px">PINs are stored scrambled, so they can't be looked up. Find the student, set a new 4-digit PIN, and tell them. Their progress stays.</div>
@@ -827,7 +837,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
-    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); }, 0);
+    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); nrLoad(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -894,6 +904,29 @@ async function pinHash(pin){   // same hashing as the Quest page
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 let pinTimer = null;
+// ── NAME CHANGE REQUESTS ──
+async function nrLoad(){
+  const box = document.getElementById('nr-list'), err = document.getElementById('nr-err'), cnt = document.getElementById('nr-count');
+  if (!box || !teacherPass()) return;
+  err.textContent = '';
+  const { data, error } = await db.rpc('name_requests_list', { p_teacher_pass: teacherPass() });
+  if (error){ box.innerHTML = /does not exist|schema cache/i.test(error.message) ? '<div style="color:var(--dim)">Not set up yet (run supabase/name_changes.sql).</div>' : ''; err.textContent = /does not exist|schema cache/i.test(error.message) ? '' : 'Could not load requests.'; return; }
+  const pend = (data && data.pending) || [], recent = (data && data.recent) || [];
+  cnt.textContent = pend.length ? '(' + pend.length + ' waiting)' : '';
+  const per = c => { const m = /P(\d+)$/i.exec(c || ''); return m ? 'P' + m[1] : (c || ''); };
+  box.innerHTML = (pend.length ? pend.map(r => `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--border)">
+      <span style="flex:1;min-width:200px"><b>${escapeHtml(r.old)} ${escapeHtml(r.last)}</b> <span style="color:var(--dim)">(${escapeHtml(per(r.code))})</span> → <b style="color:#b35c00">${escapeHtml(r.new)}</b></span>
+      <button onclick="nrDecide(${r.id}, true)" style="font:800 12px 'Nunito',sans-serif;background:#00b37d;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer">Approve</button>
+      <button onclick="nrDecide(${r.id}, false)" style="font:800 12px 'Nunito',sans-serif;background:#fff;color:var(--crimson);border:1px solid var(--crimson);border-radius:8px;padding:6px 12px;cursor:pointer">Deny</button></div>`).join('')
+    : '<div style="color:var(--dim)">No requests waiting.</div>') +
+    (recent.length ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--dim);font-weight:700">Recent decisions</summary>${recent.map(r => `<div style="padding:3px 0;color:var(--dim)">${escapeHtml(r.old)} ${escapeHtml(r.last)} → ${escapeHtml(r.new)} · ${r.status === 'approved' ? '✅ approved' : '❌ denied'}</div>`).join('')}</details>` : '');
+}
+async function nrDecide(id, ok){
+  const { error } = await db.rpc('name_request_decide', { p_teacher_pass: teacherPass(), p_id: id, p_approve: ok });
+  if (error) document.getElementById('nr-err').textContent = error.message;
+  nrLoad();
+}
+
 function pinInit(){
   const q = document.getElementById('pin-q'); if (!q || q.dataset.ready) return; q.dataset.ready = '1';
   q.addEventListener('input', () => { clearTimeout(pinTimer); pinTimer = setTimeout(pinSearch, 300); });
@@ -1042,7 +1075,7 @@ const TRIMESTER    = ((window.TERM && TERM.id) || '2026-T1');
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 (function(){ const sel = document.getElementById('wq-trimester'); if (!sel) return; if (![...sel.options].some(o => o.value === TRIMESTER)) sel.add(new Option(TRIMESTER, TRIMESTER), 0); sel.value = TRIMESTER; })();
-subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); trailLoad(); }
+subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); trailLoad(); nrLoad(); }
 const XP_PER_TASK  = 25;
 const XP_PER_DAY   = 5;   // per login day
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task

@@ -117,7 +117,14 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
     <div class="grid">
       <div class="panel" style="margin-top:16px">
         <div class="stage"><div class="bubble" id="bubble"></div><div id="sprite"></div></div>
-        <div style="text-align:center"><div class="petname" id="pName"></div><div class="chips" id="chips"></div></div>
+        <div style="text-align:center"><div class="petname" id="pName"></div>
+          <button id="renameBtn" type="button" style="background:none;border:none;color:inherit;opacity:.75;font:700 12px Nunito,sans-serif;cursor:pointer;text-decoration:underline">✏️ Rename</button>
+          <div id="renameForm" class="hidden" style="margin:6px auto;max-width:320px">
+            <input id="renameIn" maxlength="16" placeholder="New sprite name" autocomplete="off" style="max-width:200px">
+            <button class="btn btn-em" id="renameGo" type="button">Save</button>
+            <div class="dim small" id="renameNote">You can rename your sprite once a week.</div>
+          </div>
+          <div class="chips" id="chips"></div></div>
         <div class="bars" id="bars"></div>
         <div class="status" id="status"></div>
         <p class="dim small" style="margin-top:10px;text-align:center" id="growth"></p>
@@ -362,6 +369,26 @@ async function answer(i){
 $('quizBtn').onclick = newQuestion;
 $('hatchBtn').onclick = hatch;
 $('petName').addEventListener('keydown', e => { if (e.key === 'Enter') hatch(); });
+
+// ---------- rename (once every 7 days) ----------
+$('renameBtn').addEventListener('click', async () => {
+  const f = $('renameForm'); f.classList.toggle('hidden');
+  if (f.classList.contains('hidden')) return;
+  $('renameIn').value = pet ? pet.name : ''; $('renameIn').focus();
+  try {
+    const next = await rpc('pet_rename_next');
+    $('renameNote').textContent = next ? 'Next rename: ' + new Date(next).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) + ' (once a week).' : 'You can rename your sprite once a week.';
+    $('renameGo').disabled = !!next;
+  } catch (e) { $('renameNote').textContent = 'Renaming isn\'t available right now.'; $('renameGo').disabled = true; }
+});
+async function doRename(){
+  const n = $('renameIn').value.trim();
+  if (!n) return;
+  try { pet = await rpc('pet_rename', { p_name: n }); render(); $('renameForm').classList.add('hidden'); toast('Your sprite is now called ' + pet.name + '!'); }
+  catch (e) { $('renameNote').textContent = e.message; }
+}
+$('renameGo').addEventListener('click', doRename);
+$('renameIn').addEventListener('keydown', e => { if (e.key === 'Enter') doRename(); });
 
 // ---------- start ----------
 async function load(){
