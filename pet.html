@@ -62,6 +62,21 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
 .revive{border-color:rgba(255,215,0,.6);background:linear-gradient(180deg,rgba(255,215,0,.08),var(--panel))}
 .progress{height:16px;background:#0b0716;border:1px solid #4a3d78;border-radius:99px;overflow:hidden;margin-top:8px}
 .progress>div{height:100%;background:linear-gradient(90deg,#b98a00,var(--gold));transition:width .4s}
+/* shop */
+.kbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 4px}
+.kbig{font-size:22px;font-weight:900;color:var(--gold)}
+.shop-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.shop-tabs button{background:var(--panel2);border:1px solid #3b2f66;color:var(--text);padding:6px 11px;font-size:13px;border-radius:99px}
+.shop-tabs button.on{background:var(--gold);color:#2a1d00;border-color:var(--gold)}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+.item{background:var(--panel2);border:2px solid #3b2f66;border-radius:12px;padding:8px;text-align:center;display:flex;flex-direction:column;gap:4px}
+.item svg{width:84px;height:84px;margin:0 auto;display:block}
+.item.worn{border-color:var(--emerald);background:rgba(0,229,160,.08)}
+.item.locked svg{filter:grayscale(1) brightness(.6)}
+.item .nm{font-weight:900;font-size:14px;line-height:1.15}
+.item .pr{font-size:13px;font-weight:800;color:var(--gold)}
+.item .lk{font-size:12px;color:var(--dim);font-weight:700}
+.item button{padding:7px 8px;font-size:13px;margin-top:auto}
 /* hatch */
 .swatches{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
 .sw{width:84px;padding:4px;background:var(--panel2);border:2px solid #3b2f66;border-radius:12px}
@@ -146,7 +161,7 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
 
         <div class="panel" id="quizPanel">
           <h2>📚 Feed it knowledge</h2>
-          <p class="dim small" id="quizNote">Each right answer is a snack for your sprite (<span id="quizLeft">15</span> left today).</p>
+          <p class="dim small" id="quizNote">Each right answer earns <b>+1 💡 Knowledge</b> for the Sprite Shop. The first 15 a day also feed your sprite (<span id="quizLeft">15</span> snacks left), then you can keep studying for <span id="studyLeft">25</span> more Knowledge.</p>
           <p class="dim small hidden" id="quizRevive">Each right answer adds a spark of life. No daily limit while reviving.</p>
           <div class="row" style="margin-top:10px">
             <select id="quizCh" style="flex:1;min-width:200px"></select>
@@ -157,6 +172,15 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
             <div class="opts" id="quizOpts"></div>
             <div class="feedback" id="quizFb"></div>
           </div>
+        </div>
+
+        <div class="panel" id="shopPanel">
+          <h2>🛍️ Sprite Shop</h2>
+          <p class="dim small">Spend Knowledge on upgrades for your sprite. Bigger upgrades unlock after more correct answers. Everyone in the Sprite Gallery sees what your sprite is wearing!</p>
+          <div class="kbar"><span class="kbig">💡 <span id="kNow">0</span></span><span class="dim small">Knowledge to spend · <b id="kTotal">0</b> correct answers all-time</span></div>
+          <p class="dim small hidden" id="shopEgg">🥚 Your gear will show once your egg hatches.</p>
+          <div class="shop-tabs" id="shopTabs"></div>
+          <div class="shop" id="shop"><p class="dim small">Loading the shop…</p></div>
         </div>
 
         <div class="panel" id="extraPanel">
@@ -241,7 +265,7 @@ async function hatch(){
   const name = $('petName').value.trim();
   if (!name){ $('hatchErr').textContent = 'Give your sprite a name first.'; return; }
   $('hatchBtn').disabled = true;
-  try { pet = await rpc('pet_create', { p_name: name, p_color: chosenColor }); render(); show('v-pet'); toast('Your egg is here! Log a healthy habit or answer a question to hatch it.'); }
+  try { pet = await rpc('pet_create', { p_name: name, p_color: chosenColor }); render(); show('v-pet'); loadShop(); toast('Your egg is here! Log a healthy habit or answer a question to hatch it.'); }
   catch(e){ $('hatchErr').textContent = friendly(e); }
   finally { $('hatchBtn').disabled = false; }
 }
@@ -261,7 +285,8 @@ function render(pop){
     '<span class="chip">' + (p.form ? FORM_NAME[p.form] + ' ' : '') + STAGE_NAME[p.stage] + '</span>' +
     '<span class="chip">🎂 ' + p.age_days + ' day' + (p.age_days === 1 ? '' : 's') + '</span>' +
     '<span class="chip">🔥 ' + p.streak + ' day streak</span>' +
-    (p.deaths ? '<span class="chip">👻 revived ' + p.deaths + '×</span>' : '');
+    (p.deaths ? '<span class="chip">👻 revived ' + p.deaths + '×</span>' : '') +
+    '<span class="chip" style="color:var(--gold)">💡 ' + (p.knowledge || 0) + ' Knowledge</span>';
   const bars = [['❤️ Health', p.health], ['🍎 Food', p.food], ['⚡ Energy', p.energy], ['😊 Mood', p.mood], ['🫧 Clean', p.clean]];
   $('bars').innerHTML = bars.map(([l, v]) =>
     '<div class="bar"><span>' + l + '</span><div class="track"><div class="fill" style="width:' + v + '%;background:' + barColor(v) + '"></div></div><span>' + v + '</span></div>').join('');
@@ -291,12 +316,13 @@ function render(pop){
   $('reviveBar').style.width = (100 * p.revive_progress / p.revive_needed) + '%';
   $('reviveTxt').textContent = p.revive_progress + ' / ' + p.revive_needed;
   const left = k => Math.max(0, (caps[k] || 0) - (today[k] || 0));
-  $('quizLeft').textContent = left('quiz');
+  $('quizLeft').textContent = left('quiz'); $('studyLeft').textContent = left('study');
   $('playLeft').textContent = left('play'); $('treatLeft').textContent = left('treat');
   $('playBtn').disabled = !left('play'); $('treatBtn').disabled = !left('treat');
   $('quizNote').classList.toggle('hidden', !p.alive);
   $('quizRevive').classList.toggle('hidden', p.alive);
-  $('quizBtn').disabled = p.alive && !left('quiz') && !quiz;
+  $('quizBtn').disabled = p.alive && !left('quiz') && !left('study') && !quiz;
+  renderShop();
 }
 
 // ---------- actions ----------
@@ -312,6 +338,7 @@ async function doAction(k){
     else if (h) toast(h.ico + ' ' + h.tip);
     else if (k === 'treat') toast('🍩 Yum… but that sugar costs health and energy.');
     else if (k === 'play') toast('⚽ ' + pet.name + ' had fun!');
+    else if (k === 'quiz' || k === 'study') toast('💡 +1 Knowledge (' + pet.knowledge + ' to spend)');
     return true;
   } catch(e){ toast(friendly(e)); return false; }
   finally { busy = false; }
@@ -356,9 +383,10 @@ async function answer(i){
   });
   if (right){
     $('quizFb').style.color = 'var(--emerald)';
-    $('quizFb').textContent = pet.alive ? '✅ Correct! ' + pet.name + ' munches happily.' : '✅ Correct! A spark of life returns…';
-    const ok = await doAction('quiz');
-    if (!ok){ $('quizFb').textContent = '✅ Correct! (No more snacks today, but keep practicing.)'; }
+    const today = pet.today || {}, caps = pet.caps || {}, left = k => (caps[k] || 0) - (today[k] || 0);
+    const act = !pet.alive || left('quiz') > 0 ? 'quiz' : left('study') > 0 ? 'study' : null;
+    $('quizFb').textContent = !pet.alive ? '✅ Correct! A spark of life returns…' : act === 'quiz' ? '✅ Correct! ' + pet.name + ' munches happily.' : act === 'study' ? '✅ Correct! +1 💡 Knowledge.' : '✅ Correct! (You hit today\'s Knowledge limit, but keep practicing.)';
+    if (act){ const ok = await doAction(act); if (!ok) $('quizFb').textContent = '✅ Correct! (You hit today\'s limit, but keep practicing.)'; }
   } else {
     $('quizFb').style.color = 'var(--crimson)';
     $('quizFb').textContent = '❌ Not quite. The answer is “' + quiz.answer + '”. Try another!';
@@ -390,12 +418,54 @@ async function doRename(){
 $('renameGo').addEventListener('click', doRename);
 $('renameIn').addEventListener('keydown', e => { if (e.key === 'Enter') doRename(); });
 
+// ---------- shop ----------
+const SLOT_NAME = { skin:'🎨 Skins', shoes:'👟 Shoes', shirt:'👕 Clothes', back:'🦸 Capes', hair:'💇 Hair', hat:'🧢 Hats', arms:'💪 Muscles', face:'🕶️ Glasses', neck:'🏅 Medals', hand:'🥤 Gear', aura:'✨ Auras' };
+let shopItems = null, shopTab = 'all', shopBusy = false;
+async function loadShop(){
+  try { const { data, error } = await db.rpc('pet_shop_items'); if (error) throw error; shopItems = data || []; renderShop(); }
+  catch(e){ $('shop').innerHTML = '<p class="dim small">The shop couldn\'t load right now. Refresh to try again.</p>'; }
+}
+function renderShop(){
+  if (!shopItems || !pet) return;
+  const owned = pet.owned || [], gear = pet.gear || {}, k = pet.knowledge || 0, kt = pet.knowledge_total || 0;
+  $('kNow').textContent = k; $('kTotal').textContent = kt;
+  $('shopEgg').classList.toggle('hidden', pet.stage !== 'egg');
+  const slots = ['all'].concat([...new Set(shopItems.map(i => i.slot))]);
+  $('shopTabs').innerHTML = slots.map(sl => '<button type="button" data-s="' + sl + '" class="' + (sl === shopTab ? 'on' : '') + '">' + (sl === 'all' ? 'All' : (SLOT_NAME[sl] || sl)) + '</button>').join('');
+  $('shopTabs').querySelectorAll('button').forEach(b => b.onclick = () => { shopTab = b.dataset.s; renderShop(); });
+  const base = Object.assign({}, pet, { stage: pet.stage === 'egg' ? 'child' : pet.stage, alive: true, mood_label: 'happy' });
+  $('shop').innerHTML = shopItems.filter(it => shopTab === 'all' || it.slot === shopTab).map(it => {
+    const has = owned.indexOf(it.key) !== -1, worn = gear[it.slot] === it.key, locked = !has && kt < it.unlock;
+    const g = Object.assign({}, gear); g[it.slot] = it.key;
+    let btn;
+    if (worn) btn = '<button class="btn btn-ghost" data-a="off" data-s="' + it.slot + '">Take off</button>';
+    else if (has) btn = '<button class="btn btn-em" data-a="wear" data-s="' + it.slot + '" data-k="' + it.key + '">Wear</button>';
+    else if (locked) btn = '<button class="btn btn-ghost" disabled>🔒 Locked</button>';
+    else btn = '<button class="btn btn-gold" data-a="buy" data-k="' + it.key + '"' + (k < it.cost ? ' disabled' : '') + '>Buy 💡' + it.cost + '</button>';
+    return '<div class="item' + (worn ? ' worn' : '') + (locked ? ' locked' : '') + '">' + petSpriteSVG(Object.assign({}, base, { gear: g }), { tight: true }) +
+      '<div class="nm">' + esc(it.name) + '</div>' +
+      (has ? '<div class="lk">' + (worn ? '✓ Wearing' : 'Owned') + '</div>' :
+        '<div class="pr">💡 ' + it.cost + '</div>' + (locked ? '<div class="lk">Unlocks at ' + it.unlock + ' correct answers (' + (it.unlock - kt) + ' to go)</div>' : '')) +
+      btn + '</div>';
+  }).join('');
+  $('shop').querySelectorAll('button[data-a]').forEach(b => b.onclick = () => shopDo(b.dataset.a, b.dataset.s, b.dataset.k));
+}
+async function shopDo(a, slot, key){
+  if (shopBusy) return; shopBusy = true;
+  try {
+    if (a === 'buy'){ const it = shopItems.find(i => i.key === key); pet = await rpc('pet_shop_buy', { p_item: key }); toast('🎉 ' + pet.name + ' got the ' + it.name + '!'); }
+    else pet = await rpc('pet_equip', { p_slot: slot, p_item: a === 'off' ? null : key });
+    render(true);
+  } catch(e){ toast(friendly(e)); }
+  finally { shopBusy = false; }
+}
+
 // ---------- start ----------
 async function load(){
   try {
     pet = await rpc('pet_get');
     if (!pet){ buildSwatches(); show('v-hatch'); return; }
-    render(); show('v-pet');
+    render(); show('v-pet'); loadShop();
   } catch(e){
     $('pageErr').textContent = friendly(e);
     if (!/Login expired/.test(e.message)) show('v-loading');

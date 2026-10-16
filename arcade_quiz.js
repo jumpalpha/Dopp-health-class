@@ -66,9 +66,13 @@
     if (!ses) return;
     try {
       const p = await net.rpc('pet_action', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: net.TRIMESTER, p_action: 'quiz' });
-      el.textContent = p && p.alive === false ? '✨ A spark of life for your sprite!' : '🌱 ' + ((p && p.name) || 'Your sprite') + ' munched that answer!';
+      el.textContent = (p && p.alive === false ? '✨ A spark of life for your sprite!' : '🌱 ' + ((p && p.name) || 'Your sprite') + ' munched that answer!') + ' +1 💡 Knowledge';
     } catch (e) {
-      el.textContent = /limit/i.test(e.message) ? '🌱 Your sprite is full of answers for today.' : '';
+      if (!/limit/i.test(e.message)) { el.textContent = ''; return; }
+      try {   // sprite is full: the answer still earns Knowledge for the Sprite Shop
+        await net.rpc('pet_action', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: net.TRIMESTER, p_action: 'study' });
+        el.textContent = '💡 +1 Knowledge for the Sprite Shop!';
+      } catch (e2) { el.textContent = '🌱 You hit today\'s Knowledge limit. Great studying!'; }
     }
   }
 
