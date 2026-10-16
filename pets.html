@@ -72,6 +72,7 @@ select{font:inherit;font-weight:700;padding:8px 10px;border-radius:10px;border:1
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
       <h2>Every Sprite</h2>
       <select id="sort" aria-label="Sort sprites">
+        <option value="upgrades" selected>Most upgrades</option>
         <option value="health">Healthiest first</option>
         <option value="streak">Longest streak</option>
         <option value="age">Oldest first</option>
@@ -122,10 +123,11 @@ function renderGallery(){
   list.sort(s === 'name' ? (a, b) => a.name.localeCompare(b.name)
     : s === 'streak' ? (a, b) => b.streak - a.streak || b.health - a.health
     : s === 'age' ? (a, b) => b.age_days - a.age_days
+    : s === 'upgrades' ? (a, b) => (b.upgrades || 0) - (a.upgrades || 0) || (b.alive - a.alive) || b.health - a.health
     : (a, b) => (b.alive - a.alive) || b.health - a.health || b.streak - a.streak);
   $('gallery').innerHTML = list.map(p =>
     '<div class="card">' + petSpriteSVG(p, { tight: true }) + '<div class="nm">' + esc(p.name) + '</div><div class="ow">' + esc(p.owner) + '</div>' +
-    '<div class="meta">' + label(p) + ' · 🔥 ' + p.streak + '</div>' +
+    '<div class="meta">' + label(p) + ' · 🔥 ' + p.streak + ' · 🛍️ ' + (p.upgrades || 0) + '</div>' +
     '<div class="mini"><div style="width:' + p.health + '%;background:' + col(p.health) + '"></div></div></div>').join('');
   $('empty').style.display = pets.length ? 'none' : 'block';
 }

@@ -99,7 +99,7 @@ begin
     'name', r.name, 'color', r.color, 'stage', stage, 'form', form,
     'mood_label', mood_label, 'alive', r.alive,
     'health', round(r.health::numeric), 'streak', r.streak,
-    'age_days', floor(age_days)::int, 'gear', coalesce(r.equipped, '{}'::jsonb));
+    'age_days', floor(age_days)::int, 'gear', coalesce(r.equipped, '{}'::jsonb), 'upgrades', coalesce(cardinality(r.owned), 0));
   if p_full then
     v := v || jsonb_build_object(
       'food', round(r.food::numeric), 'energy', round(r.energy::numeric),
