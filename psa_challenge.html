@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSA Video Challenge — Dopp Health Class</title>
+<meta name="description" content="PSA Video Challenge: a group video project. A serious message, a ridiculous delivery, or anything in between.">
+<link rel="canonical" href="https://doppsclass.com/psa_challenge.html">
+<meta property="og:title" content="PSA Video Challenge — Dopp Health Class">
+<meta property="og:description" content="A Serious Message. A Ridiculous Delivery. Or Anything In Between!">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --sky:#38BFFF; --crimson:#FF3B5C; --wild:#a855f7;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.68);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(210,196,168,0.98); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,0.05); }
+
+.hero { text-align:center; padding:48px 20px 28px; max-width:860px; margin:0 auto; }
+.badge { display:inline-block; font-family:'Cinzel',serif; font-size:11px; letter-spacing:3px; color:var(--crimson);
+  border:1px solid rgba(255,59,92,0.3); background:rgba(255,59,92,0.06); padding:6px 14px; border-radius:20px; margin-bottom:16px; }
+h1 { font-family:'Cinzel Decorative',serif; font-size:clamp(28px,6vw,50px); line-height:1.1; margin-bottom:12px;
+  background:linear-gradient(135deg,#FF3B5C 0%,#a855f7 55%,#38BFFF 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.tagline { font-size:clamp(17px,2.6vw,21px); font-weight:800; }
+.tagline span { display:inline-block; }
+.motto { margin-top:14px; font-size:14px; color:var(--dim); font-weight:700; }
+
+.wrap { max-width:860px; margin:0 auto; padding:0 16px 60px; }
+.toc { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:0 0 26px; }
+.toc a { font-size:12.5px; font-weight:800; text-decoration:none; color:var(--text); background:var(--card); border:1px solid var(--border);
+  padding:5px 10px; border-radius:999px; }
+.toc a:hover { border-color:var(--wild); }
+
+.card { background:var(--card); border:1px solid var(--border); border-left:5px solid var(--accent, var(--wild)); border-radius:14px;
+  padding:20px 20px 18px; margin-bottom:16px; scroll-margin-top:70px; }
+.card h2 { font-family:'Cinzel',serif; font-size:20px; margin-bottom:8px; display:flex; gap:10px; align-items:baseline; }
+.num { font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; color:#fff; background:var(--accent, var(--wild));
+  border-radius:999px; min-width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; flex:none; }
+.card p { margin:6px 0; }
+.card ul, .card ol { margin:6px 0 6px 22px; }
+.card li { margin:3px 0; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+.box { background:rgba(28,26,46,0.04); border-radius:10px; padding:12px 14px; }
+.box h3 { font-size:15px; margin-bottom:4px; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+.chip { font-size:12.5px; font-weight:700; padding:3px 10px; border-radius:999px; background:rgba(168,85,247,0.1); color:#6d28d9; border:1px solid rgba(168,85,247,0.25); }
+.rules { background:#1C1A2E; color:#fff; border-radius:12px; padding:14px 16px; margin-top:10px; }
+.rules h3 { color:var(--gold); font-family:'Cinzel',serif; font-size:15px; margin-bottom:6px; }
+.rules li { margin:4px 0; }
+.rules b { color:var(--gold); }
+.callout { background:rgba(255,215,0,0.14); border:1px solid rgba(255,215,0,0.5); border-radius:10px; padding:10px 14px; margin-top:10px; font-weight:700; }
+table { width:100%; border-collapse:collapse; margin-top:8px; font-size:14.5px; }
+th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); }
+th { font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--dim); }
+td.pts, th.pts { text-align:right; width:80px; }
+tr.total td { font-weight:800; border-bottom:none; }
+.sched td:first-child { font-weight:800; white-space:nowrap; width:130px; }
+.checklist { list-style:none; margin-left:0 !important; columns:2; column-gap:24px; }
+.checklist li::before { content:'☐ '; font-weight:800; color:var(--wild); }
+.btn { display:inline-block; font:800 14px 'Nunito',sans-serif; padding:10px 16px; border-radius:10px; border:1px solid #1C1A2E;
+  background:#1C1A2E; color:#FFD700; cursor:pointer; text-decoration:none; }
+.closing { text-align:center; font-family:'Cinzel',serif; font-size:clamp(16px,2.6vw,20px); font-weight:700; margin:26px 0 8px; line-height:1.5; }
+footer { background:rgba(5,7,18,0.96); border-top:1px solid rgba(255,215,0,0.22); padding:24px 20px; display:flex;
+  justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+.footer-brand { font-family:'Cinzel',serif; font-size:13px; color:var(--gold); font-weight:600; }
+footer a { font-size:12px; color:rgba(255,255,255,0.7); text-decoration:none; }
+
+@media (max-width:640px) {
+  .two { grid-template-columns:1fr; }
+  .checklist { columns:1; }
+  .card { padding:16px 14px; }
+  .sched td:first-child { width:auto; }
+}
+@media print {
+  nav, .toc, footer, .no-print { display:none !important; }
+  body { background:#fff; }
+  .card { break-inside:avoid; border-left-width:3px; }
+  h1 { -webkit-text-fill-color:#1C1A2E; color:#1C1A2E; background:none; }
+}
+</style>
+<link rel="stylesheet" href="shared.css">
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="side_quests.html">Side Quests</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="badge">GROUP PROJECT · SIDE QUEST</div>
+  <h1>PSA Video Challenge</h1>
+  <p class="tagline"><span>A Serious Message.</span> <span>A Ridiculous Delivery.</span> <span>Or Anything In Between!</span></p>
+  <p class="motto">One class period to film. One week to edit. Everyone participates. Everyone appears. Nobody gets left out.</p>
+</header>
+
+<main class="wrap">
+
+  <div class="toc">
+    <a href="#what">What's a PSA?</a><a href="#group">Group</a><a href="#concept">Concept</a><a href="#script">Script</a>
+    <a href="#location">Location</a><a href="#ready">Ready?</a><a href="#film">Filming Day</a><a href="#ai">Audio &amp; AI</a>
+    <a href="#edit">Editing</a><a href="#submit">Submit</a><a href="#grade">Grading</a><a href="#festival">Festival</a>
+  </div>
+
+  <section class="card" id="what" style="--accent:#FF3B5C">
+    <h2><span class="num">1</span>What's a PSA?</h2>
+    <p>A <b>Public Service Announcement</b> is a short video that tells people something important for their health, safety, or well-being — and tries to get them to <b>do</b> something about it.</p>
+    <p>Your PSA can be serious, emotional, inspiring, hilarious, absurd, or completely ridiculous. The only must: <b>people have to understand your message.</b></p>
+    <div class="two">
+      <div class="box"><h3>😐 Serious version</h3>A quiet mini-documentary about a student running on 4 hours of sleep — grades slipping, friends noticing, ending with real tips for better sleep.</div>
+      <div class="box"><h3>🧟 Ridiculous version</h3>A horror movie where a student slowly turns into a zombie every time they scroll TikTok past midnight. The cure? Going to bed.</div>
+    </div>
+    <p style="margin-top:10px"><b>Topic ideas:</b></p>
+    <div class="chips">
+      <span class="chip">Mental health</span><span class="chip">Exercise</span><span class="chip">Nutrition</span><span class="chip">Sleep</span>
+      <span class="chip">Stress</span><span class="chip">Relationships</span><span class="chip">Bullying</span><span class="chip">Social media</span>
+      <span class="chip">Safety</span><span class="chip">Kindness</span><span class="chip">Vaping</span><span class="chip">Your own wellness idea</span>
+    </div>
+  </section>
+
+  <section class="card" id="group" style="--accent:#a855f7">
+    <h2><span class="num">2</span>Form Your Group — Nobody Left Behind</h2>
+    <p>Everyone is in a production group. Mr. Dopp sets the group size and approves every group.</p>
+    <ul>
+      <li>Pick a <b>group name</b> and a <b>production leader</b>.</li>
+      <li>Give every member a role. You can have more than one.</li>
+    </ul>
+    <div class="chips">
+      <span class="chip">Director</span><span class="chip">Producer</span><span class="chip">Scriptwriter</span><span class="chip">Actor</span>
+      <span class="chip">Cinematographer</span><span class="chip">Audio specialist</span><span class="chip">Editor</span><span class="chip">Props manager</span><span class="chip">Production coordinator</span>
+    </div>
+    <div class="callout">🎥 EVERY member must appear on camera with their real face clearly visible. Voice-only, an AI-generated face, or working only behind the camera does <u>not</u> count.</div>
+  </section>
+
+  <section class="card" id="concept" style="--accent:#38BFFF">
+    <h2><span class="num">3</span>Build Your Concept</h2>
+    <p>Before you write anything, your group decides:</p>
+    <ol>
+      <li><b>Title</b> of your PSA</li>
+      <li><b>Subject</b> — what health topic?</li>
+      <li><b>Target audience</b> — who needs to hear this?</li>
+      <li><b>Central message</b> — one sentence</li>
+      <li><b>Audience reaction</b> — laugh? cry? think? change?</li>
+      <li><b>Creative style</b></li>
+      <li><b>Story synopsis</b> — what happens, start to finish</li>
+      <li><b>Closing message / call to action</b> — what should viewers do?</li>
+    </ol>
+    <div class="chips">
+      <span class="chip">Serious drama</span><span class="chip">Comedy</span><span class="chip">Satire</span><span class="chip">Musical</span>
+      <span class="chip">Mock documentary</span><span class="chip">Fake commercial</span><span class="chip">Horror parody</span><span class="chip">Action movie</span>
+      <span class="chip">Inspirational</span><span class="chip">Completely ridiculous</span>
+    </div>
+    <p>💡 Stuck? AI is allowed for brainstorming — ask it for 10 wild ideas on your topic, then make one your own.</p>
+  </section>
+
+  <section class="card" id="script" style="--accent:#00b37e">
+    <h2><span class="num">4</span>Script &amp; Storyboard</h2>
+    <p>Target length: <b>60–120 seconds</b> (unless Mr. Dopp says otherwise). Your plan must include:</p>
+    <ul>
+      <li>A clear <b>beginning, middle, and ending</b></li>
+      <li>A written script or detailed scene outline, with dialogue and narration</li>
+      <li><b>At least 6 planned shots or scenes</b>, each with an estimated length</li>
+      <li>Who plays which character</li>
+      <li>Camera angles and movement (close-up, wide, pan, slow-mo…)</li>
+      <li>Audio and music plan</li>
+      <li>Props and costumes list</li>
+    </ul>
+    <p><b>Storyboard:</b> one box per shot — a quick sketch (stick figures are fine), a photo, or an AI-generated image, plus one line describing what happens.</p>
+  </section>
+
+  <section class="card" id="location" style="--accent:#FF3B5C">
+    <h2><span class="num">5</span>Filming Location Plan (Required)</h2>
+    <p>Write down exactly where you'll film:</p>
+    <ul>
+      <li>Primary location, plus every other location</li>
+      <li>Which scenes happen where</li>
+      <li>How many minutes you'll spend at each spot</li>
+      <li>Props and equipment you'll need there</li>
+    </ul>
+    <p><b>Mr. Dopp must approve your locations before you film.</b></p>
+    <div class="rules">
+      <h3>⚠ Nonnegotiable Rules</h3>
+      <ul>
+        <li><b>DO NOT LEAVE SCHOOL PROPERTY.</b></li>
+        <li><b>NO VEHICLE DRIVING.</b></li>
+        <li>No dangerous stunts.</li>
+        <li>No realistic weapons.</li>
+        <li>No filming in restricted areas.</li>
+        <li>No recording students or staff who aren't in your group without their permission.</li>
+        <li>Follow all school policies and teacher instructions.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card" id="ready" style="--accent:#d4a800">
+    <h2><span class="num">6</span>Ready to Film? Checklist</h2>
+    <p>Before filming day, your group must have <b>all</b> of this done and shown to Mr. Dopp. You should know exactly what you're shooting before you walk out the door.</p>
+    <ul class="checklist">
+      <li>Group &amp; roles set</li>
+      <li>Topic chosen</li>
+      <li>Script written</li>
+      <li>Storyboard (6+ shots)</li>
+      <li>Cast assigned</li>
+      <li>Props list</li>
+      <li>Equipment list</li>
+      <li>Audio plan</li>
+      <li>Location plan</li>
+      <li>Filming schedule</li>
+      <li><b>Mr. Dopp's approval</b></li>
+    </ul>
+    <p class="no-print" style="margin-top:10px"><button class="btn" onclick="window.print()">🖨 Print these instructions</button></p>
+  </section>
+
+  <section class="card" id="film" style="--accent:#a855f7">
+    <h2><span class="num">7</span>Filming Day — ONE Class Period</h2>
+    <p>You get <b>one class period</b> to shoot everything. There is no extra class time for filming. Times below are a guide — Mr. Dopp will adjust them to the period.</p>
+    <table class="sched">
+      <tr><td>First 5 min</td><td>Grab equipment, set up at your location</td></tr>
+      <tr><td>Next 35 min</td><td>Film your planned shots</td></tr>
+      <tr><td>Next 10 min</td><td>Retakes, extra footage, and any missing cameos</td></tr>
+      <tr><td>Last few min</td><td>Clean up, return equipment, check in with Mr. Dopp</td></tr>
+    </table>
+    <ul style="margin-top:10px">
+      <li>Bring your shot list and check off each shot: <b>Not filmed → Filmed → Retake needed</b>.</li>
+      <li>Shoot extra takes and alternate angles whenever you can — editors love options.</li>
+      <li>Double-check that <b>every group member's face</b> is on camera before you leave.</li>
+      <li>All props, equipment, and filming areas cleaned up before the bell.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="ai" style="--accent:#38BFFF">
+    <h2><span class="num">8</span>Audio &amp; AI</h2>
+    <p><b>Audio is strongly encouraged.</b> Think dialogue, narration, background music, an original song, sound effects, dramatic transitions, AI voiceovers, or comedic sound design. Keep dialogue clear and levels balanced. Add captions if speech is hard to hear.</p>
+    <p><b>AI IS ENCOURAGED!</b> Use it for brainstorming, scripts, storyboards, music, narration, graphics, effects, and editing.</p>
+    <ul>
+      <li>Keep a list of which AI tools you used and what you used them for — you'll turn it in.</li>
+      <li>AI helps your creativity; it doesn't replace your group's work. Real faces are still required.</li>
+      <li>Respect copyright, privacy, and school rules. <b>Never upload someone's face or voice to an AI tool without their permission.</b></li>
+    </ul>
+  </section>
+
+  <section class="card" id="edit" style="--accent:#00b37e">
+    <h2><span class="num">9</span>Editing Week — Outside of Class</h2>
+    <p>After filming you have about <b>one week</b> to finish. <b>No class time is used for editing.</b> Mr. Dopp will give you the exact deadline.</p>
+    <p>Editing can include cutting and arranging clips, music and sound effects, narration, titles and credits, captions, color correction, transitions, AI effects, and balancing the audio.</p>
+    <p><b>You do not need to buy anything.</b> Free options include Clipchamp (Chromebooks &amp; Windows), Canva for Education, iMovie (Apple), CapCut's free version, or your phone's built-in editor.</p>
+  </section>
+
+  <section class="card" id="submit" style="--accent:#FF3B5C">
+    <h2><span class="num">10</span>Submitting Your Video</h2>
+    <p>Turn in your PSA the way Mr. Dopp tells you (for example, a shared video link). Name your file:</p>
+    <p style="font-family:monospace;font-size:15px;background:rgba(28,26,46,0.06);padding:8px 12px;border-radius:8px;overflow-wrap:anywhere">PSA_GroupName_VideoTitle.mp4</p>
+    <p>MP4 is preferred. If you share a link, make sure Mr. Dopp can open it — but <b>don't make it public</b>. Include:</p>
+    <ul>
+      <li>PSA title and group name</li>
+      <li>Video link or file, and its length</li>
+      <li>Group roster with each person's role</li>
+      <li>AI tools you used and how</li>
+      <li>A short summary of what each member contributed</li>
+      <li>Confirmation that every member appears on camera</li>
+    </ul>
+    <p><b>Each person also answers:</b> <i>"What did you contribute to this project, and what did you learn?"</i></p>
+  </section>
+
+  <section class="card" id="grade" style="--accent:#d4a800">
+    <h2><span class="num">11</span>Grading — 100 Points</h2>
+    <table>
+      <tr><th>Category</th><th class="pts">Points</th></tr>
+      <tr><td>Planning and preparation</td><td class="pts">20</td></tr>
+      <tr><td>Teamwork and participation</td><td class="pts">20</td></tr>
+      <tr><td>Clarity and impact of PSA message</td><td class="pts">20</td></tr>
+      <tr><td>Creativity and originality</td><td class="pts">15</td></tr>
+      <tr><td>Video and audio production</td><td class="pts">15</td></tr>
+      <tr><td>Following requirements and submission</td><td class="pts">10</td></tr>
+      <tr class="total"><td>Total</td><td class="pts">100</td></tr>
+    </table>
+    <p style="margin-top:8px;font-size:14px;color:var(--dim)">Everyone is expected to pitch in. Mr. Dopp may adjust an individual's grade based on their actual contribution.</p>
+  </section>
+
+  <section class="card" id="festival" style="--accent:#a855f7">
+    <h2><span class="num">12</span>🎬 The DoppsClass PSA Film Festival</h2>
+    <p>We'll watch the finished PSAs together in class. Students may vote anonymously for awards — you can't vote for your own group. Awards are just for fun and don't affect grades.</p>
+    <div class="chips">
+      <span class="chip">🏆 Best Overall PSA</span><span class="chip">😂 Funniest</span><span class="chip">🤪 Most Ridiculous</span><span class="chip">🎭 Best Acting</span>
+      <span class="chip">🎥 Best Cinematography</span><span class="chip">🎵 Best Audio / Original Song</span><span class="chip">🤖 Best Use of AI</span>
+      <span class="chip">💥 Most Powerful Message</span><span class="chip">🌀 Best Plot Twist</span><span class="chip">👏 Audience Choice</span>
+    </div>
+  </section>
+
+  <p class="closing">One class period to film. One week to edit.<br>Everyone participates. Everyone appears. Nobody gets left out.</p>
+</main>
+
+<footer>
+  <div class="footer-brand">⚔ The Legend of Wellness</div>
+  <a href="side_quests.html">← Back to Side Quests</a>
+</footer>
+
+</body>
+</html>
