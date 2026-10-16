@@ -60,6 +60,8 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
 .hero h1{font-family:'Cinzel Decorative',serif;font-weight:900;font-size:clamp(34px,6.2vw,66px);line-height:1.04;color:var(--gold);margin:10px 0 12px;
   text-shadow:0 3px 0 #5a3d00,0 0 34px rgba(255,215,0,.28)}
 .hero p{color:var(--dim);font-size:16px;max-width:560px;line-height:1.55}
+.lb-link{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 18px;border-radius:999px;background:var(--gold);color:#1a1205;font-weight:900;font-size:15px;text-decoration:none;box-shadow:0 4px 14px rgba(255,215,0,.3)}
+.lb-link:hover{filter:brightness(1.08)}
 .hero-sprite{width:150px;height:150px;position:relative;display:grid;place-items:center}
 .hero-sprite::before{content:'';position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,160,.25),transparent 70%)}
 .hero-sprite img{width:120px;height:120px;position:relative;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))}
@@ -220,6 +222,7 @@ footer a{color:var(--dim)}
     <div class="eyebrow">🎮 The Arcade</div>
     <h1>Play Your Way to Wellness</h1>
     <p>Arcade games starring your Wellness Sprite, Dopp originals, and classroom games for the whole class. Every game has a little health knowledge built in.</p>
+    <a class="lb-link" href="leaderboard.html">🏆 See the Leaderboard</a>
     <div class="chips" id="chips"></div>
     <div data-pwa-install style="margin-top:12px"></div>
   </div>
