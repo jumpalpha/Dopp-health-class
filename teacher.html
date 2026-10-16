@@ -356,6 +356,18 @@ input, select, textarea { color: var(--text); }
       <div id="nr-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
     </div>
 
+    <div class="card" id="sp-card" style="border-color:rgba(0,179,125,0.5)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+        <div class="card-title" style="margin-bottom:0">🐣 Manage sprites <span id="sp-count" style="font-family:'Nunito',sans-serif"></span></div>
+        <button onclick="spLoad()" style="font:700 12px 'Nunito',sans-serif;border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer">↻ Refresh</button>
+      </div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:8px">Rename or delete any student's sprite. Your rename doesn't use up the student's weekly rename. A deleted sprite is gone for good; the student hatches a new one next visit (their care history for the checklist is kept).</div>
+      <input id="sp-search" placeholder="Search student or sprite name…" autocomplete="off" oninput="spRender()"
+        style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font:600 14px 'Nunito',sans-serif;width:260px;max-width:100%;margin-bottom:6px">
+      <div id="sp-list" style="font-size:14px;max-height:420px;overflow:auto"></div>
+      <div id="sp-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
+    </div>
+
     <div class="card" id="pin-card" style="border-color:rgba(56,191,255,0.45)">
       <div class="card-title" style="margin-bottom:4px">🔑 Reset a student PIN</div>
       <div style="font-size:14px;color:var(--dim);margin-bottom:10px">PINs are stored scrambled, so they can't be looked up. Find the student, set a new 4-digit PIN, and tell them. Their progress stays.</div>
@@ -837,7 +849,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
-    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); nrLoad(); }, 0);
+    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); nrLoad(); spLoad(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -921,6 +933,50 @@ async function nrLoad(){
     : '<div style="color:var(--dim)">No requests waiting.</div>') +
     (recent.length ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--dim);font-weight:700">Recent decisions</summary>${recent.map(r => `<div style="padding:3px 0;color:var(--dim)">${escapeHtml(r.old)} ${escapeHtml(r.last)} → ${escapeHtml(r.new)} · ${r.status === 'approved' ? '✅ approved' : '❌ denied'}</div>`).join('')}</details>` : '');
 }
+// ── MANAGE SPRITES ──
+let spRows = [];
+async function spLoad(){
+  const box = document.getElementById('sp-list'), err = document.getElementById('sp-err');
+  if (!box || !teacherPass()) return;
+  err.textContent = '';
+  const { data, error } = await db.rpc('sprite_admin_list', { p_teacher_pass: teacherPass() });
+  if (error){
+    const missing = /does not exist|schema cache|Could not find/i.test(error.message);
+    box.innerHTML = missing ? '<div style="color:var(--dim)">Not set up yet (run supabase/sprite_admin.sql).</div>' : '';
+    if (!missing) err.textContent = 'Could not load sprites.';
+    return;
+  }
+  spRows = data || []; spRender();
+}
+function spRender(){
+  const box = document.getElementById('sp-list'); if (!box) return;
+  const q = (document.getElementById('sp-search').value || '').trim().toLowerCase();
+  const per = c => { const m = /P(\d+)$/i.exec(c || ''); return m ? 'P' + m[1] : (c || ''); };
+  const rows = spRows.filter(r => !q || [r.name, r.first, r.last].join(' ').toLowerCase().includes(q));
+  document.getElementById('sp-count').textContent = spRows.length ? '(' + spRows.length + ')' : '';
+  box.innerHTML = rows.length ? rows.map(r => `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--border)">
+      <span style="flex:1;min-width:200px"><b>${escapeHtml(r.name)}</b>${r.alive ? '' : ' <span title="fallen">💤</span>'}
+        <span style="color:var(--dim)">· ${escapeHtml(r.first)} ${escapeHtml(r.last)} (${escapeHtml(per(r.code))})</span></span>
+      <button onclick="spRename('${r.id}')" style="font:800 12px 'Nunito',sans-serif;background:#fff;color:#1C1A2E;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer">Rename</button>
+      <button onclick="spDelete('${r.id}')" style="font:800 12px 'Nunito',sans-serif;background:#fff;color:var(--crimson);border:1px solid var(--crimson);border-radius:8px;padding:6px 12px;cursor:pointer">Delete</button></div>`).join('')
+    : '<div style="color:var(--dim)">' + (spRows.length ? 'No matches.' : 'No sprites yet this trimester.') + '</div>';
+}
+async function spRename(id){
+  const r = spRows.find(x => x.id === id); if (!r) return;
+  const n = prompt('New name for ' + r.first + ' ' + r.last + '\'s sprite (1–16 characters):', r.name);
+  if (n == null || !n.trim() || n.trim() === r.name) return;
+  const { error } = await db.rpc('sprite_admin_rename', { p_teacher_pass: teacherPass(), p_student_id: id, p_name: n });
+  document.getElementById('sp-err').textContent = error ? error.message : '';
+  spLoad();
+}
+async function spDelete(id){
+  const r = spRows.find(x => x.id === id); if (!r) return;
+  if (!confirm('Delete "' + r.name + '" (' + r.first + ' ' + r.last + ')? This can\'t be undone. They\'ll hatch a new sprite next visit.')) return;
+  const { error } = await db.rpc('sprite_admin_delete', { p_teacher_pass: teacherPass(), p_student_id: id });
+  document.getElementById('sp-err').textContent = error ? error.message : '';
+  spLoad();
+}
+
 async function nrDecide(id, ok){
   const { error } = await db.rpc('name_request_decide', { p_teacher_pass: teacherPass(), p_id: id, p_approve: ok });
   if (error) document.getElementById('nr-err').textContent = error.message;
@@ -1075,7 +1131,7 @@ const TRIMESTER    = ((window.TERM && TERM.id) || '2026-T1');
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 (function(){ const sel = document.getElementById('wq-trimester'); if (!sel) return; if (![...sel.options].some(o => o.value === TRIMESTER)) sel.add(new Option(TRIMESTER, TRIMESTER), 0); sel.value = TRIMESTER; })();
-subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); trailLoad(); nrLoad(); }
+subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); trailLoad(); nrLoad(); spLoad(); }
 const XP_PER_TASK  = 25;
 const XP_PER_DAY   = 5;   // per login day
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task
