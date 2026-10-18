@@ -174,6 +174,16 @@ h2.sec:first-child{margin-top:4px}
 .board td.r{width:52px;font-size:18px;text-align:center}
 .board td.n{color:var(--text)} .board td.g{color:var(--dim);font-size:13px} .board td.s{color:var(--gold);text-align:right;font-family:Cinzel,serif;font-size:18px}
 .board tr.me td{background:rgba(124,255,178,.08)}
+.lvl{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px 18px;margin:0 0 16px}
+.lvl .num{font-family:Cinzel,serif;font-weight:900;font-size:44px;color:var(--gold);line-height:1;min-width:64px;text-align:center}
+.lvl .num small{display:block;font-size:11px;letter-spacing:2px;color:var(--dim);font-family:Nunito,sans-serif}
+.lvl .info{flex:1;min-width:200px}
+.lvl .ttl{font-weight:900;font-size:19px}
+.lvl .sub{font-size:13px;color:var(--dim);font-weight:700;margin:4px 0 8px}
+.lv{display:inline-block;font-size:12px;font-weight:900;padding:2px 8px;border-radius:99px;background:rgba(255,215,0,.12);color:var(--gold);margin-left:6px;white-space:nowrap}
+.cw-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px;min-width:80px}
+.cw-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sky),var(--emerald));border-radius:99px}
+.board tr.mycls td{background:rgba(56,191,255,.08)}
 @media (max-width:560px){.board td.g{display:none}.board th.g{display:none}}
 footer{border-top:1px solid var(--border);padding:24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;max-width:1100px;margin:0 auto;font-size:13px;color:var(--dim)}
 footer b{font-family:Cinzel,serif;color:var(--gold)}
@@ -275,8 +285,13 @@ footer a{color:var(--dim)}
   <section class="panel" id="stats" role="tabpanel" aria-labelledby="tab-stats" hidden>
     <h2 class="sec">🏆 My Stats</h2>
     <div class="who" id="who"></div>
-    <p class="sec-sub">Your best scores and medals in the Sprite Arcade. <a href="#boards" style="color:var(--gold);font-weight:800">Jump to leaderboards ↓</a></p>
+    <p class="sec-sub">Your best scores and medals in the Sprite Arcade. <a href="#classwars" style="color:var(--sky);font-weight:800">⚔ Class Wars ↓</a> · <a href="#boards" style="color:var(--gold);font-weight:800">Jump to leaderboards ↓</a></p>
+    <div class="lvl" id="lvlCard" hidden></div>
     <div class="stats" id="statGrid"></div>
+    <h2 class="sec" id="classwars">⚔ Class Wars · this trimester</h2>
+    <p class="sec-sub">Which period rules the arcade? Classes are ranked by <b style="color:var(--gold)">average Arcade Power per student</b>, so small classes can win and every classmate who plays helps.</p>
+    <div class="board" id="cwTable"><div class="empty">Loading…</div></div>
+    <p class="note"><b>How Arcade Power works:</b> every medal tier you earn in a game = 10 power (bronze 10, silver 20, gold 30, legend 40), and winning a game once = +5. Your <b>Level</b> grows with your power: Rookie → Squire → Knight → Hero → Champion → Legend. Everything resets each trimester.</p>
     <h2 class="sec" id="boards">📊 Leaderboards · this trimester</h2>
     <p class="sec-sub">Top scores from every class. Visitors (past students) have their own board. Your first quest win in each game also earns <b style="color:var(--gold)">+10 Verified XP</b>.</p>
     <div class="filters" id="lbGames"></div>
@@ -489,7 +504,7 @@ async function loadMine() {
     mine = await rpc('arcade_mine', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER });
     if (!mine) throw new Error('expired');
     $('who').innerHTML = '✅ Signed in as <span>' + esc(mine.name) + '</span><span class="tag">' + esc(mine.group) + '</span><span style="color:var(--dim);font-weight:700">Your scores post automatically.</span>';
-    renderStats();
+    renderStats(); renderLevel(); loadClassWars();
     if (!mine.visitor && mine.class_code) { lbGroup = 'mine'; }
     if (mine.visitor) lbGroup = 'visitors';
     renderBoardFilters(); loadBoard();
@@ -519,12 +534,41 @@ async function loadBoard() {
       : await rpc('arcade_board', { p_trimester: NET.TRIMESTER, p_game: lbGame, p_group: grp, p_limit: 10 });
     if (!rows || !rows.length) { $('lbTable').innerHTML = '<div class="empty">No scores yet. Be the first on the board!</div>'; return; }
     const champ = lbGame === 'champions', MED = ['', '🥉', '🥈', '🥇', '💎'];
-    $('lbTable').innerHTML = '<table><tr><th>#</th><th>Player</th><th class="g">Class</th><th style="text-align:right">' + (champ ? 'Medals' : 'Best') + '</th></tr>' +
-      rows.map(r => `<tr${mine && r.name && r.name.indexOf(mine.name) >= 0 ? ' class="me"' : ''}><td class="r">${['🥇', '🥈', '🥉'][r.rank - 1] || r.rank}</td><td class="n">${esc(r.name)}</td><td class="g">${esc(r.group)}</td>` +
-        `<td class="s">${champ ? r.medals + ' <span style="font-size:13px;color:var(--dim)">· ' + r.games_won + ' won</span>' : Number(r.best).toLocaleString() + ' ' + (MED[r.medal] || '')}</td></tr>`).join('') + '</table>';
+    $('lbTable').innerHTML = '<table><tr><th>#</th><th>Player</th><th class="g">Class</th><th style="text-align:right">' + (champ ? 'Power' : 'Best') + '</th></tr>' +
+      rows.map(r => `<tr${mine && r.name && r.name.indexOf(mine.name) >= 0 ? ' class="me"' : ''}><td class="r">${['🥇', '🥈', '🥉'][r.rank - 1] || r.rank}</td><td class="n">${esc(r.name)}${champ && r.level ? `<span class="lv">Lv ${r.level} ${esc(r.title)}</span>` : ''}</td><td class="g">${esc(r.group)}</td>` +
+        `<td class="s">${champ ? (r.power != null ? r.power : r.medals) + ' <span style="font-size:13px;color:var(--dim)">· ' + r.medals + ' medals · ' + r.games_won + ' won</span>' : Number(r.best).toLocaleString() + ' ' + (MED[r.medal] || '')}</td></tr>`).join('') + '</table>';
   } catch (e) { $('lbTable').innerHTML = '<div class="empty">Couldn\'t load the leaderboard right now.</div>'; }
 }
-renderBoardFilters(); loadBoard(); loadMine();
+renderBoardFilters(); loadBoard(); loadMine(); loadClassWars();
+
+// ── Arcade Level (signed-in players) ──
+function renderLevel() {
+  const el = $('lvlCard');
+  if (!mine || mine.level == null) { el.hidden = true; return; }
+  const from = mine.level_at || 0, to = mine.next_at || 1, pct = Math.max(0, Math.min(100, Math.round((mine.power - from) / Math.max(1, to - from) * 100)));
+  el.hidden = false;
+  el.innerHTML = `<div class="num"><small>LEVEL</small>${mine.level}</div>
+    <div class="info"><div class="ttl">${esc(mine.title)} · ${Number(mine.power).toLocaleString()} Arcade Power</div>
+      <div class="sub">${to - mine.power} more power to reach Level ${mine.level + 1}. Earn medals in any game to level up.</div>
+      <div class="bar"><i style="width:${pct}%"></i></div></div>`;
+}
+
+// ── Class Wars ──
+var cwLoading = false;
+async function loadClassWars() {
+  if (cwLoading) return; cwLoading = true;
+  try {
+    const rows = await rpc('arcade_class_wars', { p_trimester: NET.TRIMESTER });
+    if (!rows || !rows.length) { $('cwTable').innerHTML = '<div class="empty">No class scores yet this trimester.</div>'; return; }
+    const top = Math.max(...rows.map(r => Number(r.avg_power) || 0), 1);
+    $('cwTable').innerHTML = '<table><tr><th>#</th><th>Class</th><th class="g">Players</th><th style="text-align:right">Avg power</th></tr>' +
+      rows.map(r => `<tr${mine && !mine.visitor && mine.class_code === r.class_code ? ' class="mycls"' : ''}><td class="r">${['🥇', '🥈', '🥉'][r.rank - 1] || r.rank}</td>` +
+        `<td class="n">${esc(r.group)}<span class="lv">avg Lv ${r.avg_level}</span><div class="cw-bar"><i style="width:${Math.round((Number(r.avg_power) || 0) / top * 100)}%"></i></div></td>` +
+        `<td class="g">${r.players} of ${r.students} playing<br>${Number(r.medals).toLocaleString()} medals · top Lv ${r.top_level}</td>` +
+        `<td class="s">${Number(r.avg_power).toLocaleString()}</td></tr>`).join('') + '</table>';
+  } catch (e) { $('cwTable').innerHTML = '<div class="empty">Couldn\'t load Class Wars right now.</div>'; }
+  finally { cwLoading = false; }
+}
 
 function renderStats() {
   $('statGrid').innerHTML = [...SPRITE, ...CLASSICS, ...TEAMS, ...PARTNER].map(g => {
