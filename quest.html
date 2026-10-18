@@ -429,12 +429,14 @@ async function init() {
     if (data && data.length) {
       student = data[0];
       studentPinHash = savedHash;
+      if (window.DoppRemember) DoppRemember.save(student.id, savedHash, student.display_name, student.avatar);   // keep this device remembered
       await loadProgress();
       render();
       return;
     }
     localStorage.removeItem('qSID_' + TRIMESTER);
     sessionStorage.removeItem('qPIN_' + TRIMESTER);
+    if (window.DoppRemember) DoppRemember.clear();
   }
   showStep(1);
   document.getElementById('modal').classList.add('show');
@@ -493,6 +495,7 @@ async function loginReturning() {
   studentPinHash = hash;
   localStorage.setItem('qSID_' + TRIMESTER, student.id);
   sessionStorage.setItem('qPIN_' + TRIMESTER, hash);
+  if (window.DoppRemember) DoppRemember.save(student.id, hash, student.display_name, student.avatar);
   document.getElementById('modal').classList.remove('show');
   await loadProgress();
   render();
@@ -528,6 +531,7 @@ async function registerNew() {
   studentPinHash = hash;
   localStorage.setItem('qSID_' + TRIMESTER, student.id);
   sessionStorage.setItem('qPIN_' + TRIMESTER, hash);
+  if (window.DoppRemember) DoppRemember.save(student.id, hash, student.display_name, student.avatar);
   document.getElementById('modal').classList.remove('show');
   await loadProgress();
   render();
@@ -739,6 +743,7 @@ function showModal() {
     if (confirm('Log out? You can log back in with your class code, last name, and PIN.')) {
       localStorage.removeItem('qSID_' + TRIMESTER);
       sessionStorage.removeItem('qPIN_' + TRIMESTER);
+      if (window.DoppRemember) DoppRemember.clear();
       student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set();
       clChecked = false; document.getElementById('cl-link').style.display = 'none';
       nmShown = false; document.getElementById('nm-box').style.display = 'none';

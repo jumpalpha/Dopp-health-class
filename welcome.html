@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Welcome Back — Legend of Wellness</title>
+<meta name="description" content="Your Legend of Wellness welcome screen: today's announcements, Survey of the Day, and what's due.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --emerald-text:#00704D; --sky:#38BFFF; --crimson:#FF3B5C;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,.04); }
+.wrap { max-width:760px; margin:0 auto; padding:22px 16px 60px; }
+
+/* hero */
+.hero { position:relative; overflow:hidden; border-radius:20px; padding:26px 22px 22px; color:#fff; text-align:center;
+  background:radial-gradient(circle at 20% 0%, #3b2a7a 0%, #1C1A2E 60%), #1C1A2E; box-shadow:0 10px 30px rgba(28,26,46,.18); }
+.hero::after { content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(rgba(255,215,0,.5) 1px, transparent 1.5px); background-size:34px 34px; opacity:.18; }
+.hero > * { position:relative; z-index:1; }
+.avatar { width:68px; height:68px; margin:0 auto 10px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:34px;
+  background:rgba(255,215,0,.14); border:2px solid rgba(255,215,0,.6); box-shadow:0 0 18px rgba(255,215,0,.25); }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(24px,6vw,34px); color:var(--gold); text-shadow:0 2px 0 #000, 0 0 18px rgba(255,215,0,.35); line-height:1.15; }
+.hero .sub { font-size:14px; color:rgba(255,255,255,.75); margin-top:6px; }
+.confirm { margin-top:16px; font:900 17px 'Nunito',sans-serif; padding:14px 26px; border-radius:14px; border:none; cursor:pointer;
+  background:linear-gradient(180deg,#FFE34D,#FFC400); color:#1C1A2E; box-shadow:0 4px 0 #a37d00, 0 8px 22px rgba(255,200,0,.3); transition:transform .1s; }
+.confirm:active { transform:translateY(3px); box-shadow:0 1px 0 #a37d00; }
+.confirm[disabled] { cursor:default; }
+.confirm.done { background:rgba(0,229,160,.18); color:var(--emerald); box-shadow:none; border:2px solid rgba(0,229,160,.6); font-size:15px; }
+.streak-note { font-size:12.5px; color:rgba(255,255,255,.65); margin-top:8px; min-height:16px; }
+.switch { display:inline-block; margin-top:10px; font-size:13px; color:rgba(255,255,255,.7); background:none; border:none; cursor:pointer; text-decoration:underline; font-family:inherit; }
+.switch:hover { color:#fff; }
+
+/* sections */
+.sec { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px 16px 12px; margin-top:16px; }
+.sec h2 { font-family:'Cinzel',serif; font-size:16px; color:var(--gold-text); margin-bottom:10px; display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.sec h2 small { font-family:'Nunito',sans-serif; font-size:12.5px; color:var(--dim); font-weight:700; }
+.ann { font-size:15px; line-height:1.55; white-space:pre-wrap; background:#fff8e1; border-left:4px solid var(--gold); border-radius:10px; padding:10px 12px; margin-bottom:12px; }
+.empty { font-size:14px; color:var(--dim); padding:4px 0 6px; }
+.survey-q { font-weight:800; font-size:15.5px; margin-bottom:8px; }
+.choices { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; }
+.choice { font:800 14.5px 'Nunito',sans-serif; padding:12px 10px; border-radius:12px; border:2px solid var(--border); background:#fff; cursor:pointer; transition:all .15s; color:var(--text); }
+.choice:hover { border-color:var(--sky); background:#eef9ff; }
+.res { position:relative; display:flex; justify-content:space-between; gap:8px; padding:9px 10px; margin-top:6px; border-radius:10px; background:rgba(28,26,46,.05); overflow:hidden; font-size:14px; font-weight:700; }
+.res i { position:absolute; left:0; top:0; bottom:0; background:rgba(56,191,255,.25); transition:width .6s; }
+.res.mine i { background:rgba(255,215,0,.45); }
+.res span, .res em { position:relative; font-style:normal; }
+.res-note { font-size:12px; color:var(--dim); margin-top:6px; }
+
+.total { display:flex; align-items:center; gap:12px; background:linear-gradient(90deg,rgba(0,229,160,.14),rgba(56,191,255,.1)); border:1px solid rgba(0,229,160,.4);
+  border-radius:14px; padding:12px 14px; margin-top:16px; }
+.total .clock { font-size:28px; }
+.total b { font-size:18px; display:block; }
+.total span { font-size:12.5px; color:var(--dim); }
+
+.tasks { list-style:none; }
+.task { display:grid; grid-template-columns:1fr auto; gap:2px 10px; align-items:center; padding:10px 2px; border-top:1px solid var(--border); }
+.task:first-child { border-top:none; }
+.task a, .task b { color:var(--text); font-weight:800; font-size:14.5px; text-decoration:none; }
+.task a:hover { text-decoration:underline; }
+.task .meta { grid-column:1; font-size:12px; color:var(--dim); }
+.task .late { color:#c2183b; font-weight:800; }
+.task .mins { grid-row:1 / span 2; grid-column:2; font-weight:900; font-size:13px; color:var(--emerald-text); background:rgba(0,229,160,.12); border-radius:999px; padding:4px 10px; white-space:nowrap; }
+.tag { font-size:10px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; padding:1px 6px; border-radius:5px; background:#ffe9c2; color:#7a4b00; margin-left:4px; vertical-align:middle; }
+.more { font-size:13px; font-weight:700; margin-top:6px; }
+.more a { color:var(--gold-text); }
+
+.links { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
+.btn { display:block; text-align:center; font:800 15px 'Nunito',sans-serif; padding:13px 14px; border-radius:12px; border:1px solid var(--border); background:#fff; color:var(--text); text-decoration:none; cursor:pointer; }
+.btn:hover { border-color:var(--gold-text); }
+.btn-dark { background:#1C1A2E; color:var(--gold); border-color:#1C1A2E; }
+.msg { background:#fff; border:1px solid var(--border); border-radius:16px; padding:26px 20px; text-align:center; font-size:15px; line-height:1.6; }
+.msg h2 { font-family:'Cinzel',serif; margin-bottom:8px; color:var(--gold-text); }
+.skeleton { height:14px; border-radius:7px; background:linear-gradient(90deg,#eee,#f7f7f7,#eee); background-size:200% 100%; animation:sh 1.2s infinite; margin:8px 0; }
+@keyframes sh { to { background-position:-200% 0; } }
+.toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(10px); background:#1C1A2E; color:#FFD700; padding:11px 20px;
+  border-radius:12px; font-weight:900; font-size:15px; opacity:0; transition:all .3s; pointer-events:none; z-index:50; white-space:nowrap; }
+.toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
+.xp-pop { position:absolute; left:50%; top:0; transform:translateX(-50%); font-weight:900; color:var(--gold); font-size:22px; text-shadow:0 2px 0 #000; animation:pop 1.3s ease-out forwards; pointer-events:none; }
+@keyframes pop { 0% { opacity:0; transform:translate(-50%,10px) scale(.6); } 25% { opacity:1; transform:translate(-50%,-14px) scale(1.15); } 100% { opacity:0; transform:translate(-50%,-50px) scale(1); } }
+@media (max-width:480px) { .links { grid-template-columns:1fr; } nav { padding:10px 14px; } }
+@media (prefers-reduced-motion:reduce) { .xp-pop, .skeleton { animation:none; } }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html" data-home>⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html" data-home>Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+  </div>
+</nav>
+
+<div class="wrap" id="app">
+  <div class="msg"><div class="skeleton"></div><div class="skeleton" style="width:70%;margin:8px auto"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="vendor/supabase.js"></script>
+<script src="checklist.js"></script>
+<script>
+(function () {
+  const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+  const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const C = window.Checklist;
+  const localDay = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const TODAY = localDay(new Date());
+  const WEEK_END = localDay(new Date(Date.now() + 6 * 86400000));
+
+  // Leaving this page for Home shouldn't bounce the student straight back here this visit.
+  try { sessionStorage.setItem('dopp_welcomed', '1'); } catch (e) {}
+
+  let ses = null, student = null, checkedIn = false, briefing = null;
+
+  function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600); }
+  function session() {
+    try {
+      const r = window.DoppRemember && DoppRemember.get();
+      const id = localStorage.getItem('qSID_' + TRIMESTER) || (r && r.sid), pin = sessionStorage.getItem('qPIN_' + TRIMESTER) || (r && r.pin);
+      return id && pin ? { id, pin, name: (r && r.sid === id && r.name) || '', avatar: (r && r.sid === id && r.avatar) || '' } : null;
+    } catch (e) { return null; }
+  }
+  const mins = n => '~' + n + ' min';
+  const humanMins = n => n >= 90 ? (Math.round(n / 6) / 10).toString().replace(/\.0$/, '') + ' hours' : n + ' min';
+
+  function signInMessage(extra) {
+    $('app').innerHTML = `<div class="msg"><h2>Welcome, Health Hero!</h2>
+      <p>${extra || 'Sign in once on the Quest page with your class code, last name and PIN.'}<br>
+      After that, this device remembers you until the trimester ends — no PIN every day.</p><br>
+      <a class="btn btn-dark" href="quest.html" style="display:inline-block">⚔ Sign in on the Quest page</a>
+      <p style="margin-top:14px"><a href="index.html" data-home style="color:var(--gold-text);font-weight:700">Go to the Home page</a></p></div>`;
+  }
+
+  // ───── layout ─────
+  function render() {
+    const name = (student && student.display_name) || ses.name || 'Hero';
+    $('app').innerHTML = `
+      <section class="hero">
+        <div class="avatar" aria-hidden="true">${esc((student && student.avatar) || ses.avatar || '⚔')}</div>
+        <h1>Welcome back, ${esc(name)}!</h1>
+        <div class="sub">${esc(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }))} · ${esc(TERM.label || TRIMESTER)}</div>
+        <div style="position:relative">
+          <button class="confirm${checkedIn ? ' done' : ''}" id="confirm"${checkedIn ? ' disabled' : ''}>${checkedIn ? '✓ Checked in for today' : '✅ Yes, I\'m ' + esc(name)}</button>
+        </div>
+        <div class="streak-note" id="streak-note">${checkedIn ? 'Today counts toward your Quest Activity Streak.' : 'Tap to check in — it counts as today\'s login for your streak (+5 XP).'}</div>
+        <button class="switch" id="switch">Not ${esc(name)}? Switch student</button>
+      </section>
+      <section class="sec" id="brief"><h2>📣 Today's briefing</h2><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></section>
+      <div id="work"><section class="sec"><h2>📋 Your work</h2><div class="skeleton"></div><div class="skeleton"></div></section></div>
+      <div class="links">
+        <a class="btn btn-dark" href="checklist.html">📋 My full checklist</a>
+        <a class="btn" href="index.html" data-home>🏰 Home page</a>
+      </div>`;
+  }
+
+  // ───── briefing ─────
+  function surveyHTML(s) {
+    if (!s) return '';
+    if (s.mine == null) {
+      return `<div class="survey-q">🗳 Survey of the Day: ${esc(s.q)}</div>
+        <div class="choices">${s.opts.map((o, i) => `<button class="choice" data-choice="${i}">${esc(o)}</button>`).join('')}</div>`;
+    }
+    const total = s.opts.reduce((t, _, i) => t + ((s.counts && s.counts[i]) || 0), 0);
+    return `<div class="survey-q">🗳 Survey of the Day: ${esc(s.q)}</div>` + s.opts.map((o, i) => {
+      const n = (s.counts && s.counts[i]) || 0, pct = total ? Math.round(n * 100 / total) : 0;
+      return `<div class="res${i === s.mine ? ' mine' : ''}"><i style="width:${pct}%"></i><span>${i === s.mine ? '★ ' : ''}${esc(o)}</span><em>${pct}%</em></div>`;
+    }).join('') + `<div class="res-note">You picked ★. ${total} classmate${total === 1 ? '' : 's'} answered so far · <button class="switch" data-change style="color:var(--gold-text);margin:0">change my answer</button></div>`;
+  }
+  function drawBrief() {
+    const el = $('brief'); if (!el) return;
+    if (!briefing) { el.innerHTML = `<h2>📣 Today's briefing</h2><div class="empty">Couldn't load announcements. Check your internet and refresh.</div>`; return; }
+    const ann = (briefing.announcement || '').trim(), s = briefing.survey;
+    el.innerHTML = `<h2>📣 Today's briefing</h2>` +
+      (ann ? `<div class="ann">${esc(ann)}</div>` : '') + surveyHTML(s) +
+      (!ann && !s ? `<div class="empty">No announcements today. Go crush your quests! ⚔</div>` : '');
+  }
+
+  // ───── checklist work ─────
+  function taskHTML(t) {
+    const it = t.it, label = it.href ? `<a href="${esc(it.href)}">${esc(it.label)}</a>` : `<b>${esc(it.label)}</b>`;
+    const late = t.due && t.due < TODAY;
+    const when = !t.due ? 'Anytime this trimester' : late ? `<span class="late">Was due ${esc(C.fmt(t.due))}</span>` : t.due === TODAY ? 'Due today' : 'Due ' + esc(C.fmt(t.due));
+    return `<li class="task"><span>${label}${it.kind === 'manual' ? '<span class="tag">You tick this</span>' : ''}</span>
+      <span class="meta">${esc(t.where)} · ${when}</span><span class="mins">${mins(t.m)}</span></li>`;
+  }
+  function drawWork(v, cfg, released) {
+    const el = $('work'); if (!el) return;
+    const list = [];
+    const open = i => !i.done && i.status !== 'excused' && !i.notRequired && i.status !== 'no_record' && i.kind !== 'teacher';
+    v.realms.forEach(r => r.chapters.forEach(ch => ch.items.forEach(it => { if (open(it)) list.push({ it, due: ch.target, where: 'Ch ' + ch.n }); })));
+    v.ongoing.forEach(it => { if (open(it)) list.push({ it, due: cfg.end, where: 'All trimester' }); });
+    v.games.items.forEach(it => { if (open(it)) list.push({ it, due: cfg.end, where: 'Games' }); });
+    list.forEach(t => { t.m = C.minutesFor(t.it, cfg); });
+    list.sort((a, b) => (a.due || '9').localeCompare(b.due || '9'));
+
+    const dueNow = list.filter(t => t.due && t.due <= TODAY);
+    const soon = list.filter(t => !t.due || t.due > TODAY).slice(0, 6);
+    const week = list.filter(t => t.due && t.due <= WEEK_END);
+    const weekMin = week.reduce((s, t) => s + t.m, 0);
+    const SHOW = 8;
+
+    el.innerHTML =
+      (released ? '' : `<div class="ann" style="margin-top:16px;background:#f2ecff;border-color:#a855f7">Preview — the checklist isn't open to the class yet.</div>`) +
+      (list.length ? `<div class="total"><span class="clock" aria-hidden="true">⏱</span><div><b>About ${humanMins(weekMin)} of work this week</b>
+        <span>${week.length} task${week.length === 1 ? '' : 's'} due by ${esc(C.fmt(WEEK_END))}${dueNow.length ? ', including anything you\'re behind on' : ''} · ${v.summary.pct}% of your checklist done</span></div></div>` : '') +
+      `<section class="sec"><h2>🔥 Due today <small>${dueNow.length ? humanMins(dueNow.reduce((s, t) => s + t.m, 0)) + ' total' : ''}</small></h2>` +
+        (dueNow.length ? `<ul class="tasks">${dueNow.slice(0, SHOW).map(taskHTML).join('')}</ul>` +
+          (dueNow.length > SHOW ? `<div class="more"><a href="checklist.html">+ ${dueNow.length - SHOW} more on your checklist →</a></div>` : '')
+          : `<div class="empty">${list.length ? 'Nothing due today — you\'re caught up! 🎉' : 'Your whole checklist is done. Legendary! 🏆'}</div>`) + `</section>` +
+      (soon.length ? `<section class="sec"><h2>🗓 Coming up soon</h2><ul class="tasks">${soon.map(taskHTML).join('')}</ul></section>` : '');
+  }
+  function workMessage(text) {
+    const el = $('work'); if (el) el.innerHTML = `<section class="sec"><h2>📋 Your work</h2><div class="empty">${text}</div></section>`;
+  }
+
+  // ───── data ─────
+  async function loadAll() {
+    ses = session();
+    if (!ses) return signInMessage();
+    render();
+    const [who, days, brief, cl] = await Promise.all([
+      db.rpc('get_student_by_auth', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER }),
+      db.rpc('get_student_days', { p_student_id: ses.id, p_pin_hash: ses.pin }),
+      db.rpc('briefing_get', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER }),
+      db.rpc('cl_student', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER })
+    ]);
+    if (!who.error && (!who.data || !who.data.length)) {   // PIN was reset or account removed
+      if (window.DoppRemember) DoppRemember.clear();
+      return signInMessage('This device\'s saved login doesn\'t work anymore (maybe your PIN was reset). Please sign in again.');
+    }
+    if (who.data && who.data[0]) {
+      student = who.data[0];
+      if (window.DoppRemember) DoppRemember.save(ses.id, ses.pin, student.display_name, student.avatar);
+    }
+    checkedIn = !days.error && (days.data || []).some(d => d.day_date === TODAY);
+    render();
+    briefing = brief.error ? null : brief.data;
+    drawBrief();
+    if (cl.error) {
+      return workMessage(/not open/i.test(cl.error.message)
+        ? 'Your trimester checklist opens soon. Everything you do now still counts once it opens! <a href="chapters.html" style="color:var(--gold-text);font-weight:800">Start reading →</a>'
+        : 'Couldn\'t load your checklist right now. <a href="checklist.html" style="color:var(--gold-text);font-weight:800">Open it here →</a>');
+    }
+    const cfg = C.config(cl.data.config, TRIMESTER);
+    drawWork(C.build(cl.data.evidence, cfg, { today: TODAY }), cfg, !!(cl.data.config && cl.data.config.released));
+  }
+
+  // ───── actions ─────
+  document.addEventListener('click', async e => {
+    if (e.target.closest('[data-home]')) { try { sessionStorage.setItem('dopp_welcomed', '1'); } catch (x) {} return; }
+    const t = e.target.closest('button'); if (!t) return;
+
+    if (t.id === 'switch') {
+      if (window.DoppRemember) DoppRemember.clear();
+      location.href = 'quest.html';
+      return;
+    }
+    if (t.id === 'confirm' && !checkedIn) {
+      t.disabled = true; t.textContent = 'Checking in…';
+      // Same server check as a PIN login: logs today (Mountain time) in the Activity Streak, once per day.
+      const { data, error } = await db.rpc('verify_student_pin', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER });
+      if (error || !data || !data.length) {
+        t.disabled = false; render(); drawBrief();
+        return toast(error ? 'Couldn\'t check in — try again' : 'Please sign in again on the Quest page');
+      }
+      checkedIn = true;
+      const btn = $('confirm');
+      btn.classList.add('done'); btn.disabled = true; btn.textContent = '✓ Checked in for today';
+      $('streak-note').textContent = 'Today counts toward your Quest Activity Streak.';
+      btn.parentElement.insertAdjacentHTML('beforeend', '<span class="xp-pop">+5 XP</span>');
+      toast('🔥 Streak day logged! +5 XP');
+      return;
+    }
+    if (t.dataset.choice != null && briefing && briefing.survey) {
+      document.querySelectorAll('.choice').forEach(b => { b.disabled = true; });
+      const { data, error } = await db.rpc('survey_answer', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER,
+        p_survey_id: briefing.survey.id, p_choice: Number(t.dataset.choice) });
+      if (error) {
+        toast(/closed/i.test(error.message) ? 'That survey just changed — refreshing' : 'Couldn\'t save your answer');
+        if (/closed/i.test(error.message)) return loadAll();
+        document.querySelectorAll('.choice').forEach(b => { b.disabled = false; });
+        return;
+      }
+      briefing.survey.mine = data.mine; briefing.survey.counts = data.counts;
+      drawBrief(); toast('Thanks for voting! 🗳');
+      return;
+    }
+    if (t.hasAttribute('data-change') && briefing && briefing.survey) { briefing.survey.mine = null; drawBrief(); }
+  });
+
+  loadAll();
+})();
+</script>
+</body>
+</html>

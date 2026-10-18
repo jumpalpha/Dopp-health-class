@@ -25,6 +25,10 @@
   function session() {
     try {
       var T = term(), id = localStorage.getItem('qSID_' + T), pin = sessionStorage.getItem('qPIN_' + T);
+      if (!pin) {   // remembered device (see term.js "Remember me"); chapter pages don't load term.js
+        var r = JSON.parse(localStorage.getItem('dopp_remember') || 'null');
+        if (r && r.tri === T && r.sid && r.pin && Date.now() < r.exp && (!id || id === r.sid)) { id = r.sid; pin = r.pin; }
+      }
       return id && pin ? { id: id, pin: pin, tri: T } : null;
     } catch (e) { return null; }
   }

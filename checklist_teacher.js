@@ -154,6 +154,7 @@
         <label class="clt-chk"><input type="checkbox" id="clt-partner"${c.partner_required ? ' checked' : ''}> Require partner games</label></div>
         <p class="cl-detail">"Excuse everything before chapter 5" excuses reading, vocab, mastery, homework and tests for chapters 1–4 for the whole class (1 = excuse nothing). Work students already did still shows as done.</p>
         <p class="cl-detail">Solo games: "all" or a number. Pick games below to turn off for the whole class (excused for everyone).</p></div>
+      ${minutesCard(c)}
       <div class="card"><div class="card-title">Turn off for the whole class</div><div class="clt-wrapchk">${off}</div></div>
       <div class="card"><div class="card-title">Student release</div>
         <label class="clt-chk" style="font-size:15px"><input type="checkbox" id="clt-release"${c.released ? ' checked' : ''}> <b>Open the checklist to students</b></label>
@@ -161,6 +162,30 @@
           : 'CLOSED: only TEST-class accounts can open <a href="checklist.html" target="_blank">checklist.html</a> (sign in on the Quest page as a TEST student to preview it). Real students see nothing.'}
           Press Save after changing this.</p></div>
       <div class="clt-row"><button class="clt-btn clt-save" data-act="save">💾 Save settings</button><span id="clt-saved" class="cl-detail"></span></div>`;
+  }
+
+  // every required item (chapters 1–16, all-trimester, games) with a readable name, for per-item time overrides
+  function allItems() {
+    const v = C.build({}, S.cfg), out = [];
+    v.realms.forEach(r => r.chapters.forEach(ch => ch.items.forEach(i => out.push([i.id, 'Ch ' + ch.n + ' · ' + i.label]))));
+    v.ongoing.forEach(i => out.push([i.id, 'All trimester · ' + i.label]));
+    v.games.items.forEach(i => out.push([i.id, 'Games · ' + i.label]));
+    return out;
+  }
+  function minutesCard(c) {
+    const items = allItems(), nameOf = {}; items.forEach(([id, l]) => { nameOf[id] = l; });
+    const types = C.MINUTE_TYPES.map(([k, l]) => `<label class="clt-num">${esc(l)} <input type="number" min="0" max="300" data-min="${k}" value="${esc(c.minutes[k])}"> min</label>`).join('');
+    const ov = Object.keys(c.min_override || {}).filter(id => c.min_override[id] != null && c.min_override[id] !== '');
+    const list = ov.length ? `<ul class="clt-ul">${ov.map(id => `<li>${esc(nameOf[id] || id)}: <b>~${esc(c.min_override[id])} min</b>
+        <button class="clt-btn" data-act="min-del" data-id="${esc(id)}" style="padding:2px 8px">✕ Remove</button></li>`).join('')}</ul>` : '<p class="cl-detail">No single-item changes yet.</p>';
+    return `<div class="card"><div class="card-title">⏱ Time estimates (shown to students on the Welcome screen)</div>
+      <p class="cl-detail">Students see "~15 min" next to each task and a total for the week. Set the usual time for each kind of task:</p>
+      <div class="clt-row" style="flex-wrap:wrap">${types}</div>
+      <div class="card-title" style="margin-top:12px;font-size:13px">Change one task only</div>
+      <div class="clt-row" style="flex-wrap:wrap"><select id="clt-min-item" style="max-width:100%;padding:6px;border-radius:8px;border:1px solid var(--border)">${items.map(([id, l]) => `<option value="${esc(id)}">${esc(l)}</option>`).join('')}</select>
+        <label class="clt-num"><input type="number" min="0" max="300" id="clt-min-val" placeholder="min"> min</label>
+        <button class="clt-btn" data-act="min-set">Set</button></div>${list}
+      <p class="cl-detail">Set / Remove save right away. Changes to the usual times above are kept when you press Save settings.</p></div>`;
   }
 
   function rulesView() {
@@ -202,6 +227,12 @@
     if (act === 'print') { document.body.classList.add('cl-printing'); window.print(); setTimeout(() => document.body.classList.remove('cl-printing'), 500); return; }
     if (act === 'expand') { document.querySelectorAll('#cl-print details').forEach(d => { d.open = true; }); return; }
     if (act === 'save') return saveSettings();
+    if (act === 'min-set') {
+      const id = $('clt-min-item').value, n = parseInt($('clt-min-val').value, 10);
+      if (!id || isNaN(n) || n < 0) return alert('Type the number of minutes first.');
+      S.cfg.min_override = Object.assign({}, S.cfg.min_override, { [id]: n }); await saveSettings(); return draw();
+    }
+    if (act === 'min-del') { const o = Object.assign({}, S.cfg.min_override); delete o[t.dataset.id]; S.cfg.min_override = o; await saveSettings(); return draw(); }
     if (t.dataset.verify !== undefined) {
       if (S.student === DEMO) return alert('Demo student: nothing is saved. Pick a real student to confirm or excuse.');
       t.disabled = true;
@@ -222,7 +253,11 @@
     if (t.id === 'clt-period') { S.period = t.value; draw(); }
     else if (t.id === 'clt-student') { S.student = t.value; draw(); }
   }
+  function keepTypedMinutes() {   // so redrawing the page doesn't lose numbers typed but not saved yet
+    document.querySelectorAll('[data-min]').forEach(i => { const n = parseInt(i.value, 10); if (!isNaN(n) && n >= 0) S.cfg.minutes[i.dataset.min] = n; });
+  }
   async function saveSettings() {
+    keepTypedMinutes();
     const c = JSON.parse(JSON.stringify(S.cfg));
     document.querySelectorAll('[data-date]').forEach(i => { if (i.value) c[i.dataset.date] = i.value; });
     document.querySelectorAll('[data-hw]').forEach(i => { c.hw[i.dataset.hw] = i.checked; });

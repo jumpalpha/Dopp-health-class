@@ -91,6 +91,27 @@
   };
   const TRACK_START = '2026-10-15';   // reading + vocab + sprite-history evidence starts the day this went live
 
+  // ───────────── time estimates (shown on the student Welcome screen) ─────────────
+  // Default minutes by task type; the teacher can change these, or override any single item, in
+  // Teacher Dashboard → Student Checklist Draft → Settings. Stored in checklist_config.config.
+  const MINUTE_TYPES = [
+    ['reading', 'Chapter reading (all lessons)', 20], ['vocab', 'Vocab game round', 5], ['mastery', 'Chapter Mastery quiz', 10],
+    ['homework', 'Schoology homework', 20], ['test', 'Test taken in class', 30], ['activity', 'Sprite, Trail, live game & review tasks', 10],
+    ['games', 'Arcade game goals', 15]
+  ];
+  const MINUTE_DEFAULTS = {}; MINUTE_TYPES.forEach(([k, , m]) => { MINUTE_DEFAULTS[k] = m; });
+  function minuteType(id) {
+    const p = String(id || '').split(':')[0];
+    return { read: 'reading', vocab: 'vocab', mastery: 'mastery', hw: 'homework', test: 'test', games: 'games' }[p] || 'activity';
+  }
+  function minutesFor(it, cfg) {
+    const id = typeof it === 'string' ? it : it && it.id;
+    const o = cfg && cfg.min_override && cfg.min_override[id];
+    if (o != null && o !== '' && !isNaN(o)) return Math.max(0, Number(o));
+    const t = minuteType(id), m = cfg && cfg.minutes && cfg.minutes[t];
+    return m != null && !isNaN(m) ? Math.max(0, Number(m)) : MINUTE_DEFAULTS[t];
+  }
+
   // ───────────── config ─────────────
   function defaults(tri) {
     const d = TERM_DATES[tri] || TERM_DATES['2026-T1'];
@@ -106,13 +127,15 @@
       solo_required: 'all',                  // 'all' or a number of different solo games
       partner_required: true,
       off: [],                               // items turned off for the whole class (e.g. 'partner:battleship_duel')
+      minutes: Object.assign({}, MINUTE_DEFAULTS),   // default minutes per task type
+      min_override: {},                      // item id → minutes (teacher override for one item)
       excuse_before: tri === '2026-T1' || !TERM_DATES[tri] ? 5 : 1   // class-wide: everything for chapters below this is excused (T1 started before tracking)
     };
   }
   function config(saved, tri) {
     const base = defaults(tri), s = saved && typeof saved === 'object' ? saved : {};
     const out = Object.assign({}, base, s);
-    ['hw', 'acts', 'boss'].forEach(k => { out[k] = Object.assign({}, base[k], s[k] || {}); });
+    ['hw', 'acts', 'boss', 'minutes', 'min_override'].forEach(k => { out[k] = Object.assign({}, base[k], s[k] || {}); });
     if (!Array.isArray(out.tests)) out.tests = base.tests;
     if (!Array.isArray(out.off)) out.off = [];
     return out;
@@ -449,5 +472,5 @@
   }
 
   root.Checklist = { CHAPTERS, REALMS, VOCAB_MODES, SOLO, PARTNER, CLASSROOM, SIDE_QUESTS, XP_RULES, TERM_DATES, LABEL,
-    lessonsIn, defaults, config, targets, build, render, injectCSS, fmt };
+    lessonsIn, defaults, config, targets, build, render, injectCSS, fmt, MINUTE_TYPES, MINUTE_DEFAULTS, minuteType, minutesFor };
 })(typeof window !== 'undefined' ? window : globalThis);
