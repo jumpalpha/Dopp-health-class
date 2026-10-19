@@ -67,6 +67,17 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 .xp-fill { height:100%; border-radius:5px; background:linear-gradient(90deg,#FFD700,#FF8C00); transition:width 1s ease; }
 .hero-stats { display:flex; gap:12px; flex-wrap:wrap; }
 .hero-stat { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 18px; text-align:center; min-width:90px; }
+.sprite-card { display:none; align-items:center; gap:16px; margin:0 0 24px; padding:14px 18px; background:var(--card); border:1px solid var(--border); border-radius:14px; text-decoration:none; color:var(--text); transition:transform .15s, border-color .15s; }
+.sprite-card:hover { transform:translateY(-2px); border-color:var(--gold-dim); }
+.sprite-card .sc-pic { width:84px; height:84px; flex:0 0 84px; display:flex; align-items:center; justify-content:center; }
+.sprite-card .sc-pic svg { width:100%; height:100%; display:block; }
+.sprite-card .sc-pic.big-emoji { font-size:46px; }
+.sprite-card .sc-info { flex:1; min-width:0; }
+.sprite-card .sc-name { font-family:'Cinzel',serif; font-weight:700; font-size:18px; }
+.sprite-card .sc-sub { font-size:13px; color:var(--dim); margin-top:2px; }
+.sprite-card .sc-bars { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:12px; font-weight:700; color:var(--dim); }
+.sprite-card .sc-cta { flex:0 0 auto; padding:9px 14px; border-radius:10px; background:#1C1A2E; color:#FFD700; font-weight:800; font-size:14px; white-space:nowrap; }
+@media (max-width:560px){ .sprite-card { flex-wrap:wrap; } .sprite-card .sc-cta { width:100%; text-align:center; } }
 .hs-num { font-family:'Cinzel Decorative',serif; font-size:22px; font-weight:700; color:var(--gold); }
 .hs-label { font-size:11px; color:var(--dim); margin-top:2px; font-weight:600; }
 
@@ -187,6 +198,7 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
 </style>
 <link rel="stylesheet" href="shared.css">
 <script src="vendor/supabase.js"></script>
+<script src="pet_sprite.js"></script>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
 <body>
@@ -295,6 +307,15 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
       <div class="hero-stat"><div class="hs-num" id="stat-xp">0</div><div class="hs-label">Total XP</div></div>
     </div>
   </div>
+  <a class="sprite-card" id="sprite-card" href="pet.html" aria-label="Go to my Wellness Sprite">
+    <div class="sc-pic" id="sc-pic"></div>
+    <div class="sc-info">
+      <div class="sc-name" id="sc-name">My Wellness Sprite</div>
+      <div class="sc-sub" id="sc-sub"></div>
+      <div class="sc-bars" id="sc-bars"></div>
+    </div>
+    <span class="sc-cta" id="sc-cta">🌱 Care for it →</span>
+  </a>
 </div>
 
 <!-- STREAK CALENDAR -->
@@ -590,9 +611,45 @@ function render() {
   document.getElementById('xp-fill').style.width       = Math.min(100, st.xp / TOTAL_XP * 100) + '%';
   renderStreak(); renderRealms(st); renderAchievements(st);
   checklistLink();
+  spriteCard();
   if (!nmShown) { nmShown = true; nameStatus(); }
 }
 let nmShown = false;
+
+// ── Wellness Sprite card (links to pet.html) ──
+let spriteLoaded = false;
+async function spriteCard() {
+  if (spriteLoaded || !student || !studentPinHash) return;
+  spriteLoaded = true;
+  const card = document.getElementById('sprite-card');
+  const pic = document.getElementById('sc-pic');
+  try {
+    const { data: p, error } = await db.rpc('pet_get', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER });
+    if (error) throw error;
+    if (!p) {
+      pic.classList.add('big-emoji'); pic.textContent = '🥚';
+      document.getElementById('sc-name').textContent = 'Hatch your Wellness Sprite';
+      document.getElementById('sc-sub').textContent = 'Pick an egg, name it, and keep it healthy with real habits.';
+      document.getElementById('sc-cta').textContent = '🥚 Hatch one →';
+    } else {
+      pic.innerHTML = window.petSpriteSVG ? petSpriteSVG(p) : '🌱';
+      const stage = { egg:'Egg', baby:'Baby', child:'Child', teen:'Teen', adult:'Adult' }[p.stage] || '';
+      document.getElementById('sc-name').textContent = p.name;
+      document.getElementById('sc-sub').textContent = !p.alive
+        ? p.name + ' has faded away. Answer questions to revive it!'
+        : stage + ' · ' + p.age_days + ' day' + (p.age_days === 1 ? '' : 's') + ' old · 🔥 ' + (p.streak || 0) + ' day streak';
+      if (p.alive) {
+        const c = v => v >= 60 ? 'var(--emerald)' : v >= 30 ? '#b8860b' : 'var(--crimson)';
+        document.getElementById('sc-bars').innerHTML = [['❤️', p.health], ['🍎', p.food], ['⚡', p.energy], ['😊', p.mood], ['🫧', p.clean]]
+          .map(([i, v]) => '<span style="color:' + c(v) + '">' + i + ' ' + v + '</span>').join('');
+      }
+      document.getElementById('sc-cta').textContent = p.alive ? '🌱 Care for it →' : '👻 Revive it →';
+    }
+    card.style.display = 'flex';
+  } catch (e) {
+    spriteLoaded = false;
+  }
+}
 
 // ── name change requests (teacher approves on the Teacher Dashboard) ──
 let nmWired = false;
