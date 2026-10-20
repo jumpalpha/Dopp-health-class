@@ -2,11 +2,11 @@
  * checklist_track.js — quietly records real learning evidence for the trimester checklist.
  * Students see nothing from this file. It never awards XP.
  *
- *  • Chapter reader (chapterNN.html): a lesson section counts as READ only when
+ *  • Chapter reader (chapterNN.html): a lesson section counts as READ when
  *      - the student scrolled to the end of that section, AND
- *      - the section was on screen for enough ACTIVE time (tab visible + focused + the student
- *        scrolled/tapped/typed in the last 45 seconds) — about half the time a fast reader needs.
- *    Opening the page, clicking the PDF, or leaving the tab idle does not count.
+ *      - the section was on screen for at least 60 seconds while the tab was open.
+ *    A short "how to check this off" note is shown above the reader.
+ *    Opening the page or clicking the PDF alone does not count.
  *  • Vocab games: vocab_engine.html calls ChecklistTrack.vocab(...) when a round really ends.
  *    The server only accepts it if 80%+ of the terms were actually answered (not skipped / revealed
  *    / timed out) at a human pace.
@@ -44,8 +44,21 @@
   }
 
   // ---------- reader ----------
-  var READ = { MIN_SEC: 12, MAX_SEC: 120, WORDS_PER_SEC: 8, IDLE_MS: 45000 };   // 8 words/s ≈ half the time of a 240 wpm reader
-  function needSeconds(words) { return Math.max(READ.MIN_SEC, Math.min(READ.MAX_SEC, Math.round(words / READ.WORDS_PER_SEC))); }
+  var READ = { MIN_SEC: 60 };   // server (cl_log) requires 10+; site requires 60
+  function needSeconds() { return READ.MIN_SEC; }
+
+  function showHowTo(scroller) {
+    if (document.getElementById('cl-read-howto')) return;
+    var box = document.createElement('div');
+    box.id = 'cl-read-howto';
+    box.style.cssText = 'margin:0 0 12px;padding:10px 14px;border-radius:10px;background:rgba(255,215,0,0.14);' +
+      'border:1px solid rgba(255,215,0,0.55);font:600 14px/1.45 Nunito,sans-serif;color:inherit;';
+    box.innerHTML = '<b>📖 To check off this chapter\'s reading:</b> be signed in on the Quest page, then scroll to the ' +
+      '<b>end of each lesson</b> and keep it on screen at least <b>60 seconds</b>.' +
+      (session() ? '' : ' <b style="color:#c0392b">You are not signed in, so this reading will not be recorded.</b>') +
+      '<br><b>Reading is how we learn. So read it!</b>';
+    scroller.parentNode.insertBefore(box, scroller);
+  }
 
   function startReader() {
     var m = location.pathname.match(/chapter(\d{2})\.html$/i);
@@ -54,31 +67,22 @@
     var secs = Array.prototype.filter.call(document.querySelectorAll('.reader-scroll .reader-section'),
       function (el) { return !el.classList.contains('vocab-section'); });
     if (!secs.length || !('IntersectionObserver' in window)) return;
-
-    var lastInput = 0;
-    var bump = function () { lastInput = Date.now(); };
-    ['scroll', 'wheel', 'touchstart', 'touchmove', 'keydown', 'pointerdown', 'pointermove'].forEach(function (ev) {
-      document.addEventListener(ev, bump, { capture: true, passive: true });
-    });
+    try { showHowTo(document.querySelector('.reader-scroll')); } catch (e) {}
 
     var state = secs.map(function (el, i) {
-      var words = (el.textContent || '').trim().split(/\s+/).length;
       var end = document.createElement('div');                       // invisible marker at the end of the section
       end.setAttribute('aria-hidden', 'true'); end.style.cssText = 'height:1px;width:1px;';
       el.appendChild(end);
       var doneKey = 'cl_read_' + term() + '_' + chapter + '_' + (i + 1);
       var done = false; try { done = sessionStorage.getItem(doneKey) === '1'; } catch (e) {}
-      return { el: el, end: end, item: 's' + (i + 1), need: needSeconds(words), active: 0, seenEnd: false, onScreen: false, done: done, sending: false, key: doneKey };
+      return { el: el, end: end, item: 's' + (i + 1), need: needSeconds(), active: 0, seenEnd: false, onScreen: false, done: done, sending: false, key: doneKey };
     });
 
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         state.forEach(function (s) {
           if (en.target === s.end && en.isIntersecting) s.seenEnd = true;
-          if (en.target === s.el) {
-            var vh = window.innerHeight || 700, h = en.intersectionRect.height;
-            s.onScreen = en.isIntersecting && (h >= Math.min(en.boundingClientRect.height * 0.35, vh * 0.35));
-          }
+          if (en.target === s.el) s.onScreen = en.isIntersecting;
         });
       });
     }, { threshold: [0, 0.1, 0.2, 0.35, 0.5, 0.75, 1] });
@@ -86,8 +90,6 @@
 
     setInterval(function () {
       if (document.visibilityState !== 'visible') return;
-      if (document.hasFocus && !document.hasFocus()) return;
-      if (Date.now() - lastInput > READ.IDLE_MS) return;
       state.forEach(function (s) {
         if (s.done) return;
         if (s.onScreen) s.active++;
