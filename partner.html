@@ -5,7 +5,7 @@
 <script src="term.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <title>Partner Games — Dopp's Arcade</title>
-<meta name="description" content="Play Connect 4, Tic-Tac-Toe, Dopp Memory or Battleship with a classmate on two devices. One makes a game, the other types the 4-letter code.">
+<meta name="description" content="Play Connect 4, Tic-Tac-Toe, Dopp Memory, Battleship or Dots and Boxes with a classmate on two devices. One makes a game, the other types the 4-letter code.">
 <link rel="canonical" href="https://doppsclass.com/partner.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%2305070F%27%2F%3E%3Ctext%20x%3D%2732%27%20y%3D%2746%27%20font-size%3D%2736%27%20text-anchor%3D%27middle%27%20fill%3D%27%23FFD700%27%3E%26%239876%3B%3C%2Ftext%3E%3C%2Fsvg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,6 +24,7 @@ p.dim,.dim{color:rgba(244,239,255,.75);font-size:14px;line-height:1.45}
 .picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}
 .pick{border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;color:#fff;font:800 15px Nunito,sans-serif}
 .pick .ic{font-size:30px;display:block;margin-bottom:4px}
+.pick.wide{grid-column:1/-1}
 .pick.sel{border-color:var(--gold);background:rgba(255,215,0,.12)}
 label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px;color:rgba(244,239,255,.85)}
 input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:800 17px Nunito,sans-serif}
@@ -78,6 +79,20 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
 .ttt .t.p1{color:var(--p1)} .ttt .t.p2{color:var(--p2)}
 .ttt .t.pop{animation:pop .25s ease-out}
 @keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+/* dots and boxes */
+.dots{background:#140c2e;border:3px solid var(--ink);border-radius:16px;padding:6px;box-shadow:0 8px 0 #0a0618;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.dots svg{display:block;width:100%;height:auto}
+.dots .hit{fill:transparent}
+.dots.can .hit.open{cursor:pointer}
+.dots.can .hit.open:hover+.ln,.dots.can .hit.open:active+.ln{stroke:rgba(255,255,255,.75);stroke-dasharray:none}
+.dots .ln{stroke:rgba(255,255,255,.13);stroke-width:6;stroke-linecap:round;stroke-dasharray:2 12;pointer-events:none}
+.dots .ln.p1{stroke:var(--p1);stroke-dasharray:none;stroke-width:9}
+.dots .ln.p2{stroke:var(--p2);stroke-dasharray:none;stroke-width:9}
+.dots .ln.last{filter:drop-shadow(0 0 6px #fff)}
+.dots .bx{opacity:0;transition:opacity .3s}
+.dots .bx.p1{fill:var(--p1);opacity:.42}.dots .bx.p2{fill:var(--p2);opacity:.42}
+.dots .bt{font:900 34px Nunito,sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#1A1030;stroke-width:5px;pointer-events:none}
+.dots .dt{fill:#fff;pointer-events:none}
 /* battleship */
 .bs-h{font-weight:900;font-size:14px;margin:10px 0 6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .bs-h small{font-weight:800;font-size:12px;color:rgba(244,239,255,.7)}
@@ -114,6 +129,7 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
       <button class="pick" data-g="tictactoe"><span class="ic">⭕</span>Tic-Tac-Toe</button>
       <button class="pick" data-g="memory"><span class="ic" id="memIcon" style="width:36px;height:36px;margin:0 auto 4px"></span>Dopp Memory</button>
       <button class="pick" data-g="battleship"><span class="ic">🚢</span>Battleship</button>
+      <button class="pick wide" data-g="dots"><span class="ic"><svg viewBox="0 0 40 40" width="34" height="34"><g fill="#fff"><circle cx="6" cy="6" r="3.5"/><circle cx="20" cy="6" r="3.5"/><circle cx="34" cy="6" r="3.5"/><circle cx="6" cy="20" r="3.5"/><circle cx="20" cy="20" r="3.5"/><circle cx="34" cy="20" r="3.5"/><circle cx="6" cy="34" r="3.5"/><circle cx="20" cy="34" r="3.5"/><circle cx="34" cy="34" r="3.5"/></g><rect x="6" y="6" width="14" height="14" fill="#FF3B5C" opacity=".55"/><path d="M6 6H20V20H6Z" stroke="#FF3B5C" stroke-width="3" fill="none"/><path d="M20 20H34V34" stroke="#FFD23F" stroke-width="3" fill="none"/></svg></span>Dots and Boxes</button>
     </div>
     <div id="who"></div>
     <div id="nameBox"><label for="name">Your name</label><input id="name" maxlength="16" placeholder="First name" autocomplete="off"></div>
@@ -162,7 +178,7 @@ input.code{text-transform:uppercase;letter-spacing:8px;text-align:center;font-si
 (() => {
 const URL = 'https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
 const TRI = (window.TERM && TERM.id) || '2026-T1';
-const NAMES = { connect4: 'Connect 4', tictactoe: 'Tic-Tac-Toe', memory: 'Dopp Memory', battleship: 'Battleship' };
+const NAMES = { connect4: 'Connect 4', tictactoe: 'Tic-Tac-Toe', memory: 'Dopp Memory', battleship: 'Battleship', dots: 'Dots and Boxes' };
 const $ = id => document.getElementById(id);
 const store = { get: (k, s) => { try { return (s ? sessionStorage : localStorage).getItem(k); } catch (e) { return null; } },
                 set: (k, v, s) => { try { (s ? sessionStorage : localStorage).setItem(k, v); } catch (e) {} },
@@ -180,7 +196,7 @@ function token() {   // this tab's secret for the game
 }
 const signedIn = () => { const id = store.get('qSID_' + TRI), pin = store.get('qPIN_' + TRI, true); return id && pin ? { id, pin } : null; };
 
-let game = ['tictactoe', 'memory', 'battleship'].includes(new URLSearchParams(location.search).get('g')) ? new URLSearchParams(location.search).get('g') : 'connect4';
+let game = ['tictactoe', 'memory', 'battleship', 'dots'].includes(new URLSearchParams(location.search).get('g')) ? new URLSearchParams(location.search).get('g') : 'connect4';
 let peekFaces = {}, peekUntil = 0, peekTimer = null;
 $('memIcon').innerHTML = doppFace('Mullet');
 let S = null, timer = null, busy = false, lastBoard = '';
@@ -254,6 +270,7 @@ function render() {
   const oppName = S.me === 1 ? S.p2_name : S.p1_name;
   $('status').className = 'status' + (mine ? ' mine' : '');
   if (S.game === 'battleship') { $('status').className = 'status'; $('status').innerHTML = bsStatus(); }
+  else if (S.game === 'dots' && (dotsCalcBonus(), true)) $('status').textContent = S.status !== 'playing' ? '' : mine ? (dotsBonus ? '📦 Box! Go again — draw another line' : 'Your turn — draw a line') : oppName + (dotsBonus ? ' got a box — they go again…' : ' is thinking…');
   else if (S.status === 'playing' && S.game === 'memory' && Date.now() < peekUntil) { $('status').className = 'status'; $('status').textContent = '❌ No match!'; }
   else $('status').textContent = S.status === 'playing' ? (mine ? (S.game === 'memory' ? (S.flip1 != null ? 'Your turn — flip one more' : 'Your turn — flip two cards') : 'Your turn!') : oppName + (S.game === 'memory' ? ' is flipping…' : ' is thinking…')) : '';
   $('offline').textContent = S.status === 'playing' && !S.opp_online ? '⚠ ' + oppName + ' seems disconnected. If they don\'t come back within a minute, you win.' : '';
@@ -272,7 +289,7 @@ function render() {
   }
 }
 function drawBoard(mine) {
-  const b = S.board, wins = S.status === 'done' && S.winner > 0 ? winCells(b) : new Set(), fresh = b !== lastBoard;
+  const b = S.board, wins = S.status === 'done' && S.winner > 0 && (S.game === 'connect4' || S.game === 'tictactoe') ? winCells(b) : new Set(), fresh = b !== lastBoard;
   const box = $('board');
   if (S.game === 'connect4') {
     let html = '<div class="c4' + (mine ? ' can' : '') + '">';
@@ -288,6 +305,8 @@ function drawBoard(mine) {
     box.querySelectorAll('.col').forEach(el => el.onclick = () => move(+el.dataset.c));
   } else if (S.game === 'battleship') {
     drawBattleship(mine, fresh);
+  } else if (S.game === 'dots') {
+    drawDots(mine, fresh);
   } else if (S.game === 'memory') {
     const faces = Object.assign({}, Date.now() < peekUntil ? peekFaces : {}, S.faces || {});
     const n1 = (b.match(/1/g) || []).length / 2, n2 = (b.match(/2/g) || []).length / 2;
@@ -307,6 +326,51 @@ function drawBoard(mine) {
   }
   lastBoard = b;
 }
+// ---------- dots and boxes ----------
+// board: 0-29 lines across (row*5+col), 30-59 lines down (30+row*6+col), 60-84 box owners (60+row*5+col)
+const DG = 92, DM = 30;   // gap between dots, margin
+let dotsBonus = false;    // did the last line finish a box (so the same player goes again)?
+function dotsLine(i) {    // [x1, y1, x2, y2] for line i
+  if (i < 30) { const r = Math.floor(i / 5), c = i % 5; return [DM + c * DG, DM + r * DG, DM + (c + 1) * DG, DM + r * DG]; }
+  const j = i - 30, r = Math.floor(j / 6), c = j % 6; return [DM + c * DG, DM + r * DG, DM + c * DG, DM + (r + 1) * DG];
+}
+function dotsBoxesOf(i) {   // boxes touching line i
+  const out = [];
+  if (i < 30) { const r = Math.floor(i / 5), c = i % 5; if (r > 0) out.push((r - 1) * 5 + c); if (r < 5) out.push(r * 5 + c); }
+  else { const j = i - 30, r = Math.floor(j / 6), c = j % 6; if (c > 0) out.push(r * 5 + c - 1); if (c < 5) out.push(r * 5 + c); }
+  return out;
+}
+function dotsCalcBonus() {   // the last line closed a box if a box it touches is owned by whoever drew it
+  const b = S.board, lm = S.last_move;
+  dotsBonus = lm != null && lm < 60 && b[lm] !== '0' && dotsBoxesOf(lm).some(k => b[60 + k] === b[lm]);
+}
+function drawDots(mine, fresh) {
+  const b = S.board, box = $('board'), lm = S.last_move;
+  const owner = k => b[60 + k];
+  const n1 = (b.substr(60, 25).match(/1/g) || []).length, n2 = (b.substr(60, 25).match(/2/g) || []).length;
+  const ini = n => esc((n || '?').trim().charAt(0).toUpperCase());
+  const W = DM * 2 + DG * 5;
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + W + '" xmlns="http://www.w3.org/2000/svg">';
+  for (let k = 0; k < 25; k++) {
+    const r = Math.floor(k / 5), c = k % 5, o = owner(k), x = DM + c * DG, y = DM + r * DG;
+    svg += '<rect class="bx' + (o === '1' ? ' p1' : o === '2' ? ' p2' : '') + '" x="' + (x + 5) + '" y="' + (y + 5) + '" width="' + (DG - 10) + '" height="' + (DG - 10) + '" rx="8"/>';
+    if (o !== '0') svg += '<text class="bt" x="' + (x + DG / 2) + '" y="' + (y + DG / 2) + '">' + ini(o === '1' ? S.p1_name : S.p2_name) + '</text>';
+  }
+  for (let i = 0; i < 60; i++) {
+    const [x1, y1, x2, y2] = dotsLine(i), v = b[i], horiz = y1 === y2;
+    // a fat invisible target so lines are easy to tap on a phone
+    const hx = horiz ? x1 + 10 : x1 - 22, hy = horiz ? y1 - 22 : y1 + 10, hw = horiz ? DG - 20 : 44, hh = horiz ? 44 : DG - 20;
+    svg += '<rect class="hit' + (v === '0' ? ' open' : '') + '" data-i="' + i + '" x="' + hx + '" y="' + hy + '" width="' + hw + '" height="' + hh + '"/>';
+    svg += '<line class="ln' + (v === '1' ? ' p1' : v === '2' ? ' p2' : '') + (i === lm && v !== '0' ? ' last' : '') + '" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '"/>';
+  }
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) svg += '<circle class="dt" cx="' + (DM + c * DG) + '" cy="' + (DM + r * DG) + '" r="8"/>';
+  box.innerHTML = '<div class="pairs">Boxes — ' + esc(S.p1_name) + ': ' + n1 + ' · ' + esc(S.p2_name || '…') + ': ' + n2 + ' <span style="opacity:.7">(' + (25 - n1 - n2) + ' left)</span></div>' +
+    '<div class="dots' + (mine ? ' can' : '') + '">' + svg + '</svg></div>' +
+    '<p class="dim" style="text-align:center;margin-top:8px">Take turns drawing a line between two dots. Close the 4th side of a box to claim it — and go again! Most boxes wins.</p>';
+  box.querySelectorAll('.dots.can .hit.open').forEach(el => el.onclick = () => move(+el.dataset.i));
+  lastBoard = b;
+}
+
 // ---------- battleship ----------
 const bsSetup = () => S.status === 'playing' && !(S.ready1 && S.ready2);
 const bsOff = () => ({ mine: S.me === 1 ? 0 : 64, theirs: S.me === 1 ? 64 : 0 });   // where my shots / their shots sit in the board
@@ -374,6 +438,7 @@ async function bsSetupAct(action) {
 async function move(cell) {
   if (!S || S.status !== 'playing' || S.turn !== S.me || busy) return;
   if (S.game === 'tictactoe' && S.board[cell] !== '0') return;
+  if (S.game === 'dots' && S.board[cell] !== '0') return;
   if (S.game === 'battleship' && (bsSetup() || S.board[bsOff().mine + cell] !== '0')) return;
   if (S.game === 'memory' && (S.board[cell] !== '0' || S.flip1 === cell || Date.now() < peekUntil)) return;
   if (S.game === 'connect4' && S.board[cell] !== '0') { $('status').textContent = 'That column is full.'; return; }

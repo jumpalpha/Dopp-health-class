@@ -56,7 +56,7 @@
 
   const VOCAB_MODES = [['flashcard', 'Flashcard Flip'], ['speedquiz', 'Speed Quiz'], ['wordbuild', 'Word Builder'], ['conceptmap', 'Concept Map']];
 
-  // Arcade inventory (arcade.html): 28 solo + 4 partner + 2 team = 34 student games, + 16 classroom games = 50
+  // Arcade inventory (arcade.html): 28 solo + 5 partner + 2 team = 35 student games, + 16 classroom games = 51
   const SOLO = [['sprite_flap', 'Sprite Flap'], ['sprite_dash', 'Sprite Dash'], ['sprite_run', 'Sprite Run'], ['sprite_sling', 'Sprite Slingshot'],
     ['germ_invaders', 'Germ Invaders'], ['sprite_maze', 'Sprite Maze'], ['habit_breaker', 'Habit Breaker'], ['sprite_snake', 'Sprite Snake'],
     ['field_day', 'Field Day'], ['habit_showdown', 'Habit Showdown'], ['sprite_climb', 'Sprite Climb'], ['sprite_rider', 'Sprite Rider'],
@@ -64,7 +64,7 @@
     ['sprite_catch', 'Sprite Catch'], ['sprite_slice', 'Sprite Slice'], ['vocab_slice', 'Vocab Slice'], ['sprite_dodge', 'Sprite Dodge'],
     ['sprite_hoops', 'Sprite Hoops'], ['cup_pong', 'Cup Pong'], ['germ_sweeper', 'Germ Sweeper'], ['tic_tac_toe', 'Tic-Tac-Toe'],
     ['blast_blocks', 'Blast Blocks'], ['how_smart', 'How Smart Am I?'], ['immune_defense', 'Immune Defense'], ['sprite_siege', 'Sprite Siege']];
-  const PARTNER = [['connect4_duel', 'Connect 4'], ['tictactoe_duel', 'Tic-Tac-Toe vs. a Friend'], ['battleship_duel', 'Battleship'], ['memory_duel', 'Dopp Memory']];
+  const PARTNER = [['connect4_duel', 'Connect 4'], ['tictactoe_duel', 'Tic-Tac-Toe vs. a Friend'], ['battleship_duel', 'Battleship'], ['memory_duel', 'Dopp Memory'], ['dots_duel', 'Dots and Boxes']];
   const CLASSROOM = [['game01_jeopardy', 'Health Jeopardy', 'Boss'], ['game02_deal_or_no_deal', 'Deal or No Deal', 'Solo · Ch 19–22'],
     ['game03_wheel_of_fortune', 'Wheel of Fortune', 'Team'], ['game04_millionaire', 'Who Wants to Be a Millionaire', 'Boss'],
     ['game05_hot_takes', 'Hot Takes Buzzer Battle', 'Daily'], ['game06_escape_room', 'Health Escape Room', 'Team'],
