@@ -106,6 +106,26 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-co
 .wb-feedback.show{display:block}
 .wb-feedback.good{background:rgba(0,229,160,0.1);color:var(--emerald)}
 .wb-feedback.bad{background:rgba(255,59,92,0.1);color:var(--crimson)}
+/* reading-friendly Word Builder */
+.wb-def-text{font-size:19px;line-height:1.75;letter-spacing:.3px;word-spacing:2px}
+.wb-tts{margin-top:10px;padding:7px 14px;border-radius:999px;background:rgba(56,191,255,0.15);border:1px solid rgba(56,191,255,0.35);color:var(--sky);font:700 14px 'Nunito',sans-serif;cursor:pointer}
+.wb-slots{display:flex;gap:10px 22px;justify-content:center;flex-wrap:wrap;margin:6px 0 14px}
+.wb-word{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.wb-slot{width:38px;height:46px;border-radius:8px;border:2px solid var(--border);background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font:800 22px 'Nunito',sans-serif;color:var(--text)}
+.wb-slot.given{background:rgba(255,215,0,0.14);border-color:rgba(255,215,0,0.5)}
+.wb-slot.next{border-color:var(--sky);box-shadow:0 0 0 2px rgba(56,191,255,0.25)}
+.wb-slot.gap{width:16px;border:none;background:none}
+.wb-slot.fixed{border:none;background:none}
+.wb-slots.good .wb-slot:not(.gap):not(.fixed){border-color:var(--emerald);background:rgba(0,229,160,0.1)}
+.wb-slots.bad .wb-slot:not(.gap):not(.fixed){border-color:var(--crimson);background:rgba(255,59,92,0.08)}
+.wb-letter{width:46px;height:46px;font-size:22px;color:#5c4400;background:rgba(255,215,0,0.28);border:2px solid rgba(160,120,0,0.55)}
+.wb-tools{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.wb-tool{padding:8px 14px;border-radius:10px;background:rgba(28,26,46,0.06);border:1px solid var(--border);color:var(--text);font:700 14px 'Nunito',sans-serif;cursor:pointer}
+.wb-choices{display:grid;gap:10px;margin:6px 0 14px}
+.wb-choice{padding:14px;border-radius:12px;background:var(--card);border:2px solid var(--border);color:var(--text);font:800 19px 'Nunito',sans-serif;letter-spacing:.5px;cursor:pointer;text-align:center}
+.wb-choice.good{border-color:var(--emerald);background:rgba(0,229,160,0.1)}
+.wb-choice.bad{border-color:var(--crimson);background:rgba(255,59,92,0.08)}
+@media (max-width:440px){.wb-slot{width:31px;height:42px;font-size:20px}.wb-word{gap:4px}}
 
 /* ─── CONCEPT MAP GAME ─── */
 .cmap-instruction{font-size:13px;color:var(--dim);text-align:center;margin-bottom:16px;padding:10px;background:var(--card);border-radius:8px;border:1px solid var(--border)}
@@ -731,62 +751,125 @@ function sqTimeout() {
 }
 
 // ── WORD BUILDER ──
-let wb_used = [], wb_revealed = false;
+// Reading-friendly: tap letter tiles into boxes (no spelling from memory), first letter given,
+// read-aloud button, undo/clear, and an optional "3 choices" mode for any word.
+let wb = null;
+const wbIsLetter = ch => /[A-Z0-9]/.test(ch);
 function renderWordBuild(gc) {
-  wb_used = []; wb_revealed = false;
   const term = terms[idx];
-  const letters = shuffle(term.t.toUpperCase().split(''));
+  const chars = term.t.toUpperCase().split('');
+  const firstIdx = chars.findIndex(wbIsLetter);
+  // slots: letters to fill; spaces = gaps; other punctuation shown as-is
+  const slots = chars.map((ch, i) => ({ ch, kind: ch === ' ' ? 'gap' : !wbIsLetter(ch) ? 'fixed' : i === firstIdx ? 'given' : 'fill', val: i === firstIdx || !wbIsLetter(ch) ? ch : '' }));
+  const tiles = shuffle(slots.filter(s => s.kind === 'fill').map(s => s.ch)).map(l => ({ l, used: false }));
+  wb = { slots, tiles, stack: [], done: false, choices: false };
   gc.innerHTML = `
     <div class="wb-def">
       <div class="wb-def-label">What term matches this definition?</div>
       <div class="wb-def-text">${term.d}</div>
+      <button class="wb-tts" onclick="wbSpeak()">🔊 Read to me</button>
     </div>
-    <div class="wb-answer-row">
-      <input class="wb-input" id="wb-in" placeholder="Type the term..." onkeydown="if(event.key==='Enter')wbCheck()">
-      <button class="wb-submit" onclick="wbCheck()">Submit</button>
-    </div>
+    <div id="wb-area"></div>
     <div class="wb-feedback" id="wb-fb"></div>
-    <div style="text-align:center;margin-bottom:10px">
-      <div style="font-size:12px;color:var(--dim);margin-bottom:8px">Scrambled letters (click to use as hint):</div>
-      <div class="wb-hint-row">${letters.map((l, i) => `<div class="wb-letter" id="wbl${i}" onclick="wbUse(${i},'${l}')">${l}</div>`).join('')}</div>
-      <span class="wb-reveal" onclick="wbReveal()">Reveal answer</span>
-    </div>
     <div class="fc-controls">
       <button class="btn btn-next" onclick="wbSkip()">Skip →</button>
       <button class="btn btn-restart" onclick="resetGame();renderGame()">↺ Restart</button>
     </div>`;
+  wbPaint();
 }
-function wbUse(i, l) {
-  if (wb_used.includes(i)) return;
-  wb_used.push(i);
-  const el = document.getElementById('wbl' + i);
-  if (el) el.classList.add('used');
-  const inp = document.getElementById('wb-in');
-  if (inp) inp.value += l;
+function wbPaint() {
+  const area = document.getElementById('wb-area'); if (!area || !wb) return;
+  if (wb.choices) {
+    area.innerHTML = `<div style="text-align:center;font-size:13px;color:var(--dim);margin-bottom:4px">Tap the matching term:</div>
+      <div class="wb-choices">${wb.choices.map((c, i) => `<button class="wb-choice" id="wbc${i}" onclick="wbPick(${i})">${c}</button>`).join('')}</div>`;
+    return;
+  }
+  const nextSlot = wb.slots.findIndex(s => s.kind === 'fill' && !s.val);
+  area.innerHTML = `
+    <div class="wb-slots" id="wb-slots">${(() => {
+      const words = [[]];
+      wb.slots.forEach((s, i) => { if (s.kind === 'gap') words.push([]); else words[words.length - 1].push(`<div class="wb-slot ${s.kind}${i === nextSlot ? ' next' : ''}">${s.val}</div>`); });
+      return words.map(w => `<div class="wb-word">${w.join('')}</div>`).join('');
+    })()}</div>
+    <div style="text-align:center;font-size:13px;color:var(--dim);margin-bottom:8px">Tap the letters in order (or type them):</div>
+    <div class="wb-hint-row">${wb.tiles.map((t, i) => `<div class="wb-letter${t.used ? ' used' : ''}" onclick="wbTap(${i})">${t.l}</div>`).join('')}</div>
+    <div class="wb-tools">
+      <button class="wb-tool" onclick="wbUndo()">⌫ Undo</button>
+      <button class="wb-tool" onclick="wbClear()">✕ Clear</button>
+      <button class="wb-tool" onclick="wbShowChoices()">🔢 Show 3 choices</button>
+      <button class="wb-tool" onclick="wbReveal()">👁 Reveal answer</button>
+    </div>`;
 }
-function wbCheck() {
-  const inp = document.getElementById('wb-in'); if (!inp) return;
-  const val = inp.value.trim().toUpperCase();
-  const correct = val === terms[idx].t.toUpperCase();
-  if (val) { realAnswered++; if (correct) realCorrect++; }
+function wbTap(i) {
+  if (!wb || wb.done || wb.choices) return;
+  const t = wb.tiles[i]; if (!t || t.used) return;
+  const s = wb.slots.findIndex(x => x.kind === 'fill' && !x.val); if (s < 0) return;
+  t.used = true; wb.slots[s].val = t.l; wb.stack.push({ tile: i, slot: s });
+  wbPaint();
+  if (!wb.slots.some(x => x.kind === 'fill' && !x.val)) wbCheck();
+}
+function wbUndo() {
+  if (!wb || wb.done || !wb.stack.length) return;
+  const m = wb.stack.pop(); wb.tiles[m.tile].used = false; wb.slots[m.slot].val = ''; wbPaint();
+}
+function wbClear() { if (!wb || wb.done) return; while (wb.stack.length) wbUndo(); }
+function wbSpeak() {
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(terms[idx].d); u.rate = 0.9; speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function wbFinish(correct, msg) {
+  wb.done = true;
+  realAnswered++; if (correct) realCorrect++;
   const fb = document.getElementById('wb-fb');
-  inp.className = 'wb-input ' + (correct ? 'correct-input' : 'wrong-input');
-  if (fb) { fb.className = 'wb-feedback show ' + (correct ? 'good' : 'bad'); fb.textContent = correct ? `✓ Correct! "${terms[idx].t}"` : `✗ The answer was "${terms[idx].t}"`; }
+  if (fb) { fb.className = 'wb-feedback show ' + (correct ? 'good' : 'bad'); fb.textContent = msg; }
   if (correct) { correctCount++; streak++; } else { wrongCount++; streak = 0; }
   idx++;
   updateHUD(); updateProgress();
-  setTimeout(() => renderGame(), 1600);
+  setTimeout(() => { try { speechSynthesis.cancel(); } catch (e) {} renderGame(); }, correct ? 1400 : 2400);
+}
+function wbCheck() {
+  if (!wb || wb.done) return;
+  const built = wb.slots.map(s => s.kind === 'gap' ? ' ' : s.val).join('');
+  const correct = built === terms[idx].t.toUpperCase();
+  const box = document.getElementById('wb-slots'); if (box) box.classList.add(correct ? 'good' : 'bad');
+  wbFinish(correct, correct ? `✓ Correct! "${terms[idx].t}"` : `✗ Not quite. The answer was "${terms[idx].t}"`);
+}
+function wbShowChoices() {
+  if (!wb || wb.done) return;
+  const right = terms[idx].t;
+  const others = shuffle(terms.filter(x => x.t !== right).map(x => x.t)).slice(0, 2);
+  wb.choices = shuffle([right, ...others]);
+  wbPaint();
+}
+function wbPick(i) {
+  if (!wb || wb.done) return;
+  const right = terms[idx].t, correct = wb.choices[i] === right;
+  const el = document.getElementById('wbc' + i); if (el) el.classList.add(correct ? 'good' : 'bad');
+  if (!correct) { const r = wb.choices.indexOf(right); const re = document.getElementById('wbc' + r); if (re) re.classList.add('good'); }
+  wbFinish(correct, correct ? `✓ Correct! "${right}"` : `✗ The answer was "${right}"`);
 }
 function wbReveal() {
+  if (!wb || wb.done) return;
+  wb.done = true;
+  wb.slots.forEach(s => { if (s.kind === 'fill') s.val = s.ch; }); wb.choices = false; wbPaint();
+  const box = document.getElementById('wb-slots'); if (box) box.classList.add('bad');
   const fb = document.getElementById('wb-fb');
   if (fb) { fb.className = 'wb-feedback show bad'; fb.textContent = `Answer: ${terms[idx].t}`; }
-  const inp = document.getElementById('wb-in');
-  if (inp) { inp.value = terms[idx].t; inp.className = 'wb-input wrong-input'; }
   wrongCount++; streak = 0; idx++;
   updateHUD(); updateProgress();
-  setTimeout(() => renderGame(), 1800);
+  setTimeout(() => renderGame(), 2200);
 }
-function wbSkip() { wrongCount++; streak = 0; idx++; updateHUD(); updateProgress(); renderGame(); }
+function wbSkip() { if (wb && wb.done) return; wrongCount++; streak = 0; idx++; updateHUD(); updateProgress(); renderGame(); }
+// keyboard: a letter uses a matching tile, Backspace undoes
+document.addEventListener('keydown', e => {
+  if (gameMode !== 'wordbuild' || !wb || wb.done || wb.choices) return;
+  if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if (e.key === 'Backspace') { e.preventDefault(); wbUndo(); return; }
+  const k = (e.key || '').toUpperCase();
+  if (k.length === 1 && wbIsLetter(k)) { const i = wb.tiles.findIndex(t => !t.used && t.l === k); if (i >= 0) wbTap(i); }
+});
 
 // ── CONCEPT MAP ──
 let cm_placements = {}, cm_checked = false;
