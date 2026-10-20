@@ -2,7 +2,7 @@
  * arcade_quiz.js — a quick health-vocab question between arcade rounds.
  * Used by arcade_kit.js (all solo Sprite arcade games except Vocab Slice and How Smart Am I?).
  *
- *  • After every 2–7 finished rounds (random, counted across ALL games on this device), the
+ *  • After every 1–6 finished rounds (random, counted across ALL games on this device), the
  *    "Play again" step shows one question first. Questions come from chapters 1–28 vocab.
  *  • Right or wrong, the student can keep playing. Wrong → they see the right answer and its
  *    definition, and the "Got it — play again" button unlocks after 3 seconds.
@@ -12,13 +12,13 @@
 (function () {
   if (window.ArcadeQuiz) return;
   const KEY = 'arcade_quiz_state';
-  const MIN = 2, MAX = 7, WAIT_MS = 3000;
+  const MIN = 1, MAX = 6, WAIT_MS = 3000;
   const rnd = n => Math.floor(Math.random() * n);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
   function load() {
-    try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.target) return s; } catch (e) {}
+    try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.target && s.target <= MAX) return s; } catch (e) {}
     return { rounds: 0, target: MIN + rnd(MAX - MIN + 1) };
   }
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
