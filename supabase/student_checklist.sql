@@ -220,6 +220,7 @@ begin
     if tot < 4 or tot > 80 or ans > tot or cor > ans or cor < 0 then raise exception 'bad round'; end if;
     if ans * 10 < tot * 8 then raise exception 'round not finished'; end if;          -- 80% really answered
     if ms < ans * 1200 then raise exception 'round too fast'; end if;                   -- ~1.2 s per answer minimum
+    if cor * 10 < tot * 7 then raise exception 'score below 70%%'; end if;      -- 2026-10-20: need 70%% correct
     pct := (cor * 100) / tot;
     m := jsonb_build_object('total', tot, 'answered', ans, 'correct', cor, 'pct', pct);
   else

@@ -205,7 +205,7 @@
         href: 'chapter' + String(c).padStart(2, '0') + '.html' }, required && tgt[c]));
       VOCAB_MODES.forEach(([m, name]) => {
         const v = vocab[c + ':' + m];
-        items.push(untracked({ id: 'vocab:ch' + c + ':' + m, kind: 'auto', label: 'Vocab game: ' + name,
+        items.push(untracked({ id: 'vocab:ch' + c + ':' + m, kind: 'auto', label: 'Vocab game: ' + name + ' (70%+ correct)',
           status: v ? 'complete' : 'not_started',
           detail: v ? ('best score ' + (v.meta && v.meta.best_pct != null ? v.meta.best_pct : v.meta && v.meta.pct) + '% · played ' + v.n + '×') : 'play one full round — skipping doesn\'t count',
           href: 'vocab_engine.html?ch=' + c + (m === 'flashcard' ? '' : '#' + m), group: 'vocab' }, required && tgt[c]));

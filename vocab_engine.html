@@ -949,6 +949,9 @@ function renderResults() {
       <div class="results-icon">${icons[grade]}</div>
       <div class="results-grade ${grade.toLowerCase()}">${pct}%</div>
       <div class="results-sub">${msgs[grade]}</div>
+      ${window.ChecklistTrack && ChecklistTrack.signedIn() ? (realCorrect * 10 >= terms.length * 7
+        ? '<div class="results-sub" style="color:var(--emerald);font-weight:800">✓ Counts on your checklist (70%+ correct)</div>'
+        : '<div class="results-sub" style="color:var(--crimson);font-weight:800">Get 70% right to check this off on your checklist. Try again!</div>') : ''}
       <div class="results-stats">
         <div class="rs"><div class="rs-num" style="color:var(--emerald)">${correctCount}</div><div class="rs-label">Correct</div></div>
         <div class="rs"><div class="rs-num" style="color:var(--crimson)">${wrongCount}</div><div class="rs-label">Missed</div></div>
