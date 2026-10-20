@@ -233,7 +233,7 @@ footer a[href="teacher.html"] {
   background: rgba(255,255,255,0.02);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 32px;
+  padding: 16px;
   overflow: hidden;
 }
 .quest-map-wrap::before {
@@ -245,14 +245,15 @@ footer a[href="teacher.html"] {
 .realm-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 10px;
   position: relative; z-index: 1;
 }
 .realm-card {
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px 16px;
+  border-radius: 12px;
+  padding: 10px 12px 12px;
+  display: flex; align-items: center; gap: 12px;
   cursor: pointer;
   transition: all .25s;
   position: relative;
@@ -269,37 +270,36 @@ footer a[href="teacher.html"] {
 }
 .realm-card:hover { border-color: var(--realm-accent, var(--gold)); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
 .realm-card:hover::before { opacity: 1; }
-.realm-card.final-tower {
-  grid-column: span 3;
-  display: flex; align-items: center; gap: 24px;
-  padding: 24px 28px;
-}
-.realm-icon { font-size: 28px; margin-bottom: 10px; }
+.realm-card.final-tower { grid-column: auto; }
+.realm-card.final-tower .realm-icon { color: var(--gold); }
+.realm-icon { font-size: 26px; line-height: 1; flex: none; width: 32px; text-align: center; position: relative; z-index: 1; }
+.realm-text { min-width: 0; position: relative; z-index: 1; }
 .realm-num {
   font-family: 'Cinzel', serif;
   font-size: 10px; font-weight: 600; letter-spacing: 2px;
   color: var(--realm-accent, var(--gold));
-  margin-bottom: 4px; display: block;
+  margin-bottom: 1px; display: block;
 }
 .realm-name {
   font-family: 'Cinzel', serif;
   font-size: 14px; font-weight: 700;
-  color: var(--text); margin-bottom: 4px;
-  line-height: 1.3;
+  color: var(--text); margin-bottom: 1px;
+  line-height: 1.25;
 }
 .realm-chapters {
-  font-size: 12px; color: var(--text-dim);
-  margin-bottom: 8px;
+  font-size: 11.5px; color: var(--text-dim);
+  margin-bottom: 4px;
 }
-.realm-desc {
+.realm-chapters span { white-space: nowrap; }
+.realm-desc { display: none;
   font-size: 11px; color: var(--text-dim);
   line-height: 1.45; margin-bottom: 8px;
   opacity: 0.8;
 }
 .realm-badge {
   display: inline-block;
-  font-size: 10px; font-weight: 700;
-  padding: 3px 8px; border-radius: 6px;
+  font-size: 9.5px; font-weight: 700;
+  padding: 1px 6px; border-radius: 5px;
   background: rgba(255,255,255,0.06);
   color: var(--realm-accent, var(--gold));
   border: 1px solid currentColor;
@@ -318,10 +318,10 @@ footer a[href="teacher.html"] {
   font-size: 22px;
 }
 .realm-progress {
+  position: absolute; left: 12px; right: 12px; bottom: 5px;
   height: 3px;
   background: var(--border);
   border-radius: 2px;
-  margin-top: 10px;
   overflow: hidden;
 }
 .realm-progress-fill {
@@ -508,8 +508,11 @@ footer {
   .nav-link { padding: 6px 10px; font-size: 12px; }
   .hero { padding: 110px 20px 60px; }
   .section { padding: 60px 20px; }
-  .realm-grid { grid-template-columns: 1fr 1fr; }
-  .realm-card.final-tower { grid-column: span 2; flex-direction: column; gap: 12px; text-align: center; }
+  .realm-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .quest-map-wrap { padding: 10px; }
+  .realm-card { flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 10px 12px; }
+  .realm-icon { font-size: 22px; width: auto; }
+  .realm-card.final-tower { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 10px; }
   .stat-strip { grid-template-columns: 1fr 1fr; margin: 40px 20px; }
   .chapter-grid { grid-template-columns: repeat(2, 1fr); }
   footer { flex-direction: column; text-align: center; }
@@ -586,109 +589,117 @@ footer {
 <div class="section reveal">
   <div class="section-label">The World Map</div>
   <div class="section-title">Your Quest Through 9 Realms</div>
-  <p class="section-sub">Each realm covers a unit of health knowledge. Complete quests, defeat the boss battle, and earn your realm badge to unlock the next.</p>
+  <p class="section-sub">Each realm is a unit. Finish its chapters to earn the realm badge.</p>
 
   <div class="quest-map-wrap">
     <div class="realm-grid">
 
-      <a class="realm-card" href="realm1.html" data-chapters="1-2" style="--realm-color:rgba(56,191,255,0.08);--realm-accent:#38BFFF">
+      <a title="What health really means, how to make smart decisions, and the skills that power the entire quest." class="realm-card" href="realm1.html" data-chapters="1-2" style="--realm-color:rgba(56,191,255,0.08);--realm-accent:#38BFFF">
         <div class="realm-icon">🏰</div>
+        <div class="realm-text">
         <span class="realm-num">Realm I</span>
         <div class="realm-name">Foundation Keep</div>
-        <div class="realm-chapters">Ch 1–2 · Days 1–4</div>
+        <div class="realm-chapters"><span>Ch 1–2</span> · <span>Days 1–4</span></div>
         <div class="realm-desc">What health really means, how to make smart decisions, and the skills that power the entire quest.</div>
         <div class="realm-badge">Wellness Apprentice</div>
+        </div>
         <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
-      <div class="realm-path">↓</div>
-
-      <a class="realm-card" href="realm2.html" data-chapters="3-5" style="--realm-color:rgba(168,85,247,0.08);--realm-accent:#a855f7">
+      <a title="Mental health, stress, resilience, and knowing when and how to get help — for yourself and others." class="realm-card" href="realm2.html" data-chapters="3-5" style="--realm-color:rgba(168,85,247,0.08);--realm-accent:#a855f7">
         <div class="realm-icon">🧠</div>
+        <div class="realm-text">
         <span class="realm-num">Realm II</span>
         <div class="realm-name">Mind Citadel</div>
-        <div class="realm-chapters">Ch 3–5 · Days 5–10</div>
+        <div class="realm-chapters"><span>Ch 3–5</span> · <span>Days 5–10</span></div>
         <div class="realm-desc">Mental health, stress, resilience, and knowing when and how to get help — for yourself and others.</div>
         <div class="realm-badge">Mind Knight</div>
+        </div>
         <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
-      <a class="realm-card" href="realm3.html" data-chapters="6-9" style="--realm-color:rgba(255,59,92,0.08);--realm-accent:#FF3B5C">
+      <a title="Friendships, family, conflict resolution, and violence prevention — the social side of health." class="realm-card" href="realm3.html" data-chapters="6-9" style="--realm-color:rgba(255,59,92,0.08);--realm-accent:#FF3B5C">
         <div class="realm-icon">💞</div>
+        <div class="realm-text">
         <span class="realm-num">Realm III</span>
         <div class="realm-name">Relationship Realm</div>
-        <div class="realm-chapters">Ch 6–9 · Days 11–18</div>
+        <div class="realm-chapters"><span>Ch 6–9</span> · <span>Days 11–18</span></div>
         <div class="realm-desc">Friendships, family, conflict resolution, and violence prevention — the social side of health.</div>
         <div class="realm-badge">Social Champion</div>
+        </div>
         <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
-      <a class="realm-card" href="realm4.html" data-chapters="10-12" style="--realm-color:rgba(0,229,160,0.08);--realm-accent:#00E5A0">
+      <a title="Nutrition science, healthy weight, body image, and the fitness plan to fuel your body right." class="realm-card" href="realm4.html" data-chapters="10-12" style="--realm-color:rgba(0,229,160,0.08);--realm-accent:#00E5A0">
         <div class="realm-icon">🥗</div>
+        <div class="realm-text">
         <span class="realm-num">Realm IV</span>
         <div class="realm-name">Nourish Dungeon</div>
-        <div class="realm-chapters">Ch 10–12 · Days 19–24</div>
+        <div class="realm-chapters"><span>Ch 10–12</span> · <span>Days 19–24</span></div>
         <div class="realm-desc">Nutrition science, healthy weight, body image, and the fitness plan to fuel your body right.</div>
         <div class="realm-badge">Body Warrior</div>
+        </div>
         <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
-      <div class="realm-path">↓</div>
-
-      <a class="realm-card" href="realm5.html" data-chapters="13-16" style="--realm-color:rgba(255,140,0,0.08);--realm-accent:#FF8C00">
+      <a title="Skin to skeleton to hormones — mapping the inner architecture of the human body." class="realm-card" href="realm5.html" data-chapters="13-16" style="--realm-color:rgba(255,140,0,0.08);--realm-accent:#FF8C00">
         <div class="realm-icon">⚙️</div>
+        <div class="realm-text">
         <span class="realm-num">Realm V</span>
         <div class="realm-name">Body Labyrinth</div>
-        <div class="realm-chapters">Ch 13–16 · Days 25–32</div>
+        <div class="realm-chapters"><span>Ch 13–16</span> · <span>Days 25–32</span></div>
         <div class="realm-desc">Skin to skeleton to hormones — mapping the inner architecture of the human body.</div>
         <div class="realm-badge">System Sage</div>
+        </div>
         <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
-      <a class="realm-card" href="realm6.html" data-chapters="17-18" style="--realm-color:rgba(56,191,255,0.08);--realm-accent:#38BFFF">
+      <a title="From a single cell to late adulthood — genetics, prenatal development, and the complete life cycle." class="realm-card" href="realm6.html" data-chapters="17-18" style="--realm-color:rgba(56,191,255,0.08);--realm-accent:#38BFFF">
         <div class="realm-icon">🌱</div>
+        <div class="realm-text">
         <span class="realm-num">Realm VI</span>
         <div class="realm-name">Life Cycle Shrine</div>
-        <div class="realm-chapters">Ch 17–18 · Days 33–36</div>
+        <div class="realm-chapters"><span>Ch 17–18</span> · <span>Days 33–36</span></div>
         <div class="realm-desc">From a single cell to late adulthood — genetics, prenatal development, and the complete life cycle.</div>
         <div class="realm-badge">Life Keeper</div>
+        </div>
         <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
-      <a class="realm-card" href="realm7.html" data-chapters="19-22" style="--realm-color:rgba(255,59,92,0.1);--realm-accent:#FF3B5C">
+      <a title="Medicines, tobacco, alcohol, and the fentanyl crisis that changed the risk landscape for every teen." class="realm-card" href="realm7.html" data-chapters="19-22" style="--realm-color:rgba(255,59,92,0.1);--realm-accent:#FF3B5C">
         <div class="realm-icon">💀</div>
+        <div class="realm-text">
         <span class="realm-num">Realm VII</span>
         <div class="realm-name">Shadow World</div>
-        <div class="realm-chapters">Ch 19–22 · Days 37–44</div>
+        <div class="realm-chapters"><span>Ch 19–22</span> · <span>Days 37–44</span></div>
         <div class="realm-desc">Medicines, tobacco, alcohol, and the fentanyl crisis that changed the risk landscape for every teen.</div>
         <div class="realm-badge">Shadow Slayer</div>
+        </div>
         <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
-      <div class="realm-path">↓</div>
-
-      <a class="realm-card" href="realm8.html" data-chapters="23-25" style="--realm-color:rgba(200,200,200,0.05);--realm-accent:#aaaaaa">
+      <a title="Communicable diseases, STIs, HIV, cancer, cardiovascular disease, and diabetes — fully updated." class="realm-card" href="realm8.html" data-chapters="23-25" style="--realm-color:rgba(200,200,200,0.05);--realm-accent:#aaaaaa">
         <div class="realm-icon">🏥</div>
+        <div class="realm-text">
         <span class="realm-num">Realm VIII</span>
         <div class="realm-name">Disease Fortress</div>
-        <div class="realm-chapters">Ch 23–25 · Days 45–50</div>
+        <div class="realm-chapters"><span>Ch 23–25</span> · <span>Days 45–50</span></div>
         <div class="realm-desc">Communicable diseases, STIs, HIV, cancer, cardiovascular disease, and diabetes — fully updated.</div>
         <div class="realm-badge">Health Guardian</div>
+        </div>
         <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
-      <a class="realm-card final-tower" href="realm9.html" data-chapters="26-28" style="--realm-color:rgba(255,215,0,0.06);--realm-accent:#FFD700">
-        <div>
-          <div class="realm-icon" style="font-size:40px">★</div>
-        </div>
-        <div>
+      <a title="Safety, CPR, first aid, emergency preparedness, and community health — the ultimate capstone." class="realm-card final-tower" href="realm9.html" data-chapters="26-28" style="--realm-color:rgba(255,215,0,0.06);--realm-accent:#FFD700">
+        <div class="realm-icon">★</div>
+        <div class="realm-text">
           <span class="realm-num">Final Realm · IX</span>
-          <div class="realm-name" style="font-size:18px">The Final Tower</div>
-          <div class="realm-chapters">Ch 26–28 · Days 51–55 · Capstone</div>
+          <div class="realm-name">The Final Tower</div>
+          <div class="realm-chapters"><span>Ch 26–28</span> · <span>Days 51–55</span> · Capstone</div>
           <div class="realm-desc">Safety, CPR, first aid, emergency preparedness, and community health — the ultimate capstone.</div>
           <div class="realm-badge">★ Master of Wellness</div>
         </div>
-        <div style="margin-left:auto;font-size:13px;color:var(--text-dim);max-width:200px;line-height:1.5">Complete all 8 realms to unlock the final boss battle and earn the Master of Wellness title.</div>
+        <div class="realm-progress"><div class="realm-progress-fill" style="--progress:0%"></div></div>
       </a>
 
     </div>
