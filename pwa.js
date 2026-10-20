@@ -2,13 +2,12 @@
 // "Install" button where it can. Game pages install as their own app; every other page
 // installs the whole site (opens to the Arcade). Put <div data-pwa-install></div> where the
 // button should go; without one, game pages get a small bar under the game.
-// Site visit counter: counts one visit per browser tab session on any page (started 2026-10-13).
+// Site visit counter: counts every page opened on any page (per tab session until 2026-10-20; started 2026-10-13).
 // window.doppVisits is a promise of the all-time total; the home page shows it.
 (function () {
   if (location.protocol === 'file:') return;
   var URL = 'https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
-  var counted = false; try { counted = sessionStorage.getItem('dopp_visit') === '1'; sessionStorage.setItem('dopp_visit', '1'); } catch (e) { counted = true; }
-  window.doppVisits = fetch(URL + (counted ? 'site_visit_count' : 'site_visit_hit'), { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: '{}' })
+  window.doppVisits = fetch(URL + 'site_visit_hit', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: '{}' })
     .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
 })();
 
