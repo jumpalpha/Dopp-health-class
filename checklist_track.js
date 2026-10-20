@@ -56,8 +56,33 @@
     box.innerHTML = '<b>📖 To check off this chapter\'s reading:</b> be signed in on the Quest page, then scroll to the ' +
       '<b>end of each lesson</b> and keep it on screen at least <b>15 seconds</b>.' +
       (session() ? '' : ' <b style="color:#c0392b">You are not signed in, so this reading will not be recorded.</b>') +
-      '<br><b>Reading is how we learn. So read it!</b>';
+      '<br><b>Reading is how we learn. So read it!</b>' +
+      '<div id="cl-read-status" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center"></div>';
     scroller.parentNode.insertBefore(box, scroller);
+  }
+
+  // lessons already recorded on the server for this chapter (works once the checklist is released)
+  function fetchDone(chapter) {
+    var s = session();
+    if (!s) return Promise.resolve([]);
+    return fetch(URL + '/rest/v1/rpc/cl_student', {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_student_id: s.id, p_pin_hash: s.pin, p_trimester: s.tri })
+    }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      var reads = (j && j.evidence && j.evidence.reads) || [];
+      return reads.filter(function (x) { return x.c === chapter; }).map(function (x) { return x.i; });
+    }).catch(function () { return []; });
+  }
+
+  var PILL = 'display:inline-block;padding:3px 10px;border-radius:999px;font:800 12.5px/1.4 Nunito,sans-serif;';
+  function pillFor(s, n) {
+    if (s.done) return { css: 'background:#00b37e;color:#fff;', text: '✓ Lesson ' + n + ' read' };
+    var left = Math.max(0, s.need - s.active);
+    if (left > 0 && s.active > 0) return { css: 'background:#38BFFF;color:#06263a;', text: '⏳ Lesson ' + n + ': ' + left + 's' };
+    if (left === 0 && !s.seenEnd) return { css: 'background:#FFD700;color:#3a2c00;', text: '↓ Lesson ' + n + ': scroll to the end' };
+    if (left === 0) return { css: 'background:#38BFFF;color:#06263a;', text: '⏳ Lesson ' + n + ': saving…' };
+    return { css: 'background:rgba(28,26,46,0.08);color:inherit;border:1px solid rgba(28,26,46,0.2);', text: '○ Lesson ' + n + ' not read' };
   }
 
   function startReader() {
@@ -75,7 +100,33 @@
       el.appendChild(end);
       var doneKey = 'cl_read_' + term() + '_' + chapter + '_' + (i + 1);
       var done = false; try { done = sessionStorage.getItem(doneKey) === '1'; } catch (e) {}
-      return { el: el, end: end, item: 's' + (i + 1), need: needSeconds(), active: 0, seenEnd: false, onScreen: false, done: done, sending: false, key: doneKey };
+      var badge = document.createElement('div');                     // status pill at the top of each lesson
+      badge.className = 'cl-lesson-badge'; badge.style.cssText = 'margin:0 0 8px;';
+      el.insertBefore(badge, el.firstChild);
+      return { el: el, end: end, badge: badge, item: 's' + (i + 1), need: needSeconds(), active: 0, seenEnd: false, onScreen: false, done: done, sending: false, key: doneKey };
+    });
+
+    var statusRow = document.getElementById('cl-read-status');
+    function paint() {
+      if (!session()) return;                                           // not signed in: nothing is recorded, so no badges
+      var n = 0;
+      state.forEach(function (s, i) {
+        var p = pillFor(s, i + 1), html = '<span style="' + PILL + p.css + '">' + p.text + '</span>';
+        if (s.badge.innerHTML !== html) s.badge.innerHTML = html;
+        if (s.done) n++;
+      });
+      if (statusRow) {
+        var row = '<b>Lessons read: ' + n + ' of ' + state.length + '</b> ' + state.map(function (s, i) {
+          return '<span title="Lesson ' + (i + 1) + '" style="' + PILL + (s.done ? 'background:#00b37e;color:#fff;' : 'background:rgba(28,26,46,0.08);color:inherit;') + '">' +
+            (s.done ? '✓ ' : '○ ') + (i + 1) + '</span>';
+        }).join('');
+        if (statusRow.innerHTML !== row) statusRow.innerHTML = row;
+      }
+    }
+    paint();
+    fetchDone(chapter).then(function (items) {
+      state.forEach(function (s) { if (items.indexOf(s.item) >= 0) { s.done = true; try { sessionStorage.setItem(s.key, '1'); } catch (e) {} } });
+      paint();
     });
 
     var io = new IntersectionObserver(function (entries) {
@@ -98,9 +149,11 @@
           log('read', chapter, s.item, { sec: s.active, of: state.length }).then(function (r) {
             s.sending = false;
             if (r && r.ok) { s.done = true; try { sessionStorage.setItem(s.key, '1'); } catch (e) {} }
+            paint();
           });
         }
       });
+      paint();
     }, 1000);
   }
 
