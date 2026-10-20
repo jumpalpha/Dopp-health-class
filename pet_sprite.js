@@ -243,11 +243,56 @@
     // tight crop for small thumbnails
     let vb = '0 0 200 200';
     if (opts && opts.tight) { const size = Math.min(200, 200 * scaleUsed + 16); vb = (100 - size / 2).toFixed(1) + ' ' + (190 - size).toFixed(1) + ' ' + size.toFixed(1) + ' ' + size.toFixed(1); }
-    return '<svg viewBox="' + vb + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' +
+    return '<svg class="pet-sprite" viewBox="' + vb + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' +
       String(pet.name || 'Wellness Sprite').replace(/[<>&"]/g, '') + ', ' + stage + ', ' + mood + '">' +
       '<defs><radialGradient id="glow"><stop offset="0" stop-color="#FFF6A8" stop-opacity=".55"/><stop offset="1" stop-color="#FFF6A8" stop-opacity="0"/></radialGradient></defs>' +
       inner + '</svg>';
   }
+
+  // ---------- tap a sprite to see it big ----------
+  // Only on viewing pages (not games), and never on sprites inside buttons / shop items.
+  (function zoom() {
+    var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    var PAGES = ['', 'index.html', 'quest.html', 'pet.html', 'pets.html', 'teacher.html', 'welcome.html', 'hall.html'];
+    if (PAGES.indexOf(page) < 0) return;
+    var css = document.createElement('style');
+    css.textContent =
+      'svg.pet-sprite{cursor:zoom-in}' +
+      'button svg.pet-sprite,.item svg.pet-sprite,[data-no-zoom] svg.pet-sprite{cursor:inherit}' +
+      '#sprite-zoom{position:fixed;inset:0;z-index:99999;background:rgba(10,8,24,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;animation:spz .18s ease-out}' +
+      '#sprite-zoom .spz-box{width:min(88vw,70vh,560px);aspect-ratio:1;background:radial-gradient(circle at 50% 55%,rgba(255,246,168,.25),rgba(255,255,255,.04) 70%);border-radius:24px;border:2px solid rgba(255,215,0,.45);display:flex;align-items:center;justify-content:center}' +
+      '#sprite-zoom .spz-box svg{width:92%;height:92%;cursor:zoom-out}' +
+      '#sprite-zoom .spz-name{margin-top:14px;color:#FFD700;font:800 20px Nunito,sans-serif;text-align:center;text-shadow:0 2px 4px #000}' +
+      '#sprite-zoom .spz-x{position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(0,0,0,.4);color:#fff;font:800 24px/1 Nunito,sans-serif;cursor:pointer}' +
+      '#sprite-zoom .spz-hint{margin-top:6px;color:rgba(255,255,255,.7);font:600 13px Nunito,sans-serif}' +
+      '@keyframes spz{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}';
+    (document.head || document.documentElement).appendChild(css);
+
+    function close() { var o = document.getElementById('sprite-zoom'); if (o) o.remove(); document.removeEventListener('keydown', onKey, true); }
+    function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(); } }
+    function open(svg) {
+      close();
+      var o = document.createElement('div');
+      o.id = 'sprite-zoom'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+      var label = (svg.getAttribute('aria-label') || 'Wellness Sprite').split(',')[0];
+      var big = svg.cloneNode(true);
+      o.innerHTML = '<button class="spz-x" aria-label="Close">✕</button><div class="spz-box"></div>' +
+        '<div class="spz-name"></div><div class="spz-hint">Tap anywhere to close</div>';
+      o.querySelector('.spz-box').appendChild(big);
+      o.querySelector('.spz-name').textContent = label;
+      o.addEventListener('click', close);
+      document.body.appendChild(o);
+      document.addEventListener('keydown', onKey, true);
+      o.querySelector('.spz-x').focus();
+    }
+    document.addEventListener('click', function (e) {
+      var svg = e.target && e.target.closest && e.target.closest('svg.pet-sprite');
+      if (!svg || svg.closest('#sprite-zoom')) return;
+      if (svg.closest('button, .item, [data-no-zoom], select, label')) return;
+      e.preventDefault(); e.stopPropagation();
+      open(svg);
+    }, true);
+  })();
 
   window.PET_COLORS = Object.keys(PAL);
   window.PET_PAL = PAL;
