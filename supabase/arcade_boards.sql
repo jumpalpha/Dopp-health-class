@@ -28,7 +28,7 @@ insert into public.arcade_games (key, title, max_score, medals) values
   ('sprite_flap',    'Sprite Flap',      600,    '{5,15,30,50}'),
   ('sprite_dash',    'Sprite Dash',     100000,  '{300,1000,2000,3500}'),
   ('sprite_run',     'Sprite Run',       40000,  '{300,1000,2000,3500}'),
-  ('sprite_sling',   'Sprite Slingshot', 90000,  '{5000,12000,22000,32000}'),
+  ('sprite_sling',   'Sprite Slingshot', 200000, '{5000,12000,22000,32000}'),
   ('germ_invaders',  'Germ Invaders',    90000,  '{800,2500,5000,9000}'),
   ('sprite_maze',    'Sprite Maze',      90000,  '{1000,2500,5000,9000}'),
   ('habit_breaker',  'Habit Breaker',    40000,  '{400,1000,2000,3500}'),

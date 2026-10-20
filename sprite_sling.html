@@ -140,6 +140,58 @@ const LEVELS = [
       let c = G;
       ['wood', 'glass', 'wood', 'glass'].forEach((m, i) => { const top = story(885, c, 90, m, 66, i % 2 ? 'wood' : 'stone'); if (i === 2) addBarrel(885, c - 20); else addMonster(885, c - 19, 17); c = top; });
       addMonster(885, c - 19, 19);
+  } },
+  { name: 'Candy Pyramid', shots: 6, build() {
+      // three wood rooms on the ground, two on top of those, one at the peak
+      const b1 = story(620, G, 100, 'wood', 70), b2 = story(740, G, 100, 'glass', 70, 'wood'), b3 = story(860, G, 100, 'wood', 70);
+      addMonster(620, G - 20, 18); addBarrel(740, G - 20); addMonster(860, G - 20, 18);
+      const m1 = story(680, b1, 100, 'glass', 60, 'wood'), m2 = story(800, b2, 100, 'glass', 60, 'wood');
+      addMonster(680, b1 - 19, 18); addMonster(800, b2 - 19, 18);
+      const top = story(740, m1, 100, 'wood', 60, 'stone');
+      addMonster(740, m1 - 19, 19); addMonster(740, top - 19, 21);
+  } },
+  { name: 'Fizz Fortress', shots: 7, build() {
+      // stone walls with monsters hiding inside next to fizz barrels
+      addBlock(600, G - 60, 24, 120, 'stone'); addBlock(900, G - 60, 24, 120, 'stone');
+      addBlock(750, G - 130, 330, 20, 'stone');
+      addBarrel(660, G - 20); addMonster(705, G - 20, 18); addBarrel(750, G - 20); addMonster(795, G - 20, 18); addBarrel(840, G - 20);
+      // watch towers on the roof
+      const l = story(650, G - 140, 70, 'wood', 60), r = story(850, G - 140, 70, 'wood', 60);
+      addMonster(650, G - 160, 17); addMonster(850, G - 160, 17); addMonster(650, l - 18, 18); addMonster(850, r - 18, 18);
+      addBlock(750, G - 160, 20, 40, 'glass'); addMonster(750, G - 199, 19);
+  } },
+  { name: 'Drive-Thru Bridge', shots: 6, build() {
+      // a long stone bridge on four pillars: monsters ride on top, a bomb waits underneath
+      [560, 680, 800, 920].forEach(x => addBlock(x, G - 55, 22, 110, 'stone'));
+      addBlock(620, G - 120, 150, 20, 'wood'); addBlock(860, G - 120, 150, 20, 'wood');
+      addBlock(740, G - 140, 120, 20, 'glass');
+      addMonster(600, G - 149, 18); addMonster(740, G - 169, 20); addMonster(880, G - 149, 18);
+      addBomb(740, G - 20); addMonster(620, G - 20, 17); addMonster(860, G - 20, 17);
+      addBarrel(940, G - 20);
+  } },
+  { name: 'Cookie Cliffs', shots: 7, build() {
+      // a stone shield wall in front, tall towers behind it
+      addBlock(560, G - 70, 26, 140, 'stone'); addBlock(560, G - 150, 60, 20, 'stone'); addMonster(560, G - 179, 18);
+      let a = G; ['wood', 'glass', 'wood'].forEach((m, i) => { const t = story(720, a, 90, m, 70, i === 2 ? 'stone' : 'wood'); addMonster(720, a - 19, 17); a = t; });
+      addMonster(720, a - 19, 20);
+      let b = G; ['stone', 'wood', 'glass', 'wood'].forEach((m, i) => { const t = story(890, b, 90, m, 64, 'wood'); if (i === 1) addBarrel(890, b - 20); else addMonster(890, b - 19, 17); b = t; });
+      addMonster(890, b - 19, 20);
+      addBomb(805, G - 20);
+  } },
+  { name: 'Mega Junk Tower', shots: 8, build() {
+      // final boss: a wide five-story tower packed with fizz and bombs
+      let y = G;
+      [['stone', 'stone'], ['wood', 'wood'], ['glass', 'wood'], ['wood', 'stone'], ['glass', 'wood']].forEach(([m, p], i) => {
+        const t = story(760, y, 170, m, 64, p);
+        if (i === 0) { addBarrel(720, y - 20); addMonster(800, y - 20, 19); }
+        else if (i === 2) { addBomb(760, y - 21); addMonster(715, y - 19, 17); addMonster(805, y - 19, 17); }
+        else addMonster(760, y - 19, 18);
+        y = t;
+      });
+      addMonster(760, y - 21, 22);
+      // side huts
+      const s1 = story(560, G, 80, 'wood', 70); addMonster(560, G - 20, 17); addMonster(560, s1 - 18, 17);
+      addBarrel(940, G - 20); addBlock(940, G - 55, 50, 20, 'glass'); addMonster(940, G - 84, 18);
   } }
 ];
 
@@ -277,7 +329,7 @@ function update(dt, A) {
     if (msg.t > 2.4) {
       const n = msg.next; msg = null;
       if (n === 'next') {
-        if (level + 1 >= LEVELS.length) { A.toast('🏆 All 5 levels beaten!', 2600); phase = 'done'; setTimeout(() => { if (A.state === 'play') { A.gameOver(); } }, 1200); return; }
+        if (level + 1 >= LEVELS.length) { A.toast('🏆 All ' + LEVELS.length + ' levels beaten!', 2600); phase = 'done'; setTimeout(() => { if (A.state === 'play') { A.gameOver(); } }, 1200); return; }
         level++; A.toast('💡 ' + TIPS[level % TIPS.length], 2400);
       }
       buildLevel(level);
@@ -426,7 +478,7 @@ function drawBody(ctx, A, b) {
   }
 }
 
-window.__sling = () => ({ engine, bodies, monsters, shotsLeft, level, retries, phase, proj, msg, aimAt: (x, y) => { drag = { x, y }; }, fire: () => launch(game), goto: n => { level = n; retries = 3; buildLevel(n); }, LEVELS });   // used by automated playtests
+window.__sling = () => ({ engine, bodies, monsters, shotsLeft, level, retries, phase, proj, msg, aimAt: (x, y) => { drag = { x, y }; }, fire: () => launch(game), goto: n => { level = n; retries = 3; msg = null; buildLevel(n); }, step: n => { for (let i = 0; i < n; i++) update(1 / 60, game); }, ANCHOR, LEVELS });   // used by automated playtests
 window.game = Arcade({
   mount: '#game', title: 'Sprite Slingshot', subtitle: 'Topple the Junk Food Towers!', W, H, reserveH: 70,
   storageKey: 'sprite_sling', winText: 'You cleared 3 levels!', deathDelay: 900,
