@@ -190,11 +190,11 @@ begin
       if coalesce(dp.care_points, 0) + coalesce(dp.knowledge_total, 0) > coalesce(kp.care_points, 0) + coalesce(kp.knowledge_total, 0) then
         delete from public.student_pets where student_id = p_keep;
         update public.student_pets set student_id = p_keep where student_id = p_drop;
-        update public.student_pets set owned = (select array_agg(distinct x) from unnest(coalesce(dp.owned, '{}') || coalesce(kp.owned, '{}')) x)
+        update public.student_pets set owned = coalesce((select array_agg(distinct x) from unnest(coalesce(dp.owned, '{}') || coalesce(kp.owned, '{}')) x), '{}')
          where student_id = p_keep;
         mv := mv || jsonb_build_object('sprite', 'kept ' || coalesce(dp.name, '?'));
       else
-        update public.student_pets set owned = (select array_agg(distinct x) from unnest(coalesce(kp.owned, '{}') || coalesce(dp.owned, '{}')) x)
+        update public.student_pets set owned = coalesce((select array_agg(distinct x) from unnest(coalesce(kp.owned, '{}') || coalesce(dp.owned, '{}')) x), '{}')
          where student_id = p_keep;
         delete from public.student_pets where student_id = p_drop;
         mv := mv || jsonb_build_object('sprite', 'kept ' || coalesce(kp.name, '?'));
