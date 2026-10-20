@@ -166,6 +166,20 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 .modal-btn { width:100%; padding:13px; border-radius:10px; background:linear-gradient(135deg,#FFD700,#FF8C00);
   border:none; color:#0a0600; font-size:15px; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; }
 .modal-error { font-size:12px; color:var(--crimson); margin-bottom:10px; min-height:16px; }
+.modal-label { display:block; font-size:12px; font-weight:800; color:var(--gold); margin:2px 0 4px; text-align:left; }
+.modal-hint { font-size:12px; color:var(--dim); margin-top:10px; line-height:1.4; }
+.roster { max-height:42vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:4px 0 14px; padding:2px; }
+.roster-btn { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border);
+  background:rgba(255,255,255,0.06); color:inherit; font:800 15px 'Nunito',sans-serif; cursor:pointer; text-align:left; min-height:46px; }
+.roster-btn:hover, .roster-btn:focus { border-color:var(--gold); background:rgba(255,215,0,0.1); outline:none; }
+.roster-btn .av { font-size:20px; }
+.roster-empty { grid-column:1/-1; font-size:13px; color:var(--dim); padding:8px; }
+.new-btn { background:rgba(255,255,255,0.08); color:var(--gold); border:1.5px dashed rgba(255,215,0,0.5); }
+.match-box { background:rgba(255,215,0,0.1); border:1.5px solid rgba(255,215,0,0.5); border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:14px; text-align:left; }
+.match-box .row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.match-box button { flex:1; padding:9px; border-radius:8px; font:800 13px 'Nunito',sans-serif; cursor:pointer; border:1.5px solid var(--border); background:rgba(255,255,255,0.08); color:inherit; }
+.match-box button.yes { background:linear-gradient(135deg,#FFD700,#FF8C00); color:#1a1200; border:none; }
+@media (max-width:420px){ .roster { grid-template-columns:1fr; } }
 .modal-back { display:block; margin-top:10px; font-size:12px; color:var(--dim); cursor:pointer;
   background:none; border:none; text-decoration:underline; font-family:'Nunito',sans-serif; width:100%; text-align:center; }
 
@@ -225,11 +239,20 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
     <!-- Step 1: Class code + last name -->
     <div id="mstep1">
       <div class="modal-title">Enter the Quest</div>
-      <div class="modal-sub">Enter your class code and last name to continue.</div>
-      <input class="modal-input" id="m-code" placeholder="Class Code (e.g. PERIOD1)" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
-      <input class="modal-input" id="m-last" placeholder="Last Name" maxlength="30" onkeydown="if(event.key==='Enter')checkStudent()">
+      <div class="modal-sub">Enter your class code to continue.</div>
+      <input class="modal-input" id="m-code" placeholder="Class Code (e.g. PERIOD1)" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkClass()">
       <div class="modal-error" id="m-err1"></div>
-      <button class="modal-btn" onclick="checkStudent()">Continue →</button>
+      <button class="modal-btn" onclick="checkClass()">Continue →</button>
+    </div>
+
+    <!-- Step 1b: tap your name -->
+    <div id="mstep-pick" style="display:none">
+      <div class="modal-title">Find Your Name</div>
+      <div class="modal-sub">Tap your name. Already made an account? It's in this list.</div>
+      <input class="modal-input" id="m-find" placeholder="Type your first name to search…" maxlength="30" oninput="renderRoster()" autocomplete="off">
+      <div class="roster" id="m-roster"></div>
+      <button class="modal-btn new-btn" onclick="startNew()">✨ I'm new. Create my account</button>
+      <button class="modal-back" onclick="showStep(1)">← Back</button>
     </div>
 
     <!-- Step 2a: Returning student — enter PIN -->
@@ -239,13 +262,17 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
       <input class="modal-input" id="m-pin-return" type="password" maxlength="4" placeholder="4-digit PIN" inputmode="numeric" onkeydown="if(event.key==='Enter')loginReturning()">
       <div class="modal-error" id="m-err2a"></div>
       <button class="modal-btn" onclick="loginReturning()">Login →</button>
-      <button class="modal-back" onclick="showStep(1)">← Back</button>
+      <div class="modal-hint">Forgot your PIN? Ask Mr. Dopp to reset it. Don't make a new account.</div>
+      <button class="modal-back" onclick="showStep(4)">← Not me, back to the list</button>
     </div>
 
     <!-- Step 2b: New student — create account -->
     <div id="mstep2b" style="display:none">
       <div class="modal-title">Begin Your Quest</div>
       <div class="modal-sub">You're new! Set up your hero.</div>
+      <label class="modal-label" for="m-last-new">Last name (family name), e.g. Smith</label>
+      <input class="modal-input" id="m-last-new" placeholder="Your LAST name" maxlength="30" autocomplete="family-name">
+      <label class="modal-label" for="m-display">First name or nickname</label>
       <input class="modal-input" id="m-display" placeholder="First name or nickname" maxlength="20">
       <div class="modal-avatars" id="avatar-opts">
         <div class="av-opt sel" onclick="selAv(this,'⚔')">⚔</div>
@@ -260,8 +287,9 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
       <input class="modal-input" id="m-pin-new" type="password" maxlength="4" placeholder="Create a 4-digit PIN" inputmode="numeric">
       <input class="modal-input" id="m-pin-confirm" type="password" maxlength="4" placeholder="Confirm PIN" inputmode="numeric" onkeydown="if(event.key==='Enter')registerNew()">
       <div class="modal-error" id="m-err2b"></div>
+      <div id="m-match" class="match-box" style="display:none"></div>
       <button class="modal-btn" onclick="registerNew()">Start My Quest →</button>
-      <button class="modal-back" onclick="showStep(1)">← Back</button>
+      <button class="modal-back" onclick="showStep(4)">← Back to the name list</button>
     </div>
 
   </div>
@@ -466,6 +494,54 @@ function showStep(n) {
   document.getElementById('mstep1').style.display  = n === 1 ? 'block' : 'none';
   document.getElementById('mstep2a').style.display = n === 2 ? 'block' : 'none';
   document.getElementById('mstep2b').style.display = n === 3 ? 'block' : 'none';
+  document.getElementById('mstep-pick').style.display = n === 4 ? 'block' : 'none';
+}
+let loginCode = '', roster = [];
+const escH = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Step 1: class code → class list
+async function checkClass() {
+  const code = document.getElementById('m-code').value.trim().toUpperCase();
+  const err  = document.getElementById('m-err1');
+  if (!code) { err.textContent = 'Please enter your class code.'; return; }
+  err.textContent = 'Checking...';
+  const { data: cc } = await db.from('class_codes').select('code').eq('code', code).eq('trimester', TRIMESTER).maybeSingle();
+  if (!cc) { err.innerHTML = 'Invalid class code. Check with your teacher.<br>In the class last trimester? Sign in on the <a href="visitor.html" style="color:inherit;text-decoration:underline">Visitor page</a> with your old last name and PIN.'; return; }
+  const { data, error } = await db.rpc('class_roster', { p_class_code: code, p_trimester: TRIMESTER });
+  if (error) { err.textContent = 'Error loading your class. Try again.'; return; }
+  err.textContent = '';
+  loginCode = code; roster = data || [];
+  document.getElementById('m-find').value = '';
+  renderRoster();
+  showStep(4);
+  if (!roster.length) startNew();
+}
+function renderRoster() {
+  const q = document.getElementById('m-find').value.trim().toLowerCase();
+  const list = roster.filter(r => !q || (r.display_name || '').toLowerCase().includes(q));
+  document.getElementById('m-roster').innerHTML = list.length
+    ? list.map(r => `<button class="roster-btn" onclick="pickStudent('${r.id}')"><span class="av">${escH(r.avatar)}</span><span>${escH(r.display_name)} ${escH(r.initial)}.</span></button>`).join('')
+    : `<div class="roster-empty">No one named "${escH(q)}" yet. If you've never signed in, tap "I'm new".</div>`;
+}
+function pickStudent(id) {
+  const r = roster.find(x => x.id === id); if (!r) return;
+  foundStudent = { id: r.id, display_name: r.display_name, avatar: r.avatar, class_code: loginCode };
+  document.getElementById('m-return-sub').textContent = `Welcome back, ${r.display_name} ${r.initial}.! Enter your PIN.`;
+  document.getElementById('m-pin-return').value = ''; document.getElementById('m-err2a').textContent = '';
+  showStep(2);
+  setTimeout(() => document.getElementById('m-pin-return').focus(), 100);
+}
+function startNew() {
+  foundStudent = { class_code: loginCode };
+  ['m-last-new', 'm-display', 'm-pin-new', 'm-pin-confirm'].forEach(i => { const e = document.getElementById(i); if (e) e.value = ''; });
+  document.getElementById('m-err2b').textContent = ''; document.getElementById('m-match').style.display = 'none';
+  showStep(3);
+  setTimeout(() => document.getElementById('m-last-new').focus(), 100);
+}
+// "Is this you?" before making a second account
+function possibleMatches(last, name) {
+  const l = last.toLowerCase(), n = name.toLowerCase();
+  return roster.filter(r => { const d = (r.display_name || '').toLowerCase();
+    return d === n || d === l || (r.initial && r.initial.toLowerCase() === l[0] && (d.startsWith(n) || n.startsWith(d))); });
 }
 
 async function checkStudent() {
@@ -523,13 +599,33 @@ async function loginReturning() {
   showToast(`Welcome back, ${student.display_name}! ⚔`);
 }
 async function registerNew() {
+  const last    = document.getElementById('m-last-new').value.trim();
   const name    = document.getElementById('m-display').value.trim();
   const pin     = document.getElementById('m-pin-new').value.trim();
   const confirm = document.getElementById('m-pin-confirm').value.trim();
   const err     = document.getElementById('m-err2b');
-  if (!name)               { err.textContent = 'Please enter a display name.'; return; }
+  if (!last)               { err.textContent = 'Please enter your last name (family name).'; return; }
+  if (!name)               { err.textContent = 'Please enter your first name or a nickname.'; return; }
+  if (last.toLowerCase() === name.toLowerCase()) { err.textContent = 'Your LAST name is your family name (like Smith), not your first name.'; return; }
   if (!/^\d{4}$/.test(pin)) { err.textContent = 'PIN must be exactly 4 digits (numbers only).'; return; }
   if (pin !== confirm)     { err.textContent = 'PINs do not match.'; return; }
+  // Is this you? Same last name already in the class, or a matching name in the class list
+  if (!registerNew.confirmedNew) {
+    const { data: same } = await db.rpc('find_student_for_login', { p_class_code: loginCode, p_last_name: last, p_trimester: TRIMESTER });
+    const ids = new Set((same || []).map(x => x.id));
+    const matches = roster.filter(r => ids.has(r.id)).concat(possibleMatches(last, name).filter(r => !ids.has(r.id)));
+    if (matches.length) {
+      err.textContent = '';
+      const box = document.getElementById('m-match');
+      box.innerHTML = '<b>Wait! Is one of these you?</b> You may already have an account.' +
+        matches.slice(0, 4).map(r => `<div class="row"><button class="yes" onclick="pickStudent('${r.id}')">Yes, I'm ${escH(r.display_name)} ${escH(r.initial)}.</button></div>`).join('') +
+        '<div class="row"><button onclick="registerNew.confirmedNew=true;document.getElementById(\'m-match\').style.display=\'none\';registerNew()">No, none of these are me</button></div>';
+      box.style.display = 'block';
+      return;
+    }
+  }
+  registerNew.confirmedNew = false;
+  foundStudent = { class_code: loginCode, last_name: last };
   err.textContent = 'Creating your hero...';
 
   const hash = await hashPin(pin);
@@ -797,7 +893,7 @@ async function resetAll() {
 }
 function showModal() {
   if (student) {
-    if (confirm('Log out? You can log back in with your class code, last name, and PIN.')) {
+    if (confirm('Log out? You can log back in with your class code, your name, and PIN.')) {
       localStorage.removeItem('qSID_' + TRIMESTER);
       sessionStorage.removeItem('qPIN_' + TRIMESTER);
       if (window.DoppRemember) DoppRemember.clear();

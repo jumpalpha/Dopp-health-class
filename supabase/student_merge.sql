@@ -1,4 +1,4 @@
--- STATUS: drafted, NOT yet applied to the database (pending teacher approval).
+-- STATUS: class_roster + teacher_dup_candidates + student_merge_log APPLIED 2026-10-20; merge functions pasted by teacher in SQL Editor.
 -- Student login roster + duplicate-account merge tool (2026-10-20)
 -- Paste-safe: re-running replaces the functions; the log table is created once.
 

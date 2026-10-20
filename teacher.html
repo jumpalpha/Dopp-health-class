@@ -375,6 +375,19 @@ input, select, textarea { color: var(--text); }
       <div id="sp-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
     </div>
 
+    <div class="card" id="mg-card" style="border-color:rgba(255,140,0,0.5)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+        <div class="card-title" style="margin-bottom:0">🔀 Duplicate accounts <span id="mg-count" style="font-size:14px;color:var(--dim)"></span></div>
+        <span style="display:flex;gap:6px;flex-wrap:wrap">
+          <button id="mg-all" onclick="mgMergeAll()" style="display:none;font:800 12px 'Nunito',sans-serif;background:#FF8C00;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer">Merge all clear matches</button>
+          <button onclick="mgLoad()" style="font:700 12px 'Nunito',sans-serif;border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer">↻ Refresh</button>
+        </span>
+      </div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Students who made a second account, usually by typing their first name as their last name. Merging combines everything into one account: XP, streak days, arcade scores (best kept), checklist, quests, trail and sprite. The student keeps the PIN and nickname they used most recently. <b>Keep</b> = the account whose real last name is kept.</div>
+      <div id="mg-list" style="font-size:14px">Loading…</div>
+      <div id="mg-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
+    </div>
+
     <div class="card" id="pin-card" style="border-color:rgba(56,191,255,0.45)">
       <div class="card-title" style="margin-bottom:4px">🔑 Reset a student PIN</div>
       <div style="font-size:14px;color:var(--dim);margin-bottom:10px">PINs are stored scrambled, so they can't be looked up. Find the student, set a new 4-digit PIN, and tell them. Their progress stays.</div>
@@ -865,7 +878,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
-    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); nrLoad(); spLoad(); }, 0);
+    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); nrLoad(); spLoad(); mgLoad(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -1032,6 +1045,78 @@ async function pinSet(btn){
   inp.value = '';
 }
 
+// ── DUPLICATE ACCOUNTS / MERGE ──
+let mgPairs = [];
+const mgDate = iso => iso ? new Date(iso).toLocaleDateString([], { month:'short', day:'numeric' }) : '—';
+async function mgLoad(){
+  const box = document.getElementById('mg-list'), err = document.getElementById('mg-err');
+  if (!box || !teacherPass()) return;
+  err.textContent = '';
+  const { data, error } = await db.rpc('teacher_dup_candidates', { p_teacher_pass: teacherPass() });
+  if (error){ box.innerHTML = /does not exist|schema cache|Could not find/i.test(error.message) ? '<div style="color:var(--dim)">Not set up yet (run supabase/student_merge.sql).</div>' : ''; if (!/does not exist|schema cache|Could not find/i.test(error.message)) err.textContent = 'Could not load duplicates.'; return; }
+  mgPairs = (data || []).map((p, i) => {
+    const [a, b] = p.accounts;
+    // default keeper: the account with a real last name (not their first name)
+    const keep = a.first_as_last && !b.first_as_last ? 1 : 0;
+    return Object.assign(p, { i, keep, clear: a.first_as_last !== b.first_as_last, last: (keep ? b : a).last });
+  });
+  mgRender();
+}
+function mgRender(){
+  const box = document.getElementById('mg-list'); if (!box) return;
+  document.getElementById('mg-count').textContent = mgPairs.length ? '(' + mgPairs.length + ')' : '';
+  const clear = mgPairs.filter(p => p.clear).length;
+  const all = document.getElementById('mg-all');
+  all.style.display = clear ? '' : 'none'; all.textContent = 'Merge all ' + clear + ' clear matches';
+  if (!mgPairs.length){ box.innerHTML = '<div style="color:var(--dim)">No duplicate accounts found. 🎉</div>'; return; }
+  const acct = (p, j) => { const a = p.accounts[j], on = p.keep === j;
+    return `<label style="flex:1;min-width:200px;display:block;cursor:pointer;border:2px solid ${on ? '#00b37d' : 'var(--border)'};background:${on ? 'rgba(0,179,125,0.07)' : '#fff'};border-radius:10px;padding:8px 10px">
+      <input type="radio" name="mg${p.i}" ${on ? 'checked' : ''} onchange="mgPick(${p.i},${j})" style="margin-right:6px">
+      <b>${escapeHtml(a.display)}</b> · last name <b${a.first_as_last ? ' style="color:var(--crimson)" title="Same as first name"' : ''}>${escapeHtml(a.last)}</b>${on ? ' <span style="color:#0a7a55;font-weight:800">KEEP</span>' : ''}
+      <div style="color:var(--dim);font-size:12.5px;margin-top:2px">Made ${mgDate(a.created)} · used ${mgDate(a.seen)} · ${a.xp} XP · ${a.days} day${a.days == 1 ? "" : "s"} · ${a.games} game${a.games == 1 ? "" : "s"}${a.pet ? ' · 🌱 ' + escapeHtml(a.pet) : ''}</div></label>`; };
+  box.innerHTML = mgPairs.map(p => `<div id="mgrow${p.i}" style="padding:10px 0;border-top:1px solid var(--border)">
+      <div style="font-weight:800;margin-bottom:6px">${escapeHtml(p.period)}${p.clear ? '' : ' <span style="color:#b35c00;font-size:12.5px">· check this one: both last names look real</span>'}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${acct(p, 0)}${acct(p, 1)}</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+        <span style="font-size:13px;color:var(--dim)">Last name to keep:</span>
+        <input id="mglast${p.i}" value="${escapeHtml(p.last)}" maxlength="30" style="width:150px;padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">
+        <button onclick="mgMerge(${p.i})" style="font:800 12px 'Nunito',sans-serif;background:#00b37d;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer">Merge into one</button>
+        <span id="mgmsg${p.i}" style="font-weight:800;font-size:13px"></span>
+      </div></div>`).join('');
+}
+function mgPick(i, j){ const p = mgPairs[i]; p.keep = j; p.last = p.accounts[j].first_as_last ? p.accounts[1 - j].last : p.accounts[j].last; mgRender(); }
+async function mgDo(p){
+  const keep = p.accounts[p.keep], drop = p.accounts[1 - p.keep];
+  const lastEl = document.getElementById('mglast' + p.i);
+  const last = (lastEl ? lastEl.value : p.last).trim();
+  return db.rpc('teacher_merge_students', { p_teacher_pass: teacherPass(), p_keep: keep.id, p_drop: drop.id, p_last_name: last || null });
+}
+async function mgMerge(i){
+  const p = mgPairs[i]; if (!p) return;
+  const keep = p.accounts[p.keep], drop = p.accounts[1 - p.keep];
+  if (!confirm(`Merge "${drop.display} ${drop.last}" into "${keep.display} ${keep.last}"?\n\nEverything moves to one account and the extra account is removed. This can't be undone.`)) return;
+  const msg = document.getElementById('mgmsg' + i); msg.style.color = 'var(--dim)'; msg.textContent = 'Merging…';
+  const { data, error } = await mgDo(p);
+  if (error){ msg.style.color = 'var(--crimson)'; msg.textContent = error.message; return; }
+  msg.style.color = '#0a7a55'; msg.textContent = '✓ Merged: ' + data.name + ' ' + data.last_name;
+  setTimeout(mgLoad, 900);
+}
+async function mgMergeAll(){
+  const list = mgPairs.filter(p => p.clear);
+  if (!list.length) return;
+  if (!confirm(`Merge all ${list.length} clear matches?\n\nFor each pair, the account with the real last name is kept, and the student keeps the PIN they used most recently. This can't be undone.`)) return;
+  const err = document.getElementById('mg-err'); let ok = 0, bad = 0;
+  for (const p of list){
+    const msg = document.getElementById('mgmsg' + p.i); if (msg) { msg.style.color = 'var(--dim)'; msg.textContent = 'Merging…'; }
+    const { error } = await mgDo(p);
+    if (error){ bad++; if (msg) { msg.style.color = 'var(--crimson)'; msg.textContent = error.message; } }
+    else { ok++; if (msg) { msg.style.color = '#0a7a55'; msg.textContent = '✓ Merged'; } }
+  }
+  err.style.color = bad ? 'var(--crimson)' : '#0a7a55';
+  err.textContent = '✓ Merged ' + ok + ' pair' + (ok === 1 ? '' : 's') + (bad ? ' · ' + bad + ' skipped (already merged or changed). Refresh to check.' : '.');
+  setTimeout(mgLoad, 1200);
+}
+
 // ── VISITORS ──
 function visDate(iso){ return new Date(iso).toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' }); }
 let visArmed = null;
@@ -1147,7 +1232,7 @@ const TRIMESTER    = ((window.TERM && TERM.id) || '2026-T1');
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 (function(){ const sel = document.getElementById('wq-trimester'); if (!sel) return; if (![...sel.options].some(o => o.value === TRIMESTER)) sel.add(new Option(TRIMESTER, TRIMESTER), 0); sel.value = TRIMESTER; })();
-subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); trailLoad(); nrLoad(); spLoad(); }
+subInit(); pinInit(); if (teacherPass()) { subLoad(); termLoad(); visLoad(); trailLoad(); nrLoad(); spLoad(); mgLoad(); }
 const XP_PER_TASK  = 25;
 const XP_PER_DAY   = 5;   // per login day
 const TOTAL_TASKS  = 90; // 2250 XP / 25 per task
