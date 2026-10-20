@@ -201,7 +201,7 @@
       const items = [];
       const nL = lessonsIn(c), got = reads[c] ? reads[c].size : 0;
       items.push(untracked({ id: 'read:ch' + c, kind: 'auto', label: 'Read all ' + nL + ' lessons in the chapter reader',
-        status: got >= nL ? 'complete' : got ? 'in_progress' : 'not_started', detail: got + ' of ' + nL + ' lessons read · Scroll to the end of each lesson, 60+ seconds each. Reading is how we learn. So read it!',
+        status: got >= nL ? 'complete' : got ? 'in_progress' : 'not_started', detail: got + ' of ' + nL + ' lessons read · Scroll to the end of each lesson, 15+ seconds each. Reading is how we learn. So read it!',
         href: 'chapter' + String(c).padStart(2, '0') + '.html' }, required && tgt[c]));
       VOCAB_MODES.forEach(([m, name]) => {
         const v = vocab[c + ':' + m];

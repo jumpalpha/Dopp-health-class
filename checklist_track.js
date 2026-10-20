@@ -4,7 +4,7 @@
  *
  *  • Chapter reader (chapterNN.html): a lesson section counts as READ when
  *      - the student scrolled to the end of that section, AND
- *      - the section was on screen for at least 60 seconds while the tab was open.
+ *      - the section was on screen for at least 15 seconds while the tab was open.
  *    A short "how to check this off" note is shown above the reader.
  *    Opening the page or clicking the PDF alone does not count.
  *  • Vocab games: vocab_engine.html calls ChecklistTrack.vocab(...) when a round really ends.
@@ -44,7 +44,7 @@
   }
 
   // ---------- reader ----------
-  var READ = { MIN_SEC: 60 };   // server (cl_log) requires 10+; site requires 60
+  var READ = { MIN_SEC: 15 };   // server (cl_log) requires 10+; site requires 15
   function needSeconds() { return READ.MIN_SEC; }
 
   function showHowTo(scroller) {
@@ -54,7 +54,7 @@
     box.style.cssText = 'margin:0 0 12px;padding:10px 14px;border-radius:10px;background:rgba(255,215,0,0.14);' +
       'border:1px solid rgba(255,215,0,0.55);font:600 14px/1.45 Nunito,sans-serif;color:inherit;';
     box.innerHTML = '<b>📖 To check off this chapter\'s reading:</b> be signed in on the Quest page, then scroll to the ' +
-      '<b>end of each lesson</b> and keep it on screen at least <b>60 seconds</b>.' +
+      '<b>end of each lesson</b> and keep it on screen at least <b>15 seconds</b>.' +
       (session() ? '' : ' <b style="color:#c0392b">You are not signed in, so this reading will not be recorded.</b>') +
       '<br><b>Reading is how we learn. So read it!</b>';
     scroller.parentNode.insertBefore(box, scroller);

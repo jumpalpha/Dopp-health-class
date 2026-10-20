@@ -190,7 +190,7 @@
 
   function rulesView() {
     const R = [
-      ['Read chapter lessons (Ch 1–16)', 'Each lesson section in the chapter reader must be scrolled to its end AND on screen at least 60 seconds while the tab is open. Students see these instructions above the reader. Opening the page or the PDF alone does not count.', 'checklist_events (kind read), via checklist_track.js'],
+      ['Read chapter lessons (Ch 1–16)', 'Each lesson section in the chapter reader must be scrolled to its end AND on screen at least 15 seconds while the tab is open. Students see these instructions above the reader. Opening the page or the PDF alone does not count.', 'checklist_events (kind read), via checklist_track.js'],
       ['Vocab: Flashcard Flip, Speed Quiz, Word Builder, Concept Map', 'A full round reaches the results screen with 80%+ of terms really answered (flipped cards; picked answers; typed answers; placed + checked chips). Skips, reveals and timeouts do not count; ~1.2 s per answer minimum.', 'checklist_events (kind vocab)'],
       ['Chapter Mastery practice', 'A saved passing attempt (8/10). Separate from formal tests.', 'mastery_attempts (existing)'],
       ['Homework in Schoology', 'Student ticks/unticks the box. Student reported; no XP; Schoology is the record.', 'checklist_manual'],
