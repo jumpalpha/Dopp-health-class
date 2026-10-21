@@ -23,6 +23,7 @@ begin
       'name', btrim(coalesce(s.display_name, '')) || ' ' || btrim(s.last_name),
       'first', btrim(coalesce(s.display_name, '')),
       'last_name', btrim(s.last_name),
+      'code', s.class_code,
       'period', public._arcade_group(s.class_code),
       'last_seen', coalesce(s.last_seen, s.created_at)
     ) order by public._arcade_group(s.class_code), s.last_name, s.display_name)

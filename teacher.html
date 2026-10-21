@@ -389,8 +389,8 @@ input, select, textarea { color: var(--text); }
     </div>
 
     <div class="card" id="pin-card" style="border-color:rgba(56,191,255,0.45)">
-      <div class="card-title" style="margin-bottom:4px">🔑 Find a student: reset PIN or rename</div>
-      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Search by first or last name. <b>Set PIN:</b> PINs are stored scrambled, so set a new 4-digit one and tell the student. <b>Rename:</b> fix a first name or last name. Changing the last name changes how they sign in (class code + last name). Progress always stays.</div>
+      <div class="card-title" style="margin-bottom:4px">🔑 Find a student: reset PIN, rename, move or delete</div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Search by first or last name. <b>Set PIN:</b> PINs are stored scrambled, so set a new 4-digit one and tell the student. <b>Rename:</b> fix a first name or last name. Changing the last name changes how they sign in (class code + last name). <b>Move:</b> put them in another period; progress stays and they sign in with the new class code. <b>Delete:</b> erases the student and all their progress for good.</div>
       <input type="text" id="pin-q" maxlength="40" placeholder="First or last name, e.g. Sagers" autocomplete="off" style="width:100%;max-width:320px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit">
       <div id="pin-list" style="margin-top:10px;font-size:14px"></div>
       <div id="pin-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
@@ -1030,7 +1030,19 @@ async function pinSearch(){
     '<span><b>' + escapeHtml(r.name) + '</b><br><span style="color:var(--dim);font-size:13px">' + escapeHtml(r.period) + '</span></span>' +
     '<span style="display:flex;gap:6px;align-items:center"><input class="pin-new" data-id="' + escapeHtml(r.id) + '" inputmode="numeric" maxlength="4" placeholder="New PIN" autocomplete="off" style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
     '<button class="btn btn-sm pin-set" data-id="' + escapeHtml(r.id) + '" data-name="' + escapeHtml(r.name) + '">Set PIN</button>' +
-    '<button class="btn btn-sm rn-open" data-id="' + escapeHtml(r.id) + '">✏️ Rename</button></span>' +
+    '<button class="btn btn-sm rn-open" data-id="' + escapeHtml(r.id) + '">✏️ Rename</button>' +
+    '<button class="btn btn-sm mv-open" data-id="' + escapeHtml(r.id) + '">↔ Move</button>' +
+    '<button class="btn btn-sm dl-open" data-id="' + escapeHtml(r.id) + '" style="background:transparent;color:var(--crimson);border:1px solid var(--crimson)">🗑 Delete</button></span>' +
+    '<div class="mv-box" data-id="' + escapeHtml(r.id) + '" style="display:none;width:100%;gap:6px;align-items:center;flex-wrap:wrap">' +
+      '<span style="font-size:13px;color:var(--dim)">Move to</span>' +
+      '<select class="mv-to" data-id="' + escapeHtml(r.id) + '" data-code="' + escapeHtml(r.code || '') + '" aria-label="New class" style="padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit"><option>Loading…</option></select>' +
+      '<button class="btn btn-sm mv-save" data-id="' + escapeHtml(r.id) + '" data-name="' + escapeHtml(r.name) + '">Move</button>' +
+      '<button class="btn btn-sm mv-cancel" data-id="' + escapeHtml(r.id) + '" style="background:transparent;color:var(--dim);border:1px solid var(--border)">Cancel</button></div>' +
+    '<div class="dl-box" data-id="' + escapeHtml(r.id) + '" style="display:none;width:100%;gap:6px;align-items:center;flex-wrap:wrap;background:rgba(255,59,92,0.06);border:1px solid rgba(255,59,92,0.35);border-radius:8px;padding:8px">' +
+      '<span style="font-size:13px;width:100%"><b>Permanently delete ' + escapeHtml(r.name) + '?</b> This erases their XP, scores, sprite, checklist and trail. It can\'t be undone. Type their last name to confirm:</span>' +
+      '<input class="dl-confirm" data-id="' + escapeHtml(r.id) + '" maxlength="40" placeholder="' + escapeHtml(r.last_name) + '" autocomplete="off" aria-label="Type last name to confirm" style="width:160px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
+      '<button class="btn btn-sm dl-save" data-id="' + escapeHtml(r.id) + '" data-name="' + escapeHtml(r.name) + '" style="background:var(--crimson);color:#fff;border:none">Delete forever</button>' +
+      '<button class="btn btn-sm dl-cancel" data-id="' + escapeHtml(r.id) + '" style="background:transparent;color:var(--dim);border:1px solid var(--border)">Cancel</button></div>' +
     '<div class="rn-box" data-id="' + escapeHtml(r.id) + '" style="display:none;width:100%;gap:6px;align-items:center;flex-wrap:wrap">' +
       '<input class="rn-first" data-id="' + escapeHtml(r.id) + '" maxlength="20" value="' + escapeHtml(r.first != null ? r.first : '') + '" placeholder="First name" aria-label="First name" style="width:140px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
       '<input class="rn-last" data-id="' + escapeHtml(r.id) + '" maxlength="40" value="' + escapeHtml(r.last_name) + '" data-old="' + escapeHtml(r.last_name) + '" placeholder="Last name" aria-label="Last name" style="width:160px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
@@ -1041,6 +1053,54 @@ async function pinSearch(){
   box.querySelectorAll('.rn-open').forEach(b => b.onclick = () => { const x = box.querySelector('.rn-box[data-id="' + b.dataset.id + '"]'); x.style.display = x.style.display === 'none' ? 'flex' : 'none'; if (x.style.display === 'flex') x.querySelector('.rn-first').focus(); });
   box.querySelectorAll('.rn-cancel').forEach(b => b.onclick = () => { box.querySelector('.rn-box[data-id="' + b.dataset.id + '"]').style.display = 'none'; });
   box.querySelectorAll('.rn-save').forEach(b => b.onclick = () => rnSave(b));
+  const toggle = (sel, id, show) => { const x = box.querySelector(sel + '[data-id="' + id + '"]'); x.style.display = show == null ? (x.style.display === 'none' ? 'flex' : 'none') : (show ? 'flex' : 'none'); return x; };
+  box.querySelectorAll('.mv-open').forEach(b => b.onclick = () => { const x = toggle('.mv-box', b.dataset.id); if (x.style.display === 'flex') mvFill(x.querySelector('.mv-to')); });
+  box.querySelectorAll('.mv-cancel').forEach(b => b.onclick = () => toggle('.mv-box', b.dataset.id, false));
+  box.querySelectorAll('.mv-save').forEach(b => b.onclick = () => mvSave(b));
+  box.querySelectorAll('.dl-open').forEach(b => b.onclick = () => { const x = toggle('.dl-box', b.dataset.id); if (x.style.display === 'flex') x.querySelector('.dl-confirm').focus(); });
+  box.querySelectorAll('.dl-cancel').forEach(b => b.onclick = () => toggle('.dl-box', b.dataset.id, false));
+  box.querySelectorAll('.dl-save').forEach(b => b.onclick = () => dlSave(b));
+}
+
+// ── MOVE / DELETE A STUDENT ──
+const notSetUp = m => /does not exist|schema cache|Could not find the function/i.test(m || '');
+let classList = null;
+async function mvFill(sel){
+  const msg = document.querySelector('.pin-msg[data-id="' + sel.dataset.id + '"]');
+  if (!classList){
+    const { data, error } = await db.rpc('teacher_class_list', { p_teacher_pass: teacherPass() });
+    if (error){ sel.innerHTML = '<option>—</option>'; msg.style.color = 'var(--crimson)'; msg.textContent = notSetUp(error.message) ? 'Not set up yet (run supabase/student_move_delete.sql).' : error.message; return; }
+    classList = data || [];
+  }
+  sel.innerHTML = classList.map(c => '<option value="' + escapeHtml(c.code) + '"' + (c.code === sel.dataset.code ? ' disabled' : '') + '>' +
+    escapeHtml(c.label) + (c.code === sel.dataset.code ? ' (current)' : '') + '</option>').join('');
+  const first = classList.find(c => c.code !== sel.dataset.code); if (first) sel.value = first.code;
+}
+async function mvSave(btn){
+  const id = btn.dataset.id, sel = document.querySelector('.mv-to[data-id="' + id + '"]'), msg = document.querySelector('.pin-msg[data-id="' + id + '"]');
+  const to = sel.value, label = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : to;
+  msg.style.color = 'var(--crimson)';
+  if (!to || to === sel.dataset.code){ msg.textContent = 'Pick a different class.'; return; }
+  if (!confirm('Move ' + btn.dataset.name + ' to ' + label + '?\n\nTheir progress stays. They will sign in with the ' + label + ' class code from now on.')) return;
+  btn.disabled = true; btn.textContent = 'Moving…';
+  const { data, error } = await db.rpc('teacher_move_student', { p_teacher_pass: teacherPass(), p_student_id: id, p_class_code: to });
+  btn.disabled = false; btn.textContent = 'Move';
+  if (error){ msg.textContent = notSetUp(error.message) ? 'Not set up yet (run supabase/student_move_delete.sql).' : error.message; return; }
+  msg.style.color = '#0a7a55';
+  msg.textContent = '✓ ' + data.name + ' is now in ' + data.to_label + '. Tell them to sign in with that class code next time.';
+  setTimeout(pinSearch, 2500);
+}
+async function dlSave(btn){
+  const id = btn.dataset.id, inp = document.querySelector('.dl-confirm[data-id="' + id + '"]'), msg = document.querySelector('.pin-msg[data-id="' + id + '"]');
+  msg.style.color = 'var(--crimson)';
+  if (!inp.value.trim()){ msg.textContent = 'Type their last name to confirm.'; return; }
+  if (!confirm('Last check: delete ' + btn.dataset.name + ' and all their progress forever?')) return;
+  btn.disabled = true; btn.textContent = 'Deleting…';
+  const { data, error } = await db.rpc('teacher_delete_student', { p_teacher_pass: teacherPass(), p_student_id: id, p_confirm_last: inp.value.trim() });
+  btn.disabled = false; btn.textContent = 'Delete forever';
+  if (error){ msg.textContent = notSetUp(error.message) ? 'Not set up yet (run supabase/student_move_delete.sql).' : error.message; return; }
+  msg.style.color = '#0a7a55'; msg.textContent = '✓ ' + data.name + ' was deleted.';
+  setTimeout(pinSearch, 2000);
 }
 async function pinSet(btn){
   const id = btn.dataset.id, inp = document.querySelector('.pin-new[data-id="' + id + '"]'), msg = document.querySelector('.pin-msg[data-id="' + id + '"]');
