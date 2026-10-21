@@ -572,13 +572,23 @@ async function loadClassWars() {
 }
 
 function renderStats() {
-  $('statGrid').innerHTML = [...SPRITE, ...CLASSICS, ...TEAMS, ...PARTNER].map(g => {
+  // Least-played games first, favorites last: students scroll past games they haven't tried to reach their favorites.
+  const playsOf = g => {
+    const srv = mine && mine.scores && mine.scores[g.key];
+    const best = Math.max(get(g.key + '_best', 0), srv ? srv.best : 0);
+    const n = Math.max(get(g.key + '_plays', 0), srv ? srv.plays || 0 : 0, get(g.key + '_wins', 0));
+    return n || (best > 0 ? 1 : 0);
+  };
+  const order = [...SPRITE, ...CLASSICS, ...TEAMS, ...PARTNER].map((g, i) => ({ g, i, n: playsOf(g) }))
+    .sort((a, b) => a.n - b.n || a.i - b.i);
+  $('statGrid').innerHTML = order.map(({ g, n }) => {
     const srv = mine && mine.scores && mine.scores[g.key];
     const best = Math.max(get(g.key + '_best', 0), srv ? srv.best : 0), wins = Math.max(get(g.key + '_wins', 0), srv ? srv.wins : 0);
     const done = g.winBy === 'wins' ? wins > 0 : best >= g.goal;
     const pct = g.winBy === 'wins' ? (done ? 100 : 0) : Math.min(100, Math.round(best / g.goal * 100));
     return `<div class="scard">
       <div class="hd"><span style="font-size:24px">${g.icon}</span>${g.title}</div>
+      <div class="lbl" style="margin-top:-4px">${n ? 'Played ' + n + '×' : '🆕 Not played yet'}</div>
       <div><div class="big">${best.toLocaleString()}</div><div class="lbl">Best score</div></div>
       <div><div class="bar"><i style="width:${pct}%"></i></div>
         <div class="lbl" style="margin-top:5px">${done ? '✅ Quest complete' : `Goal: ${g.winBy === 'wins' ? g.goal : g.goal.toLocaleString() + ' ' + g.unit}`}${wins ? ` · won ${wins}×` : ''}</div></div>

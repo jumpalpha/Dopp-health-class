@@ -272,6 +272,7 @@
     }
     function start() {
       A.state = 'play'; A.score = 0; A.time = 0; A.won = false; lastMedal = null;
+      store.set(cfg.storageKey + '_plays', store.get(cfg.storageKey + '_plays', 0) + 1);   // arcade.html "My Stats" sorts by this
       scoreEl.textContent = '0'; parts.length = 0; floats.length = 0;
       menu.classList.add('hidden'); over.classList.add('hidden'); paused.classList.add('hidden');
       cfg.reset && cfg.reset(A);
