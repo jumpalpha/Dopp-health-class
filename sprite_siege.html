@@ -51,12 +51,17 @@ body{min-height:100vh;background:radial-gradient(ellipse at top,#0d2238 0%,#0407
 <section class="shop" id="shop"></section>
 <script src="pet_sprite.js"></script>
 <script src="pet_vocab.js"></script>
+<script src="quick_checks_data.js"></script>
 <script src="student-save.js"></script>
 <script src="arcade_kit.js"></script>
 <script>
 (() => {
 const W = 420, H = 700, CX = 210, CY = 318, CORE_R = 26, PANEL_Y = 598;
-const WIN_WAVE = 20, Q_EVERY = 3;
+const WIN_WAVE = 20, Q_EVERY = 2;
+const VERSION = 2;   // Oct 2026 rebalance: bumping this wipes old bests on each device (the class board was reset too)
+// Difficulty: foes get tougher EXPONENTIALLY, so no build lasts forever. Past wave 20 it ramps even faster.
+const hpMult  = w => Math.pow(1.13, w - 1) * (w > 20 ? Math.pow(1.10, w - 20) : 1);
+const dmgMult = w => 1 + 0.09 * (w - 1) + (w > 20 ? 0.25 * (w - 20) : 0);
 
 // ───────── unhealthy pressures (enemies) ─────────
 const FOES = {
@@ -73,15 +78,15 @@ const FOES = {
   vape: { name: 'Vape Cloud', hp: 45, spd: 50, dmg: 14, coins: 6, pts: 6, r: 13, from: 9,
     fact: 'Vapes deliver nicotine, which is highly addictive and harms the developing teen brain.' },
   boss: { name: 'King Junk', hp: 900, spd: 17, dmg: 60, coins: 60, pts: 100, r: 30, from: 10,
-    fact: 'King Junk shows up every 10 waves. Healthy habits stacked together are how you beat him.' }
+    fact: 'King Junk shows up every 5 waves. Healthy habits stacked together are how you beat him.' }
 };
 
 // ───────── healthy habits (in-run upgrades, bought with coins) ─────────
 const HABITS = [
   { k: 'exercise', name: 'Exercise', icon: '💪', base: 10, max: 30, what: '+damage', fact: 'Exercise makes your heart, lungs and muscles stronger.' },
-  { k: 'water', name: 'Hydration', icon: '💧', base: 12, max: 20, what: 'faster shots', fact: 'Even mild dehydration makes you tired and slows your thinking.' },
-  { k: 'food', name: 'Nutrition', icon: '🥦', base: 12, max: 30, what: '+max health', fact: 'Fruits, vegetables and protein give your body the fuel to repair itself.' },
-  { k: 'sleep', name: 'Sleep', icon: '🌙', base: 18, max: 20, what: 'heal over time', fact: 'Your body repairs itself and fights infection while you sleep.' },
+  { k: 'water', name: 'Hydration', icon: '💧', base: 12, max: 15, what: 'faster shots', fact: 'Even mild dehydration makes you tired and slows your thinking.' },
+  { k: 'food', name: 'Nutrition', icon: '🥦', base: 14, max: 20, what: '+max health', fact: 'Fruits, vegetables and protein give your body the fuel to repair itself.' },
+  { k: 'sleep', name: 'Sleep', icon: '🌙', base: 20, max: 12, what: 'heal over time', fact: 'Your body repairs itself and fights infection while you sleep.' },
   { k: 'friends', name: 'Friends', icon: '🤝', base: 15, max: 10, what: '+range', fact: 'Strong friendships lower stress and help you stay on track.' },
   { k: 'calm', name: 'Mindfulness', icon: '🧘', base: 25, max: 6, what: 'slows nearby foes', fact: 'Slow breathing calms your stress response in under a minute.' }
 ];
@@ -91,7 +96,7 @@ const costOf = (h, lvl) => Math.round(h.base * Math.pow(1.32, lvl));
 const PERMS = [
   { k: 'heart', name: 'Strong Heart', desc: '+25 starting max health', cost: l => 3 + l, max: 8 },
   { k: 'allow', name: 'Allowance', desc: '+20% coins from every foe', cost: l => 4 + l * 2, max: 5 },
-  { k: 'routine', name: 'Healthy Routine', desc: '+0.5 health / second from the start', cost: l => 5 + l * 2, max: 5 },
+  { k: 'routine', name: 'Healthy Routine', desc: '+0.3 health / second from the start', cost: l => 5 + l * 2, max: 5 },
   { k: 'start', name: 'Head Start', desc: '+40 starting coins', cost: l => 3 + l, max: 5 },
   { k: 'multi', name: 'Double Shot', desc: '+1 extra shot each time you fire', cost: l => 12 + l * 8, max: 3 }
 ];
@@ -102,39 +107,40 @@ const pl = k => META.perm[k] || 0;
 let S;
 function reset(A) {
   S = { wave: 0, between: 1.2, queue: [], spawnT: 0, foes: [], shots: [], lv: {}, coins: 20 + 40 * pl('start'),
-        maxHp: 100 + 25 * pl('heart'), hp: 100 + 25 * pl('heart'), cd: 0, seen: {}, paused: false, kills: 0,
+        maxHp: 100 + 25 * pl('heart'), hp: 100 + 25 * pl('heart'), cd: 0, seen: {}, paused: false, kills: 0, hurtT: 0,
         msg: 'Your Wellness Sprite is under siege! Tap a healthy habit below to power up.', msgT: 6, lastPtr: 0 };
   HABITS.forEach(h => { S.lv[h.k] = 0; });
   if (A) A.setScore(0);
 }
 const stat = {
   dmg: () => 10 + 4 * S.lv.exercise,
-  rate: () => Math.max(0.1, 0.6 * Math.pow(0.88, S.lv.water)),
+  rate: () => Math.max(0.15, 0.6 * Math.pow(0.9, S.lv.water)),
   range: () => 140 + 18 * S.lv.friends,
-  regen: () => 0.8 * S.lv.sleep + 0.5 * pl('routine'),
+  regen: () => 0.5 * S.lv.sleep + 0.3 * pl('routine'),
   slow: () => 0.08 * S.lv.calm,
   shots: () => 1 + pl('multi')
 };
 function say(t, s) { S.msg = t; S.msgT = s || 4; }
 
 function buildWave(n) {
-  const list = [], count = 5 + n * 2;
+  const list = [], count = 6 + Math.floor(n * 2.5);
   const pool = Object.keys(FOES).filter(k => k !== 'boss' && FOES[k].from <= n);
   for (let i = 0; i < count; i++) {
     const k = pool[Math.floor(Math.random() * pool.length)];
     list.push(k); if (k === 'germ') list.push('germ');          // germs come in pairs
   }
-  if (n % 10 === 0) list.push('boss');
+  if (n % 5 === 0) for (let b = 0; b < 1 + Math.floor(n / 15); b++) list.push('boss');   // King Junk every 5 waves, more of him later
   return list;
 }
 function nextWave(A) {
   S.wave++; S.queue = buildWave(S.wave); S.spawnT = 0.4;
   A.setScore(Math.max(A.score, (S.wave - 1) * 100 + S.kills));
   if (S.wave === WIN_WAVE) A.win('You reached wave ' + WIN_WAVE + '! Keep going for a new best.');
-  if (S.wave % 10 === 0) say('👑 King Junk is coming! ' + FOES.boss.fact, 5);
+  if (S.wave % 5 === 0) say('👑 King Junk is coming! ' + FOES.boss.fact, 5);
+  else if (S.wave === 21) say('⚠️ Overtime! Every wave from here hits much harder. How long can you last?', 5);
 }
 function spawn(k) {
-  const f = FOES[k], a = Math.random() * Math.PI * 2, d = 330, m = 1 + 0.15 * (S.wave - 1);
+  const f = FOES[k], a = Math.random() * Math.PI * 2, d = 330, m = hpMult(S.wave);
   S.foes.push({ k, f, x: CX + Math.cos(a) * d, y: CY + Math.sin(a) * d * 0.95, hp: f.hp * m, max: f.hp * m, wob: Math.random() * 6 });
   if (!S.seen[k] && k !== 'boss') { S.seen[k] = true; say('New: ' + f.name + ' — ' + f.fact, 6); }
 }
@@ -150,8 +156,8 @@ function update(dt, A) {
   if (!S) reset(A);
   if (S.msgT > 0) S.msgT -= dt;
   if (A.state !== 'play' || S.paused) return;
-  // heal
-  S.hp = Math.min(S.maxHp, S.hp + stat.regen() * dt);
+  // heal (healing pauses for 2 seconds after each hit)
+  if (S.hurtT > 0) S.hurtT -= dt; else S.hp = Math.min(S.maxHp, S.hp + stat.regen() * dt);
   // waves
   if (!S.queue.length && !S.foes.length) {
     S.between -= dt;
@@ -161,18 +167,19 @@ function update(dt, A) {
     }
   }
   S.spawnT -= dt;
-  if (S.queue.length && S.spawnT <= 0) { spawn(S.queue.shift()); S.spawnT = Math.max(0.25, 1.1 - S.wave * 0.035); }
+  if (S.queue.length && S.spawnT <= 0) { spawn(S.queue.shift()); S.spawnT = Math.max(0.12, 1.0 - S.wave * 0.04); }
   // move foes
   const slow = stat.slow();
   for (const e of S.foes) {
     const dx = CX - e.x, dy = CY - e.y, dist = Math.hypot(dx, dy);
-    let sp = e.f.spd * (1 + Math.min(0.5, S.wave * 0.01));
+    let sp = e.f.spd * (1 + Math.min(1, S.wave * 0.02));
     if (slow && dist < 110) sp *= 1 - slow;
     if (e.k === 'phone') { e.wob += dt * 4; }
     const nx = dx / dist, ny = dy / dist, zig = e.k === 'phone' ? Math.sin(e.wob) * 30 : 0;
     e.x += (nx * sp - ny * zig) * dt; e.y += (ny * sp + nx * zig) * dt;
     if (dist < CORE_R + e.f.r) {
-      e.dead = true; S.hp -= e.f.dmg; A.shake(5, 0.2); A.sfx('hit'); A.float('-' + e.f.dmg, CX, CY - 40, '#FF3B5C');
+      const dmg = Math.round(e.f.dmg * dmgMult(S.wave));
+      e.dead = true; S.hp -= dmg; S.hurtT = 2; A.shake(5, 0.2); A.sfx('hit'); A.float('-' + dmg, CX, CY - 40, '#FF3B5C');
       if (S.hp <= 0) { S.hp = 0; finishRun(A); return; }
     }
   }
@@ -310,6 +317,14 @@ function input(type, A) { /* everything is tap-based on the habit buttons */ }
 // ───────── questions → diamonds ─────────
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function makeQ() {
+  // Half the time: a concept question from the chapter readers' Quick Checks (quick_checks_data.js).
+  const B = window.QC_BANK;
+  if (B && Math.random() < 0.5) {
+    const chs = Object.keys(B), ch = chs[Math.floor(Math.random() * chs.length)], r = B[ch][Math.floor(Math.random() * B[ch].length)];
+    const V0 = window.PET_VOCAB;
+    return { ch, title: (V0 && V0[ch] && V0[ch].title) || 'Chapter ' + ch, term: r[2], prompt: r[1], why: r[6],
+             opts: [r[2], r[3], r[4], r[5]].sort(() => Math.random() - 0.5) };
+  }
   const V = window.PET_VOCAB; if (!V) return null;
   const chs = Object.keys(V).filter(k => V[k].terms.length >= 4), ch = chs[Math.floor(Math.random() * chs.length)];
   const terms = V[ch].terms, pick = terms[Math.floor(Math.random() * terms.length)];
@@ -329,11 +344,11 @@ function feedSprite() {
 let qBox = null;
 function ask(A) {
   const q = makeQ(); if (!q) { S.between = 1.6; S.askedFor = 0; return nextWave(A); }
-  const gems = 1 + Math.floor(S.wave / 10);
+  const gems = 1 + Math.floor(S.wave / 10), heal = Math.round(S.maxHp * 0.25);
   S.paused = true;
   if (!qBox) { qBox = document.createElement('div'); qBox.className = 'sg-q hidden'; document.querySelector('#game .ak-stage').appendChild(qBox); }
   qBox.innerHTML = `<div class="sg-card"><div class="sg-tag">💎 Diamond question · after wave ${S.wave}</div>
-    <div class="sg-sub">Right answer = +${gems} 💎 for permanent upgrades · Ch ${esc(q.ch)} ${esc(q.title)}</div>
+    <div class="sg-sub">Right answer = +${gems} 💎 and ❤ +${heal} health · Ch ${esc(q.ch)} ${esc(q.title)}</div>
     <div class="sg-prompt">${esc(q.prompt)}</div>
     <div class="sg-opts">${q.opts.map((o, i) => `<button class="sg-opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>
     <div class="sg-fb"></div><button class="sg-go" style="display:none">Back to the siege →</button></div>`;
@@ -346,9 +361,10 @@ function ask(A) {
     go.style.display = '';
     if (ok) {
       b.classList.add('ok'); META.diamonds += gems; META.right = (META.right || 0) + 1; saveMeta(); renderShop();
-      fb.innerHTML = '✅ <b>Nice!</b> +' + gems + ' 💎'; A.sfx('coin'); feedSprite();
+      S.hp = Math.min(S.maxHp, S.hp + heal);
+      fb.innerHTML = '✅ <b>Nice!</b> +' + gems + ' 💎 · ❤ +' + heal + (q.why ? '<br>' + esc(q.why) : ''); A.sfx('coin'); feedSprite();
     } else {
-      b.classList.add('bad'); fb.innerHTML = '❌ The answer is <b>' + esc(q.term) + '</b> (in green).';
+      b.classList.add('bad'); fb.innerHTML = '❌ The answer is <b>' + esc(q.term) + '</b> (in green).' + (q.why ? '<br>' + esc(q.why) : '');
       go.disabled = true; let s = 2; go.textContent = 'Read it… ' + s;
       const t = setInterval(() => { s--; if (s <= 0) { clearInterval(t); go.disabled = false; go.textContent = 'Back to the siege →'; } else go.textContent = 'Read it… ' + s; }, 1000);
     }
@@ -361,6 +377,7 @@ function ask(A) {
 const KEY = 'sprite_siege';
 async function loadMeta() {
   try { const r = await StudentSave.load(KEY); if (r && r.data) META = Object.assign({ diamonds: 0, perm: {}, right: 0, best: 0 }, r.data); } catch (e) {}
+  if (META.v !== VERSION) { META.v = VERSION; META.best = 0; saveMeta(); }   // new version: best wave starts over (diamonds and upgrades are kept)
   renderShop();
 }
 let saveT = null;
@@ -383,13 +400,16 @@ document.getElementById('shop').addEventListener('click', e => {
   if (window.game && game.state !== 'play') reset(game);
 });
 
+// New version: clear this device's old Sprite Siege best (the class leaderboard was reset at the same time).
+try { if (localStorage.getItem('sprite_siege_version') !== String(VERSION)) {
+  localStorage.removeItem('sprite_siege_best'); localStorage.setItem('sprite_siege_version', String(VERSION)); } } catch (e) {}
 window.game = Arcade({
   mount: '#game', title: 'Sprite Siege', subtitle: 'Healthy habits vs. everything else!', W, H, reserveH: 70,
   storageKey: 'sprite_siege', winText: 'Wave ' + WIN_WAVE + ' reached!', deathDelay: 800, overTitle: 'Your sprite needs a rest!',
   medals: [{ at: 600, name: 'Bronze', icon: '🥉' }, { at: 1200, name: 'Silver', icon: '🥈' }, { at: 2000, name: 'Gold', icon: '🥇' }, { at: 3000, name: 'Legend', icon: '💎' }],
   howTo: 'Your Wellness Sprite fires on its own. Junk food, soda, stress, late-night scrolling and more swarm in. ' +
-    'Spend 🪙 coins on <b>healthy habits</b> to power up. Every ' + Q_EVERY + ' waves, answer a question for 💎 diamonds — ' +
-    'they buy <b>permanent upgrades</b> (below the game). Reach <b>wave ' + WIN_WAVE + '</b> to win!',
+    'Spend 🪙 coins on <b>healthy habits</b> to power up. Every ' + Q_EVERY + ' waves, answer a question for 💎 diamonds and a health boost — ' +
+    'diamonds buy <b>permanent upgrades</b> (below the game). Foes get much tougher every wave, and King Junk shows up every 5. Reach <b>wave ' + WIN_WAVE + '</b> to win!',
   controls: 'Tap a habit to buy it · P pause',
   facts: HABITS.map(h => h.icon + ' ' + h.fact).concat(['Small healthy habits stack up — that\'s how real health works too.']),
   reset, update, draw, input, pointer
