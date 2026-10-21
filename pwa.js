@@ -84,3 +84,41 @@
 
   function ready(fn) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
 })();
+
+// Trimester Checklist button: a gold "📋 My Checklist" pill in the bottom-left corner of student pages,
+// shown only on a device where a student has signed in on the Quest page. Shows their last known % done
+// (saved by checklist.html / welcome.html). Hidden on teacher, projected-game, print and game-app pages.
+(function () {
+  var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  if (/^(checklist|teacher|teacher-admin|live_host|live|print_quest|offline|404|sub_guide|parents|visitor|save_test|wellness-255-signup-guide|legacy-resources)\.html$/.test(page)) return;
+  if (/^game\d\d_/.test(page) || document.documentElement.getAttribute('data-app-name')) return;
+  var signedIn = false, pct = null;
+  try {
+    for (var i = 0; i < localStorage.length; i++) if (/^qSID_/.test(localStorage.key(i)) && localStorage.getItem(localStorage.key(i))) signedIn = true;
+    var c = JSON.parse(localStorage.getItem('dopp_cl_pct') || 'null');
+    if (c && typeof c.pct === 'number' && Date.now() - c.t < 14 * 86400000) pct = Math.max(0, Math.min(100, Math.round(c.pct)));
+    if (sessionStorage.getItem('dopp_cl_hide') === '1') return;
+  } catch (e) { return; }
+  if (!signedIn) return;
+  function add() {
+    if (document.getElementById('dopp-cl-pill')) return;
+    var st = document.createElement('style');
+    st.textContent = '#dopp-cl-pill{position:fixed;left:14px;bottom:14px;z-index:9000;display:flex;align-items:center;gap:6px;font:900 15px/1 Nunito,system-ui,sans-serif}' +
+      '#dopp-cl-pill a{display:flex;align-items:center;gap:9px;text-decoration:none;color:#1a1030;background:#FFD700;border:2.5px solid #1A1030;border-radius:999px;padding:10px 16px 10px 12px;box-shadow:0 4px 0 #1A1030,0 8px 22px rgba(0,0,0,.35);animation:dclp 2.6s ease-in-out 1s 2}' +
+      '#dopp-cl-pill a:hover{transform:translateY(-2px)}#dopp-cl-pill a:active{transform:translateY(2px);box-shadow:0 1px 0 #1A1030}' +
+      '#dopp-cl-pill .ic{font-size:20px}#dopp-cl-pill .bar{display:inline-block;width:46px;height:8px;border-radius:5px;background:rgba(26,16,48,.22);overflow:hidden}' +
+      '#dopp-cl-pill .bar i{display:block;height:100%;background:#1A1030}#dopp-cl-pill .pc{font-size:13px}' +
+      '#dopp-cl-pill button{width:24px;height:24px;border-radius:50%;border:2px solid #1A1030;background:#fff8d6;color:#1a1030;font:900 13px/1 Nunito,sans-serif;cursor:pointer;padding:0;opacity:.85}' +
+      '@keyframes dclp{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}' +
+      '@media (max-width:520px){#dopp-cl-pill{left:10px;bottom:10px;font-size:13px}#dopp-cl-pill a{padding:8px 12px 8px 10px}#dopp-cl-pill .bar{width:32px}}' +
+      '@media print{#dopp-cl-pill{display:none}}';
+    document.head.appendChild(st);
+    var d = document.createElement('div'); d.id = 'dopp-cl-pill';
+    d.innerHTML = '<a href="checklist.html" title="See what you need to do this trimester"><span class="ic">📋</span><span>My Checklist</span>' +
+      (pct === null ? '' : '<span class="bar"><i style="width:' + pct + '%"></i></span><span class="pc">' + pct + '%</span>') + '</a>' +
+      '<button type="button" aria-label="Hide checklist button" title="Hide until you open a new tab">✕</button>';
+    d.querySelector('button').onclick = function () { try { sessionStorage.setItem('dopp_cl_hide', '1'); } catch (e) {} d.remove(); };
+    document.body.appendChild(d);
+  }
+  if (document.body) add(); else document.addEventListener('DOMContentLoaded', add);
+})();
