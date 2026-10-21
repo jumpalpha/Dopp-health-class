@@ -97,12 +97,12 @@
   const MINUTE_TYPES = [
     ['reading', 'Chapter reading (all lessons)', 20], ['vocab', 'Vocab game round', 5], ['mastery', 'Chapter Mastery quiz', 10],
     ['homework', 'Schoology homework', 20], ['test', 'Test taken in class', 30], ['activity', 'Sprite, Trail, live game & review tasks', 10],
-    ['games', 'Arcade game goals', 15]
+    ['games', 'Arcade game goals', 15], ['project', 'Unit project (multi-day)', 60]
   ];
   const MINUTE_DEFAULTS = {}; MINUTE_TYPES.forEach(([k, , m]) => { MINUTE_DEFAULTS[k] = m; });
   function minuteType(id) {
     const p = String(id || '').split(':')[0];
-    return { read: 'reading', vocab: 'vocab', mastery: 'mastery', hw: 'homework', test: 'test', games: 'games' }[p] || 'activity';
+    return { read: 'reading', vocab: 'vocab', mastery: 'mastery', hw: 'homework', test: 'test', games: 'games', proj: 'project' }[p] || 'activity';
   }
   function minutesFor(it, cfg) {
     const id = typeof it === 'string' ? it : it && it.id;
@@ -230,6 +230,12 @@
           status: manual[mk] && manual[mk].on ? 'reported' : 'not_started', key: mk,
           detail: 'Tick this yourself after you take it in class' });
       });
+      if (c === 9) {   // Unit 3 project (chapters 6–9): sits at the end of Ch 9, before Ch 10
+        const mk = 'test:unit3-roots';   // manual key reuses the server's allowed test: pattern
+        items.push({ id: 'proj:roots', kind: 'manual', label: 'Unit 3 Project: Roots & Branches',
+          status: manual[mk] && manual[mk].on ? 'reported' : 'not_started', key: mk, href: 'family_quest.html',
+          detail: 'Tick this yourself once your drawing photo and all four parts are turned in on Schoology' });
+      }
       return items.map(it => finish(it, c));
     }
 
