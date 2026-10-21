@@ -389,9 +389,9 @@ input, select, textarea { color: var(--text); }
     </div>
 
     <div class="card" id="pin-card" style="border-color:rgba(56,191,255,0.45)">
-      <div class="card-title" style="margin-bottom:4px">🔑 Reset a student PIN</div>
-      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">PINs are stored scrambled, so they can't be looked up. Find the student, set a new 4-digit PIN, and tell them. Their progress stays.</div>
-      <input type="text" id="pin-q" maxlength="40" placeholder="Last name, e.g. Sagers" autocomplete="off" style="width:100%;max-width:320px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit">
+      <div class="card-title" style="margin-bottom:4px">🔑 Find a student: reset PIN or rename</div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:10px">Search by first or last name. <b>Set PIN:</b> PINs are stored scrambled, so set a new 4-digit one and tell the student. <b>Rename:</b> fix a first name or last name. Changing the last name changes how they sign in (class code + last name). Progress always stays.</div>
+      <input type="text" id="pin-q" maxlength="40" placeholder="First or last name, e.g. Sagers" autocomplete="off" style="width:100%;max-width:320px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit">
       <div id="pin-list" style="margin-top:10px;font-size:14px"></div>
       <div id="pin-err" style="color:var(--crimson);font-weight:700;font-size:13px;margin-top:8px"></div>
     </div>
@@ -1024,14 +1024,23 @@ async function pinSearch(){
   const { data, error } = await db.rpc('pin_reset_search', { p_teacher_pass: teacherPass(), p_last_name: q });
   if (error){ box.textContent = /passphrase/i.test(error.message) ? 'Enter your teacher passphrase again.' : 'Could not search right now.'; return; }
   const rows = data || [];
-  if (!rows.length){ box.innerHTML = '<div style="color:var(--dim)">No student this trimester with a last name starting "' + escapeHtml(q) + '".</div>'; return; }
+  if (!rows.length){ box.innerHTML = '<div style="color:var(--dim)">No student this trimester with a first or last name starting "' + escapeHtml(q) + '".</div>'; return; }
   box.innerHTML = rows.map(r =>
     '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);flex-wrap:wrap">' +
     '<span><b>' + escapeHtml(r.name) + '</b><br><span style="color:var(--dim);font-size:13px">' + escapeHtml(r.period) + '</span></span>' +
     '<span style="display:flex;gap:6px;align-items:center"><input class="pin-new" data-id="' + escapeHtml(r.id) + '" inputmode="numeric" maxlength="4" placeholder="New PIN" autocomplete="off" style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
-    '<button class="btn btn-sm pin-set" data-id="' + escapeHtml(r.id) + '" data-name="' + escapeHtml(r.name) + '">Set PIN</button></span>' +
+    '<button class="btn btn-sm pin-set" data-id="' + escapeHtml(r.id) + '" data-name="' + escapeHtml(r.name) + '">Set PIN</button>' +
+    '<button class="btn btn-sm rn-open" data-id="' + escapeHtml(r.id) + '">✏️ Rename</button></span>' +
+    '<div class="rn-box" data-id="' + escapeHtml(r.id) + '" style="display:none;width:100%;gap:6px;align-items:center;flex-wrap:wrap">' +
+      '<input class="rn-first" data-id="' + escapeHtml(r.id) + '" maxlength="20" value="' + escapeHtml(r.first != null ? r.first : '') + '" placeholder="First name" aria-label="First name" style="width:140px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
+      '<input class="rn-last" data-id="' + escapeHtml(r.id) + '" maxlength="40" value="' + escapeHtml(r.last_name) + '" data-old="' + escapeHtml(r.last_name) + '" placeholder="Last name" aria-label="Last name" style="width:160px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
+      '<button class="btn btn-sm rn-save" data-id="' + escapeHtml(r.id) + '">Save name</button>' +
+      '<button class="btn btn-sm rn-cancel" data-id="' + escapeHtml(r.id) + '" style="background:transparent;color:var(--dim);border:1px solid var(--border)">Cancel</button></div>' +
     '<div class="pin-msg" data-id="' + escapeHtml(r.id) + '" style="width:100%;font-weight:800;font-size:13px"></div></div>').join('');
   box.querySelectorAll('.pin-set').forEach(b => b.onclick = () => pinSet(b));
+  box.querySelectorAll('.rn-open').forEach(b => b.onclick = () => { const x = box.querySelector('.rn-box[data-id="' + b.dataset.id + '"]'); x.style.display = x.style.display === 'none' ? 'flex' : 'none'; if (x.style.display === 'flex') x.querySelector('.rn-first').focus(); });
+  box.querySelectorAll('.rn-cancel').forEach(b => b.onclick = () => { box.querySelector('.rn-box[data-id="' + b.dataset.id + '"]').style.display = 'none'; });
+  box.querySelectorAll('.rn-save').forEach(b => b.onclick = () => rnSave(b));
 }
 async function pinSet(btn){
   const id = btn.dataset.id, inp = document.querySelector('.pin-new[data-id="' + id + '"]'), msg = document.querySelector('.pin-msg[data-id="' + id + '"]');
@@ -1043,6 +1052,25 @@ async function pinSet(btn){
   if (error || !data){ msg.textContent = error ? error.message : 'Could not find that student.'; return; }
   msg.style.color = '#0a7a55'; msg.textContent = '✓ ' + btn.dataset.name + "'s PIN is now " + pin + '. Tell them, then clear this box.';
   inp.value = '';
+}
+
+// ── RENAME A STUDENT ──
+async function rnSave(btn){
+  const id = btn.dataset.id, msg = document.querySelector('.pin-msg[data-id="' + id + '"]');
+  const first = document.querySelector('.rn-first[data-id="' + id + '"]').value.trim();
+  const lastEl = document.querySelector('.rn-last[data-id="' + id + '"]'), last = lastEl.value.trim();
+  msg.style.color = 'var(--crimson)';
+  if (!first || !last){ msg.textContent = 'Both first and last name are needed.'; return; }
+  if (last.toLowerCase() !== (lastEl.dataset.old || '').toLowerCase() &&
+      !confirm('Change the LAST name to "' + last + '"?\n\nThe student will sign in with "' + last + '" from now on (same class code and PIN). Make sure you tell them.')) return;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const { data, error } = await db.rpc('teacher_rename_student', { p_teacher_pass: teacherPass(), p_student_id: id, p_first: first, p_last: last });
+  btn.disabled = false; btn.textContent = 'Save name';
+  if (error){ msg.textContent = /does not exist|schema cache|Could not find/i.test(error.message) ? 'Not set up yet (run supabase/student_rename.sql).' : error.message; return; }
+  msg.style.color = '#0a7a55';
+  msg.textContent = '✓ Renamed to ' + data.first + ' ' + data.last + '.' + (data.login_changed ? ' They now sign in with the last name "' + data.last + '". Tell them!' : '');
+  setTimeout(pinSearch, 2500);
+  if (typeof nrLoad === 'function') nrLoad();
 }
 
 // ── DUPLICATE ACCOUNTS / MERGE ──

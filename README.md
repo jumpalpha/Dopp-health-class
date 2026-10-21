@@ -86,7 +86,7 @@ Access any chapter's vocab: `vocab_engine.html?ch=1` through `vocab_engine.html?
 
 ## Quick Checks, Review Deck & Chapter Path (Oct 2026)
 
-- **Quick Checks** (`quick_checks.js`, questions in `quick_checks_data.js`): 2 multiple-choice questions at the end of every lesson in each chapter reader (218 total, written from the reader text). The next lesson opens once both are answered; a wrong answer shows the right one and why. Practice only, no XP.
+- **Quick Checks** (`quick_checks.js`, questions in `quick_checks_data.js`): 2 multiple-choice questions at the end of every lesson in each chapter reader (218 total, written from the reader text). Lessons stay open; a friendly reminder appears if a Quick Check is skipped. A wrong answer shows the right one and why. Practice only, no XP.
 - **Review Deck** (`review.html`): every Quick Check missed on the first try. Two right answers in a row clear it. The Wellness Sprite's "Ask me a question" can draw from it too.
 - **Your Chapter Path** (`chapter_path.js`): the sidebar card on every chapter page. Four steps that check themselves off: read every lesson, answer the Quick Checks, play the 4 vocab games at 70%+, pass Chapter Mastery.
 - **Continue where you left off**: the home page and Welcome screen link straight to the last lesson a student was reading (`chapterNN.html#lesson-N`).

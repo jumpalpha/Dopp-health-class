@@ -6,8 +6,8 @@
  *
  * On chapterNN.html:
  *   • After each lesson in the reader, 2 multiple-choice questions appear.
- *   • The next lesson stays closed until both are answered. A wrong answer shows the right one
- *     and why; the student clicks Continue. Getting it right is NOT required to move on.
+ *   • Lessons are never locked. If a student scrolls past an unanswered Quick Check, a friendly
+ *     reminder shows above the next lesson. A wrong answer shows the right one and why.
  *   • Any question missed on the first try goes into the student's Review Deck.
  *
  * Everywhere (review.html, pet.html, welcome.html, chapter sidebar):
@@ -107,12 +107,9 @@
     '.qc-opt:hover:not([disabled]){border-color:#38BFFF;background:#eef9ff}' +
     '.qc-opt[disabled]{cursor:default}.qc-opt.right{border-color:#00b37e;background:#e3f8ef}.qc-opt.wrong{border-color:#e0365a;background:#fde8ec}' +
     '.qc-fb{font-size:13.5px;line-height:1.45;margin-top:7px;font-weight:700}.qc-fb.ok{color:#00704D}.qc-fb.no{color:#b3123a}' +
-    '.qc-go{margin-top:12px;font:900 15px Nunito,sans-serif;padding:11px 18px;border-radius:12px;border:none;cursor:pointer;background:#1C1A2E;color:#FFD700;min-height:44px}' +
-    '.qc-go[disabled]{opacity:.35;cursor:default}' +
     '.qc-done{font-size:13px;font-weight:800;color:#00704D;margin-top:8px}' +
-    '.qc-lock{margin:14px 0;padding:16px;border-radius:14px;border:2px dashed rgba(28,26,46,.2);text-align:center;font:700 14px/1.5 Nunito,sans-serif;color:rgba(28,26,46,.7);background:rgba(28,26,46,.03)}' +
-    '.qc-lock b{display:block;font-size:15px;color:#1C1A2E}' +
-    '.reader-section.qc-hidden{display:none!important}';
+    '.qc-nudge{margin:4px 0 14px;padding:9px 12px;border-radius:10px;background:#fff8e1;border-left:4px solid #FFD700;font:700 13.5px/1.45 Nunito,sans-serif;color:#5a4300}' +
+    '.qc-nudge a{color:#7a4b00}';
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
@@ -146,7 +143,7 @@
       if (!x.box) { x.box = document.createElement('div'); x.box.className = 'qc'; x.el.appendChild(x.box); }
       var next = lessons[x.L];   // next lesson, if any
       var h = '<div class="qc-h"><b>✅ Quick Check · Lesson ' + x.L + '</b><small>' +
-        (answered ? 'Done' : 'Answer both to ' + (next ? 'open Lesson ' + next.L : 'finish the reading')) + '</small></div>';
+        (answered ? 'Done' : '2 questions · about 30 seconds') + '</small></div>';
       x.qs.forEach(function (i, n) {
         var qid = id(c, i), q = question(qid), a = state.a[qid];
         x.order = x.order || {};
@@ -160,38 +157,24 @@
           (a ? feedback(q, a, x.picked && x.picked[qid]) : '') +
           '</div>';
       });
-      var open = !next || !next.el.classList.contains('qc-hidden');
-      if (answered && next && !open) h += '<button type="button" class="qc-go">Continue to Lesson ' + next.L + ' ▶</button>';
-      else if (answered) h += '<div class="qc-done">✓ Quick Check done' + (next ? ' — keep reading below.' : '. Nice work!') + '</div>';
+      if (answered) h += '<div class="qc-done">✓ Quick Check done' + (next ? ' — keep reading below.' : '. Nice work!') + '</div>';
       x.box.innerHTML = h;
     }
 
-    function lockAfter(k) {   // hide every lesson after index k
-      lessons.forEach(function (x, j) {
-        if (j <= k) return;
-        x.el.classList.add('qc-hidden');
-      });
-      var first = lessons[k + 1];
-      if (first && !first.lock) {
-        first.lock = document.createElement('div'); first.lock.className = 'qc-lock';
-        first.el.parentNode.insertBefore(first.lock, first.el);
-      }
-      if (first) first.lock.innerHTML = '<b>🔒 ' + esc(lessonTitle(first)) + '</b>Answer the Quick Check above to open the next lesson.';
-    }
-    function unlockThrough(k) {
-      lessons.forEach(function (x, j) {
-        if (j > k) return;
-        x.el.classList.remove('qc-hidden');
-        if (x.lock) { x.lock.remove(); x.lock = null; }
-      });
-    }
     function applyLocks() {
-      // open lessons up to the first one whose check isn't answered; everything after it stays closed
-      var k = 0;
-      while (k < lessons.length - 1 && (!lessons[k].qs.length || lessonAnswered(c, lessons[k].L))) k++;
-      unlockThrough(k);
-      if (k < lessons.length - 1) lockAfter(k);
+      // No locks: every lesson stays open. A gentle reminder sits above any lesson whose
+      // previous lesson's Quick Check hasn't been answered yet.
       lessons.forEach(drawBox);
+      lessons.forEach(function (x, k) {
+        var next = lessons[k + 1]; if (!next) return;
+        var need = x.qs.length && !lessonAnswered(c, x.L);
+        if (need && !x.nudge) {
+          x.nudge = document.createElement('div'); x.nudge.className = 'qc-nudge';
+          next.el.parentNode.insertBefore(x.nudge, next.el);
+        }
+        if (need) x.nudge.innerHTML = '💡 Don\'t skip the <a href="#lesson-' + x.L + '-qc">Lesson ' + x.L + ' Quick Check</a> above — 2 questions, about 30 seconds.';
+        else if (x.nudge) { x.nudge.remove(); x.nudge = null; }
+      });
     }
 
     document.addEventListener('click', function (e) {
@@ -202,21 +185,14 @@
         if (!x) return;
         x.picked = x.picked || {}; x.picked[qid] = o;
         answer(qid, o === q.a);
-        drawBox(x);
+        applyLocks();
         return;
       }
-      var go = e.target.closest && e.target.closest('.qc-go');
-      if (go) {
-        var y = lessons.filter(function (z) { return z.box && z.box.contains(go); })[0];
-        if (!y) return;
-        unlockThrough(y.L);                       // y.L is the index of the next lesson
-        var k = y.L;
-        while (k < lessons.length - 1 && (!lessons[k].qs.length || lessonAnswered(c, lessons[k].L))) k++;
-        unlockThrough(k);
-        if (k < lessons.length - 1) lockAfter(k);
-        lessons.forEach(drawBox);
-        var nx = lessons[y.L];
-        if (nx) { try { nx.el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (er) { nx.el.scrollIntoView(); } }
+      var nl = e.target.closest && e.target.closest('.qc-nudge a');
+      if (nl) {
+        e.preventDefault();
+        var L = +nl.getAttribute('href').match(/lesson-(\d+)/)[1], bx = lessons[L - 1] && lessons[L - 1].box;
+        if (bx) { try { bx.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (er) { bx.scrollIntoView(); } }
       }
     });
 
@@ -249,7 +225,7 @@
       var h = location.hash.match(/^#lesson-(\d+)$/);
       if (!h) return;
       var x = lessons[+h[1] - 1]; if (!x) return;
-      var target = x.el.classList.contains('qc-hidden') ? (document.querySelector('.qc-lock') || x.el) : x.el;
+      var target = x.el;
       var sc = document.querySelector('.reader-scroll');
       setTimeout(function () {
         try { document.querySelector('.reader-shell').scrollIntoView({ block: 'start' }); } catch (e) {}
