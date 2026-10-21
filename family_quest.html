@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roots &amp; Branches — Dopp Health Class</title>
+<meta name="description" content="Roots &amp; Branches: a 4-day family project. Draw your family relationships, research your family history, and collect a family story.">
+<link rel="canonical" href="https://doppsclass.com/family_quest.html">
+<meta property="og:title" content="Roots &amp; Branches — Dopp Health Class">
+<meta property="og:description" content="Map your family. Find your story. You can't pick your family!">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --sky:#38BFFF; --crimson:#FF3B5C; --wild:#a855f7;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.68);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(210,196,168,0.98); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,0.05); }
+
+.hero { text-align:center; padding:48px 20px 28px; max-width:860px; margin:0 auto; }
+.badge { display:inline-block; font-family:'Cinzel',serif; font-size:11px; letter-spacing:3px; color:var(--crimson);
+  border:1px solid rgba(255,59,92,0.3); background:rgba(255,59,92,0.06); padding:6px 14px; border-radius:20px; margin-bottom:16px; }
+h1 { font-family:'Cinzel Decorative',serif; font-size:clamp(28px,6vw,50px); line-height:1.1; margin-bottom:12px;
+  background:linear-gradient(135deg,#FF3B5C 0%,#a855f7 55%,#38BFFF 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.tagline { font-size:clamp(17px,2.6vw,21px); font-weight:800; }
+.tagline span { display:inline-block; }
+.motto { margin-top:14px; font-size:14px; color:var(--dim); font-weight:700; }
+
+.wrap { max-width:860px; margin:0 auto; padding:0 16px 60px; }
+.toc { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:0 0 26px; }
+.toc a { font-size:12.5px; font-weight:800; text-decoration:none; color:var(--text); background:var(--card); border:1px solid var(--border);
+  padding:5px 10px; border-radius:999px; }
+.toc a:hover { border-color:var(--wild); }
+
+.card { background:var(--card); border:1px solid var(--border); border-left:5px solid var(--accent, var(--wild)); border-radius:14px;
+  padding:20px 20px 18px; margin-bottom:16px; scroll-margin-top:70px; }
+.card h2 { font-family:'Cinzel',serif; font-size:20px; margin-bottom:8px; display:flex; gap:10px; align-items:baseline; }
+.num { font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; color:#fff; background:var(--accent, var(--wild));
+  border-radius:999px; min-width:26px; height:26px; display:inline-flex; align-items:center; justify-content:center; flex:none; }
+.card p { margin:6px 0; }
+.card ul, .card ol { margin:6px 0 6px 22px; }
+.card li { margin:3px 0; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+.box { background:rgba(28,26,46,0.04); border-radius:10px; padding:12px 14px; }
+.box h3 { font-size:15px; margin-bottom:4px; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+.chip { font-size:12.5px; font-weight:700; padding:3px 10px; border-radius:999px; background:rgba(168,85,247,0.1); color:#6d28d9; border:1px solid rgba(168,85,247,0.25); }
+.rules { background:#1C1A2E; color:#fff; border-radius:12px; padding:14px 16px; margin-top:10px; }
+.rules h3 { color:var(--gold); font-family:'Cinzel',serif; font-size:15px; margin-bottom:6px; }
+.rules li { margin:4px 0; }
+.rules b { color:var(--gold); }
+.callout { background:rgba(255,215,0,0.14); border:1px solid rgba(255,215,0,0.5); border-radius:10px; padding:10px 14px; margin-top:10px; font-weight:700; }
+table { width:100%; border-collapse:collapse; margin-top:8px; font-size:14.5px; }
+th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); }
+th { font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--dim); }
+td.pts, th.pts { text-align:right; width:80px; }
+tr.total td { font-weight:800; border-bottom:none; }
+.sched td:first-child { font-weight:800; white-space:nowrap; width:130px; }
+.checklist { list-style:none; margin-left:0 !important; columns:2; column-gap:24px; }
+.checklist li::before { content:'☐ '; font-weight:800; color:var(--wild); }
+.btn { display:inline-block; font:800 14px 'Nunito',sans-serif; padding:10px 16px; border-radius:10px; border:1px solid #1C1A2E;
+  background:#1C1A2E; color:#FFD700; cursor:pointer; text-decoration:none; }
+.yt-btn { display:inline-block; font:800 15px 'Nunito',sans-serif; padding:11px 20px; border-radius:12px; background:#FF0000; color:#fff;
+  text-decoration:none; box-shadow:0 4px 14px rgba(255,0,0,0.25); }
+.yt-btn:hover { background:#cc0000; }
+.closing { text-align:center; font-family:'Cinzel',serif; font-size:clamp(16px,2.6vw,20px); font-weight:700; margin:26px 0 8px; line-height:1.5; }
+footer { background:rgba(5,7,18,0.96); border-top:1px solid rgba(255,215,0,0.22); padding:24px 20px; display:flex;
+  justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+.footer-brand { font-family:'Cinzel',serif; font-size:13px; color:var(--gold); font-weight:600; }
+footer a { font-size:12px; color:rgba(255,255,255,0.7); text-decoration:none; }
+
+@media (max-width:640px) {
+  .two { grid-template-columns:1fr; }
+  .checklist { columns:1; }
+  .card { padding:16px 14px; }
+  .sched td:first-child { width:auto; }
+}
+@media print {
+  nav, .toc, footer, .no-print { display:none !important; }
+  body { background:#fff; }
+  .card { break-inside:avoid; border-left-width:3px; }
+  h1 { -webkit-text-fill-color:#1C1A2E; color:#1C1A2E; background:none; }
+}
+
+.ex-wrap { background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; margin:10px 0; overflow:hidden; }
+.ex-wrap svg { width:100%; height:auto; display:block; }
+.ex-wrap .ln line { stroke:#1C1A2E; stroke-width:2; }
+.ex-wrap .ln.dot line { stroke-dasharray:2 5; stroke-linecap:round; }
+.ex-wrap .ln.dash line { stroke-dasharray:7 5; }
+.ex-wrap .node rect { fill:#FDFAF2; stroke:#1C1A2E; stroke-width:1.5; rx:8; }
+.ex-wrap .node rect.me { fill:#FFD700; stroke-width:2.5; }
+.ex-wrap text { font:700 14px 'Nunito',sans-serif; fill:#1C1A2E; text-anchor:middle; }
+.ex-wrap .me-t { font-weight:900; }
+.ex-wrap .sym text { font-size:16px; font-weight:900; paint-order:stroke; stroke:#fff; stroke-width:6px; }
+.ex-wrap .sym .heart { fill:#FF3B5C; font-size:20px; }
+.ex-wrap .sym .small { font-size:11px; fill:#FF3B5C; stroke-width:4px; }
+.ped { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(8,auto); gap:6px; margin-top:8px; }
+.pc { border:1.5px solid #1C1A2E; border-radius:8px; padding:6px 8px; display:flex; flex-direction:column; justify-content:center; gap:4px; background:#fff; font-size:13px; min-width:0; }
+.pc b { font-size:12px; letter-spacing:.5px; text-transform:uppercase; color:#00805a; }
+.pc span { color:var(--dim); border-bottom:1px solid rgba(28,26,46,0.35); padding:6px 0 1px; font-size:12px; }
+.pc.g4 { padding:4px 8px; }
+.pc b i { font-style:normal; } .pc .ls { display:none; }
+@media (max-width:640px) {
+  .ped { grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; }
+  .pc { padding:4px 5px; font-size:11px; }
+  .pc b { font-size:10px; letter-spacing:0; text-transform:none; }
+  .pc .lf { display:none; } .pc .ls { display:inline; }
+  .pc span { font-size:10px; }
+}
+@media print {
+  body.print-chart nav, body.print-chart header, body.print-chart footer, body.print-chart .toc, body.print-chart .closing,
+  body.print-chart main > section:not(#chart) { display:none !important; }
+  body.print-chart #chart { border:none; }
+  .ped { gap:8px; }
+}
+</style>
+<link rel="stylesheet" href="shared.css">
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="side_quests.html">Side Quests</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="pet.html">🌱 My Sprite</a>
+    <a class="nav-link nav-cl" href="checklist.html" style="background:#FFD700;color:#1A1030;font-weight:900;border-radius:999px">📋 Checklist</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="badge">UNIT 3 PROJECT · SIDE QUEST</div>
+  <h1>Roots &amp; Branches</h1>
+  <p class="tagline"><span>Map Your Family.</span> <span>Find Your Story.</span> <span>You Can't Pick Your Family!</span></p>
+  <p class="motto">Chapters 6–9 · 4 class days · 100 points · Every family is messy, and that's the point.</p>
+</header>
+
+<main class="wrap">
+
+  <div class="toc">
+    <a href="#idea">Big Idea</a><a href="#days">4-Day Plan</a><a href="#draw">Draw My Family</a><a href="#example">Example</a>
+    <a href="#history">Family History</a><a href="#chart">Printable Chart</a><a href="#story">Story Interview</a>
+    <a href="#reflect">Reflection</a><a href="#grade">Grading</a><a href="#hard">If This Is Hard</a>
+  </div>
+
+  <section class="card" id="idea" style="--accent:#FF3B5C">
+    <h2><span class="num">1</span>The Big Idea: You Can't Pick Your Family</h2>
+    <p>Every family looks a little messy up close. Divorce, remarriage, step and half siblings, people who passed away, people you don't talk to, and people you know nothing about are all <b>normal</b> parts of a family map.</p>
+    <p>In this quest you will <b>map</b> your family, <b>research</b> where it came from, <b>collect</b> one family story, and <b>reflect</b> on what you can and can't control.</p>
+    <div class="two">
+      <div class="box"><h3>🎯 You will…</h3>
+        <ul>
+          <li>Draw your family relationships</li>
+          <li>Research your family history</li>
+          <li>Interview a relative for a story</li>
+          <li>Pick one relationship to improve</li>
+        </ul>
+      </div>
+      <div class="box"><h3>🧭 Day 1 warm-up</h3>
+        <ol>
+          <li>One thing about your family you'd never change?</li>
+          <li>One thing you didn't choose and can't control?</li>
+          <li>Why does every family look messy up close?</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="days" style="--accent:#a855f7">
+    <h2><span class="num">2</span>The 4-Day Plan</h2>
+    <p>Each day has one main job. Homework sets up the next day.</p>
+    <table class="sched">
+      <tr><th>Day</th><th>In class</th><th>Homework</th></tr>
+      <tr><td>Day 1<br>Map It</td><td>Warm-up, look at examples, learn the legend, start a <b>rough draft</b> drawing.</td><td>Ask a parent or relative for missing names, marriages, divorces, and cousins. Set up your interview.</td></tr>
+      <tr><td>Day 2<br>Dig In</td><td>FamilySearch lab <b>or</b> the paper chart. Finish 4 generations and find one fact about an ancestor.</td><td>Do your family story interview (15–20 min).</td></tr>
+      <tr><td>Day 3<br>Build It</td><td>Make your <b>final drawing</b>. Trade with a partner for a legend check. Write up your interview story.</td><td>Finish the drawing if needed.</td></tr>
+      <tr><td>Day 4<br>Reflect</td><td>Write your reflection. Optional share (you choose what to show). Turn in all four parts.</td><td>None. Due at the end of class.</td></tr>
+    </table>
+  </section>
+
+  <section class="card" id="draw" style="--accent:#d4a800">
+    <h2><span class="num">3</span>Part 1: Draw My Family Relationships <span style="font-family:'Nunito';font-size:14px;color:var(--dim)">· Required · 40 pts</span></h2>
+    <p>Draw your family as a <b>map of people and the lines that connect them</b>. Start with <b>you</b>, go up to your grandparents on both sides, and out to aunts, uncles, cousins, siblings, nieces, and nephews. Stick figures are fine. Clear beats pretty.</p>
+    <p><b>Your drawing must include:</b></p>
+    <ul class="checklist">
+      <li><b>You</b>, labeled "ME"</li>
+      <li>Parents &amp; siblings</li>
+      <li>Grandparents (both sides)</li>
+      <li>Aunts &amp; uncles + spouses</li>
+      <li>Cousins</li>
+      <li>Nieces &amp; nephews (if any)</li>
+      <li>Lines connecting everyone</li>
+      <li>A legend / key</li>
+      <li>Names <i>or</i> titles (your choice)</li>
+    </ul>
+    <p style="margin-top:10px"><b>Legend symbols you need</b> (use these or make your own, as long as your key explains them):</p>
+    <table>
+      <tr><th>Relationship</th><th>Suggested symbol</th></tr>
+      <tr><td>Married</td><td>♥ heart or double line</td></tr>
+      <tr><td>Divorced</td><td>💔 broken heart or a line with two slashes //</td></tr>
+      <tr><td>Remarried / blended</td><td>Second heart with a number (1st, 2nd)</td></tr>
+      <tr><td>Step or half sibling</td><td>- - - dashed line</td></tr>
+      <tr><td>Adopted or foster</td><td>Line marked "A" or "F"</td></tr>
+      <tr><td>Passed away</td><td>✕ or ✝ by the name</td></tr>
+      <tr><td>Unknown</td><td>A box with "?"</td></tr>
+      <tr><td>Distant / no contact</td><td>· · · dotted line</td></tr>
+      <tr><td>Really close</td><td>Thick or double line</td></tr>
+    </table>
+    <div class="callout">🌀 Messy is the point. If your family has divorces, remarriages, unknowns, or people you don't talk to, put them on the map. You never have to explain why. An honest map earns full credit.</div>
+  </section>
+
+  <section class="card" id="example" style="--accent:#38BFFF">
+    <h2><span class="num">4</span>Example Map (Made-Up Family)</h2>
+    <p>This family is invented. Notice the divorce, the stepmom, the half-sister, a grandpa who passed away, and an uncle with no contact.</p>
+    <div class="ex-wrap">
+      <svg viewBox="0 0 700 330" role="img" aria-label="Example family relationship map">
+        <g class="ln">
+          <line x1="132" y1="40" x2="168" y2="40"/><line x1="150" y1="50" x2="150" y2="110"/>
+          <line x1="60" y1="110" x2="180" y2="110"/><line x1="60" y1="110" x2="60" y2="152"/><line x1="180" y1="110" x2="180" y2="152"/>
+          <line x1="542" y1="40" x2="588" y2="40"/><line x1="565" y1="40" x2="565" y2="110"/>
+          <line x1="340" y1="110" x2="565" y2="110"/><line x1="340" y1="110" x2="340" y2="152"/>
+          <line x1="222" y1="170" x2="298" y2="170"/><line x1="260" y1="170" x2="260" y2="240"/>
+          <line x1="160" y1="240" x2="260" y2="240"/><line x1="160" y1="240" x2="160" y2="282"/><line x1="260" y1="240" x2="260" y2="282"/>
+          <line x1="382" y1="170" x2="428" y2="170"/>
+          <line x1="60" y1="188" x2="60" y2="282"/>
+        </g>
+        <g class="ln dot"><line x1="565" y1="110" x2="630" y2="110"/><line x1="630" y1="110" x2="630" y2="152"/></g>
+        <g class="ln dash"><line x1="405" y1="178" x2="405" y2="240"/><line x1="405" y1="240" x2="470" y2="240"/><line x1="470" y1="240" x2="470" y2="282"/></g>
+        <g class="sym">
+          <text x="150" y="46" class="heart">♥</text>
+          <text x="405" y="176" class="heart">♥</text>
+          <text x="565" y="45">//</text>
+          <text x="260" y="175">//</text>
+          <text x="405" y="160" class="small">2nd</text>
+        </g>
+        <g class="node">
+          <rect x="48" y="22" width="84" height="36"/><text x="90" y="45">Grandma</text>
+          <rect x="168" y="22" width="84" height="36"/><text x="210" y="45">✕ Grandpa</text>
+          <rect x="458" y="22" width="84" height="36"/><text x="500" y="45">Grandma</text>
+          <rect x="588" y="22" width="84" height="36"/><text x="630" y="45">Grandpa</text>
+          <rect x="18" y="152" width="84" height="36"/><text x="60" y="175">Aunt</text>
+          <rect x="138" y="152" width="84" height="36"/><text x="180" y="175">Mom</text>
+          <rect x="298" y="152" width="84" height="36"/><text x="340" y="175">Dad</text>
+          <rect x="428" y="152" width="84" height="36"/><text x="470" y="175">Stepmom</text>
+          <rect x="588" y="152" width="84" height="36"/><text x="630" y="175">Uncle</text>
+          <rect x="18" y="282" width="84" height="36"/><text x="60" y="305">Cousin</text>
+          <rect x="118" y="282" width="84" height="36"/><text x="160" y="305">Brother</text>
+          <rect x="218" y="282" width="84" height="36" class="me"/><text x="260" y="305" class="me-t">ME</text>
+          <rect x="420" y="282" width="100" height="36"/><text x="470" y="305">Half-sister</text>
+        </g>
+      </svg>
+    </div>
+    <div class="chips" style="justify-content:center">
+      <span class="chip">♥ married</span><span class="chip">// divorced</span><span class="chip">2nd = remarried</span>
+      <span class="chip">- - - half / step</span><span class="chip">· · · no contact</span><span class="chip">✕ passed away</span>
+    </div>
+  </section>
+
+  <section class="card" id="history" style="--accent:#00b37e">
+    <h2><span class="num">5</span>Part 2: Family History Research <span style="font-family:'Nunito';font-size:14px;color:var(--dim)">· 20 pts</span></h2>
+    <p>Everyone completes a <b>4-generation chart</b> (you → parents → grandparents → great-grandparents) and one <b>ancestor spotlight</b>. Pick Path A or Path B. Both earn full credit.</p>
+    <div class="two">
+      <div class="box"><h3>🌳 Path A: FamilySearch (encouraged)</h3>
+        <ol>
+          <li>Make a free account at <a href="https://www.familysearch.org" target="_blank" rel="noopener noreferrer">FamilySearch.org</a>. Under 18? You may need a parent's help.</li>
+          <li>Add yourself, parents, grandparents, and great-grandparents to the Family Tree. Living people stay private, so you enter them.</li>
+          <li>Once you reach ancestors who have passed away, look for records about them.</li>
+          <li>Screenshot your tree or fan chart.</li>
+        </ol>
+      </div>
+      <div class="box"><h3>📄 Path B: Paper (no account)</h3>
+        <ol>
+          <li>Print the <a href="#chart">4-generation chart</a> below.</li>
+          <li>Fill it in with a parent, grandparent, or other relative.</li>
+          <li>Use what your family already has: scrapbooks, obituaries, old photos with names on the back.</li>
+        </ol>
+      </div>
+    </div>
+    <p style="margin-top:10px"><b>Ancestor spotlight</b> (both paths): pick one grandparent or older ancestor and write one paragraph:</p>
+    <ul>
+      <li>Name, about when they were born, and where they lived</li>
+      <li>Their work, and one hardship or big event they lived through</li>
+      <li>One fact you learned and one question you still have</li>
+    </ul>
+  </section>
+
+  <section class="card" id="chart" style="--accent:#00b37e">
+    <h2><span class="num">6</span>Printable 4-Generation Chart</h2>
+    <p>Write "?" for anyone you don't know. Unknowns are allowed.</p>
+    <p class="no-print"><button class="btn" onclick="printChart()">🖨 Print just the chart</button></p>
+    <div class="ped" id="ped">
+      <div class="pc" style="grid-row:1/9;grid-column:1"><b>ME</b><span>Name</span><span>Born</span><span>Place</span></div>
+      <div class="pc" style="grid-row:1/5;grid-column:2"><b>Parent</b><span>Name</span><span>Born</span><span>Place</span></div>
+      <div class="pc" style="grid-row:5/9;grid-column:2"><b>Parent</b><span>Name</span><span>Born</span><span>Place</span></div>
+      <div class="pc" style="grid-row:1/3;grid-column:3"><b>Grandparent</b><span>Name</span><span>Born</span></div>
+      <div class="pc" style="grid-row:3/5;grid-column:3"><b>Grandparent</b><span>Name</span><span>Born</span></div>
+      <div class="pc" style="grid-row:5/7;grid-column:3"><b>Grandparent</b><span>Name</span><span>Born</span></div>
+      <div class="pc" style="grid-row:7/9;grid-column:3"><b>Grandparent</b><span>Name</span><span>Born</span></div>
+      <div class="pc g4" style="grid-row:1;grid-column:4"><b><i class="lf">Great-grandparent</i><i class="ls">Great-GP</i></b><span>Name</span></div>
+      <div class="pc g4" style="grid-row:2;grid-column:4"><b><i class="lf">Great-grandparent</i><i class="ls">Great-GP</i></b><span>Name</span></div>
+      <div class="pc g4" style="grid-row:3;grid-column:4"><b><i class="lf">Great-grandparent</i><i class="ls">Great-GP</i></b><span>Name</span></div>
+      <div class="pc g4" style="grid-row:4;grid-column:4"><b><i class="lf">Great-grandparent</i><i class="ls">Great-GP</i></b><span>Name</span></div>
+      <div class="pc g4" style="grid-row:5;grid-column:4"><b><i class="lf">Great-grandparent</i><i class="ls">Great-GP</i></b><span>Name</span></div>
+      <div class="pc g4" style="grid-row:6;grid-column:4"><b><i class="lf">Great-grandparent</i><i class="ls">Great-GP</i></b><span>Name</span></div>
+      <div class="pc g4" style="grid-row:7;grid-column:4"><b><i class="lf">Great-grandparent</i><i class="ls">Great-GP</i></b><span>Name</span></div>
+      <div class="pc g4" style="grid-row:8;grid-column:4"><b><i class="lf">Great-grandparent</i><i class="ls">Great-GP</i></b><span>Name</span></div>
+    </div>
+  </section>
+
+  <section class="card" id="story" style="--accent:#FF3B5C">
+    <h2><span class="num">7</span>Part 3: Family Story Interview <span style="font-family:'Nunito';font-size:14px;color:var(--dim)">· 20 pts</span></h2>
+    <p>Interview one relative for 15–20 minutes, ideally a grandparent or the oldest relative you can reach. In person, phone, or video all work. Ask <b>at least 6</b> of these:</p>
+    <ol>
+      <li>Where did you grow up, and what was a normal day like?</li>
+      <li>What did your parents do for work?</li>
+      <li>What family tradition started with you or someone before you?</li>
+      <li>What was the hardest thing our family went through, and how did you get through it?</li>
+      <li>Who were you closest to growing up, and why?</li>
+      <li>Was there a hard relationship in the family? What did you learn from it?</li>
+      <li>What's a funny story about someone in our family?</li>
+      <li>What do you wish more people in our family knew?</li>
+      <li>What's one piece of advice about family you'd give me?</li>
+      <li>Is there anything you'd go back and do differently with family?</li>
+    </ol>
+    <div class="callout">✍ Write-up (1 page): retell the best story in your own words. End with 2–3 sentences on what it taught you about your family.</div>
+  </section>
+
+  <section class="card" id="reflect" style="--accent:#a855f7">
+    <h2><span class="num">8</span>Part 4: What I Can and Can't Control <span style="font-family:'Nunito';font-size:14px;color:var(--dim)">· 20 pts</span></h2>
+    <p>Look at your finished map. Answer in full sentences (about 1 page).</p>
+    <div class="two">
+      <div class="box"><h3>⭕ Inside my circle (I can control)</h3>List 3: my words, my effort, my attitude, my boundaries, whether I forgive.</div>
+      <div class="box"><h3>🌫 Outside my circle (I can't)</h3>List 3: other people's choices, divorces, moves, who is in my family.</div>
+    </div>
+    <ol style="margin-top:10px">
+      <li><b>The relationship I want to improve:</b> pick one person on your map. What's it like now? What would "better" look like?</li>
+      <li><b>My next step:</b> one specific thing you'll do in the next two weeks (a text, a visit, a thank-you, an apology, asking about their life).</li>
+      <li><b>A choice I didn't make:</b> describe a decision someone in your family made that affects you. Leave out names or details if you want. What would accepting it look like? Accepting isn't the same as agreeing.</li>
+      <li><b>You can't pick your family:</b> after making this map, what does that mean to you now?</li>
+      <li><b>Grateful for:</b> one person or pattern on your map you're thankful for, and why.</li>
+    </ol>
+  </section>
+
+  <section class="card" id="grade" style="--accent:#d4a800">
+    <h2><span class="num">9</span>Grading (100 pts)</h2>
+    <p>You're graded on <b>complete and honest</b>, not on how your family looks or how well you draw.</p>
+    <table>
+      <tr><th>Part</th><th>Full credit looks like</th><th class="pts">Pts</th></tr>
+      <tr><td>Drawing: people</td><td>Grandparents (both sides) down to cousins, nieces, nephews; "ME" labeled; "?" for unknowns</td><td class="pts">15</td></tr>
+      <tr><td>Drawing: connections</td><td>Everyone connected; marriages, divorces, step and half shown</td><td class="pts">10</td></tr>
+      <tr><td>Drawing: legend</td><td>Every symbol you used is in your key</td><td class="pts">10</td></tr>
+      <tr><td>Drawing: readable</td><td>Someone else could follow it</td><td class="pts">5</td></tr>
+      <tr><td>Family history</td><td>4-generation chart (Path A or B) + ancestor paragraph</td><td class="pts">20</td></tr>
+      <tr><td>Story interview</td><td>6+ questions asked, story retold, lesson stated</td><td class="pts">20</td></tr>
+      <tr><td>Reflection</td><td>Circle of control + all 5 prompts with specific answers</td><td class="pts">20</td></tr>
+      <tr class="total"><td>Total</td><td></td><td class="pts">100</td></tr>
+    </table>
+    <p style="margin-top:8px;font-size:14px;color:var(--dim)">Turn in your work the way Mr. Dopp tells you in class.</p>
+  </section>
+
+  <section class="card" id="hard" style="--accent:#38BFFF">
+    <h2><span class="num">10</span>If This Is Hard for You</h2>
+    <p>Some families carry hard stuff. The drawing is still required, and here's how it works for you:</p>
+    <ul>
+      <li><b>Adopted or in foster care?</b> Draw your birth family, your adoptive or foster family, or both. Any of them counts.</li>
+      <li><b>Don't know someone?</b> A "?" box gets full credit.</li>
+      <li><b>No explaining.</b> You never have to say why a divorce, a death, or a break in contact happened.</li>
+      <li><b>Sharing is your choice.</b> On Day 4 you decide whether to show anything to classmates.</li>
+      <li><b>Names are optional.</b> Titles like "Aunt" or "Grandpa" are fine.</li>
+      <li><b>Need to talk?</b> Mr. Dopp and the school counselors are here for you.</li>
+    </ul>
+  </section>
+
+  <p class="closing">You can't pick your family.<br>You can pick how you show up for them.</p>
+</main>
+
+<footer>
+  <div class="footer-brand">⚔ The Legend of Wellness</div>
+  <a href="side_quests.html">← Back to Side Quests</a>
+</footer>
+
+<script>
+function printChart(){
+  document.body.classList.add('print-chart');
+  var done=function(){document.body.classList.remove('print-chart');window.removeEventListener('afterprint',done);};
+  window.addEventListener('afterprint',done);
+  window.print();
+}
+</script>
+</body>
+</html>
