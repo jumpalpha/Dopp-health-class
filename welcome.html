@@ -76,6 +76,14 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
 .more { font-size:13px; font-weight:700; margin-top:6px; }
 .more a { color:var(--gold-text); }
 
+.cont { display:flex; gap:12px; align-items:center; margin-top:16px; padding:14px 16px; border-radius:16px; text-decoration:none; color:var(--text);
+  background:#fff; border:2px solid var(--gold); box-shadow:0 4px 0 rgba(163,125,0,.35); }
+.cont:hover { background:#fffbea; }
+.cont-ic { flex:0 0 40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#1C1A2E; color:var(--gold); font-size:18px; }
+.cont b { display:block; font-size:16px; }
+.cont small { display:block; font-size:12.5px; color:var(--dim); margin-top:2px; }
+.cont-rev { border-color:var(--sky); box-shadow:0 4px 0 rgba(10,114,181,.25); }
+.cont-rev .cont-ic { background:#e6f6ff; }
 .links { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
 .btn { display:block; text-align:center; font:800 15px 'Nunito',sans-serif; padding:13px 14px; border-radius:12px; border:1px solid var(--border); background:#fff; color:var(--text); text-decoration:none; cursor:pointer; }
 .btn:hover { border-color:var(--gold-text); }
@@ -101,7 +109,10 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
     <a class="nav-link" href="index.html" data-home>Home</a>
     <a class="nav-link" href="chapters.html">Chapters</a>
     <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="search.html">🔍 Search</a>
     <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="pet.html">🌱 My Sprite</a>
+    <a class="nav-link" href="leaderboard.html">🏆 Hall</a>
   </div>
 </nav>
 
@@ -112,6 +123,9 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
 
 <script src="vendor/supabase.js"></script>
 <script src="checklist.js"></script>
+<script src="student-save.js"></script>
+<script src="quick_checks_data.js"></script>
+<script src="quick_checks.js"></script>
 <script>
 (function () {
   const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
@@ -163,12 +177,33 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
         <div class="streak-note" id="streak-note">${checkedIn ? 'Today counts toward your Quest Activity Streak.' : 'Tap to check in — it counts as today\'s login for your streak (+5 XP).'}</div>
         <button class="switch" id="switch">Not ${esc(name)}? Switch student</button>
       </section>
+      <div id="cont"></div>
       <section class="sec" id="brief"><h2>📣 Today's briefing</h2><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></section>
       <div id="work"><section class="sec"><h2>📋 Your work</h2><div class="skeleton"></div><div class="skeleton"></div></section></div>
       <div class="links">
         <a class="btn btn-dark" href="checklist.html">📋 My full checklist</a>
         <a class="btn" href="index.html" data-home>🏰 Home page</a>
       </div>`;
+  }
+
+  // ───── continue where you left off + review deck ─────
+  function drawContinue() {
+    const el = $('cont'); if (!el) return;
+    let last = null;
+    try { last = JSON.parse(localStorage.getItem('lw_last_chapter') || 'null'); } catch (e) {}
+    const deck = window.QuickChecks ? QuickChecks.deck() : [];
+    let h = '';
+    if (last && last.url) {
+      const href = last.url + (last.lesson ? '#lesson-' + last.lesson : '');
+      const qcDone = window.QuickChecks ? QuickChecks.lessonsDone(last.n) : 0, qcOf = window.QuickChecks ? QuickChecks.lessonCount(last.n) : 0;
+      h += `<a class="cont" href="${esc(href)}"><span class="cont-ic" aria-hidden="true">▶</span><span><b>Continue: Chapter ${esc(last.n)}${last.lesson ? ' · Lesson ' + esc(last.lesson) : ''}</b>
+        <small>${esc(last.lessonTitle || 'Pick up where you left off')}${qcOf ? ' · ' + qcDone + ' of ' + qcOf + ' Quick Checks done' : ''}</small></span></a>`;
+    } else {
+      h += `<a class="cont" href="chapter01.html"><span class="cont-ic" aria-hidden="true">▶</span><span><b>Start reading: Chapter 1</b><small>Understanding Health &amp; Wellness</small></span></a>`;
+    }
+    if (deck.length) h += `<a class="cont cont-rev" href="review.html"><span class="cont-ic" aria-hidden="true">🃏</span><span><b>Review Deck: ${deck.length} question${deck.length === 1 ? '' : 's'} to practice</b>
+        <small>Quick Checks you missed · about ${Math.max(1, Math.round(deck.length / 2))} min</small></span></a>`;
+    el.innerHTML = h;
   }
 
   // ───── briefing ─────
@@ -252,6 +287,8 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
     }
     checkedIn = !days.error && (days.data || []).some(d => d.day_date === TODAY);
     render();
+    drawContinue();
+    if (window.QuickChecks) QuickChecks.ready.then(drawContinue);
     briefing = brief.error ? null : brief.data;
     drawBrief();
     if (cl.error) {

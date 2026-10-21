@@ -201,6 +201,9 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
 <script src="vendor/supabase.js"></script>
 <script src="pet_sprite.js"></script>
 <script src="pet_vocab.js"></script>
+<script src="student-save.js"></script>
+<script src="quick_checks_data.js"></script>
+<script src="quick_checks.js"></script>
 <script>
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
@@ -351,6 +354,8 @@ function buildChapters(){
   const o = [];
   for (const ch in PET_VOCAB) o.push('<option value="' + ch + '">Ch ' + ch + ': ' + esc(PET_VOCAB[ch].title) + '</option>');
   o.unshift('<option value="any">🎲 Any chapter</option>');
+  const dk = window.QuickChecks ? QuickChecks.deck().length : 0;
+  if (dk) o.unshift('<option value="deck">🃏 My Review Deck (' + dk + ' missed Quick Check' + (dk === 1 ? '' : 's') + ')</option>');
   $('quizCh').innerHTML = o.join('');
   try { const s = localStorage.getItem('pet_quiz_ch'); if (s) $('quizCh').value = s; } catch(e){}
 }
@@ -358,6 +363,21 @@ function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floo
 function newQuestion(){
   let ch = $('quizCh').value;
   try { localStorage.setItem('pet_quiz_ch', ch); } catch(e){}
+  if (ch === 'deck'){   // a Quick Check the student missed in a chapter reader (see quick_checks.js)
+    const d = window.QuickChecks ? QuickChecks.deck() : [];
+    if (d.length){
+      const q = d[Math.floor(Math.random() * d.length)];
+      quiz = { answer: q.a, def: q.q, opts: shuffle(q.opts.slice()), done: false, ch: q.c, qcId: q.id, why: q.why };
+      $('quizArea').classList.remove('hidden');
+      $('quizDef').textContent = q.q;
+      $('quizFb').textContent = '';
+      $('quizOpts').innerHTML = quiz.opts.map((o, i) => '<button class="opt" data-i="' + i + '">' + esc(o) + '</button>').join('');
+      $('quizOpts').querySelectorAll('.opt').forEach(b => b.onclick = () => answer(+b.dataset.i));
+      $('quizBtn').textContent = 'Skip / new question';
+      return;
+    }
+    ch = 'any';
+  }
   if (ch === 'any'){ const keys = Object.keys(PET_VOCAB); ch = keys[Math.floor(Math.random() * keys.length)]; }
   const terms = PET_VOCAB[ch].terms;
   const pick = terms[Math.floor(Math.random() * terms.length)];
@@ -377,6 +397,7 @@ async function answer(i){
   if (!quiz || quiz.done || busy) return;
   quiz.done = true;
   const choice = quiz.opts[i], right = choice === quiz.answer;
+  if (quiz.qcId && window.QuickChecks){ QuickChecks.review(quiz.qcId, right); }
   $('quizOpts').querySelectorAll('.opt').forEach((b, j) => {
     b.disabled = true;
     if (quiz.opts[j] === quiz.answer) b.classList.add('right'); else if (j === i) b.classList.add('wrong');
@@ -389,7 +410,7 @@ async function answer(i){
     if (act){ const ok = await doAction(act); if (!ok) $('quizFb').textContent = '✅ Correct! (You hit today\'s limit, but keep practicing.)'; }
   } else {
     $('quizFb').style.color = 'var(--crimson)';
-    $('quizFb').textContent = '❌ Not quite. The answer is “' + quiz.answer + '”. Try another!';
+    $('quizFb').textContent = '❌ Not quite. The answer is “' + quiz.answer + '”.' + (quiz.why ? ' ' + quiz.why : ' Try another!');
   }
   $('quizBtn').textContent = 'Next question ▶';
   $('quizBtn').disabled = false;
@@ -473,6 +494,7 @@ async function load(){
 }
 (function init(){
   buildChapters();
+  if (window.QuickChecks) QuickChecks.ready.then(buildChapters);   // adds the Review Deck option once saved answers load
   if (!db){ $('pageErr').textContent = 'Could not reach the server. Check your internet and refresh.'; return; }
   session = getSession();
   if (!session){ show('v-login'); return; }

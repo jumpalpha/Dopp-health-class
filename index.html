@@ -535,8 +535,7 @@ footer {
     <a class="nav-link" href="search.html">🔍 Search</a>
     <a class="nav-link" href="quest.html">⚔ Quest</a>
     <a class="nav-link" href="pet.html">🌱 My Sprite</a>
-    <a class="nav-link" href="leaderboard.html">🏆 Hall</a>
-    <a class="nav-link" href="teacher.html" title="Teacher Dashboard">👨‍🏫 Teacher</a>  </div>
+    <a class="nav-link" href="leaderboard.html">🏆 Hall</a>  </div>
 </nav>
 
 <!-- HERO -->
@@ -546,7 +545,7 @@ footer {
   <h1 class="hero-title">The Legend<br>of Wellness</h1>
   <div class="hero-subtitle">Your Epic Health Quest Begins</div>
   <p class="hero-desc">
-    28 chapters. 9 realms. 15 games. One trimester to become a Master of Wellness.
+    28 chapters. 9 realms. 51 games. One trimester to become a Master of Wellness.
     Everything you need to level up your health knowledge — on one page.
   </p>
   <div class="hero-btns">
@@ -573,7 +572,7 @@ footer {
     <div class="stat-label">Realms</div>
   </div>
   <div class="stat-cell">
-    <div class="stat-num">15</div>
+    <div class="stat-num">51</div>
     <div class="stat-label">Games</div>
   </div>
   <div class="stat-cell">
@@ -712,7 +711,7 @@ footer {
 <div class="section reveal">
   <div class="section-label">Bonus Content</div>
   <div class="section-title">Side Quests</div>
-  <p class="section-sub">Optional deep-dive challenges that go beyond the main quest. Take on a Side Quest to earn extra XP and expand your health knowledge.</p>
+  <p class="section-sub">Optional deep-dive challenges that go beyond the main quest. Pick one that sounds fun and expand your health knowledge. Nothing to turn in.</p>
 
   <div class="game-grid">
     <a class="game-card" href="side_quests.html" style="text-decoration:none">
@@ -742,7 +741,7 @@ footer {
 <div class="section reveal">
   <div class="section-label">The Arcade</div>
   <div class="section-title">Play Your Way to Wellness</div>
-  <p class="section-sub">50+ games, no install: Sprite arcade games starring your Wellness Sprite, Dopp originals, and classroom games for the board.</p>
+  <p class="section-sub">51 games, no install: 35 arcade games starring your Wellness Sprite and Dopp originals, plus 16 classroom games for the board.</p>
 
   <div class="game-grid" id="game-grid"></div>
 
@@ -862,14 +861,14 @@ GAMES.forEach(g => {
       var btns = document.querySelector('.hero-btns');
       if (btns) {
         var a = document.createElement('a');
-        a.href = last.url;
+        a.href = last.url + (last.lesson ? '#lesson-' + last.lesson : '');
         a.className = 'btn-hero btn-primary';
-        a.textContent = '▶ Resume: Chapter ' + last.n;
+        a.textContent = '▶ Continue: Chapter ' + last.n + (last.lesson ? ' · Lesson ' + last.lesson : '');
         btns.insertBefore(a, btns.firstChild);
       }
       var desc = document.querySelector('.hero-desc');
       if (desc) {
-        desc.insertAdjacentHTML('afterend', '<p style="text-align:center;font-size:13px;color:#00704D;font-weight:700;margin:-24px 0 24px;animation:fadeUp .8s .35s ease both">Welcome back — you\'ve completed ' + visited.length + ' of 28 chapters.</p>');
+        desc.insertAdjacentHTML('afterend', '<p style="text-align:center;font-size:13px;color:#00704D;font-weight:700;margin:-24px 0 24px;animation:fadeUp .8s .35s ease both">Welcome back — you\'ve opened ' + visited.length + ' of 28 chapters.</p>');
       }
     }
   } catch (e) {}

@@ -9,21 +9,33 @@
       visited.push(n);
       localStorage.setItem('lw_visited_chapters', JSON.stringify(visited));
     }
+    var prev = JSON.parse(localStorage.getItem('lw_last_chapter') || 'null');
+    var keep = prev && prev.n === n ? prev : {};          // same chapter: keep the lesson they were on
     localStorage.setItem('lw_last_chapter', JSON.stringify({
       n: n,
       title: document.title,
       url: location.pathname.split('/').pop(),
+      lesson: keep.lesson, lessons: keep.lessons, lessonTitle: keep.lessonTitle,
       ts: Date.now()
     }));
   } catch (e) {}
 })();
 
-// Trimester checklist evidence: quietly notes which reader lessons were actually read (see checklist_track.js).
-(function loadChecklistTrack() {
+// Chapter pages: Quick Checks in the reader, the self-checking Chapter Path card, and the reading tracker.
+// Loaded in this order (async = false keeps the order): the Quick Check boxes must be in each lesson
+// before checklist_track.js adds its "end of lesson" marker, so finishing a lesson includes its Quick Check.
+(function loadChapterTools() {
   try {
-    if (!/chapter\d{2}\.html$/i.test(location.pathname) || window.ChecklistTrack) return;
-    var s = document.createElement('script'); s.src = 'checklist_track.js'; s.async = true;
-    document.head.appendChild(s);
+    if (!/chapter\d{2}\.html$/i.test(location.pathname)) return;
+    var files = [];
+    if (!window.TERM) files.push('term.js');                    // remembered-device login + current trimester
+    if (!window.StudentSave) files.push('student-save.js');     // saves Quick Check answers to the student's account
+    files.push('quick_checks_data.js', 'quick_checks.js', 'chapter_path.js');
+    if (!window.ChecklistTrack) files.push('checklist_track.js');
+    files.forEach(function (f) {
+      var s = document.createElement('script'); s.src = f; s.async = false;
+      document.head.appendChild(s);
+    });
   } catch (e) {}
 })();
 

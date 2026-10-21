@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflection Coach — Legend of Wellness</title>
+<meta name="description" content="A step-by-step coach for writing a personal health reflection paper. Saves as you type. No account needed.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { --gold:#FFD700; --gold-text:#7a5c00; --emerald-text:#00704D; --sky:#38BFFF; --bg:#FDFAF2; --card:#fff;
+  --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,.04); }
+.wrap { max-width:760px; margin:0 auto; padding:22px 16px 70px; }
+.hero { border-radius:20px; padding:22px 20px; color:#fff; background:radial-gradient(circle at 20% 0%, #1f4f7a 0%, #1C1A2E 62%), #1C1A2E; }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(22px,6vw,30px); color:var(--gold); text-shadow:0 2px 0 #000; }
+.hero p { font-size:14px; color:rgba(255,255,255,.8); margin-top:6px; line-height:1.55; }
+.steps { display:flex; gap:6px; margin:16px 0 4px; flex-wrap:wrap; }
+.dot { flex:1 1 0; min-width:44px; text-align:center; font:800 12px 'Nunito',sans-serif; padding:8px 4px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--dim); cursor:pointer; }
+.dot.on { background:#1C1A2E; color:var(--gold); border-color:#1C1A2E; }
+.dot.ok { border-color:#00b37e; color:var(--emerald-text); }
+.card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px; margin-top:14px; }
+.card h2 { font-family:'Cinzel',serif; font-size:18px; color:var(--gold-text); margin-bottom:6px; }
+.card .lead { font-size:14.5px; line-height:1.55; margin-bottom:10px; }
+.qs { font-size:14px; line-height:1.55; color:var(--dim); margin:0 0 10px 18px; }
+.starters { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.starter { font:700 12.5px 'Nunito',sans-serif; padding:6px 10px; border-radius:999px; border:1px dashed rgba(28,26,46,.3); background:#fffbea; color:var(--text); cursor:pointer; }
+.starter:hover { border-color:var(--gold-text); }
+textarea, input[type=text] { width:100%; font:600 16px/1.55 'Nunito',sans-serif; padding:12px; border-radius:12px; border:1.5px solid var(--border); background:#fff; color:var(--text); }
+textarea { min-height:180px; resize:vertical; }
+textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:0 0 0 3px rgba(56,191,255,.2); }
+.topics { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; margin-bottom:12px; }
+.topic { text-align:left; font:700 14px/1.35 'Nunito',sans-serif; padding:11px 12px; border-radius:12px; border:2px solid var(--border); background:#fff; cursor:pointer; color:var(--text); }
+.topic.on { border-color:var(--gold-text); background:#fff8e1; }
+.row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.wc { font-size:12.5px; font-weight:800; color:var(--dim); }
+.wc.ok { color:var(--emerald-text); }
+.btn { font:900 15px 'Nunito',sans-serif; padding:12px 18px; border-radius:12px; border:none; cursor:pointer; background:#1C1A2E; color:var(--gold); min-height:46px; }
+.btn.alt { background:#fff; color:var(--text); border:1px solid var(--border); }
+.saved { font-size:12px; color:var(--dim); }
+.paper { font:500 16px/1.75 Georgia,'Times New Roman',serif; white-space:pre-wrap; }
+.paper h3 { font:700 20px Georgia,serif; text-align:center; margin-bottom:12px; white-space:normal; }
+.tip { font-size:13px; background:#eef9ff; border-left:4px solid var(--sky); border-radius:10px; padding:10px 12px; margin-top:12px; line-height:1.5; }
+.foot { font-size:13px; color:var(--dim); margin-top:16px; line-height:1.55; }
+.foot a { color:var(--gold-text); font-weight:800; }
+@media (max-width:560px) { .dot .dt { display:none; } .dot { font-size:14px; } }
+@media print { nav, .hero, .steps, .row, .foot, .tip, .no-print { display:none !important; } .card { border:none; padding:0; } body { background:#fff; } }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="side_quests.html">🧭 Side Quests</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="pet.html">🌱 My Sprite</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>📝 Reflection Coach</h1>
+    <p>Write a personal health reflection one step at a time. Answer the guiding questions in your own words, and the coach builds your paper at the end. It saves as you type.</p>
+  </section>
+  <div class="steps" id="steps"></div>
+  <div id="app"></div>
+  <p class="foot">Optional side quest — nothing to turn in unless Mr. Dopp asks. Signed in on the Quest page? Your draft follows you to any device; otherwise it stays on this one.
+    Prefer chatting with an AI coach? <a href="https://chatgpt.com/g/g-6a0a899654688191a26ed95a126a256c-personal-reflection-for-wellness-coach" target="_blank" rel="noopener noreferrer">Open the ChatGPT version</a> (needs a free ChatGPT account).</p>
+</div>
+
+<script src="student-save.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const KEY = 'reflection_paper';
+  const TOPICS = [
+    ['sleep', '😴 My sleep habits'], ['stress', '🧠 How I handle stress'], ['food', '🥗 What and how I eat'],
+    ['move', '🏃 Staying active'], ['screens', '📱 Screens and social media'], ['friends', '💞 My friendships'],
+    ['family', '🏠 My family relationships'], ['goal', '🎯 A health goal I set'], ['pressure', '🛡 Saying no to pressure'],
+    ['own', '✏️ My own topic']
+  ];
+  const STEPS = [
+    { id: 'topic', title: 'Pick your topic', min: 0 },
+    { id: 'start', title: 'Where I started', min: 60,
+      lead: 'Describe your habits or situation before this class. Be honest — a reflection is about real change, not a perfect story.',
+      qs: ['What did a normal day look like for this part of your health?', 'What did you believe about it back then?', 'How did it affect the other dimensions of your health (physical, mental, emotional, social…)?'],
+      starters: ['Before this class, I usually…', 'If I\'m honest, I didn\'t think much about…', 'This affected me because…'] },
+    { id: 'learned', title: 'What I learned', min: 80,
+      lead: 'Connect your topic to something specific from class: a chapter, a vocab term, a fact or a skill.',
+      qs: ['Which chapter or lesson connects to your topic?', 'What is one fact or idea that surprised you?', 'Use at least one vocab term correctly in a sentence.'],
+      starters: ['In Chapter … I learned that…', 'One thing that surprised me was…', 'The term … helped me understand…'] },
+    { id: 'change', title: 'What I changed', min: 80,
+      lead: 'Explain what you did (or will do) differently. Write it as a S.M.A.R.T. goal: Specific, Measurable, Achievable, Relevant, Time-bound.',
+      qs: ['What exactly did you change or try?', 'How did you track it? What were the results?', 'What got in the way, and how did you handle it?'],
+      starters: ['My S.M.A.R.T. goal was to…', 'To track it, I…', 'The hardest part was… so I…'] },
+    { id: 'matters', title: 'Why it matters', min: 60,
+      lead: 'Wrap it up. Look ahead: how will this matter for you in a year, or in ten?',
+      qs: ['What did you learn about yourself?', 'What will you keep doing after this class ends?', 'What advice would you give a friend in your old situation?'],
+      starters: ['Looking back, I realize…', 'From now on, I plan to…', 'If a friend asked me, I would say…'] },
+    { id: 'paper', title: 'My paper', min: 0 }
+  ];
+  let D = { step: 0, topic: '', own: '', title: '', start: '', learned: '', change: '', matters: '' };
+  let saveT = null;
+
+  const words = t => (String(t || '').trim().match(/\S+/g) || []).length;
+  const topicLabel = () => D.topic === 'own' ? (D.own || 'My own topic') : ((TOPICS.find(t => t[0] === D.topic) || [, ''])[1].replace(/^\S+\s/, ''));
+  function stepOk(i) {
+    const s = STEPS[i];
+    if (s.id === 'topic') return !!D.topic && (D.topic !== 'own' || D.own.trim().length > 2);
+    if (s.id === 'paper') return STEPS.slice(1, 5).every((_, k) => stepOk(k + 1));
+    return words(D[s.id]) >= s.min;
+  }
+
+  function save() {
+    clearTimeout(saveT);
+    $('saved') && ($('saved').textContent = 'Saving…');
+    saveT = setTimeout(() => {
+      StudentSave.save(KEY, D).then(r => { if ($('saved')) $('saved').textContent = r.ok ? (r.source === 'cloud' ? '✓ Saved to your account' : '✓ Saved on this device') : '⚠ ' + (r.error || 'Not saved'); });
+    }, 600);
+  }
+
+  function drawSteps() {
+    $('steps').innerHTML = STEPS.map((s, i) => `<button class="dot${i === D.step ? ' on' : ''}${i !== D.step && stepOk(i) ? ' ok' : ''}" data-step="${i}">${stepOk(i) && i !== D.step ? '✓ ' : ''}${i + 1}<span class="dt">. ${esc(s.title)}</span></button>`).join('');
+  }
+
+  function draw() {
+    drawSteps();
+    const s = STEPS[D.step];
+    let h = '';
+    if (s.id === 'topic') {
+      h = `<div class="card"><h2>1. Pick your topic</h2><p class="lead">Choose one part of your health you thought about or worked on during this class.</p>
+        <div class="topics">${TOPICS.map(t => `<button class="topic${D.topic === t[0] ? ' on' : ''}" data-topic="${t[0]}">${esc(t[1])}</button>`).join('')}</div>
+        ${D.topic === 'own' ? `<input type="text" id="own" maxlength="80" placeholder="Name your topic" value="${esc(D.own)}">` : ''}
+        <div class="row"><span class="saved" id="saved"></span><button class="btn" id="next"${stepOk(0) ? '' : ' disabled'}>Next ▶</button></div></div>`;
+    } else if (s.id === 'paper') {
+      const ready = stepOk(D.step);
+      const title = D.title || 'My Journey: ' + topicLabel();
+      h = `<div class="card no-print"><h2>6. Your paper</h2><p class="lead">${ready ? 'Here it is! Give it a title, read it out loud once, and fix anything that doesn\'t sound like you.' : 'A few steps still need more writing. Finish the steps without a ✓ and your paper will be ready.'}</p>
+        <input type="text" id="title" maxlength="100" value="${esc(title)}" aria-label="Paper title">
+        <div class="row"><span class="saved" id="saved"></span><span><button class="btn alt" id="copy">📋 Copy</button> <button class="btn" id="print">🖨 Print / PDF</button></span></div></div>
+        <div class="card"><div class="paper"><h3>${esc(title)}</h3>${[D.start, D.learned, D.change, D.matters].filter(x => x.trim()).map(p => esc(p.trim())).join('\n\n')}</div></div>
+        <div class="tip no-print">✍ Total: <b>${words(D.start) + words(D.learned) + words(D.change) + words(D.matters)} words</b>. Strong reflections are specific: real examples, real numbers, a real vocab term, and an honest look at what was hard.</div>`;
+    } else {
+      const n = words(D[s.id]);
+      h = `<div class="card"><h2>${D.step + 1}. ${esc(s.title)}</h2><p class="lead">${esc(s.lead)}</p>
+        <ul class="qs">${s.qs.map(q => `<li>${esc(q)}</li>`).join('')}</ul>
+        <div class="starters">${s.starters.map(t => `<button class="starter" data-start="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+        <textarea id="txt" placeholder="Write here… (topic: ${esc(topicLabel() || 'pick one in step 1')})">${esc(D[s.id])}</textarea>
+        <div class="row"><span><span class="wc${n >= s.min ? ' ok' : ''}" id="wc">${n} / ${s.min}+ words</span> · <span class="saved" id="saved"></span></span>
+          <span><button class="btn alt" id="prev">◀ Back</button> <button class="btn" id="next">Next ▶</button></span></div></div>`;
+    }
+    $('app').innerHTML = h;
+  }
+
+  document.addEventListener('input', e => {
+    const s = STEPS[D.step];
+    if (e.target.id === 'txt') {
+      D[s.id] = e.target.value;
+      const n = words(D[s.id]), wc = $('wc');
+      wc.textContent = n + ' / ' + s.min + '+ words'; wc.classList.toggle('ok', n >= s.min);
+      drawSteps(); save();
+    } else if (e.target.id === 'own') { D.own = e.target.value; $('next').disabled = !stepOk(0); drawSteps(); save(); }
+    else if (e.target.id === 'title') { D.title = e.target.value; document.querySelector('.paper h3').textContent = D.title; save(); }
+  });
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.step != null) { D.step = +b.dataset.step; draw(); save(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else if (b.dataset.topic) { D.topic = b.dataset.topic; draw(); save(); if (D.topic === 'own') $('own').focus(); }
+    else if (b.dataset.start != null) {
+      const t = $('txt'), add = b.dataset.start.replace(/…$/, '');
+      t.value = (t.value.trim() ? t.value.replace(/\s*$/, '') + (/[.!?]$/.test(t.value.trim()) ? ' ' : ' ') : '') + add + ' ';
+      t.dispatchEvent(new Event('input', { bubbles: true })); t.focus(); t.setSelectionRange(t.value.length, t.value.length);
+    }
+    else if (b.id === 'next') { D.step = Math.min(STEPS.length - 1, D.step + 1); draw(); save(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else if (b.id === 'prev') { D.step = Math.max(0, D.step - 1); draw(); save(); }
+    else if (b.id === 'print') window.print();
+    else if (b.id === 'copy') {
+      const txt = (D.title || 'My Journey: ' + topicLabel()) + '\n\n' + [D.start, D.learned, D.change, D.matters].filter(x => x.trim()).map(x => x.trim()).join('\n\n');
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { b.textContent = '✓ Copied'; }).catch(() => { b.textContent = 'Select & copy the text below'; });
+    }
+  });
+
+  StudentSave.load(KEY).then(r => { if (r && r.data && typeof r.data === 'object') D = Object.assign(D, r.data); draw(); }).catch(draw);
+})();
+</script>
+</body>
+</html>

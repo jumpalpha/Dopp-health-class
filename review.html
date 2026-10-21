@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review Deck — Legend of Wellness</title>
+<meta name="description" content="Practice the Quick Check questions you missed in the chapter readers until you know them.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --emerald-text:#00704D; --sky:#38BFFF; --crimson:#FF3B5C;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,.04); }
+.wrap { max-width:680px; margin:0 auto; padding:22px 16px 60px; }
+.hero { border-radius:20px; padding:22px 20px; color:#fff; background:radial-gradient(circle at 20% 0%, #3b2a7a 0%, #1C1A2E 60%), #1C1A2E; box-shadow:0 10px 30px rgba(28,26,46,.18); }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(22px,6vw,30px); color:var(--gold); text-shadow:0 2px 0 #000; }
+.hero p { font-size:14px; color:rgba(255,255,255,.78); margin-top:6px; line-height:1.5; }
+.count { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+.pill { font-size:13px; font-weight:800; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; }
+.pill.on { background:rgba(0,229,160,.2); color:#7ff5cf; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px; margin-top:16px; }
+.meta { font-size:12px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
+.meta a { color:inherit; }
+.q { font-size:18px; font-weight:800; line-height:1.4; margin-bottom:12px; }
+.opts { display:grid; gap:8px; }
+.opt { text-align:left; font:700 15px/1.35 'Nunito',sans-serif; padding:12px 14px; border-radius:12px; border:2px solid var(--border); background:#fff; color:var(--text); cursor:pointer; min-height:48px; }
+.opt:hover:not([disabled]) { border-color:var(--sky); background:#eef9ff; }
+.opt[disabled] { cursor:default; }
+.opt.right { border-color:#00b37e; background:#e3f8ef; }
+.opt.wrong { border-color:#e0365a; background:#fde8ec; }
+.fb { margin-top:10px; font-size:14px; font-weight:700; line-height:1.5; }
+.fb.ok { color:var(--emerald-text); } .fb.no { color:#b3123a; }
+.streak { font-size:12.5px; color:var(--dim); margin-top:6px; }
+.btn { display:inline-block; font:900 15px 'Nunito',sans-serif; padding:12px 18px; border-radius:12px; border:none; cursor:pointer; background:#1C1A2E; color:var(--gold); text-decoration:none; margin-top:14px; min-height:46px; }
+.btn.alt { background:#fff; color:var(--text); border:1px solid var(--border); }
+.empty { text-align:center; font-size:15px; line-height:1.6; }
+.empty h2 { font-family:'Cinzel',serif; color:var(--gold-text); margin-bottom:6px; }
+select { font:700 15px 'Nunito',sans-serif; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--text); max-width:100%; margin-top:10px; }
+.how { font-size:13px; color:var(--dim); margin-top:14px; line-height:1.5; }
+@media (max-width:480px) { nav { padding:10px 14px; } .q { font-size:17px; } }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="arcade.html">Arcade</a>
+    <a class="nav-link" href="search.html">🔍 Search</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="pet.html">🌱 My Sprite</a>
+    <a class="nav-link" href="leaderboard.html">🏆 Hall</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>🃏 Review Deck</h1>
+    <p>Every Quick Check you miss in a chapter reader lands here. Get a question right <b>2 times in a row</b> and it leaves your deck.</p>
+    <div class="count" id="count"></div>
+  </section>
+  <div id="app"><div class="card">Loading your deck…</div></div>
+  <p class="how">Practice only — this never changes your grade or XP. Signed in on the Quest page? Your deck follows you to any device. You can also feed your <a href="pet.html" style="color:var(--gold-text);font-weight:800">Wellness Sprite</a> with these questions.</p>
+</div>
+
+<script src="student-save.js"></script>
+<script src="quick_checks_data.js"></script>
+<script src="quick_checks.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const QC = window.QuickChecks, BANK = window.QC_BANK;
+  const params = new URLSearchParams(location.search);
+  let onlyCh = +params.get('ch') || 0;
+  let mode = 'deck', cur = null, practiceCh = onlyCh || 1, cleared = 0, lastId = null;
+
+  function deck() { return QC.deck().filter(q => !onlyCh || q.c === onlyCh); }
+
+  function drawCount() {
+    const all = QC.deck(), mine = deck();
+    $('count').innerHTML = `<span class="pill">${all.length} in your deck</span>` +
+      (onlyCh ? `<span class="pill">${mine.length} from Chapter ${onlyCh} · <a href="review.html" style="color:#FFD700">show all</a></span>` : '') +
+      (cleared ? `<span class="pill on">✓ ${cleared} cleared today</span>` : '');
+  }
+
+  function pick() {
+    if (mode === 'deck') {
+      const d = deck();
+      if (!d.length) return null;
+      const pool = d.length > 1 ? d.filter(q => q.id !== lastId) : d;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    const rows = BANK[practiceCh] || [];
+    let i = Math.floor(Math.random() * rows.length);
+    if (rows.length > 1 && practiceCh + ':' + i === lastId) i = (i + 1) % rows.length;
+    return QC.question(practiceCh + ':' + i);
+  }
+
+  function chapterOptions() {
+    return Object.keys(BANK).map(c => `<option value="${c}"${+c === practiceCh ? ' selected' : ''}>Chapter ${c}</option>`).join('');
+  }
+
+  function drawEmpty() {
+    $('app').innerHTML = `<div class="card empty"><h2>${QC.deck().length && onlyCh ? 'Chapter ' + onlyCh + ' is clear! 🎉' : 'Your deck is empty! 🎉'}</h2>
+      <p>${QC.deck().length && onlyCh ? 'You still have questions from other chapters.' : 'Miss a Quick Check in a chapter reader and it shows up here for practice.'}</p>
+      ${QC.deck().length && onlyCh ? '<a class="btn" href="review.html">Review the rest of my deck</a>' : ''}
+      <div style="margin-top:16px;font-weight:800">Or practice any chapter's Quick Checks:</div>
+      <select id="chSel" aria-label="Chapter to practice">${chapterOptions()}</select>
+      <div><button class="btn alt" id="practice">Practice this chapter ▶</button></div></div>`;
+  }
+
+  function draw(ans) {
+    drawCount();
+    if (!cur) { cur = pick(); if (!cur) return drawEmpty(); cur.order = QC.shuffle(cur.opts); }
+    const q = cur, inDeck = q.id in QC._state.d;
+    const streak = inDeck ? QC._state.d[q.id] : 0;
+    let h = `<div class="card"><div class="meta">${mode === 'deck' ? 'Review' : 'Practice'} · <a href="chapter${String(q.c).padStart(2, '0')}.html#lesson-${q.l}">Chapter ${q.c}, Lesson ${q.l}</a></div>
+      <div class="q">${esc(q.q)}</div><div class="opts">` +
+      q.order.map(o => {
+        let cls = '';
+        if (ans) { if (o === q.a) cls = ' right'; else if (o === ans) cls = ' wrong'; }
+        return `<button class="opt${cls}" data-o="${esc(o)}"${ans ? ' disabled' : ''}>${esc(o)}</button>`;
+      }).join('') + `</div>`;
+    if (ans) {
+      const ok = ans === q.a;
+      h += `<div class="fb ${ok ? 'ok' : 'no'}">${ok ? '✓ Right! ' : '❌ The answer is “' + esc(q.a) + '.” '}${esc(q.why)}</div>`;
+      if (mode === 'deck') h += `<div class="streak">${!(q.id in QC._state.d) ? '🎉 Cleared from your deck!' : ok ? 'One more right answer clears it.' : 'Streak reset — it will come back.'}</div>`;
+      h += `<button class="btn" id="next">Next question ▶</button>`;
+      if (mode === 'practice') h += ` <button class="btn alt" id="back">Back to my deck</button>`;
+    } else if (mode === 'deck' && streak) {
+      h += `<div class="streak">Right ${streak} time in a row — one more clears it.</div>`;
+    }
+    $('app').innerHTML = h + `</div>`;
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.classList.contains('opt') && !b.disabled && cur) {
+      const o = b.getAttribute('data-o'), ok = o === cur.a;
+      if (mode === 'deck') { const was = cur.id in QC._state.d; QC.review(cur.id, ok); if (was && !(cur.id in QC._state.d)) cleared++; }
+      draw(o);
+    } else if (b.id === 'next') { lastId = cur && cur.id; cur = null; draw(); }
+    else if (b.id === 'practice') { practiceCh = +$('chSel').value || 1; mode = 'practice'; cur = null; draw(); }
+    else if (b.id === 'back') { mode = 'deck'; cur = null; draw(); }
+  });
+
+  QC.ready.then(() => draw());
+})();
+</script>
+</body>
+</html>

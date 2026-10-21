@@ -34,6 +34,7 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;cursor:pointer}
 .ch .t{font-weight:800;font-size:15px;line-height:1.25;margin-top:2px}
 .ch .s{font-size:12px;font-weight:800;margin-top:6px}
 .ch.passed{border-color:var(--emerald);background:rgba(0,229,160,.08)}
+.ch.pick{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,215,0,.35)}
 .ch.passed .s{color:var(--emerald)}
 .ch.wait .s{color:#ffb3c0}
 .q-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
@@ -77,6 +78,7 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;cursor:pointer}
             <li>10 questions from the chapter's vocab. Get <b>8 or more</b> right to pass.</li>
             <li>Passing earns <b>+50 verified XP</b> (once per chapter).</li>
             <li>Missed it? You can try again in 10 minutes. Leaving early counts as a try.</li>
+            <li>Warm up first: read the chapter, then clear its missed questions in your <a href="review.html" style="color:var(--gold);font-weight:800">Review Deck</a>.</li>
           </ul>
         </div>
       </div>
@@ -160,6 +162,13 @@ function renderGrid(){
   }).join('');
   $('passedCount').textContent = '(' + passed + ' of 28 mastered)';
   $('grid').querySelectorAll('.ch:not(:disabled)').forEach(b => b.onclick = () => start(+b.dataset.ch));
+  // mastery.html?ch=N (from a chapter page): point at that chapter, but let the student start it themselves
+  const want = +new URLSearchParams(location.search).get('ch');
+  const pick = want && $('grid').querySelector('.ch[data-ch="' + want + '"]');
+  if (pick){
+    pick.classList.add('pick');
+    if (!renderGrid.pointed){ renderGrid.pointed = true; setTimeout(() => { try { pick.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(e){} }, 100); }
+  }
 }
 
 // ---------- the check ----------

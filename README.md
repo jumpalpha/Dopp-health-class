@@ -21,13 +21,13 @@ Every piece of content has been fully modernized with 2024 statistics, updated m
 |------|-------------|
 | `index.html` | Home page — animated quest map, all 9 realms, chapter grid, game preview |
 | `chapters.html` | All 28 chapters organized by realm |
-| `arcade.html` | Full game arcade — all 15 games with filter bar |
+| `arcade.html` | Full game arcade — 35 arcade games + 16 classroom games (51 total) |
 | `vocab_engine.html` | Universal vocabulary game engine — 4 modes × 28 chapters |
 | `quest.html` | Student progress tracker — XP, badges, streaks, achievements |
 | `teacher.html` | Teacher dashboard — week planner, game launcher, notes, realm tracker |
 | `realm1.html` – `realm9.html` | Individual realm overview pages |
 | `chapter01.html` – `chapter28.html` | Individual chapter pages — PDF, vocab, activities, sidebar |
-| `game01_jeopardy.html` – `game15_myth_busters.html` | All 15 fully playable arcade games |
+| `game01_jeopardy.html` – `game15_myth_busters.html` | The 15 original classroom games (16 with Dopp Spin) |
 | `404.html` | Custom lost-adventurer error page |
 | `Chapter_01_*.pdf` – `Chapter_28_*.pdf` | All 28 modernized chapter PDFs |
 
@@ -49,7 +49,7 @@ Every piece of content has been fully modernized with 2024 statistics, updated m
 
 ---
 
-## The 15 Games
+## The 15 Original Classroom Games
 
 | # | Game | Type | Best For |
 |---|------|------|----------|
@@ -83,6 +83,14 @@ One engine powers all 28 chapters × 4 game modes = 112 vocab sessions:
 Access any chapter's vocab: `vocab_engine.html?ch=1` through `vocab_engine.html?ch=28`
 
 ---
+
+## Quick Checks, Review Deck & Chapter Path (Oct 2026)
+
+- **Quick Checks** (`quick_checks.js`, questions in `quick_checks_data.js`): 2 multiple-choice questions at the end of every lesson in each chapter reader (218 total, written from the reader text). The next lesson opens once both are answered; a wrong answer shows the right one and why. Practice only, no XP.
+- **Review Deck** (`review.html`): every Quick Check missed on the first try. Two right answers in a row clear it. The Wellness Sprite's "Ask me a question" can draw from it too.
+- **Your Chapter Path** (`chapter_path.js`): the sidebar card on every chapter page. Four steps that check themselves off: read every lesson, answer the Quick Checks, play the 4 vocab games at 70%+, pass Chapter Mastery.
+- **Continue where you left off**: the home page and Welcome screen link straight to the last lesson a student was reading (`chapterNN.html#lesson-N`).
+- Answers save with `student-save.js` (project key `quick_checks`), so they follow signed-in students to any device.
 
 ## Student Progress Tracker
 
@@ -142,4 +150,4 @@ To update any file: go to the repository → **Add file → Upload files** → d
 
 ---
 
-*Built for Alan Dopp's Health Class · Legend of Wellness · 28 chapters · 9 realms · 15 games · 3-month adventure*
+*Built for Alan Dopp's Health Class · Legend of Wellness · 28 chapters · 9 realms · 51 games · 3-month adventure*

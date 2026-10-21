@@ -333,15 +333,17 @@ footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:24
     <div class="realm-badge-card">
       <div class="badge-icon">💞</div>
       <div class="badge-title">Relationship Realm</div>
-      <div class="badge-sub">Complete all chapter quests to earn the <strong>Social Champion</strong> badge.</div>
+      <div class="badge-sub">Finish every chapter path in this realm to earn the badge.</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div id="realm-pct" style="font-size:12px;color:var(--dim);margin-top:6px">Sign in to see your realm progress</div>
     </div>
-    <div class="side-card">
-      <div class="side-title">Quick Checklist</div>
+    <div class="side-card" id="ch-path">
+      <div class="side-title">Your Chapter 9 Path</div>
       <div class="quest-steps">
-        <div class="quest-step"><div class="step-num">1</div><div class="step-text"><strong>Read PDF</strong>All 4 lessons</div></div>
-        <div class="quest-step"><div class="step-num">2</div><div class="step-text"><strong>Vocab Games</strong>All 4 game types</div></div>
-        <div class="quest-step"><div class="step-num">3</div><div class="step-text"><strong>Activities</strong>Side quests + exploration</div></div>
-        <div class="quest-step"><div class="step-num" style="border-color:rgba(255,59,92,0.4);color:#FF3B5C">★</div><div class="step-text"><strong>Boss Battle</strong>Compete for the badge</div></div>
+        <div class="quest-step"><div class="step-num">1</div><div class="step-text"><strong>Read every lesson in the reader</strong>Scroll to the end of each lesson</div></div>
+        <div class="quest-step"><div class="step-num">2</div><div class="step-text"><strong>Answer each lesson's Quick Check</strong>At the end of every lesson</div></div>
+        <div class="quest-step"><div class="step-num">3</div><div class="step-text"><strong>Play all 4 vocab games (70%+)</strong><a href="vocab_engine.html?ch=9">Open the vocab games</a></div></div>
+        <div class="quest-step"><div class="step-num">4</div><div class="step-text"><strong>Pass the Chapter Mastery check</strong><a href="mastery.html?ch=9">Take it here</a></div></div>
       </div>
     </div>
     <div class="side-card">

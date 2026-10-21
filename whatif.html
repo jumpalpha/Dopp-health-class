@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The What If Game — Legend of Wellness</title>
+<meta name="description" content="Real-life health scenarios. Make a choice, see what happens to your health, and find the move that protects you best. No account needed.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { --gold:#FFD700; --gold-text:#7a5c00; --emerald-text:#00704D; --sky:#38BFFF; --bg:#FDFAF2; --card:#fff;
+  --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,.04); }
+.wrap { max-width:720px; margin:0 auto; padding:22px 16px 70px; }
+.hero { border-radius:20px; padding:22px 20px; color:#fff; background:radial-gradient(circle at 20% 0%, #6b4a00 0%, #1C1A2E 62%), #1C1A2E; }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(22px,6vw,30px); color:var(--gold); text-shadow:0 2px 0 #000; }
+.hero p { font-size:14px; color:rgba(255,255,255,.8); margin-top:6px; line-height:1.55; }
+.score { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.pill { font-size:13px; font-weight:800; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px; margin-top:16px; }
+.tag { font-size:12px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--dim); }
+.tag a { color:inherit; }
+.setup { font-size:18px; font-weight:800; line-height:1.45; margin:6px 0 14px; }
+.setup em { font-style:normal; color:var(--gold-text); }
+.choices { display:grid; gap:8px; }
+.choice { text-align:left; font:700 15px/1.4 'Nunito',sans-serif; padding:12px 14px; border-radius:12px; border:2px solid var(--border); background:#fff; color:var(--text); cursor:pointer; min-height:48px; }
+.choice:hover:not([disabled]) { border-color:var(--sky); background:#eef9ff; }
+.choice[disabled] { cursor:default; }
+.choice.picked { border-color:var(--gold-text); background:#fff8e1; }
+.choice.best { border-color:#00b37e; }
+.out { margin-top:14px; padding:12px 14px; border-radius:12px; background:rgba(28,26,46,.04); line-height:1.55; font-size:15px; }
+.fx { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.fxp { font-size:12.5px; font-weight:800; padding:3px 9px; border-radius:999px; }
+.up { background:#e3f8ef; color:var(--emerald-text); } .down { background:#fde8ec; color:#b3123a; } .flat { background:rgba(28,26,46,.06); color:var(--dim); }
+.take { margin-top:12px; font-size:14px; line-height:1.55; background:#eef9ff; border-left:4px solid var(--sky); border-radius:10px; padding:10px 12px; }
+.think { margin-top:12px; font-size:14px; line-height:1.55; }
+.think b { display:block; margin-bottom:2px; }
+.btn { font:900 15px 'Nunito',sans-serif; padding:12px 18px; border-radius:12px; border:none; cursor:pointer; background:#1C1A2E; color:var(--gold); min-height:46px; margin-top:14px; }
+.btn.alt { background:#fff; color:var(--text); border:1px solid var(--border); }
+.foot { font-size:13px; color:var(--dim); margin-top:16px; line-height:1.55; }
+.foot a { color:var(--gold-text); font-weight:800; }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="side_quests.html">🧭 Side Quests</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="pet.html">🌱 My Sprite</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>🤔 The What If Game</h1>
+    <p>Real situations teens run into. Pick what you'd actually do, see what it does to your physical, mental/emotional and social health, then find the move that protects you best.</p>
+    <div class="score" id="score"></div>
+  </section>
+  <div id="app"></div>
+  <p class="foot">Optional side quest — just for thinking it through. Great for a class discussion, too.
+    Want an AI to invent new scenarios with you? <a href="https://chatgpt.com/g/g-6a0bacca8f748191a78fcb28d613c406-the-what-if-game" target="_blank" rel="noopener noreferrer">Open the ChatGPT version</a> (needs a free ChatGPT account).</p>
+</div>
+
+<script>
+(function () {
+  // [chapter, chapter title, setup, [[choice, outcome, physical, mental/emotional, social], ...] (first = best move), takeaway, think-about question]
+  const S = [
+    [2, 'Skills for a Healthy Life', 'What if a friend sends you an ad for a <em>"miracle" fat-burning gummy</em> that "works overnight" and says you should both order it?',
+      [['Look it up on a trusted site and ask a doctor or school nurse before buying anything.', 'You find out it has no real evidence behind it, save your money, and show your friend how you checked.', 1, 1, 1],
+       ['Order it — your friend says it worked for their cousin.', 'Nothing happens except your wallet gets lighter. Supplements like this don\'t need FDA approval before they\'re sold, so nobody checked that it works or is safe.', -1, -1, 0],
+       ['Ignore the message without saying anything.', 'You stay safe, but your friend buys it alone.', 0, 0, -1]],
+      '"Miracle cure" and "overnight results" are red flags for health fraud. A testimonial ("it worked for my cousin") is not evidence.', 'Which advertising technique was the ad using?'],
+    [4, 'Managing Stress', 'What if you have <em>two tests and a game on the same day</em>, and you\'re so stressed you can\'t sleep the night before?',
+      [['Make a quick plan: break studying into chunks, set a bedtime, and do some deep breathing.', 'You still feel nervous, but you sleep and walk in with a plan. Some stress can actually sharpen your focus.', 1, 2, 0],
+       ['Stay up all night cramming.', 'You remember less, play worse, and feel wrecked. Sleep loss makes stress hit harder.', -2, -1, 0],
+       ['Scroll on your phone to forget about it.', 'An hour vanishes, the worry is still there, and now it\'s even later.', -1, -1, 0]],
+      'You can\'t remove every stressor, but time management, sleep and relaxation change how much it hurts. That\'s the 4 A\'s: Avoid, Alter, Accept, Adapt.', 'Which of the 4 A\'s did the best choice use?'],
+    [5, 'Mental and Emotional Problems', 'What if a close friend has seemed <em>down for weeks</em>, quit their favorite activity, and says "nothing really matters anymore"?',
+      [['Ask them directly how they\'re doing, listen, and tell a trusted adult or school counselor right away.', 'Your friend is upset at first, then relieved someone noticed. A counselor connects them with help.', 0, 2, 1],
+       ['Promise to keep it secret if they tell you what\'s wrong.', 'You end up carrying something too heavy alone, and your friend doesn\'t get help. Never promise to keep this kind of secret.', 0, -2, -1],
+       ['Give them space — they\'ll probably get over it.', 'Weeks pass and things get worse.', 0, -2, -1]],
+      'These are warning signs. Ask, listen, and get help. You can call or text 988 any time, for yourself or a friend.', 'Why is "keep it a secret" the wrong promise here?'],
+    [6, 'Building Healthy Relationships', 'What if someone you\'re dating <em>checks your phone and gets mad</em> when you hang out with your friends — "because they care so much"?',
+      [['Tell them calmly that this isn\'t okay with you, and talk to a trusted adult about it.', 'It\'s an uncomfortable talk, but you protect your friendships and your boundaries.', 0, 1, 2],
+       ['Stop seeing your friends so they don\'t get upset.', 'Things get quieter for a while, but you start to feel isolated and anxious.', 0, -2, -2],
+       ['Go along with it — jealousy means they love you.', 'The checking gets more frequent and the rules get stricter.', 0, -2, -1]],
+      'Jealousy framed as love and pressure to give up other relationships are warning signs of an unhealthy relationship. Setting boundaries is necessary, not selfish.', 'What would a healthy version of this relationship look like?'],
+    [8, 'Peer Relationships', 'What if someone you met in a <em>gaming chat</em> asks for your school name and wants to meet up "just to hang out"?',
+      [['Don\'t share it, and tell a trusted adult about the request.', 'The person keeps pushing, so your parent helps you block and report them.', 1, 1, 1],
+       ['Share your school but say no to meeting.', 'They now know where to find you. That\'s more than a stranger should have.', -1, -1, 0],
+       ['Agree to meet somewhere public.', 'Meeting an online contact without an adult is one of the riskiest moves you can make.', -2, -1, 0]],
+      'Never share your full name, address, phone number or school, and never meet an online contact alone. Tell a trusted adult first.', 'Why does "somewhere public" not make it safe?'],
+    [9, 'Resolving Conflicts', 'What if someone <em>bumps you in the hallway</em>, your friends start yelling "are you going to let that slide?", and you feel your face get hot?',
+      [['Take a breath, walk away, and talk it out later when you\'re calm (or let it go).', 'Your friends tease you for a minute, then forget. Nobody ends up in the office.', 1, 1, 1],
+       ['Shove them back.', 'A fight breaks out. You both get suspended and the conflict keeps going on social media.', -2, -2, -1],
+       ['Post about it later to get people on your side.', 'It spreads, more people pile on, and it\'s now way bigger than a bump.', 0, -2, -2]],
+      'Hurt pride, embarrassment and the urge for revenge make conflicts escalate. Step 1 of negotiation: calm down first.', 'Which feeling was pushing this situation toward a fight?'],
+    [10, 'Nutrition for Health', 'What if you <em>skip breakfast</em> every day because you\'re running late?',
+      [['Grab something quick and simple: fruit, yogurt, a granola bar, or toast.', 'Your energy and focus stay steadier through your morning classes.', 2, 1, 0],
+       ['Keep skipping it and eat a big lunch.', 'You feel foggy by second period and overeat at lunch.', -1, -1, 0],
+       ['Grab an energy drink on the way.', 'You get a jittery boost, then a crash, plus a big dose of added sugar and caffeine.', -2, -1, 0]],
+      'Teens who eat breakfast have better concentration, grades and mood. It doesn\'t have to be fancy.', 'What\'s one breakfast you could make in under 2 minutes?'],
+    [12, 'Physical Activity', 'What if you <em>twist your ankle</em> in a pickup basketball game and everyone says "just walk it off"?',
+      [['Stop playing and use RICE: Rest, Ice, Compression, Elevation. Get it checked if it doesn\'t improve.', 'You miss a few games, but it heals right.', 2, 1, 0],
+       ['Keep playing so you don\'t look weak.', 'The sprain gets worse and you\'re out for weeks instead of days.', -2, -1, 0],
+       ['Skip ice and just sleep on it.', 'It swells a lot overnight and takes longer to heal.', -1, 0, 0]],
+      'Pain is a signal, not a badge of honor. RICE is the first step for sprains and strains.', 'Why do people feel pressure to play through pain?'],
+    [20, 'Tobacco', 'What if your friends start passing around a <em>mango-flavored vape</em> at a party and hand it to you?',
+      [['Say "No thanks, I\'m good" and hand it on. Switch the subject.', 'Nobody really cares. One friend quietly says they didn\'t want to either.', 2, 1, 1],
+       ['Take one hit to fit in.', 'You cough, feel dizzy, and the next time it\'s offered it feels easier to say yes.', -2, -1, 0],
+       ['Leave the party without saying anything.', 'You\'re safe, but you miss time with friends. A simple "no" usually works.', 0, 0, -1]],
+      'Flavors are designed to attract teens, and one pod can deliver as much nicotine as about 20 cigarettes. A short, confident "no" is enough.', 'What\'s your go-to refusal line?'],
+    [21, 'Alcohol', 'What if a friend at a party has been drinking, <em>passes out</em>, and won\'t wake up easily?',
+      [['Stay with them, roll them into the recovery position, and call 911 or get an adult right away.', 'Paramedics say getting help quickly may have saved your friend\'s life.', 2, 1, 1],
+       ['Let them "sleep it off."', 'Alcohol poisoning can stop breathing. Leaving someone alone is the most dangerous choice.', -2, -2, -1],
+       ['Give them coffee and a cold shower.', 'These myths don\'t lower blood alcohol. Your friend still needs medical help.', -1, -1, 0]],
+      'If someone is dangerously intoxicated: stay with them, call for help, and use the recovery position.', 'Why might people hesitate to call for help, and why shouldn\'t they?'],
+    [22, 'Illegal Drugs', 'What if someone offers you a <em>"Percocet" pill</em> they bought from a friend, saying it\'s "just a painkiller"?',
+      [['Say no. Pills not from a pharmacy can be fake and contain fentanyl.', 'You walk away. Later you hear about counterfeit pills hurting people in your area.', 2, 1, 0],
+       ['Take half to be careful.', 'With fentanyl, even a tiny amount can be deadly. Half a pill is not a safe dose of an unknown drug.', -2, -1, 0],
+       ['Save it for later.', 'Now you\'re carrying an unknown, possibly deadly, illegal drug.', -1, -1, 0]],
+      'Illicit fentanyl is about 50 times stronger than heroin and shows up in counterfeit pills. Naloxone (Narcan) can reverse an opioid overdose.', 'How could you tell if a pill was fake? (Hint: you can\'t by looking.)'],
+    [26, 'Safety & Injury Prevention', 'What if you\'re <em>driving with friends</em> and your phone buzzes with a message you\'ve been waiting for?',
+      [['Leave it until you\'re parked, or ask a passenger to read it.', 'You get there safely and answer a few minutes later.', 2, 1, 1],
+       ['Glance at it quickly at 55 mph.', 'Five seconds of reading at 55 mph is like driving a football field blind.', -2, -1, 0],
+       ['Answer with voice-to-text while driving.', 'Better than typing, but your attention is still split.', -1, 0, 0]],
+      'Motor vehicle crashes are the leading cause of death for teens, and every extra teen passenger raises crash risk.', 'What rule would you set for your own car?']
+  ];
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let i = 0, order = [], picked = null, best = 0, played = 0;
+  const shuffle = a => { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
+  const deck = shuffle(S.map((_, k) => k));
+
+  function fx(label, n) { return `<span class="fxp ${n > 0 ? 'up' : n < 0 ? 'down' : 'flat'}">${n > 0 ? '▲' : n < 0 ? '▼' : '•'} ${label}${n ? ' ' + (n > 0 ? '+' : '') + n : ''}</span>`; }
+
+  function draw() {
+    $('score').innerHTML = `<span class="pill">Scenario ${Math.min(i + 1, S.length)} of ${S.length}</span><span class="pill">⭐ Best move found ${best} of ${played}</span>`;
+    if (i >= S.length) {
+      $('app').innerHTML = `<div class="card" style="text-align:center"><h2 style="font-family:Cinzel,serif;color:var(--gold-text)">You finished all ${S.length}! 🏆</h2>
+        <p style="margin-top:6px;line-height:1.6">You found the best move in <b>${best} of ${S.length}</b> scenarios. The pattern: pause, protect your health, and bring in a trusted adult when it's serious.</p>
+        <button class="btn" id="again">Play again ↻</button></div>`;
+      return;
+    }
+    const s = S[deck[i]];
+    if (!order.length) order = shuffle(s[3].map((_, k) => k));
+    let h = `<div class="card"><div class="tag"><a href="chapter${String(s[0]).padStart(2, '0')}.html">Chapter ${s[0]} · ${esc(s[1])}</a></div>
+      <div class="setup">${s[2]}</div><div class="choices">` +
+      order.map(k => `<button class="choice${picked === k ? ' picked' : ''}${picked != null && k === 0 ? ' best' : ''}" data-k="${k}"${picked != null ? ' disabled' : ''}>${picked != null && k === 0 ? '⭐ ' : ''}${esc(s[3][k][0])}</button>`).join('') + `</div>`;
+    if (picked != null) {
+      const c = s[3][picked];
+      h += `<div class="out"><b>${picked === 0 ? '⭐ Best move! ' : 'What happens: '}</b>${esc(c[1])}
+        <div class="fx">${fx('Physical', c[2])}${fx('Mental/Emotional', c[3])}${fx('Social', c[4])}</div></div>`;
+      if (picked !== 0) h += `<div class="out"><b>⭐ The best move: </b>${esc(s[3][0][0])} — ${esc(s[3][0][1])}</div>`;
+      h += `<div class="take">💡 ${esc(s[4])}</div><div class="think"><b>Think about it:</b>${esc(s[5])}</div>
+        <button class="btn" id="next">${i + 1 < S.length ? 'Next scenario ▶' : 'See my results'}</button>`;
+    }
+    $('app').innerHTML = h + `</div>`;
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.k != null && picked == null) { picked = +b.dataset.k; played++; if (picked === 0) best++; draw(); }
+    else if (b.id === 'next') { i++; picked = null; order = []; draw(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else if (b.id === 'again') { i = 0; best = 0; played = 0; picked = null; order = []; deck.splice(0, deck.length, ...shuffle(S.map((_, k) => k))); draw(); }
+  });
+  draw();
+})();
+</script>
+</body>
+</html>

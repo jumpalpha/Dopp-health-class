@@ -43,6 +43,16 @@
       .catch(function () { return { ok: false, reason: 'offline' }; });
   }
 
+  // ---------- this device's copy of what was recorded (for the chapter page sidebar, see chapter_path.js) ----------
+  function localMark(kind, chapter, item, extra) {
+    try {
+      var k = 'dopp_ch_progress_' + term(), p = JSON.parse(localStorage.getItem(k) || '{}');
+      p[kind] = p[kind] || {}; var c = p[kind][chapter] = p[kind][chapter] || {};
+      c[item] = extra == null ? 1 : extra;
+      localStorage.setItem(k, JSON.stringify(p));
+    } catch (e) {}
+  }
+
   // ---------- reader ----------
   var READ = { MIN_SEC: 15 };   // server (cl_log) requires 10+; site requires 15
   function needSeconds() { return READ.MIN_SEC; }
@@ -125,7 +135,7 @@
     }
     paint();
     fetchDone(chapter).then(function (items) {
-      state.forEach(function (s) { if (items.indexOf(s.item) >= 0) { s.done = true; try { sessionStorage.setItem(s.key, '1'); } catch (e) {} } });
+      state.forEach(function (s) { if (items.indexOf(s.item) >= 0) { s.done = true; try { sessionStorage.setItem(s.key, '1'); } catch (e) {} localMark('read', chapter, s.item); } });
       paint();
     });
 
@@ -148,7 +158,7 @@
           s.sending = true;
           log('read', chapter, s.item, { sec: s.active, of: state.length }).then(function (r) {
             s.sending = false;
-            if (r && r.ok) { s.done = true; try { sessionStorage.setItem(s.key, '1'); } catch (e) {} }
+            if (r && r.ok) { s.done = true; try { sessionStorage.setItem(s.key, '1'); } catch (e) {} localMark('read', chapter, s.item); }
             paint();
           });
         }
@@ -159,7 +169,13 @@
 
   window.ChecklistTrack = {
     // vocab_engine.html: called once per finished round
-    vocab: function (chapter, mode, stats) { return log('vocab', chapter, mode, stats); },
+    vocab: function (chapter, mode, stats) {
+      return log('vocab', chapter, mode, stats).then(function (r) {
+        var pct = stats && stats.total ? Math.round(100 * (stats.correct || 0) / stats.total) : 0;
+        if (r && r.ok !== false && pct >= 70) localMark('vocab', chapter, mode, pct);
+        return r;
+      });
+    },
     signedIn: function () { return !!session(); },
     _needSeconds: needSeconds
   };
