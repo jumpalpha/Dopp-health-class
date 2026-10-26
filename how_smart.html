@@ -111,7 +111,7 @@ details a{color:var(--sky)}
     <p>Climb the Tower of Knowledge! Get one right and the next question is harder. Miss one and it gets easier. Most questions are about health: your body, food, mind, fitness, safety and medicine.</p>
     <div class="rules">
       <div><b>🧗 It adapts to you</b>Everyone ends up at their own level, so no two runs are the same.</div>
-      <div><b>❌❌❌ 3 misses in a row</b>ends the climb (after your first 12 questions).</div>
+      <div><b>❌❌❌ 3 misses in a row</b>ends the climb (after your first 20 questions). The most is 30.</div>
       <div><b>📊 No grades</b>You'll see how you compare with students from 3rd grade to graduate school.</div>
     </div>
     <div class="best" id="bestLine"></div>
@@ -263,7 +263,7 @@ function answer(btn) {
   const w = $('why'); w.className = 'why ' + (ok ? 'ok' : 'no');
   w.innerHTML = '<b>' + (ok ? ['✅ Correct!','✅ Nailed it!','✅ Yes!','✅ Smart!'][Math.floor(Math.random() * 4)] : '❌ The answer is: ' + esc(cur.right)) + '</b>' + esc(cur.why);
   drawMisses(); drawTower();
-  const done = (streakMiss >= 3 && hist.length >= 12) || streakMiss >= 5 || hist.length >= 30;
+  const done = (streakMiss >= 3 && hist.length >= 20) || hist.length >= 30;   // at least 20 answers for a fair score
   $('nextBtn').textContent = done ? 'See my results ▶' : 'Next ▶';
   $('nextBtn').onclick = done ? finish : next;
   $('nextRow').classList.remove('hidden');

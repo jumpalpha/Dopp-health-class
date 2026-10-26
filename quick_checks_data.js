@@ -1,5 +1,8 @@
-// Quick Check questions for the chapter readers (chapterNN.html), 2 per lesson.
-// Written from the reader text on each chapter page. Used by quick_checks.js, review.html and the Sprite page.
+// Chapter questions, 20 per chapter. Each row: [lesson, question, correct answer, wrong, wrong, wrong, why]
+// The FIRST 2 rows for each lesson are the reader Quick Checks (chapterNN.html) and are written from the
+// reader text. Rows after those go deeper on the same chapter topic (CDC/NIH-level facts) and are used by
+// Review Deck practice (review.html), the arcade quiz, Sprite Siege and the Sprite page.
+// Add new rows at the END of a chapter: saved answers are keyed by row position.
 // Each row: [lesson, question, correct answer, wrong, wrong, wrong, why]
 window.QC_BANK = {
 1: [
@@ -10,7 +13,19 @@ window.QC_BANK = {
 [3,"Texting while speeding is far more dangerous than speeding alone. What idea does that show?","Cumulative risks","Prevention","Abstinence","Heredity","Cumulative risks are related risks that increase in effect with each added risk."],
 [3,"Wearing a seatbelt and using sunscreen are examples of what?","Prevention","Risk behaviors","Health disparities","Cumulative risks","Prevention means taking steps to keep a problem from happening or getting worse."],
 [4,"What are health disparities?","Gaps in health outcomes between groups based on things like income, race or location","Differences in how tall people grow","Different opinions about what is healthy","Rules that limit health care","Healthy People 2030 aims to close these gaps."],
-[4,"What is health literacy?","Your ability to find, understand, and use health information","Reading every health article you see","Knowing medical words by heart","Having health insurance","The chapter says health literacy matters more than age, income or education for your overall health."]
+[4,"What is health literacy?","Your ability to find, understand, and use health information","Reading every health article you see","Knowing medical words by heart","Having health insurance","The chapter says health literacy matters more than age, income or education for your overall health."],
+[1,"How many hours of sleep does the chapter recommend for teens?","8–10 hours","5–6 hours","6–7 hours","11–13 hours","The CDC also recommends 8–10 hours a night for ages 13–18."],
+[1,"Which dimension of health is about recognizing, expressing and managing your feelings?","Emotional","Mental","Cultural","Financial","Emotional health includes bouncing back from setbacks."],
+[1,"What pulls many Americans toward the low end of the health continuum?","Chronic diseases like heart disease, obesity and cancer","Catching a cold once a year","Getting a sports injury","Moving to a new town","Many of these conditions can be prevented with better daily habits."],
+[2,"Research shows optimists tend to be healthier. Which influence on health is that?","Attitude","Heredity","Culture","Media","A positive mindset is a real health move."],
+[2,"Your family's traditional holiday foods are an example of which influence on health?","Culture","Heredity","Attitude","Technology","Culture is the beliefs, customs and behaviors of a group."],
+[2,"Heart disease runs in your family. What is the healthiest response?","Build habits that lower your risk and tell your doctor","Nothing, because genes decide everything","Avoid doctors so you don't find out","Worry about it every day","You can't change your genes, but you can change how you respond to them."],
+[3,"Which of these is on the CDC's list of top risk behaviors for young people?","Not enough physical activity","Drinking water","Reading for fun","Sleeping 9 hours","The list also includes tobacco, poor eating, alcohol and drugs, risky sex, and violence and injuries."],
+[3,"About how much does wearing a seatbelt lower the risk of dying in a crash for front-seat riders?","About half","About 5%","Not at all","It removes all risk","Seatbelts cut the risk of death for front-seat car occupants by about 45%."],
+[3,"Which is a lifestyle factor?","How much you sleep","Your eye color","The year you were born","Your height at birth","Lifestyle factors are everyday habits you control."],
+[4,"How often does the Healthy People program set new national health goals?","Every 10 years","Every year","Every 50 years","Only once","Healthy People 2030 covers this decade's goals."],
+[4,"Which shows strong health literacy?","Checking where a health claim comes from before believing it","Trusting any post with lots of likes","Buying whatever an influencer recommends","Ignoring health information","Health literacy means finding, understanding and using health information."],
+[4,"How does U.S. health-care spending per person compare with other countries?","It is the highest in the world","It is the lowest in the world","It is about average","The U.S. spends nothing","Much of that cost could be avoided with better health education."]
 ],
 2: [
 [1,"Which statement best describes health skills?","Actions you practice, like communicating and setting goals","Facts you memorize for a test","Skills only doctors need","Things you learn once and never use again","Health skills, also called life skills, stick with you for life once you build them."],
@@ -20,7 +35,19 @@ window.QC_BANK = {
 [3,"An ad says 'Everyone's doing it!' Which technique is that?","Bandwagon","Testimonial","Great Outdoors","Free Gifts","Bandwagon ads make you feel left out if you don't buy."],
 [3,"How are ingredients listed on a product label?","By weight, from most to least","Alphabetically","From least to most","By price","Knowing the order helps you see what a product is mostly made of."],
 [4,"What is health fraud, also called quackery?","Selling worthless products that claim to cure or prevent health problems","Returning a product that broke","Comparing prices before buying","A warranty that expired","Weight-loss and beauty products are common targets for health fraud."],
-[4,"Which phrase is a red flag for health fraud?","Miracle cure","Clinically tested by the FDA","Ask your doctor","Read the label","'Secret formula,' 'miracle cure' and 'overnight results' are signs to slow down and check."]
+[4,"Which phrase is a red flag for health fraud?","Miracle cure","Clinically tested by the FDA","Ask your doctor","Read the label","'Secret formula,' 'miracle cure' and 'overnight results' are signs to slow down and check."],
+[1,"Using \"I\" statements and listening actively are part of which health skill?","Communication","Advocacy","Accessing information","Refusal skills","Communication means sharing ideas clearly while genuinely listening."],
+[1,"When both sides give a little to settle a disagreement, that is called what?","Compromise","Bandwagon","Advocacy","Denial","Compromise reaches a result everyone can live with."],
+[1,"What makes an \"I\" statement work better than a \"you\" statement?","It describes your own feelings without blaming","It proves the other person is wrong","It is louder","It ends the talk quickly","\"I feel upset when plans change\" invites talking; \"You always ruin plans\" starts a fight."],
+[2,"In a S.M.A.R.T. goal, what does the T stand for?","Time-bound","Tough","Total","Trendy","A deadline turns \"someday\" into a plan."],
+[2,"What is the last step of the 6-step decision-making process?","Evaluate the decision","State the situation","List the options","Weigh the outcomes","Asking \"how did it go?\" helps you decide better next time."],
+[2,"What are your values?","The beliefs and attitudes that guide how you live","The prices of things you own","Your grades","Rules your school writes","Good decisions start with your values."],
+[3,"A celebrity in an ad says \"It worked for me!\" Which technique is that?","Testimonial","Bandwagon","Great Outdoors","Free Gifts","Testimonials use a person's story instead of evidence."],
+[3,"A written promise to repair or replace a product that doesn't work is called a what?","Warranty","Receipt","Coupon","Label","Check the warranty before you buy."],
+[3,"What do a product's active ingredients do?","Make the product work","Add color only","Make it smell nice","Keep the price low","Labels list active ingredients separately so you know what actually works."],
+[4,"Which U.S. agency regulates the safety of food, medicines and medical devices?","FDA","NASA","IRS","FAA","The Food and Drug Administration also takes reports of unsafe products."],
+[4,"A product doesn't work and the manufacturer won't help. Who can you contact next?","The Better Business Bureau or a consumer advocate","Nobody","The company's competitor","A social media influencer","Consumer advocates and the FDA can also help."],
+[4,"Which products are common targets for health fraud?","Weight-loss and beauty products","Bananas","School textbooks","Bicycles","They promise fast results people badly want."]
 ],
 3: [
 [1,"What is resilience?","The ability to adapt and bounce back from hard times","Never feeling sad","Avoiding all stress","Having high self-esteem all the time","Everyone faces hard times. Resilience helps you get through them."],
@@ -28,7 +55,21 @@ window.QC_BANK = {
 [2,"Living by core ethical values even when no one is watching is called what?","Integrity","Citizenship","Personal identity","Self-actualization","Integrity means showing good character consistently."],
 [2,"Which trait of good character means you think before you act and own your choices?","Responsibility","Fairness","Caring","Citizenship","Responsibility means owning your choices and following through."],
 [3,"What does the chapter say about emotions?","They are neither good nor bad; what matters is how you express them","Some emotions are always bad","You should hide strong emotions","Teens feel emotions less than adults","Emotions are signals. How you express them is your choice."],
-[3,"What is the problem with relying on defense mechanisms for a long time?","They keep you from solving the actual problem","They make emotions stronger","They are illegal","They only work for adults","Defense mechanisms can give short-term relief but don't fix the real issue."]
+[3,"What is the problem with relying on defense mechanisms for a long time?","They keep you from solving the actual problem","They make emotions stronger","They are illegal","They only work for adults","Defense mechanisms can give short-term relief but don't fix the real issue."],
+[1,"Which is a sign of good mental and emotional health?","A sense of belonging","Avoiding all friends","Never feeling sad","Always being right","Belonging, purpose, a positive outlook, self-sufficiency and healthy self-esteem are all signs."],
+[1,"In Maslow's hierarchy, what is self-actualization?","Reaching your full potential","Getting food and water","Being safe from danger","Making friends","It sits at the top of the hierarchy."],
+[1,"Joining a gang to feel accepted tries to meet which need in an unhealthy way?","Belonging","Physical","Safety","Self-actualization","How you meet a need matters as much as meeting it."],
+[1,"What is positive self-talk?","An encouraging inner voice that reminds you of your worth","Bragging to friends","Talking during class","Ignoring your feelings","Replacing negative self-talk builds self-esteem."],
+[1,"Which activity does the chapter call one of the fastest ways to feel good about yourself?","Volunteering","Shopping","Scrolling social media","Sleeping in","Helping others builds self-esteem."],
+[2,"Which trait of good character means being honest, reliable and loyal?","Trustworthiness","Fairness","Citizenship","Caring","Trustworthy people do what they say they will do."],
+[2,"Contributing to your community and following laws shows which trait of good character?","Citizenship","Respect","Responsibility","Caring","Citizenship includes advocating for a healthy environment."],
+[2,"Who does the chapter call your most valuable supporters?","People who give you constructive criticism","People who agree with everything you say","People who never talk to you","Online followers","Honest feedback helps you grow."],
+[2,"What shapes your personal identity?","Family, culture, friendships and experiences","Only your genes","Only social media","Only your grades","Identity keeps developing through your teen years and beyond."],
+[3,"According to the CDC, about what share of high school students reported persistent sadness or hopelessness in 2023?","About 40%","About 4%","About 90%","About 15%","If you feel this way, you are not alone, and talking to someone helps."],
+[3,"Anger that becomes intentionally harmful toward others is called what?","Hostility","Empathy","Guilt","Eustress","Anger is normal; hostility hurts people."],
+[3,"Which defense mechanism means putting your own unwanted feelings onto someone else?","Projection","Compensation","Suppression","Regression","Example: blaming a friend for being jealous when you are the one who is jealous."],
+[3,"What is empathy?","Understanding how another person feels","Feeling sorry for yourself","Ignoring others' feelings","Winning an argument","Empathy can help you cool down and see the full picture."],
+[3,"In the U.S., what number can you call or text to reach the Suicide & Crisis Lifeline?","988","411","311","611","988 connects you to a trained counselor any time, day or night."]
 ],
 4: [
 [1,"Excitement before a big game is an example of what?","Eustress","Distress","Chronic stress","A defense mechanism","Eustress is positive stress that motivates you."],
@@ -38,7 +79,19 @@ window.QC_BANK = {
 [3,"Changing how you interpret a stressor is called what?","Reframing","Avoiding","Suppression","Time management","Reframing is a mental method of stress management."],
 [3,"Which of the 4 A's means accepting what you cannot change and adjusting your response?","Accept","Avoid","Alter","Adapt","Accept is for stressors you can't remove or change."],
 [4,"Which statement about resilient people is true?","They face hardship but recover more quickly","They experience less hardship than others","They never feel stress","They avoid all difficult situations","Resilience is the capacity to move through stress, not avoid it."],
-[4,"Which habit helps build resilience?","Keeping a routine","Isolating yourself to think","Skipping sleep to get more done","Pretending nothing is wrong","Predictability reduces anxiety. Connection, meaning and basic self-care help too."]
+[4,"Which habit helps build resilience?","Keeping a routine","Isolating yourself to think","Skipping sleep to get more done","Pretending nothing is wrong","Predictability reduces anxiety. Connection, meaning and basic self-care help too."],
+[1,"Long-term stress that takes a serious toll on health is called what?","Chronic stress","Eustress","Acute stress","The alarm stage","Chronic stress is persistent and wears the body down."],
+[1,"Stress from a loud, crowded room comes from which kind of stressor?","Environmental","Emotional","Physical","Spiritual","Noise and crowding are environmental stressors."],
+[1,"Which statement about stress is true?","Some stress can sharpen focus and motivate you","All stress is harmful","Stress only happens to adults","Stress can always be avoided","Short-term, manageable stress can help you perform."],
+[2,"What is the first stage of the General Adaptation Syndrome?","Alarm","Resistance","Exhaustion","Recovery","In the alarm stage, the body triggers fight-or-flight."],
+[2,"Which is a physical sign of the fight-or-flight response?","A faster heart rate","Feeling sleepy","Slower breathing","Relaxed muscles","Adrenaline speeds up your heart and tenses your muscles."],
+[2,"Chronic stress is linked to which health problem?","Weakened immunity","Stronger bones","Better sleep","Higher energy","It is also linked to heart disease, insomnia and depression."],
+[3,"Breaking a big project into small steps is which stress method?","Time management","Avoidance","Denial","Reframing","Prioritizing and breaking tasks down make stress manageable."],
+[3,"Which of the 4 A's means removing the stressor if possible?","Avoid","Alter","Accept","Adapt","Avoid comes first when a stressor can simply be removed."],
+[3,"Which is a physical way to manage stress?","Progressive muscle relaxation","Worrying more","Skipping sleep","Drinking energy drinks","Exercise, deep breathing, yoga and sleep also help."],
+[4,"Why does keeping a routine help with stress?","Predictability reduces anxiety","It makes you busier","It removes all stressors","It replaces sleep","Knowing what comes next calms the mind."],
+[4,"What is post-traumatic growth?","Growing stronger after a very hard experience","A growth spurt in your teens","Getting taller after an injury","Forgetting a bad memory","Many people report deeper relationships and clearer priorities after hardship."],
+[4,"What does the chapter say makes stress worse?","Isolation","Talking to friends","Exercise","Sleep","Strong social connections build resilience."]
 ],
 5: [
 [1,"How does the chapter describe mental disorders?","Diagnosable, treatable medical conditions","Character flaws","Signs of weakness","Problems people choose to have","Mental disorders have biological, psychological and social causes."],
@@ -48,7 +101,19 @@ window.QC_BANK = {
 [3,"If a friend shows warning signs of suicide, what should you do?","Ask directly, listen, and get help right away","Promise to keep it a secret","Wait to see if it passes","Change the subject","Never keep a suicide crisis secret. Call or text 988 or go to an emergency room."],
 [3,"What number can you call or text for the Suicide & Crisis Lifeline?","988","911 only","411","211","988 is free, confidential and available 24/7."],
 [4,"Which professional can diagnose mental disorders AND prescribe medication?","Psychiatrist","School counselor","Therapist","Crisis line volunteer","A psychiatrist is a medical doctor."],
-[4,"When should you seek mental health support?","You don't have to wait until you're in crisis","Only in an emergency","Only if a parent says so","Only after trying everything alone","Asking for help is brave, and treatment works."]
+[4,"When should you seek mental health support?","You don't have to wait until you're in crisis","Only in an emergency","Only if a parent says so","Only after trying everything alone","Asking for help is brave, and treatment works."],
+[1,"Which disorder involves recurring, unwanted thoughts and repetitive behaviors?","OCD","ADHD","PTSD","Depression","OCD stands for obsessive-compulsive disorder."],
+[1,"PTSD can develop after what?","Experiencing or witnessing a traumatic event","Eating too much sugar","Staying up late once","Moving to a new class","PTSD means post-traumatic stress disorder."],
+[1,"ADHD mainly affects what?","Attention, impulse control and sometimes activity level","Eyesight","Bone strength","Hearing","ADHD is very common and very manageable with support."],
+[2,"What are the two most common mental health issues among teens?","Depression and anxiety","OCD and PTSD","ADHD and phobias","Schizophrenia and bipolar disorder","Knowing their signs is essential health literacy."],
+[2,"Which is a warning sign of depression?","Losing interest in activities you used to enjoy","Feeling excited about a trip","Being tired after a long run","Feeling nervous before a test","Other signs include changes in sleep, appetite and energy."],
+[2,"Which is a physical symptom of anxiety?","A racing heart, sweating or trembling","Stronger muscles","Better eyesight","Faster hair growth","Anxiety affects the body as well as the mind."],
+[3,"A friend tells you they're thinking about suicide and asks you to keep it secret. What should you do?","Tell a trusted adult right away, even though you promised","Keep the secret","Wait a week to see if they feel better","Post about it online","Never keep a suicide crisis secret. Getting help can save a life."],
+[3,"Which is a warning sign of suicide?","Giving away prized possessions","Joining a sports team","Asking for help with homework","Making weekend plans","Talking about wanting to die and saying goodbyes are also warning signs."],
+[3,"What does the chapter say most people who consider suicide really want?","For the pain to stop","Attention","To get out of school","To win an argument","Suicide is preventable, and asking directly and getting help saves lives."],
+[4,"What kind of help does a therapist or counselor provide?","Talk therapy, without medication","Surgery","Only medication","Physical therapy","Therapy helps people understand and change thought and behavior patterns."],
+[4,"Who is often the first point of contact for teens who need mental health support at school?","The school counselor","The principal","The coach","The cafeteria staff","School counselors can connect students to community resources."],
+[4,"What does the chapter say about treatment for mental health conditions?","Most people improve significantly with the right support","It never works","Only adults can be treated","You must wait for a crisis first","Treatment works, and reaching out is the most important step."]
 ],
 6: [
 [1,"Which qualities do all healthy relationships share?","Mutual respect, trust, honesty, support and open communication","Spending every minute together","Never disagreeing","Always agreeing to what the other person wants","These qualities are the same for friends, family and romantic partners."],
@@ -58,7 +123,19 @@ window.QC_BANK = {
 [3,"What is the broken record technique?","Calmly repeating no","Playing music to change the subject","Agreeing so the pressure stops","Arguing until they give up","Repeating no calmly shows you won't change your mind."],
 [3,"Saying 'I need to think about it' to buy time is which refusal strategy?","A delay tactic","Suggesting an alternative","Leaving the situation","The broken record","Delay tactics give you time to make a healthy choice."],
 [4,"Which is a sign of an unhealthy relationship?","Jealousy framed as love","Respecting each other's friends","Talking through disagreements","Supporting each other's goals","Control, manipulation and jealousy dressed up as caring are warning signs."],
-[4,"What does the chapter say about setting boundaries?","It is necessary, not selfish","It is rude","It ends friendships","Only adults need boundaries","Everyone deserves a relationship free from fear, control and disrespect."]
+[4,"What does the chapter say about setting boundaries?","It is necessary, not selfish","It is rude","It ends friendships","Only adults need boundaries","Everyone deserves a relationship free from fear, control and disrespect."],
+[1,"Which type of relationship is voluntary and built on shared interests, trust and support?","Friendship","Family","Professional","Romantic","With friends, quality matters more than quantity."],
+[1,"What matters most in friendships, according to the chapter?","Quality over quantity","Having the most friends","Being popular","Agreeing on everything","A few strong friendships beat many shallow ones."],
+[1,"Which relationship shapes your values and communication style from birth?","Family","Teammates","Coworkers","Online followers","Family relationships are your primary relationships."],
+[2,"What does active listening mean?","Full attention, no interrupting, and reflecting back what you heard","Waiting for your turn to talk","Listening while texting","Agreeing with everything","Active listening shows the other person you understand."],
+[2,"What do passive communicators often do?","Avoid conflict but build resentment","Win every argument","Express needs clearly","Interrupt others","Bottling things up hurts relationships over time."],
+[2,"Which carries more weight than the words you say?","Eye contact, posture and tone of voice","Spelling","How fast you text","Your vocabulary","Nonverbal communication sends strong messages."],
+[3,"What does peer pressure usually look like, according to the chapter?","Subtle, like wanting to fit in or fear of rejection","Always a direct threat","Only from strangers","Only online","Subtle pressure is the most common kind."],
+[3,"\"I'm not doing that, but I'll do this instead\" is which refusal strategy?","Suggest an alternative","Broken record","Delay tactic","Leave the situation","Offering another option keeps things friendly."],
+[3,"Which refusal strategy is always your right?","Leaving the situation","Lying","Fighting back","Giving in once","You can always walk away."],
+[4,"Jealousy framed as \"love\" is a sign of what?","An unhealthy relationship","A healthy relationship","Good communication","Trust","Control disguised as caring is a red flag."],
+[4,"What is the number for the National Domestic Violence Hotline?","1-800-799-7233","1-800-222-1222","411","311","It is free, confidential and open 24/7. 1-800-222-1222 is Poison Control."],
+[4,"What is digital dating abuse?","Using texts or social media to control, track or threaten a partner","Sending a good-morning text","Sharing a playlist","Video calling","Demanding passwords or constant location is a red flag."]
 ],
 7: [
 [1,"A family formed when a single parent remarries and children from earlier relationships come together is called what?","Blended","Nuclear","Extended","Foster","Blended families can take years to feel natural."],
@@ -66,7 +143,21 @@ window.QC_BANK = {
 [2,"What is the most important strategy for coping with family change?","Honest, open communication","Keeping your feelings to yourself","Spending more time away from home","Taking sides","Talking about feelings lowers stress and helps the family support each other."],
 [2,"What does the chapter say about divorce?","It is never the children's fault","It is usually the children's fault","It only affects the parents","It ends all family relationships","Separation and divorce are painful, but children are not to blame."],
 [3,"What are the three R's for responding to abuse?","Recognize, Resist, Report","Relax, Rest, Repeat","Reason, Respond, Remember","Run, Rescue, Return","Abuse is always wrong, and it is a crime."],
-[3,"What is the cycle of violence?","Abuse repeating from one generation to the next","A kind of exercise program","A hotline for families","When a family moves often","It can be broken with professional help."]
+[3,"What is the cycle of violence?","Abuse repeating from one generation to the next","A kind of exercise program","A hotline for families","When a family moves often","It can be broken with professional help."],
+[1,"About what share of U.S. children live with two married parents?","About 65%","About 10%","About 95%","About 30%","About 22% live with their mother only and 5% with their father only."],
+[1,"Which family type includes grandparents, aunts, uncles or cousins?","Extended","Nuclear","Blended","Single-parent","Extended family members sometimes live in the same home."],
+[1,"What is foster care?","A temporary placement with adults who aren't relatives","A permanent legal adoption","A daycare center","A hospital ward","Adoption is permanent; foster care is temporary."],
+[1,"Where did your first lessons in sharing and settling disagreements usually come from?","Your family","Social media","Video games","Your first job","Families build social health."],
+[1,"How do families support your physical health?","Food, shelter, medical care and safety rules","Only by paying for sports","By choosing your friends","By doing your homework","Families also model healthy habits."],
+[2,"How long can it take for a blended family to feel natural?","4–7 years","1 week","1 month","It never does","Patience and respect help."],
+[2,"Which trait of strong families means making time for each other and working on problems together?","Commitment","Respect","Trust","Caring","Committed families show up for each other."],
+[2,"What is custody?","The legal right and duty to care for a child after a divorce","A family vacation","A school record","Child support money only","Custody may go to one parent or be shared."],
+[2,"Which trait of strong families means honoring each other's opinions, privacy and individuality?","Respect","Commitment","Caring","Trust","Respect lets each family member be themselves."],
+[2,"What usually happens when a new baby joins a family?","Everyone's roles shift for a while","Nothing changes","Older children are loved less","The family breaks up","Tension eases as the family adjusts."],
+[3,"Abuse between family members is called what?","Domestic violence","Sibling rivalry","Family counseling","Custody","It can be spousal, child or elder abuse."],
+[3,"What is neglect?","Failing to provide a child's basic needs like food, shelter and care","Assigning chores","Setting a curfew","Saying no to a request","Neglect is a form of child abuse."],
+[3,"What is the Childhelp National Child Abuse Hotline number?","1-800-422-4453","911","1-800-222-1222","411","It is free and open 24/7."],
+[3,"Who can you report abuse to?","A trusted adult, school counselor, doctor, hotline or police","No one","Only a friend your age","Only the abuser","Abuse is a crime, and telling someone is how it stops."]
 ],
 8: [
 [1,"A friendship with someone of a different gender, with real affection but no romance, is called what?","Platonic","Casual","A clique","Online","Platonic friendships have real affection without romance."],
@@ -74,7 +165,21 @@ window.QC_BANK = {
 [2,"Indirect, dishonest control through guilt trips, flattery or bribes is called what?","Manipulation","Harassment","Positive peer pressure","Assertiveness","Manipulation is a sneaky form of negative pressure."],
 [2,"What is the first of the three refusal steps?","State your position clearly","Walk away","Make an excuse","Agree at first, then back out","Say no firmly with an honest reason and confident body language."],
 [3,"How does the chapter define abstinence?","A deliberate decision to avoid high-risk behaviors","Being shy around others","Never dating","Avoiding all friends","It includes avoiding sexual activity, alcohol, tobacco and other drugs."],
-[3,"What is the only 100% effective protection against STIs?","Abstinence","Vaccines","Antibiotics","Knowing your partner well","People 15–24 have nearly half of new STIs."]
+[3,"What is the only 100% effective protection against STIs?","Abstinence","Vaccines","Antibiotics","Knowing your partner well","People 15–24 have nearly half of new STIs."],
+[1,"Which describes a close friendship?","Deep emotional ties where you can share struggles without judgment","Shared interests but no deep bond","Someone you only know online","A classmate you sit near","Close friends are the people you confide in."],
+[1,"What is a clique?","A small, exclusive group that often pressures members and leaves others out","A sports team","A club anyone can join","A family","Healthy friendships expand your world. They don't shrink it."],
+[1,"Someone you met in a gaming chat wants to meet in person. What should you do?","Tell a trusted adult and never meet alone","Meet them alone at a park","Keep it secret","Send them your address first","Always tell a trusted adult before meeting any online contact."],
+[1,"Which should you never share with an online contact?","Your home address","Your favorite movie","Your favorite color","Your opinion on a game","Keep your full name, address, phone number and school private."],
+[1,"What do strong friendships share?","Similar values, honest communication and mutual respect","The same clothes","The same grades","Living on the same street","They also share joys and disappointments."],
+[2,"Which is an example of positive peer pressure?","Friends encourage you to volunteer","Friends dare you to vape","Friends tell you to skip class","Friends push you to cheat","Positive pressure pushes you to try good things and avoid risky ones."],
+[2,"Repeatedly targeting someone is called what?","Harassment","Mediation","Advocacy","Affirmation","Harassment is a form of negative peer pressure."],
+[2,"Why should you practice refusals out loud ahead of time?","It's easier to hold your ground when you already know what to say","It makes people like you more","It's required by law","So you can argue longer","Practice makes refusals feel natural."],
+[2,"What is the third refusal step?","Stand your ground","State your position","Suggest alternatives","Give in politely","If pressure keeps coming, make it clear you won't budge."],
+[2,"Which body language helps when you say no?","Standing tall and making eye contact","Looking at the floor","Mumbling","Laughing nervously","Confident body language backs up your words."],
+[3,"What is self-control?","Letting your values, not the emotions of the moment, guide your choices","Never feeling emotions","Controlling what others do","Following the crowd","Self-control protects your goals."],
+[3,"People ages 15–24 have about what share of new STIs in the U.S.?","Nearly half","About 1%","About 10%","Almost none","They are about 13% of the population but have nearly half of new STIs."],
+[3,"Someone says \"If you loved me, you'd do it.\" Which is a strong response?","\"If you loved me, you'd respect my decision.\"","\"OK, fine.\"","\"Maybe later.\"","Saying nothing","Real caring respects limits."],
+[3,"Can someone choose abstinence after they've already been sexually active?","Yes, it's never too late","No, never","Only after age 21","Only if a doctor says so","Anyone can choose abstinence going forward."]
 ],
 9: [
 [1,"Which feelings are most likely to make a conflict escalate?","Hurt pride, embarrassment and the desire for revenge","Boredom and tiredness","Happiness and excitement","Curiosity and surprise","Noticing these feelings in yourself is one of the best ways to prevent violence."],
@@ -84,7 +189,19 @@ window.QC_BANK = {
 [3,"Why do alcohol and drugs make violence more likely?","They lower inhibitions and impair judgment","They make people tired","They make people more patient","They improve self-control","Impaired judgment makes it easier for anger to turn into violence."],
 [3,"What should you do if you're being cyberbullied?","Don't respond, save the evidence, block them and tell a trusted adult","Post something back to defend yourself","Delete everything and say nothing","Share their private info to get even","Retaliating usually makes it worse. Evidence helps adults step in."],
 [4,"What does the chapter say about controlling behavior in a relationship?","It is a warning sign of abuse, not love","It shows how much they care","It is normal in serious relationships","It is only a problem if it's physical","Jealousy and control are warning signs, not signs of caring."],
-[4,"Repeatedly following, harassing or threatening someone, in person or online, is called what?","Stalking","Mediation","Negotiation","Assertiveness","Stalking is a form of abuse, and help is available."]
+[4,"Repeatedly following, harassing or threatening someone, in person or online, is called what?","Stalking","Mediation","Negotiation","Assertiveness","Stalking is a form of abuse, and help is available."],
+[1,"Two people read the same text message differently and start arguing. Which cause of conflict is that?","Misunderstanding","Property dispute","Power struggle","Conflicting values","Misunderstandings are common across backgrounds, cultures and ages."],
+[1,"What does it mean when a conflict escalates?","It gets more serious","It ends","It gets funnier","It moves online","Notice hurt pride, embarrassment and revenge before they push it higher."],
+[1,"Handled well, what can conflicts do?","Make relationships stronger","Always end friendships","Nothing at all","Lead to violence","Conflict is normal; the goal is managing it."],
+[2,"In negotiation, how should you brainstorm solutions?","List ideas without judging them yet","Pick the first idea","Let the louder person decide","Skip this step","Judging comes later, when you weigh pros and cons."],
+[2,"What should the agreement in a negotiation aim for?","A win-win or the best compromise","One clear winner","Whatever ends it fastest","Punishing the other side","Then follow up later to see if it worked."],
+[2,"What is mediation?","Bringing in a neutral third party to help settle a conflict","Ignoring a conflict","Fighting it out","Posting about it online","In peer mediation, trained students help classmates."],
+[3,"What is now the leading cause of death for U.S. children and teens?","Firearm injuries","Cancer","The flu","Drowning","Teens who carry guns are more likely to be hurt by one."],
+[3,"How should guns at home be stored?","Unloaded and locked","Loaded in a closet","Under a bed","In a car","Safe storage prevents accidents and suicides."],
+[3,"What is an upstander?","Someone who speaks up, supports the target or gets help","Someone who watches and does nothing","The bully's friend","A security guard","Upstanders can stop bullying."],
+[3,"A classmate posts a school threat and says it was a joke. What should you do?","Report it to an adult","Ignore it","Share it with friends","Reply with a joke","Report threats, even ones that sound like jokes. Speaking up saves lives."],
+[4,"Which is a warning sign of an abusive dating relationship?","Pushing the relationship to get serious very fast","Respecting your time with friends","Asking how your day went","Supporting your goals","Controlling behavior is not love."],
+[4,"What kind of help does the RAINN hotline (1-800-656-4673) provide?","Support for sexual assault survivors","Poison control","Weather alerts","Homework help","Survivors deserve support, not shame."]
 ],
 10: [
 [1,"Which nutrient is your body's primary fuel source?","Carbohydrates","Proteins","Vitamins","Minerals","Choose whole grains, fruits and vegetables over refined sugars."],
@@ -94,7 +211,19 @@ window.QC_BANK = {
 [3,"On a Nutrition Facts label, what does 20% Daily Value or more mean?","That nutrient is high","That nutrient is low","The food is healthy","The food has 20 calories","5% or less is low; 20% or more is high."],
 [3,"If sugar is the first ingredient listed, what does that tell you?","Sugar is the main ingredient by weight","There is only a little sugar","The food is sugar-free","Sugar was added last","Ingredients are listed by weight, from most to least."],
 [4,"What is the 80/20 rule?","Eat nutritiously 80% of the time and leave room for enjoyment 20%","Eat 80 grams of protein a day","Eat 80% of your food before noon","Only 20% of foods are healthy","Being sustainable beats trying to be perfect and giving up."],
-[4,"Why does the chapter say to limit ultra-processed foods?","They are engineered to override your hunger signals","They have too much fiber","They spoil too fast","They contain too many vitamins","Chips, fast food and packaged snacks make it easy to overeat."]
+[4,"Why does the chapter say to limit ultra-processed foods?","They are engineered to override your hunger signals","They have too much fiber","They spoil too fast","They contain too many vitamins","Chips, fast food and packaged snacks make it easy to overeat."],
+[1,"Which nutrient builds and repairs tissues and makes enzymes and hormones?","Proteins","Carbohydrates","Water","Vitamin C","Sources include meat, fish, eggs, beans, nuts and dairy."],
+[1,"How many cups of water does the chapter say teens need each day?","8–11 cups","1–2 cups","20–25 cups","Only when thirsty","Even mild dehydration hurts focus and performance."],
+[1,"Which fats should you avoid?","Trans fats","Unsaturated fats","Fats in nuts","Fats in fish","Choose unsaturated fats and limit saturated fats."],
+[2,"On MyPlate, at least how much of your grains should be whole grains?","Half","None","A tenth","Exactly one slice","Whole grains keep more fiber and nutrients."],
+[2,"The Dietary Guidelines say to keep added sugars under what share of daily calories?","10%","50%","30%","1%","Saturated fat should also stay under 10%."],
+[2,"What does MyPlate suggest drinking instead of sugary drinks?","Water","Soda","Energy drinks","Sweet tea","Sugary drinks are a top source of added sugar."],
+[3,"A bag of chips has 2.5 servings and 150 calories per serving. How many calories are in the whole bag?","375","150","250","600","Always check the serving size — everything on the label is per serving."],
+[3,"On a Nutrition Facts label, what does 5% Daily Value or less mean?","That nutrient is low","That nutrient is high","The food is unsafe","You need 5 servings","20% or more is high."],
+[3,"Which is a nutrient you want to get enough of?","Fiber","Sodium","Added sugars","Saturated fat","Also get enough vitamin D, calcium, iron and potassium."],
+[4,"Teens who eat breakfast tend to have what?","Better concentration, grades and mood","Lower grades","Less energy","More headaches","Breakfast refuels your brain after a night without food."],
+[4,"Restaurant portions are often how much bigger than a recommended serving?","2–3 times","About the same","Half the size","10 times","Watch portion sizes when eating out."],
+[4,"Which is a whole food?","An apple","Fruit snacks","Potato chips","Soda","Whole foods have fewer ingredients and more nutrients."]
 ],
 11: [
 [1,"Why isn't BMI always an accurate measure of an individual's health?","It doesn't directly measure body fat","It only works for adults over 60","It measures height only","It changes every hour","Athletes may have a high BMI with low body fat."],
@@ -104,7 +233,19 @@ window.QC_BANK = {
 [3,"Which eating disorder is the most common?","Binge eating disorder","Anorexia nervosa","Bulimia nervosa","Orthorexia","It involves frequent episodes of eating large amounts without purging."],
 [3,"Which of these can help a friend at risk of an eating disorder?","Avoiding diet talk and body shaming","Commenting on their weight","Comparing body sizes","Ignoring mood changes around meals","Early intervention and support from a trusted adult help a lot."],
 [4,"What is intuitive eating?","Tuning into hunger and fullness cues instead of rigid rules","Eating only 'clean' foods","Skipping meals to save calories","Counting every calorie","It's about eating for nourishment and enjoyment, not guilt."],
-[4,"Why does the chapter warn against labeling foods 'good' or 'bad'?","It creates guilt and shame","It makes food taste worse","It is against the law","It makes shopping slower","Balance, variety and moderation allow for occasional treats."]
+[4,"Why does the chapter warn against labeling foods 'good' or 'bad'?","It creates guilt and shame","It makes food taste worse","It is against the law","It makes shopping slower","Balance, variety and moderation allow for occasional treats."],
+[1,"What is body composition?","The ratio of fat to lean tissue in your body","Your weight on a scale","Your height","Your shoe size","It is a more meaningful measure of health than weight alone."],
+[1,"Which factors influence where your body's weight settles?","Genetics, metabolism, age and activity level","Only willpower","Only the clothes you wear","Only your hair color","Healthy weight is about more than a number."],
+[1,"What can distort body image?","Media, social comparison and peer pressure","Drinking water","Getting enough sleep","Exercising with friends","A distorted body image can lead to unhealthy behaviors."],
+[2,"How much daily physical activity does the CDC recommend for teens?","60 minutes","10 minutes","3 hours","None","Moving consistently is part of a healthy weight."],
+[2,"How can poor sleep affect weight?","It raises hunger hormones","It burns more calories","It has no effect","It stops hunger","Sleep is part of healthy weight management."],
+[2,"What does mindful eating include?","Recognizing hunger cues and avoiding emotional eating","Eating while scrolling","Eating as fast as possible","Skipping meals","Mindful eating means paying attention to your body."],
+[3,"Who can be affected by eating disorders?","All genders, ages and body types","Only teenage girls","Only athletes","Only adults","Eating disorders are serious mental health conditions that affect everyone."],
+[3,"Why does early help matter for eating disorders?","Early intervention dramatically improves outcomes","It doesn't matter","They always go away alone","Help only works for adults","Recovery is possible with professional care."],
+[3,"What does eating disorder treatment usually include?","Medical, nutritional and psychological support","Only willpower","Only exercise","A fad diet","Treatment works best as a team effort."],
+[4,"What does the \"All Foods Fit\" principle mean?","Balance, variety and moderation, with no foods labeled good or bad","Eat only salad","Never eat treats","Fast food every day","Labeling foods creates guilt and shame."],
+[4,"Why does the chapter say not to skip meals?","Skipping leads to overeating later","It makes you smarter","It saves time with no downside","It builds muscle","Regular meals keep energy steady."],
+[4,"Which organization's helpline does the chapter list for eating disorder support?","National Alliance for Eating Disorders","The FDA","The Better Business Bureau","NASA","You can also reach out to a trusted adult or school counselor."]
 ],
 12: [
 [1,"How much physical activity should teens get each day?","At least 60 minutes","10 minutes","2 hours of running","Only on weekends","The CDC recommends moderate-to-vigorous activity daily."],
@@ -114,7 +255,19 @@ window.QC_BANK = {
 [3,"In the FITT principle, what does the 'I' stand for?","Intensity","Interest","Injury","Interval","Intensity is how hard you work."],
 [3,"Gradually increasing the challenge so your body adapts is called what?","Progressive overload","Overtraining","Cooling down","Body composition","FITT helps you overload safely without injury."],
 [4,"What does RICE stand for?","Rest, Ice, Compression, Elevation","Run, Ice, Cool, Exercise","Rest, Inspect, Call, Exit","Recover, Ice, Cover, Elevate","Use RICE for sprains, strains and minor injuries."],
-[4,"What does the chapter say about pain during exercise?","It's a signal to listen to, not a badge of honor","Always push through it","It means the workout is working","Ignore it until you finish","Listening to your body helps prevent injury."]
+[4,"What does the chapter say about pain during exercise?","It's a signal to listen to, not a badge of honor","Always push through it","It means the workout is working","Ignore it until you finish","Listening to your body helps prevent injury."],
+[1,"Which is a social benefit of physical activity?","Teamwork and a sense of belonging","Stronger bones","Better sleep","Lower blood pressure","Activity also has physical, mental and academic benefits."],
+[1,"Which kinds of activity should a teen's 60 minutes include?","Aerobic, muscle-strengthening and bone-strengthening","Only stretching","Only lifting weights","Only walking","A mix builds well-rounded fitness."],
+[1,"Which is an academic benefit of physical activity?","Better concentration and memory","Longer homework","Fewer friends","More screen time","Active students often focus better in class."],
+[2,"How many health-related components of fitness are there?","Five","Two","Ten","Six","They are cardiorespiratory endurance, muscular strength, muscular endurance, flexibility and body composition."],
+[2,"Range of motion at your joints is which fitness component?","Flexibility","Agility","Power","Muscular strength","Stretching improves flexibility."],
+[2,"How well your heart and lungs work during long activity is which component?","Cardiorespiratory endurance","Flexibility","Reaction time","Balance","Running, swimming and biking build it."],
+[3,"In the FITT principle, what does Frequency mean?","How often you exercise","How hard you work","How long you exercise","What activity you do","Example: 5 days a week."],
+[3,"Switching from running to swimming changes which FITT variable?","Type","Frequency","Intensity","Time","Type is the kind of activity."],
+[3,"Which is an example of vigorous intensity?","Running","A slow walk","Stretching","Sitting","Vigorous activity makes it hard to talk while you move."],
+[4,"How long should a warm-up last?","5–10 minutes","30 seconds","1 hour","No warm-up is needed","Light movement prepares muscles and joints."],
+[4,"Where do most exercise injuries come from, according to the chapter?","Poor form and technique","Drinking water","Warming up","Wearing good shoes","Proper mechanics protect your body."],
+[4,"What can overtraining lead to?","Fatigue and injury","Unlimited gains","Better sleep every time","Nothing","Rest and recovery are part of training."]
 ],
 13: [
 [1,"What causes acne?","Excess oil, dead skin cells and bacteria clogging pores","Dirt on your face","Eating chocolate","Washing too much","Hormones during puberty increase oil production."],
@@ -124,7 +277,19 @@ window.QC_BANK = {
 [3,"Why is preventive care important even when you feel healthy?","It catches problems before they become serious","It replaces healthy habits","It's only for sick people","It's required every month","Checkups, screenings and vaccines keep you ahead of problems."],
 [3,"Why should you know your family health history?","Many conditions are hereditary","It decides your blood type","Doctors need it to give you a grade","It isn't useful","Your family's history can point to your own risks."],
 [4,"Which is a red flag for a health product?","Miracle-cure claims with no scientific evidence","Approval and advice from your doctor","Clear directions on the label","Information from the CDC","Before/after photos and testimonials are not evidence."],
-[4,"What should you do with over-the-counter medicines?","Follow the label and check before combining them","Take extra to work faster","Mix them freely","Share them with friends","Interactions can be dangerous."]
+[4,"What should you do with over-the-counter medicines?","Follow the label and check before combining them","Take extra to work faster","Mix them freely","Share them with friends","Interactions can be dangerous."],
+[1,"What is the body's largest organ?","Skin","Liver","Brain","Heart","Skin protects you from bacteria, UV radiation and injury."],
+[1,"How often should you reapply sunscreen when you're outdoors?","Every 2 hours","Once a day","Once a week","Never","Reapply more often after swimming or sweating."],
+[1,"What do non-comedogenic products do?","They don't clog pores","They kill all bacteria","They make skin oilier","They bleach skin","They help manage acne."],
+[2,"How often should you floss?","Once a day","Once a month","Only when food is stuck","Never","Flossing removes plaque between teeth."],
+[2,"How long and how often should you brush your teeth?","2 minutes, twice a day","10 seconds, once a day","5 minutes, once a week","Only before the dentist","Use fluoride toothpaste."],
+[2,"Gum disease is linked to which health problems?","Heart disease and diabetes","Broken bones","Colds","Freckles","Oral health affects your whole body."],
+[3,"Which is part of an annual physical exam?","A blood pressure check","A haircut","A dental filling","An eye surgery","It also includes height, weight, vision, hearing and a vaccine review."],
+[3,"What should your personal health record include?","Vaccinations, allergies and medications","Your grades","Your social media passwords","Your friends' names","An updated record helps any provider care for you."],
+[3,"Why can teens be honest with their healthcare provider?","Confidentiality laws protect teens","Doctors share everything online","It doesn't matter","Providers must tell your school","Honesty gets you the right care."],
+[4,"Which is a trusted health source?","The Mayo Clinic","An influencer's sponsored post","A miracle-cure ad","A random comment section","The CDC, WHO and your provider are also trusted."],
+[4,"What is a copay?","A fixed amount you pay for a covered visit or prescription","A free checkup","A health record","A type of medicine","Know your plan's copays before you need care."],
+[4,"What is a deductible?","The amount you pay before insurance starts covering costs","A medicine label","A refund","A doctor's tip","Plans with low premiums often have high deductibles."]
 ],
 14: [
 [1,"Which two nutrients are most important for bone health?","Calcium and vitamin D","Sugar and sodium","Vitamin C and iron","Caffeine and protein","Add weight-bearing exercise for strong bones throughout life."],
@@ -134,7 +299,19 @@ window.QC_BANK = {
 [3,"What makes up the central nervous system?","Brain and spinal cord","All the nerves in your arms and legs","Heart and lungs","Muscles and bones","The peripheral nervous system is all the other nerves."],
 [3,"What do neurons use to send signals across synapses?","Neurotransmitters","Red blood cells","Hormones from the pancreas","Calcium crystals","Neurons pass chemical messengers across the gap."],
 [4,"How does a helmet protect your nervous system?","It helps prevent traumatic brain injury","It strengthens your spinal cord","It improves your reflexes","It adds calcium to your bones","Helmets and protective gear prevent TBI."],
-[4,"How much calcium do teens need daily, according to the chapter?","1,300 mg","130 mg","13,000 mg","13 mg","Calcium and vitamin D protect bones."]
+[4,"How much calcium do teens need daily, according to the chapter?","1,300 mg","130 mg","13,000 mg","13 mg","Calcium and vitamin D protect bones."],
+[1,"How many bones are in the adult human body?","206","100","350","52","Bones support, protect, move, make blood cells and store minerals."],
+[1,"Which part of the skeleton protects the brain, spinal cord and vital organs?","The axial skeleton","The appendicular skeleton","The hip girdle","The finger bones","It includes the skull, spine and rib cage."],
+[1,"Where do bones grow during childhood and the teen years?","At growth plates","In the skin","In the muscles","They don't grow","Growth plates are also called epiphyseal plates."],
+[1,"Your knee bends like a door. What type of joint is it?","Hinge","Ball-and-socket","Pivot","Gliding","Your shoulder and hip are ball-and-socket joints."],
+[2,"Which type of muscle can you control on purpose?","Skeletal muscle","Smooth muscle","Cardiac muscle","None","Skeletal muscle is voluntary and attached to bones."],
+[2,"Where is smooth muscle found?","Lining organs like the stomach and blood vessels","Only in the heart","Only in the arms","In the bones","Smooth muscle works involuntarily."],
+[2,"About how many muscles are in the human body?","Over 600","About 50","About 206","Over 10,000","They come in three types: skeletal, smooth and cardiac."],
+[3,"Which part of the nervous system automatically controls heartbeat, digestion and breathing?","The autonomic nervous system","The somatic nervous system","The skeletal system","The cerebellum only","It works without you thinking about it."],
+[3,"What is the basic unit of the nervous system?","The neuron","The bone","The hormone","The muscle fiber","Neurons send electrical signals through the body."],
+[4,"How does sleep help your nervous system?","The brain consolidates memories and repairs itself","It weakens the brain","It has no effect","It stops nerve signals","Quality sleep is brain maintenance."],
+[4,"What does weight-bearing exercise do for your body?","Strengthens bones and builds muscle","Weakens bones","Only burns calories","Shrinks muscles","Walking, running and jumping are weight-bearing."],
+[4,"What is a concussion?","A brain injury caused by a blow or jolt to the head","A broken arm","A muscle cramp","A bone infection","Helmets lower the risk, and any suspected concussion needs medical care."]
 ],
 15: [
 [1,"What is the main difference between arteries and veins?","Arteries carry blood away from the heart; veins return it","Veins carry blood away from the heart","Arteries are only in the legs","There is no difference","Veins contain valves to prevent backflow."],
@@ -144,7 +321,19 @@ window.QC_BANK = {
 [3,"What is the difference between mechanical and chemical digestion?","Mechanical is physical breakdown; chemical uses enzymes","They are the same","Chemical happens only in the mouth","Mechanical uses acid only","Chewing is mechanical; enzymes like pepsin are chemical."],
 [3,"Where does most nutrient absorption happen?","Small intestine","Stomach","Large intestine","Mouth","Villi increase the surface area for absorption."],
 [4,"What is the leading cause of preventable cardiovascular and lung disease?","Tobacco","Drinking water","Eating fiber","Aerobic exercise","Never smoking protects your heart and lungs."],
-[4,"Which habit supports healthy digestion?","Eating fiber-rich foods","Skipping water","Eating more sodium","Avoiding all vegetables","Fiber supports digestion and your gut microbiome."]
+[4,"Which habit supports healthy digestion?","Eating fiber-rich foods","Skipping water","Eating more sodium","Avoiding all vegetables","Fiber supports digestion and your gut microbiome."],
+[1,"How many chambers does the human heart have?","Four","Two","Three","Six","Two upper atria and two lower ventricles."],
+[1,"Which side of the heart pumps blood to the lungs?","The right side","The left side","Both sides equally","Neither side","The left side pumps blood to the rest of the body."],
+[1,"What is a normal resting heart rate for teens?","60–100 beats per minute","10–20 beats per minute","150–200 beats per minute","Over 250 beats per minute","Athletes can rest as low as 40 bpm."],
+[1,"What do the valves in your veins do?","Keep blood from flowing backward","Make blood","Filter air","Digest food","Veins return blood to the heart."],
+[2,"What are alveoli?","Tiny air sacs where gas exchange happens","Bones in the chest","Muscles in the throat","Blood cells","Oxygen goes in and carbon dioxide comes out through the alveoli."],
+[2,"What do cilia in your airways do?","Trap and sweep out debris","Pump blood","Digest fat","Make hormones","Tobacco smoke destroys cilia."],
+[2,"Which lung disease is caused mostly by smoking and destroys alveoli?","Emphysema","A cold","Strep throat","Allergies","Lung damage from smoking is often irreversible."],
+[3,"Where does the chemical digestion of protein begin?","In the stomach","In the mouth","In the large intestine","In the liver","The enzyme pepsin starts breaking down protein."],
+[3,"What does the large intestine mainly absorb?","Water","Protein","Oxygen","Calcium only","It also houses the gut microbiome."],
+[3,"What do villi in the small intestine do?","Increase surface area for absorbing nutrients","Chew food","Make saliva","Pump blood","More surface area means more absorption."],
+[4,"Which is a warning sign of a possible heart problem?","Chest pain","A runny nose","A sunburn","A sore ankle","Shortness of breath and persistent heartburn are also warning signs."],
+[4,"Eating too much of which two things raises the risk of heart disease?","Saturated fat and sodium","Fiber and water","Fruits and vegetables","Vitamin C and calcium","Limiting them protects your heart."]
 ],
 16: [
 [1,"Which gland is called the 'master gland'?","Pituitary","Thyroid","Pancreas","Adrenal","It regulates other glands and controls growth hormone."],
@@ -154,7 +343,19 @@ window.QC_BANK = {
 [3,"Where does fertilization typically occur?","In the fallopian tube","In the uterus","In the ovary","In the cervix","Sperm and egg join to form a zygote."],
 [3,"About how long is a typical menstrual cycle?","About 28 days","About 7 days","About 90 days","About 1 year","It prepares the uterus for a possible pregnancy."],
 [4,"Why is the HPV vaccine recommended for preteens?","It prevents several cancers","It prevents the flu","It cures STIs","It replaces checkups","HPV can cause several types of cancer."],
-[4,"How often does the chapter recommend testicular self-exams?","Monthly","Once in a lifetime","Every 10 years","Never","Report unusual lumps to a provider."]
+[4,"How often does the chapter recommend testicular self-exams?","Monthly","Once in a lifetime","Every 10 years","Never","Report unusual lumps to a provider."],
+[1,"What does the thyroid gland control?","Metabolism, energy and body temperature","Eye color","Hearing","Hair length","Thyroid hormones set your body's energy use."],
+[1,"What are hormones?","Chemical messengers that regulate body processes","Types of bones","Blood cells","Nerves","They regulate growth, metabolism, mood and reproduction."],
+[1,"Which glands make adrenaline for the fight-or-flight response?","The adrenal glands","The thyroid","The pituitary","The salivary glands","The adrenal glands also make cortisol."],
+[2,"At what ages does puberty typically begin for females?","8–13","4–6","16–20","Over 20","For males it's typically 9–14."],
+[2,"Which change happens to both males and females during puberty?","Growth spurts","Voice deepening","Menstruation","Facial hair","Both also experience acne, body odor and emotional changes."],
+[2,"Developing earlier or later than your friends is usually what?","Normal","A serious illness","Caused by diet only","Permanent","Timing is largely genetic; talk to a provider about persistent concerns."],
+[3,"What do the ovaries produce?","Eggs and hormones","Sperm","Insulin","Bile","Ovaries make estrogen and progesterone."],
+[3,"What do the testes produce?","Sperm and testosterone","Eggs","Insulin","Adrenaline","Testes are regulated by the endocrine system."],
+[3,"What forms when a sperm fertilizes an egg?","A zygote","A fetus","A placenta","A hormone","Fertilization usually happens in the fallopian tube."],
+[4,"What is the only 100% effective method to prevent pregnancy and STIs?","Abstinence","Vitamins","Exercise","Hand washing","Abstinence avoids all risk."],
+[4,"The HPV vaccine helps prevent several types of what?","Cancer","Broken bones","Colds","Allergies","It is recommended for preteens."],
+[4,"What does the chapter call fundamental to all sexual health decisions?","Understanding consent","Popularity","Social media","Grades","Consent must be clear, freely given and can be withdrawn."]
 ],
 17: [
 [1,"What is the correct order of prenatal development?","Zygote, embryo, fetus","Fetus, embryo, zygote","Embryo, zygote, fetus","Zygote, fetus, embryo","Zygote (0–2 weeks), embryo (2–8 weeks), fetus (8 weeks–birth)."],
@@ -164,7 +365,19 @@ window.QC_BANK = {
 [3,"What happens during the third stage of labor?","The placenta is delivered","The cervix dilates","The baby is delivered","Contractions begin","Stage 3 is delivery of the afterbirth."],
 [3,"About how long does a typical pregnancy last?","About 40 weeks","About 20 weeks","About 9 weeks","About 52 weeks","That's about 280 days."],
 [4,"What helps build an infant's neural connections?","Talking, reading and play","Keeping the baby in a quiet, dark room all day","Screen time","Limiting contact with caregivers","Early experiences shape brain architecture."],
-[4,"What do safe sleep practices help prevent?","Sudden Infant Death Syndrome (SIDS)","Colds","Teething pain","Hiccups","Safe sleep is a key part of infant care."]
+[4,"What do safe sleep practices help prevent?","Sudden Infant Death Syndrome (SIDS)","Colds","Teething pain","Hiccups","Safe sleep is a key part of infant care."],
+[1,"How many chromosomes does a zygote have?","46","23","12","92","It gets 23 from each parent."],
+[1,"During which stage do the major organ systems begin forming?","Embryo (2–8 weeks)","Zygote (0–2 weeks)","Fetus (8 weeks to birth)","Newborn","Cells divide rapidly in the embryo stage."],
+[1,"Where does the zygote implant?","In the lining of the uterus","In the stomach","In the ovary","In the bladder","The lining is called the endometrium."],
+[2,"What is prenatal care?","Medical care during pregnancy","Care for a newborn","A school class","A type of vitamin","It significantly improves outcomes for mother and baby."],
+[2,"Taking folic acid before and during pregnancy helps prevent what?","Neural tube defects","Colds","Freckles","Twins","Folic acid is a B vitamin."],
+[2,"What does the chapter say about Fetal Alcohol Spectrum Disorder?","It is 100% preventable","It cannot be prevented","It only affects adults","It is contagious","Avoiding alcohol during pregnancy prevents it."],
+[3,"In stage 1 of labor, how wide does the cervix open?","10 centimeters","1 centimeter","30 centimeters","It doesn't open","Contractions get stronger and closer together."],
+[3,"What is a Cesarean section?","Surgical delivery through the abdomen","The first stage of labor","A prenatal vitamin","A baby's first bath","It is used when vaginal birth is not safe."],
+[3,"What happens in stage 2 of labor?","The baby is delivered","The placenta is delivered","The cervix starts to open","Pregnancy begins","Stage 3 is the delivery of the placenta."],
+[4,"What does breastfeeding provide for infants?","Nutrition and immune protection","Only water","Vaccines","Nothing important","It is considered optimal nutrition."],
+[4,"Why is secure attachment to caregivers important?","It is essential for emotional development","It helps babies walk sooner","It replaces vaccines","It prevents growth","A trusting bond lays the foundation for emotional health."],
+[4,"What is the safest sleep position for a baby?","On the back","On the stomach","On the side with pillows","Sitting up","Back sleeping on a firm, empty surface lowers the risk of SIDS."]
 ],
 18: [
 [1,"Which part of the brain handles judgment and impulse control?","Prefrontal cortex","Limbic system","Spinal cord","Brain stem","It keeps developing until the mid-20s."],
@@ -174,7 +387,19 @@ window.QC_BANK = {
 [3,"What is sarcopenia?","Age-related muscle loss","A bone fracture","Memory loss","A heart condition","Exercise and staying active help slow it."],
 [3,"Which tends to improve with age?","Wisdom and vocabulary","Processing speed","Hearing","Bone density","Active aging protects physical and mental health."],
 [4,"What are Kübler-Ross's 5 stages of grief, in order?","Denial, Anger, Bargaining, Depression, Acceptance","Anger, Denial, Acceptance, Bargaining, Depression","Sadness, Anger, Hope, Peace, Joy","Shock, Fear, Anger, Sadness, Calm","Grief isn't linear; people move between stages in their own way."],
-[4,"What is the best way to support a grieving friend?","Listen, be present, and don't minimize their loss","Tell them to move on","Avoid talking about it ever","Explain that it could be worse","Being present matters more than finding the perfect words."]
+[4,"What is the best way to support a grieving friend?","Listen, be present, and don't minimize their loss","Tell them to move on","Avoid talking about it ever","Explain that it could be worse","Being present matters more than finding the perfect words."],
+[1,"Adolescence spans roughly which ages?","10–19","2–8","20–30","40–60","It involves rapid physical, cognitive, emotional and social development."],
+[1,"Which part of the teen brain matures first?","The limbic system (emotions and reward)","The prefrontal cortex","Both at the same time","Neither changes","The emotional brain drives behavior before the planning brain is fully online."],
+[1,"Which is a cognitive change during adolescence?","Abstract thinking and moral reasoning","Growth spurts","Voice changes","Acne","Cognitive means related to thinking."],
+[2,"What does young adulthood (20s–30s) mainly focus on?","Career, relationships and independence","Retirement","Learning to walk","Grandparenting","Middle adulthood shifts toward legacy and meaning."],
+[2,"Around what age does menopause occur?","About 50","About 25","About 35","About 75","Estrogen production stops."],
+[2,"Why does chronic disease risk rise with age?","Risk increases over time, especially without healthy habits","It doesn't rise","Only because of bad luck","Only because of genes","Healthy habits slow that rise."],
+[3,"At what age does late adulthood begin?","65","40","50","90","Active aging improves quality of life in these years."],
+[3,"What is active aging?","Staying physically and mentally engaged as you get older","Retiring early","Avoiding exercise","Sleeping more","Exercise, social connection and lifelong learning all protect health."],
+[3,"Which cognitive change is common with aging?","Processing speed slows","Vocabulary shrinks quickly","Wisdom disappears","Memory always improves","Wisdom and vocabulary often improve."],
+[4,"What does hospice care focus on?","Comfort and dignity at the end of life","Curing all diseases","Surgery","Childbirth","Hospice supports patients and families."],
+[4,"What does it mean that grief is not linear?","People move between stages in their own way and time","Everyone grieves the same way","Grief ends after one week","Grief has only one stage","There's no single right way to grieve."],
+[4,"Which is part of healthy grieving?","Talking, crying and remembering","Pretending nothing happened","Never mentioning the person","Blaming yourself","Eventually, healthy grief includes moving forward."]
 ],
 19: [
 [1,"What is the main difference between prescription and OTC medicines?","Prescription needs a doctor's order; OTC is sold without one","OTC medicines are always stronger","Prescription medicines have no side effects","There is no difference","OTC medicines are safe when used as directed on the label."],
@@ -184,7 +409,19 @@ window.QC_BANK = {
 [3,"How do stimulants affect the central nervous system?","They speed it up","They slow it down","They block pain receptors","They distort reality","Depressants do the opposite and slow the CNS down."],
 [3,"Which drug type blocks pain receptors and has high addiction potential?","Opioids","Stimulants","Hallucinogens","Vitamins","Morphine, oxycodone and heroin are opioids."],
 [4,"Which is a protective factor against drug misuse?","Strong relationships and school engagement","Family history of addiction","Peer pressure","Trauma","Protective factors make healthy choices easier."],
-[4,"What makes a good refusal line?","Short, confident, no explanation needed","A long explanation of every reason","Saying 'maybe later'","Making fun of the person","'No thanks, it's not for me' is enough."]
+[4,"What makes a good refusal line?","Short, confident, no explanation needed","A long explanation of every reason","Saying 'maybe later'","Making fun of the person","'No thanks, it's not for me' is enough."],
+[1,"Why should you never share prescription medicine?","It was prescribed for one person's condition and dose","It tastes bad","It's always expired","It only works at night","Sharing prescriptions can cause dangerous reactions."],
+[1,"What are side effects?","Unintended effects of a medicine","The reason you take a medicine","The price of a medicine","The medicine's color","Some side effects need medical attention."],
+[1,"Why should you tell your provider every medicine you take?","Drug interactions can be dangerous","So they can sell you more","It's not important","To get a discount","Even OTC medicines and supplements can interact."],
+[2,"Taking a friend's prescription painkiller for a headache is an example of what?","Drug misuse","Prevention","Proper medicine use","A vaccine","Misuse means wrong dose, wrong person or wrong purpose."],
+[2,"What is withdrawal?","Symptoms that happen when someone stops using a substance","Taking money from a bank","A type of vaccine","Building tolerance","Withdrawal can be physical and psychological."],
+[2,"What is dependence?","When the body adapts and needs a drug to function normally","Needing a ride","Liking a food","Being allergic to a drug","Dependence often follows tolerance."],
+[3,"Alcohol is which type of drug?","Depressant","Stimulant","Hallucinogen","Antibiotic","Depressants slow the central nervous system."],
+[3,"Which is a hallucinogen?","LSD","Caffeine","Morphine","Alcohol","Hallucinogens distort perception of reality."],
+[3,"Why is fentanyl so dangerous?","A tiny amount can cause a deadly overdose, and it is often hidden in fake pills","It is a vitamin","It wears off instantly","It is only in hospitals","Never take a pill that didn't come from a pharmacy."],
+[4,"Which is a risk factor for drug misuse?","A family history of addiction","Strong relationships","School engagement","Healthy coping skills","Stress and trauma are also risk factors."],
+[4,"What is the SAMHSA National Helpline number?","1-800-662-4357","1-800-222-1222","911","411","It is free, confidential and open 24/7."],
+[4,"What does naloxone (Narcan) do?","Reverses an opioid overdose","Cures addiction","Prevents the flu","Speeds up the heart","It is sold over the counter, and anyone can give it in an emergency."]
 ],
 20: [
 [1,"How does carbon monoxide harm the body?","It bonds to hemoglobin and cuts oxygen delivery","It makes lungs stronger","It's the chemical that causes addiction","It coats the teeth","CO bonds to hemoglobin better than oxygen does."],
@@ -194,7 +431,19 @@ window.QC_BANK = {
 [3,"Why are flavored vapes especially concerning for teens?","Flavors are designed to attract teens","Flavors remove the nicotine","Flavors make vapes safe","Flavors are only sold to adults","Mango, mint and candy flavors target young users."],
 [3,"How much nicotine can one JUUL pod deliver?","About as much as 20 cigarettes","About 1 cigarette","None","About as much as a cup of tea","Vaping delivers highly concentrated nicotine."],
 [4,"Which strategy improves the chance of quitting tobacco?","Behavioral counseling","Quitting alone without telling anyone","Keeping tobacco nearby 'just in case'","Ignoring your triggers","Counseling doubles quit success. Setting a quit date and telling someone help too."],
-[4,"What does the chapter say about failed quit attempts?","They're normal, and each one teaches something","They mean you can never quit","They prove nicotine isn't addictive","They should be kept secret","Most smokers try several times before quitting for good."]
+[4,"What does the chapter say about failed quit attempts?","They're normal, and each one teaches something","They mean you can never quit","They prove nicotine isn't addictive","They should be kept secret","Most smokers try several times before quitting for good."],
+[1,"About how many chemicals are in burning tobacco?","Over 7,000","About 10","About 100","About 1,000,000","Hundreds are toxic and at least 70 cause cancer."],
+[1,"What is a carcinogen?","A substance that can cause cancer","A type of vitamin","A medicine","A muscle","Tar contains most of the carcinogens in smoke."],
+[1,"What is tar?","A sticky residue that coats the lungs","A flavoring","The cigarette filter","A gas","Tar carries most of smoke's carcinogens."],
+[2,"About how many U.S. deaths does tobacco cause each year?","About 480,000","About 4,800","About 48","About 48 million","It damages virtually every organ system."],
+[2,"About how many non-smokers die from secondhand smoke each year in the U.S.?","About 41,000","About 41","None","About 4 million","There is no safe level of secondhand smoke."],
+[2,"Why is nicotine especially harmful to teens?","It harms the developing brain","It helps teens grow","It improves focus long-term","It isn't harmful","Teen smokers also lose lung function faster."],
+[3,"What do e-cigarettes heat to make an aerosol?","A liquid with nicotine, flavorings and other chemicals","Water only","Dried tobacco leaves","Air","It's not harmless water vapor."],
+[3,"Teens who vape are about how much more likely to start smoking cigarettes?","About 3 times","No more likely","Less likely","100 times","Vaping can be a gateway to cigarettes."],
+[3,"The 2019 EVALI lung injury outbreak was linked to what?","Vitamin E acetate in some products","Fresh air","Nicotine gum","Exercise","Thousands of people, many of them teens, were hospitalized."],
+[4,"Which is an FDA-approved aid for quitting tobacco?","The nicotine patch","Energy drinks","Smokeless tobacco","Vaping","Gum, lozenges, varenicline and bupropion are also approved."],
+[4,"How does behavioral counseling affect a person's chance of quitting?","It doubles it","It lowers it","No effect","It guarantees success","Support makes a big difference."],
+[4,"Which free government website offers tools and apps for quitting?","smokefree.gov","nasa.gov","weather.gov","irs.gov","Teens can find vaping-specific help there too."]
 ],
 21: [
 [1,"What type of drug is alcohol?","A central nervous system depressant","A stimulant","A hallucinogen","A vitamin","Alcohol slows brain activity."],
@@ -204,7 +453,19 @@ window.QC_BANK = {
 [3,"How does the chapter describe Alcohol Use Disorder?","A chronic brain disease, not a moral failure","A sign of weak character","Something only adults get","A temporary mood","Recovery is possible with treatment and support."],
 [3,"Why is drinking at a young age a major risk factor for AUD?","Early onset dramatically increases lifetime risk","It builds tolerance that protects you later","It has no effect on risk","It only matters after age 40","Starting young changes the developing brain."],
 [4,"If a friend is dangerously drunk, what should you do?","Stay with them, call for help, and use the recovery position","Let them sleep it off alone","Give them coffee and a cold shower","Wait until morning","Never leave someone with alcohol poisoning alone."],
-[4,"What's a smart way to handle pressure to drink at a party?","Plan an exit strategy or code word with a friend","Drink a little to fit in","Go without telling anyone","Avoid all friends","Having a plan makes refusing easier."]
+[4,"What's a smart way to handle pressure to drink at a party?","Plan an exit strategy or code word with a friend","Drink a little to fit in","Go without telling anyone","Avoid all friends","Having a plan makes refusing easier."],
+[1,"About how fast can the liver process alcohol?","About 1 drink per hour","About 10 drinks per hour","Instantly","About 1 drink per day","Extra alcohol builds up in the blood."],
+[1,"What is the legal BAC limit for adult drivers in most of the U.S.?","0.08%","0.8%","8%","There is no limit","At 0.08%, coordination and judgment are significantly impaired."],
+[1,"Heavy drinking can weaken the heart muscle. What is that called?","Cardiomyopathy","Cirrhosis","Asthma","Concussion","Alcohol also raises blood pressure."],
+[2,"For men, binge drinking means how many drinks in about 2 hours?","5 or more","1","2","10 or more","For women it's 4 or more."],
+[2,"Which is a legal consequence of underage drinking?","License suspension","A free car","Extra credit","A scholarship","It can also affect college and career plans."],
+[2,"Drinking alcohol increases the risk of what?","Sexual assault and unwanted sexual activity","Better grades","Faster reactions","Stronger bones","Alcohol impairs decisions and increases risk-taking."],
+[3,"About how much of the risk for Alcohol Use Disorder comes from genetics?","About 50%","None","About 5%","100%","Family history matters, but it isn't destiny."],
+[3,"Which is a warning sign of Alcohol Use Disorder?","Failed attempts to cut back","Drinking water with meals","Never drinking","Drinking soda at a party","Others include neglecting responsibilities and withdrawal symptoms."],
+[3,"Which is a treatment option for Alcohol Use Disorder?","Support groups like Alcoholics Anonymous","Drinking more","Ignoring it","Switching to stronger drinks","Counseling and medication-assisted treatment also help."],
+[4,"How can you avoid drink offers at a party?","Hold a non-alcoholic drink","Hide in a closet","Say yes and pour it out","Leave your drink unattended","Planning ahead makes refusing easier."],
+[4,"How should you position someone who is passed out from drinking?","On their side, in the recovery position","Flat on their back","Sitting upright alone","Face down on a pillow","This keeps them from choking if they vomit. Call for help."],
+[4,"Which is a sign of alcohol poisoning?","Slow or irregular breathing and can't be woken up","Laughing loudly","Feeling sleepy after dinner","Hiccups","Call 911 and stay with the person."]
 ],
 22: [
 [1,"What is THC?","The psychoactive compound in marijuana","A type of vitamin","A medicine for asthma","A brain region","THC binds to cannabinoid receptors in the brain."],
@@ -214,7 +475,19 @@ window.QC_BANK = {
 [3,"Why is illicit fentanyl so dangerous?","It's about 50 times stronger than heroin; a tiny amount can kill","It's weaker than other opioids","It's only found in hospitals","It can't cause overdose","Fentanyl shows up in counterfeit pills."],
 [3,"What can reverse an opioid overdose?","Naloxone (Narcan)","Caffeine","A cold shower","Antibiotics","Naloxone is available without a prescription in most states."],
 [4,"What makes inhalants especially dangerous?","They can cause sudden death, even on first use","They are completely harmless","They only affect skin","They are prescription drugs","Huffing can cause Sudden Sniffing Death."],
-[4,"Why are ketamine and GHB especially dangerous?","They're used as date rape drugs and are risky with alcohol","They are vitamins","They improve memory","They are only sold in stores","Never leave a drink unattended."]
+[4,"Why are ketamine and GHB especially dangerous?","They're used as date rape drugs and are risky with alcohol","They are vitamins","They improve memory","They are only sold in stores","Never leave a drink unattended."],
+[1,"Which is the most commonly used illegal drug among teens?","Marijuana","Heroin","Cocaine","LSD","THC is its psychoactive compound."],
+[1,"Which is a short-term effect of marijuana?","Slowed reaction time and impaired memory","Better memory","Faster reflexes","Stronger lungs","Other effects include anxiety and increased appetite."],
+[1,"Teen marijuana use is linked to what?","Lower IQ and mental health problems","Higher grades","Taller height","Better sleep","THC disrupts normal brain development."],
+[2,"Which brain chemical do stimulants like cocaine flood the reward system with?","Dopamine","Insulin","Melatonin","Calcium","That's why the crash afterward is so severe."],
+[2,"What can cocaine cause, even in young people?","Cardiac arrest","Stronger bones","Better vision","Lower addiction risk","Cocaine has high addiction potential."],
+[2,"Which is a known effect of methamphetamine use?","Severe tooth decay and skin sores","Healthy teeth","Better sleep","Weight gain from muscle","Meth is cheap, long-lasting and devastatingly addictive."],
+[3,"How do many opioid addictions start?","With legally prescribed painkillers","With vitamins","With caffeine","With sports drinks","Take prescriptions exactly as directed and return leftovers."],
+[3,"How does an opioid overdose kill?","Breathing slows or stops","Bones break","Fever spikes","Skin infection","This is called respiratory depression."],
+[3,"Which medicines are used in medication-assisted treatment for opioid addiction?","Buprenorphine and methadone","Penicillin and amoxicillin","Insulin and glucagon","Ibuprofen and aspirin","Medication-assisted treatment saves lives."],
+[4,"Why are inhalants common among younger teens?","They're easy-to-find household products","They're sold only to teens","They're safe","Doctors prescribe them","Huffing can cause sudden death, even the first time."],
+[4,"Which dangerous effect can MDMA (ecstasy) cause?","Overheating and dehydration","Better memory","Slower heart rate","Stronger bones","It also damages serotonin neurons."],
+[4,"Which is a protective factor against drug use?","Strong family bonds","Easy access to drugs","Friends who use","High stress with no coping skills","Education, coping skills and refusal skills help too."]
 ],
 23: [
 [1,"Germs on doorknobs and phones that spread by touch are an example of what?","Contaminated surfaces (fomites)","Vectors","Direct contact","Droplets","That's indirect transmission."],
@@ -224,7 +497,19 @@ window.QC_BANK = {
 [3,"Why can't antibiotics treat a cold or the flu?","They're caused by viruses, and antibiotics only work on bacteria","Antibiotics are too weak","Colds are caused by fungi","The flu is bacterial","Strep throat is bacterial, so antibiotics work for it."],
 [3,"Which illness is caused by bacteria and treated with antibiotics?","Strep throat","Common cold","Influenza","Mononucleosis","Untreated strep can lead to rheumatic fever."],
 [4,"What is herd immunity?","When enough people are vaccinated to protect those who can't be","When animals carry immunity","When one person is immune","A type of antibiotic","It protects babies and people with weak immune systems."],
-[4,"How long should you wash your hands with soap?","20 seconds or more","2 seconds","Only after meals","5 minutes","Handwashing is the most effective prevention."]
+[4,"How long should you wash your hands with soap?","20 seconds or more","2 seconds","Only after meals","5 minutes","Handwashing is the most effective prevention."],
+[1,"Which disease spreads through droplets from coughs and sneezes?","The flu","A broken bone","Type 2 diabetes","Asthma","COVID-19 also spreads by droplets."],
+[1,"What is a pathogen?","A germ that causes disease","A type of vitamin","A white blood cell","A vaccine","Viruses and bacteria are pathogens."],
+[1,"Kissing and touching spread disease through which route?","Direct contact","Vectors","Contaminated surfaces","Water","Direct contact passes pathogens person to person."],
+[2,"What are the two layers of the immune system?","Innate and adaptive immunity","Skin and hair","Bones and muscles","Heart and lungs","Innate is fast and general; adaptive is slower and specific."],
+[2,"Which cells are the body's primary immune fighters?","White blood cells","Red blood cells","Skin cells","Nerve cells","They are also called leukocytes."],
+[2,"Which cells make antibodies?","B cells","Red blood cells","Platelets","Neurons","Antibodies neutralize pathogens."],
+[3,"Which virus causes mononucleosis (mono)?","Epstein-Barr virus","Rhinovirus","Influenza","Strep bacteria","Mono spreads through saliva."],
+[3,"What can untreated strep throat lead to?","Rheumatic fever","Better immunity","A cold","Mono","Strep is bacterial, so antibiotics treat it."],
+[3,"How often is the flu vaccine recommended?","Every year","Once in a lifetime","Every 10 years","Never","Flu viruses change each season."],
+[4,"Which does the chapter call the most effective way to prevent disease?","Washing hands with soap for 20+ seconds","Taking vitamins","Wearing a hat","Drinking juice","Handwashing removes germs before they reach your mouth, nose or eyes."],
+[4,"Where should you cover a cough or sneeze?","Into your elbow","Into your hand","Into the air","On a friend","Your elbow keeps germs off your hands."],
+[4,"Why should you stay home when you're sick?","To avoid spreading illness to others","To catch up on chores","It doesn't matter","To get more germs","Staying home protects classmates and coworkers."]
 ],
 24: [
 [1,"Why can someone have an STI and not know it?","Many STIs have no symptoms","STIs always cause pain","Tests never work","STIs go away on their own","The only way to know your status is to get tested."],
@@ -234,7 +519,19 @@ window.QC_BANK = {
 [3,"Which is the only method that completely eliminates STI risk?","Abstinence","Condoms","Vaccines","Regular testing","Other methods lower risk; abstinence removes it."],
 [3,"Which STIs can vaccines prevent?","HPV and hepatitis B","Chlamydia and gonorrhea","HIV and herpes","All STIs","Vaccination is one part of prevention."],
 [4,"How does stigma make the STI problem worse?","People avoid testing and treatment","It makes STIs less common","It speeds up treatment","It has no effect","Accurate information is the antidote to stigma."],
-[4,"Why does early STI treatment matter?","It prevents complications like infertility and cancer","It makes the STI contagious longer","It isn't needed","It only matters for adults","Getting tested and treated early protects your health."]
+[4,"Why does early STI treatment matter?","It prevents complications like infertility and cancer","It makes the STI contagious longer","It isn't needed","It only matters for adults","Getting tested and treated early protects your health."],
+[1,"Which is a viral STI?","Herpes","Chlamydia","Gonorrhea","Syphilis","Viral STIs have no cure but can be managed."],
+[1,"What does it mean when an STI is asymptomatic?","It causes no symptoms","It is always cured","It isn't contagious","It is only found in adults","People can spread it without knowing."],
+[1,"What is the only way to know your STI status?","Get tested","Wait for symptoms","Ask a friend","Look it up online","Most STIs have no symptoms."],
+[2,"Which immune cells does HIV attack?","CD4 T-cells","Red blood cells","Platelets","Skin cells","CD4 cells are the commanders of the immune system."],
+[2,"What is AIDS?","The late stage of untreated HIV, when the immune system can't fight infections","A cure for HIV","A type of vaccine","A bacterial STI","Treatment keeps HIV from progressing to AIDS."],
+[2,"What is PrEP?","A daily medicine that prevents HIV","An HIV cure","A vaccine for HPV","A blood test","PrEP stands for pre-exposure prophylaxis."],
+[3,"Which vaccines prevent specific viral STIs?","HPV and hepatitis B","Flu and tetanus","Chickenpox and measles","Polio and rabies","Vaccination is a biomedical prevention strategy."],
+[3,"Why is regular testing a prevention strategy?","It allows treatment and prevents unknowingly spreading an STI","It cures STIs","It replaces vaccines","It isn't a prevention strategy","Knowing your status protects you and others."],
+[3,"Why don't condoms give 100% protection against all STIs?","Some STIs spread by skin contact in areas a condom doesn't cover","They always break","They only work on viruses","They contain the infection","Herpes and HPV can spread this way. Only abstinence eliminates the risk."],
+[4,"Which serious problem can untreated STIs cause?","Infertility","Better immunity","Stronger bones","Nothing","They can also lead to cancer and organ damage."],
+[4,"Where can people get confidential, low-cost STI testing?","Local health clinics","Only hospitals in other states","Nowhere","Online quizzes","Many clinics offer free or low-cost testing."],
+[4,"What is partner notification?","Letting partners know about an exposure so they can get tested","Posting test results online","A type of STI","Breaking up by text","Many health departments can notify partners anonymously."]
 ],
 25: [
 [1,"What does FAST stand for in stroke warning signs?","Face drooping, Arm weakness, Speech difficulty, Time to call 911","Fever, Aches, Sweating, Tiredness","Fall, Ask, Stay, Talk","Food, Activity, Sleep, Time","Every minute counts in a stroke."],
@@ -244,7 +541,19 @@ window.QC_BANK = {
 [3,"What is the key difference between Type 1 and Type 2 diabetes?","Type 1 is autoimmune; Type 2 is insulin resistance and largely preventable","Type 2 is always present at birth","Type 1 is caused by sugar","There is no difference","Type 1 needs insulin; Type 2 is often linked to inactivity."],
 [3,"What is prediabetes?","Blood sugar higher than normal but below the diabetes level","A cure for diabetes","Type 1 diabetes","Low blood sugar","It's a wake-up call to change habits."],
 [4,"Which is an example of people-first language?","Person with a disability","Wheelchair-bound","The disabled","Handicapped person","It puts the person before the condition."],
-[4,"What does the ADA do?","Protects equal access in schools, jobs and public places","Funds hospitals","Treats chronic conditions","Sets diet rules","The Americans with Disabilities Act protects equal access."]
+[4,"What does the ADA do?","Protects equal access in schools, jobs and public places","Funds hospitals","Treats chronic conditions","Sets diet rules","The Americans with Disabilities Act protects equal access."],
+[1,"What is atherosclerosis?","Plaque building up in artery walls","A broken bone","A lung infection","A skin disease","It is the underlying cause of most heart attacks and strokes."],
+[1,"What happens during a heart attack?","A coronary artery is blocked and heart muscle starts to die","The heart beats faster during exercise","A brain artery bursts","The lungs fill with air","Warning signs include chest pain, arm pain and shortness of breath."],
+[1,"Which is a risk factor for heart disease?","High blood pressure","Drinking water","Sleeping 8 hours","Eating fruit","Smoking, inactivity, high cholesterol and diabetes are others."],
+[2,"What is cancer?","The uncontrolled division of abnormal cells","A virus that spreads by touch","A type of allergy","A broken bone","There are over 100 types of cancer."],
+[2,"Which is a carcinogen?","UV radiation","Water","Oxygen","Vitamin C","Carcinogens trigger DNA mutations."],
+[2,"Why does early detection matter for cancer?","It dramatically improves survival rates","It doesn't matter","It makes cancer spread","It replaces treatment","Regular screenings catch cancer early."],
+[3,"In Type 1 diabetes, what does the immune system destroy?","Insulin-producing beta cells","Red blood cells","Bones","Taste buds","Type 1 is autoimmune and not preventable."],
+[3,"Which complication can unmanaged diabetes cause?","Kidney failure","Stronger bones","Better eyesight","Taller height","Blindness, nerve damage and heart disease are others."],
+[3,"Which hormone lowers blood sugar?","Insulin","Adrenaline","Estrogen","Melatonin","In Type 2 diabetes, cells become resistant to insulin."],
+[4,"What is assistive technology?","Tools like wheelchairs, hearing aids and screen readers","A video game","A smartphone case","A type of medicine","It increases independence."],
+[4,"What does congenital mean?","Present at birth","Caused by an injury","Contagious","Temporary","Disabilities can be congenital or acquired."],
+[4,"Asthma, epilepsy and arthritis are examples of what?","Chronic conditions that are managed, not cured","Communicable diseases","Injuries","Allergies only","Many people live full lives while managing them."]
 ],
 26: [
 [1,"What is the leading cause of death for American teens?","Motor vehicle crashes","Heart disease","Cancer","Food poisoning","Most crashes are preventable."],
@@ -254,7 +563,19 @@ window.QC_BANK = {
 [3,"What is second impact syndrome?","A second concussion before the first heals, which can be fatal","A sprained ankle twice","Being tackled twice","A muscle cramp","Never return to play after a suspected concussion."],
 [3,"Why should you warm up before sports?","Cold muscles tear more easily","It makes you tired","It replaces protective gear","It isn't needed","Warming up reduces injury risk."],
 [4,"How long should you wait after the last thunder before going outside?","30 minutes","1 minute","Until it's dark","No need to wait","Seek indoor shelter during lightning."],
-[4,"How much water should a 72-hour emergency kit have?","1 gallon per person per day","1 cup per person","1 bottle for the family","None","Also include food, medications, a flashlight and first aid."]
+[4,"How much water should a 72-hour emergency kit have?","1 gallon per person per day","1 cup per person","1 bottle for the family","None","Also include food, medications, a flashlight and first aid."],
+[1,"By how much do seat belts reduce the risk of dying in a crash for front-seat riders?","About 45%","About 5%","Not at all","100%","For rear-seat passengers it's about 60%."],
+[1,"Which can impair driving?","Sleep deprivation","Wearing a seat belt","Checking mirrors","Using headlights","Alcohol, marijuana and some prescription drugs also impair driving."],
+[1,"What happens to a teen driver's crash risk with teen passengers in the car?","It goes up","It goes down","It stays the same","It disappears","Each added teen passenger raises the risk."],
+[2,"What is the leading cause of injury death for adults ages 25–64?","Poisoning, mostly drug overdose","Falls","Lightning","Dog bites","Falls are the leading cause for adults 65 and older."],
+[2,"How should medicines be stored when young children are in a home?","Locked away","On the kitchen counter","In a purse on the floor","In a lunchbox","Child-resistant caps aren't childproof."],
+[2,"How often should smoke detector batteries be replaced?","Every year","Every 10 years","Never","Only when they beep for a week","Test the detectors every month."],
+[3,"Which is a sign of a concussion?","Confusion and dizziness","A stronger memory","Better balance","Feeling more focused","Headache and memory problems are signs too."],
+[3,"Why should you follow the rules of your sport?","Many rules are designed to prevent injury","They make games slower","They are only for referees","They don't matter","Rules protect players."],
+[3,"What should you wear when playing sports?","The protective gear made for that sport","Flip-flops","Jewelry","Nothing extra","Helmets, pads and eye protection reduce injuries."],
+[4,"Which agency requires safe working conditions in the U.S.?","OSHA","NASA","FDA","IRS","Teens under 18 get extra protections on hours and hazardous tasks."],
+[4,"Which heat illness is life-threatening?","Heat stroke","Mild sweating","Thirst","A light sunburn","Cool the person immediately and call 911."],
+[4,"During a thunderstorm, what should you do?","Go indoors and avoid tall trees and open fields","Stand under a tall tree","Go swimming","Lie in an open field","Wait 30 minutes after the last thunder."]
 ],
 27: [
 [1,"What is the first step of Check-Call-Care?","Check the scene for safety","Call your parents","Give CPR","Move the person","Make sure the scene is safe before helping."],
@@ -264,7 +585,19 @@ window.QC_BANK = {
 [3,"What should you do for someone with a severe allergic reaction?","Use an epinephrine auto-injector and call 911","Give them water","Have them lie down and sleep","Give them an antihistamine only","Anaphylaxis is life-threatening."],
 [3,"What should you do if a person with diabetes has low blood sugar and is conscious?","Give them sugar, like juice","Give them insulin","Make them exercise","Do nothing","Hypoglycemia needs sugar quickly."],
 [4,"What are the three actions during an earthquake?","Drop, Cover, Hold On","Run, Hide, Fight","Stop, Drop, Roll","Duck, Run, Call","Get under a sturdy table or against an interior wall."],
-[4,"Why should you never walk or drive through floodwater?","Just 6 inches can knock you down","It's always clean","It's only dangerous at night","It's illegal to get wet","Turn around, don't drown."]
+[4,"Why should you never walk or drive through floodwater?","Just 6 inches can knock you down","It's always clean","It's only dangerous at night","It's illegal to get wet","Turn around, don't drown."],
+[1,"How do you control heavy bleeding?","Apply direct pressure with a clean cloth","Rinse it with soda","Leave it alone","Remove the cloth every few seconds to check","Add more cloth on top if blood soaks through."],
+[1,"What should you never put on a burn?","Ice or butter","Cool running water","A loose, clean cover","Nothing","Cool it with running water for 10–20 minutes."],
+[1,"How do you help a person who is choking and can't breathe?","5 back blows, then 5 abdominal thrusts","Give them water","Have them lie down","Wait for it to pass","Call 911 if the object won't come out."],
+[2,"How deep should chest compressions be on an adult?","About 2 inches","About half an inch","About 6 inches","Just touch the chest","Push hard and fast in the center of the chest."],
+[2,"In full CPR, how many compressions go with every 2 rescue breaths?","30","5","100","2","Hands-only CPR skips the breaths for adults."],
+[2,"When should you stop CPR?","When help arrives or the person regains consciousness","After 10 seconds","When you get bored","After one minute","Keep going; you are keeping blood flowing."],
+[3,"What is anaphylaxis?","A severe, life-threatening allergic reaction","A mild rash","A headache","A sprain","Use an epinephrine auto-injector and call 911."],
+[3,"Which is a warning sign of a heart attack?","Chest pain or pressure","A runny nose","An itchy ankle","A sunburn","Arm pain, shortness of breath and nausea are others."],
+[3,"In the stroke check FAST, what does the S stand for?","Speech difficulty","Sweating","Sneezing","Sleepiness","Face, Arm, Speech, Time to call 911."],
+[4,"Where should you go during a tornado?","The lowest floor, in an interior room away from windows","Outside to watch","The top floor","Into a car","Cover your head and neck."],
+[4,"How much moving floodwater can knock you down?","About 6 inches","About 6 feet","About 3 feet","It can't","Never walk or drive through floodwater."],
+[4,"What should every family emergency plan include?","Evacuation routes and a meeting point","A vacation schedule","A grocery list only","Nothing; plan when it happens","Practice the plan before a disaster."]
 ],
 28: [
 [1,"What are social determinants of health?","Non-medical factors like income, housing and food access","Your genes only","How often you see a doctor","Medicines you take","Addressing these 'upstream' factors prevents disease."],
@@ -274,6 +607,18 @@ window.QC_BANK = {
 [3,"How does warming affect diseases like Lyme and Zika?","Mosquito and tick ranges expand","They disappear","They only affect plants","Nothing changes","Vector expansion spreads disease to new areas."],
 [3,"Which is a direct health effect of extreme heat?","Heat stroke","Better sleep","Stronger lungs","Fewer allergies","Urban areas are hit hardest by heat waves."],
 [4,"Which is a local action a teen can take to improve community health?","Volunteer with a community health group","Ignore misinformation","Wait until adulthood","Avoid school clubs","Advocacy starts locally, in your school and neighborhood."],
-[4,"What does it mean to share accurate health information?","Counter misinformation in your networks","Repost anything that goes viral","Keep facts to yourself","Only trust celebrities","Accurate information helps your whole community."]
+[4,"What does it mean to share accurate health information?","Counter misinformation in your networks","Repost anything that goes viral","Keep facts to yourself","Only trust celebrities","Accurate information helps your whole community."],
+[1,"Which is a social determinant of health?","Access to healthy food","Your blood type","Your eye color","Your shoe size","Income, education, housing and transportation are others."],
+[1,"What are \"upstream\" factors in health?","Root social causes like housing and income","Rivers near a town","Hospital treatments","Medicines","Addressing them prevents disease better than treatment alone."],
+[1,"Which is a community health resource?","A food bank","A video game store","A movie theater","A car wash","Health departments, clinics and shelters are others."],
+[2,"Which colorless, odorless gas from the ground is an indoor air pollutant?","Radon","Oxygen","Helium","Steam","Homes can be tested for radon."],
+[2,"What makes up smog?","Ozone and particulate matter","Fog and rain","Steam","Pollen only","Smog worsens asthma and heart disease."],
+[2,"What does the Clean Water Act regulate?","Pollution discharged into U.S. waterways","Bottled water prices","Swimming pool hours","Rainfall","It was passed in 1972."],
+[3,"How can extreme weather harm health?","It displaces communities and contaminates water supplies","It improves air quality","It has no effect","It only affects plants","Hurricanes, floods and wildfires are examples."],
+[3,"Which diseases spread as mosquito and tick ranges expand?","Lyme disease, Zika and dengue","Diabetes and asthma","Broken bones","Food allergies","Warmer temperatures help these insects spread."],
+[3,"What is eco-anxiety?","Worry and distress about environmental threats","A fear of animals","A skin rash","A type of allergy","The chapter notes climate-related stress is real."],
+[4,"Which is a way to reduce your carbon footprint?","Using public transit","Idling a car","Leaving lights on","Burning trash","Plant-based meals and energy efficiency also help."],
+[4,"What is health equity?","Everyone having a fair chance at good health","Everyone getting identical care","Only rich people getting care","Free gym memberships","Advocating for under-resourced communities builds equity."],
+[4,"Which is a way a teen can use their voice for community health?","Attend a school board meeting","Ignore local decisions","Spread rumors online","Avoid all clubs","Writing letters and starting clubs work too."]
 ]
 };

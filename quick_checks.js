@@ -5,7 +5,9 @@
  * so answers follow a signed-in student to any device; otherwise they stay on this device.
  *
  * On chapterNN.html:
- *   • After each lesson in the reader, 2 multiple-choice questions appear.
+ *   • After each lesson in the reader, 2 multiple-choice questions appear: the first 2 rows for that
+ *     lesson in quick_checks_data.js, which are written from the reader text. The rest of a chapter's
+ *     rows (20 per chapter) go deeper and are used by Review Deck practice and the arcade.
  *   • Lessons are never locked. If a student scrolls past an unanswered Quick Check, a friendly
  *     reminder shows above the next lesson. A wrong answer shows the right one and why.
  *   • Any question missed on the first try goes into the student's Review Deck.
@@ -27,6 +29,7 @@
   var KEY = 'quick_checks';
   var LOCAL = 'dopp_qc_local';          // fallback copy when student-save.js isn't on the page
   var CLEAR_AFTER = 2;                  // right answers in a row that take a card out of the deck
+  var PER_LESSON = 2;                   // reader questions per lesson (the first rows for that lesson)
   var state = { a: {}, d: {} };         // a: id -> [rightFirstTry 0/1, time]   d: id -> right streak since missed
   var listeners = [];
 
@@ -83,7 +86,7 @@
   function lessonCount(c) { var s = {}; (BANK[c] || []).forEach(function (r) { s[r[0]] = 1; }); return Object.keys(s).length; }
   function lessonAnswered(c, l) {
     var rows = BANK[c] || [], any = false;
-    for (var i = 0; i < rows.length; i++) if (rows[i][0] === l) { any = true; if (!state.a[id(c, i)]) return false; }
+    for (var i = 0, n = 0; i < rows.length && n < PER_LESSON; i++) if (rows[i][0] === l) { n++; any = true; if (!state.a[id(c, i)]) return false; }
     return any;
   }
   function lessonsDone(c) { var n = 0, L = lessonCount(c); for (var l = 1; l <= L; l++) if (lessonAnswered(c, l)) n++; return n; }
@@ -125,7 +128,7 @@
 
     var lessons = secs.map(function (el, k) {
       var L = k + 1, qs = [];
-      rows.forEach(function (r, i) { if (r[0] === L) qs.push(i); });
+      rows.forEach(function (r, i) { if (r[0] === L && qs.length < PER_LESSON) qs.push(i); });
       return { el: el, L: L, qs: qs, box: null, lock: null };
     });
 

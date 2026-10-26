@@ -3,7 +3,9 @@
  * Used by arcade_kit.js (all solo Sprite arcade games except Vocab Slice and How Smart Am I?).
  *
  *  • After every 1–6 finished rounds (random, counted across ALL games on this device), the
- *    "Play again" step shows one question first. Questions come from chapters 1–28 vocab.
+ *    "Play again" step shows one question first. Questions come from the chapter the student is
+ *    reading (most of the time) or a chapter before it: half vocab terms (pet_vocab.js), half
+ *    chapter questions (quick_checks_data.js). With no reading history, any chapter.
  *  • Right or wrong, the student can keep playing. Wrong → they see the right answer and its
  *    definition, and the "Got it — play again" button unlocks after 3 seconds.
  *  • Right answer + signed in → feeds their Wellness Sprite one chapter-question snack
@@ -23,23 +25,48 @@
   }
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
 
-  // load the vocab bank once (also cached for offline by the web app)
-  let bankP = null;
-  function bank() {
-    if (window.PET_VOCAB) return Promise.resolve(window.PET_VOCAB);
-    if (bankP) return bankP;
-    bankP = new Promise(res => {
-      const s = document.createElement('script'); s.src = 'pet_vocab.js';
-      s.onload = () => res(window.PET_VOCAB || null); s.onerror = () => res(null);
+  // load the vocab bank and the chapter question bank once (both cached for offline by the web app)
+  function loadScript(src, ready) {
+    if (ready()) return Promise.resolve();
+    return new Promise(res => {
+      const s = document.createElement('script'); s.src = src;
+      s.onload = s.onerror = () => res();
       document.head.appendChild(s);
     });
+  }
+  let bankP = null;
+  function bank() {
+    if (!bankP) bankP = Promise.all([
+      loadScript('pet_vocab.js', () => window.PET_VOCAB),
+      loadScript('quick_checks_data.js', () => window.QC_BANK)
+    ]).then(() => window.PET_VOCAB || null);
     return bankP;
   }
   bank();
 
+  // Which chapter to ask about: usually the one the student is reading, sometimes an earlier one.
+  function studyChapter(avail) {
+    let n = 0;
+    try { n = +((JSON.parse(localStorage.getItem('lw_last_chapter') || 'null') || {}).n) || 0; } catch (e) {}
+    const ok = avail.filter(c => !n || +c <= n);
+    if (n && avail.indexOf(String(n)) >= 0 && Math.random() < 0.6) return String(n);
+    const from = ok.length ? ok : avail;
+    return from[rnd(from.length)];
+  }
+
   function makeQuestion(V) {
+    const QB = window.QC_BANK || {};
     const chs = Object.keys(V).filter(k => V[k].terms && V[k].terms.length >= 4);
-    const ch = chs[rnd(chs.length)], terms = V[ch].terms;
+    const ch = studyChapter(chs);
+    const rows = QB[ch] || [];
+    if (rows.length && Math.random() < 0.5) {                     // a chapter question
+      const r = rows[rnd(rows.length)];
+      return {
+        ch, title: V[ch].title, term: r[2], def: r[6], qc: true, prompt: r[1],
+        options: shuffle([r[2], r[3], r[4], r[5]]).map(t => ({ text: t, right: t === r[2] }))
+      };
+    }
+    const terms = V[ch].terms;
     const pick = terms[rnd(terms.length)];
     const others = shuffle(terms.filter(t => t[0] !== pick[0])).slice(0, 3);
     const reverse = Math.random() < 0.3;                         // sometimes: term → pick the definition
@@ -103,12 +130,13 @@
         setTimeout(() => go.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 50);
         if (o.right) {
           b.classList.add('ok');
-          fb.innerHTML = '✅ <b>Nice!</b>' + (q.reverse ? '' : ' It\'s <b>' + esc(q.term) + '</b>.');
+          fb.innerHTML = '✅ <b>Nice!</b>' + (q.qc ? ' ' + esc(q.def) : q.reverse ? '' : ' It\'s <b>' + esc(q.term) + '</b>.');
           go.textContent = '↻ Play again';
           feedSprite(net, pet);
         } else {
           b.classList.add('bad');
-          fb.innerHTML = q.reverse ? '❌ Not quite. <b>' + esc(q.term) + '</b> means: ' + esc(q.def)
+          fb.innerHTML = q.qc ? '❌ Not quite. The answer is <b>' + esc(q.term) + '</b>. ' + esc(q.def)
+                       : q.reverse ? '❌ Not quite. <b>' + esc(q.term) + '</b> means: ' + esc(q.def)
                                    : '❌ Not quite. The answer is <b>' + esc(q.term) + '</b> (shown in green).';
           go.disabled = true;
           let left = Math.ceil(WAIT_MS / 1000);

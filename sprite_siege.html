@@ -316,17 +316,25 @@ function input(type, A) { /* everything is tap-based on the habit buttons */ }
 
 // ───────── questions → diamonds ─────────
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Usually the chapter the student is reading, sometimes an earlier one (any chapter with no reading history).
+function studyChapter(avail) {
+  let n = 0;
+  try { n = +((JSON.parse(localStorage.getItem('lw_last_chapter') || 'null') || {}).n) || 0; } catch (e) {}
+  if (n && avail.indexOf(String(n)) >= 0 && Math.random() < 0.6) return String(n);
+  const ok = avail.filter(c => !n || +c <= n), from = ok.length ? ok : avail;
+  return from[Math.floor(Math.random() * from.length)];
+}
 function makeQ() {
   // Half the time: a concept question from the chapter readers' Quick Checks (quick_checks_data.js).
   const B = window.QC_BANK;
   if (B && Math.random() < 0.5) {
-    const chs = Object.keys(B), ch = chs[Math.floor(Math.random() * chs.length)], r = B[ch][Math.floor(Math.random() * B[ch].length)];
+    const ch = studyChapter(Object.keys(B)), r = B[ch][Math.floor(Math.random() * B[ch].length)];
     const V0 = window.PET_VOCAB;
     return { ch, title: (V0 && V0[ch] && V0[ch].title) || 'Chapter ' + ch, term: r[2], prompt: r[1], why: r[6],
              opts: [r[2], r[3], r[4], r[5]].sort(() => Math.random() - 0.5) };
   }
   const V = window.PET_VOCAB; if (!V) return null;
-  const chs = Object.keys(V).filter(k => V[k].terms.length >= 4), ch = chs[Math.floor(Math.random() * chs.length)];
+  const chs = Object.keys(V).filter(k => V[k].terms.length >= 4), ch = studyChapter(chs);
   const terms = V[ch].terms, pick = terms[Math.floor(Math.random() * terms.length)];
   const others = terms.filter(t => t[0] !== pick[0]).sort(() => Math.random() - 0.5).slice(0, 3);
   const re = new RegExp(pick[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
