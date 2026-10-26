@@ -556,7 +556,7 @@ window.QC_BANK = {
 [4,"Asthma, epilepsy and arthritis are examples of what?","Chronic conditions that are managed, not cured","Communicable diseases","Injuries","Allergies only","Many people live full lives while managing them."]
 ],
 26: [
-[1,"What is the leading cause of death for American teens?","Motor vehicle crashes","Heart disease","Cancer","Food poisoning","Most crashes are preventable."],
+[1,"After firearm injuries, what is the second leading cause of death for American teens?","Motor vehicle crashes","Heart disease","Cancer","Food poisoning","Most crashes are preventable."],
 [1,"Texting for 5 seconds at 55 mph is like doing what?","Driving the length of a football field blind","Stopping completely","Driving one car length","Nothing dangerous","Distracted driving is deadly."],
 [2,"What is the leading cause of injury death for adults 65 and older?","Falls","Fires","Drowning","Poisoning","Non-slip mats and secure rugs help prevent falls."],
 [2,"How often should you test smoke detectors?","Monthly","Once every 10 years","Never","Only after a fire","Replace the batteries yearly."],
