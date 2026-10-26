@@ -122,3 +122,52 @@
   }
   if (document.body) add(); else document.addEventListener('DOMContentLoaded', add);
 })();
+
+// Weight Control Quest lock (2026-10-26): the quest needs work before students use it.
+// While WCQ_LOCKED is true, any link to it and the page itself show "talk to Mr. Dopp".
+// Teacher preview: open weight-control-quest.html?preview=dopp (remembered for that tab).
+// To release it to students, set WCQ_LOCKED = false, run tools/build_pwa.py, and push.
+(function () {
+  var WCQ_LOCKED = true, PAGE = 'weight-control-quest.html';
+  if (!WCQ_LOCKED) return;
+  var preview = false;
+  try {
+    if (/[?&]preview=dopp\b/.test(location.search)) sessionStorage.setItem('wcq_preview', '1');
+    preview = sessionStorage.getItem('wcq_preview') === '1';
+  } catch (e) {}
+  if (preview) return;
+  var MSG = 'The Weight Control Quest isn’t open yet.<br>Talk to Mr. Dopp for further instructions.';
+  function box(full) {
+    var d = document.createElement('div');
+    d.setAttribute('role', 'dialog');
+    d.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:16px;' +
+      'background:' + (full ? '#140c2e' : 'rgba(10,6,24,.82)') + ';font-family:system-ui,sans-serif';
+    d.innerHTML = '<div style="max-width:420px;width:100%;background:#1f1640;color:#fff;border:2px solid #00E5A0;border-radius:16px;padding:28px 22px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5)">' +
+      '<div style="font-size:44px;line-height:1">🔒</div>' +
+      '<div style="font-size:21px;font-weight:700;margin:12px 0 8px">Weight Control Quest</div>' +
+      '<div style="font-size:17px;line-height:1.5">' + MSG + '</div>' +
+      '<a href="index.html" data-wcq-close style="display:inline-block;margin-top:18px;padding:10px 20px;border-radius:10px;background:#00E5A0;color:#0a0618;font-weight:700;text-decoration:none">' +
+      (full ? 'Back to home' : 'OK') + '</a></div>';
+    if (!full) d.addEventListener('click', function (e) {
+      if (e.target === d || e.target.hasAttribute('data-wcq-close')) { e.preventDefault(); d.remove(); }
+    });
+    document.body.appendChild(d);
+  }
+  var onPage = location.pathname.split('/').pop() === PAGE;
+  if (onPage) {
+    document.documentElement.style.visibility = 'hidden';
+    var show = function () {
+      for (var c = document.body.children, i = c.length - 1; i >= 0; i--) c[i].style.display = 'none';
+      document.documentElement.style.visibility = '';
+      box(true);
+    };
+    document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', show) : show();
+    return;
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.getAttribute('href').split(/[?#]/)[0].split('/').pop() !== PAGE) return;
+    e.preventDefault(); e.stopPropagation();
+    box(false);
+  }, true);
+})();
