@@ -901,7 +901,7 @@ function updateProgress() {
 const HOWTO = {
   flashcard: [
     'Read the term, then <b>tap the card to flip it</b> and read the definition.',
-    'Tap <b>✓ Got It</b> or <b>✗ Still Learning</b>. Cards you don\'t flip first <b>don\'t count</b>.',
+    'Then tap <b>✓ Got It</b> or <b>✗ Still Learning</b>. (You have to flip before you can choose.)',
     'Be honest — only tap Got It if you really knew it.',
     'Go through the <b>whole deck</b> to the results screen.',
     'Mark <b>70% or more</b> as Got It (after flipping).'],
@@ -938,9 +938,9 @@ function renderGame() {
 }
 
 // ── FLASHCARD ──
-let fc_flipped = false;
+let fc_flipped = false, fc_seen = false;   // fc_seen: definition shown at least once for this card
 function renderFlashcard(gc) {
-  fc_flipped = false;
+  fc_flipped = false; fc_seen = false;
   const term = terms[idx];
   gc.innerHTML = `
     <div class="flashcard-wrap" onclick="flipCard()">
@@ -961,15 +961,19 @@ function renderFlashcard(gc) {
       <button class="btn btn-correct" onclick="fcScore(true)">✓ Got It</button>
       <button class="btn btn-wrong" onclick="fcScore(false)">✗ Still Learning</button>
       <button class="btn btn-restart" onclick="resetGame();renderGame()">↺ Restart</button>
-    </div>`;
+    </div>
+    <div class="results-sub" id="fc-hint" style="display:none;text-align:center;color:var(--crimson);font-weight:800">Flip the card first — read the definition, then choose.</div>`;
 }
 function flipCard() {
   fc_flipped = !fc_flipped;
   const fc = document.getElementById('fc');
   if (fc) fc.classList.toggle('flipped', fc_flipped);
+  if (fc_flipped) { fc_seen = true; const h = document.getElementById('fc-hint'); if (h) h.style.display = 'none'; }
 }
 function fcScore(correct) {
-  if (fc_flipped) { realAnswered++; if (correct) realCorrect++; }
+  // Must see the definition before answering: flip it for them instead of skipping ahead.
+  if (!fc_seen) { if (!fc_flipped) flipCard(); const h = document.getElementById('fc-hint'); if (h) h.style.display = 'block'; return; }
+  realAnswered++; if (correct) realCorrect++;
   if (correct) { correctCount++; streak++; } else { wrongCount++; streak = 0; }
   idx++;
   updateHUD(); updateProgress(); renderGame();
@@ -1209,9 +1213,10 @@ function cmNext() { if (!cm_checked) idx = Math.min(idx + 12, terms.length); upd
 // ── RESULTS ──
 function renderResults() {
   clearInterval(timerInt);
+  let clPromise = null;
   if (!roundLogged && window.ChecklistTrack) {
     roundLogged = true;
-    ChecklistTrack.vocab(chapterNum, gameMode, { total: terms.length, answered: realAnswered, correct: realCorrect, ms: Date.now() - roundStart });
+    clPromise = ChecklistTrack.vocab(chapterNum, gameMode, { total: terms.length, answered: realAnswered, correct: realCorrect, ms: Date.now() - roundStart });
   }
   const total = correctCount + wrongCount;
   const pct = total ? Math.round(correctCount / total * 100) : 0;
@@ -1223,9 +1228,7 @@ function renderResults() {
       <div class="results-icon">${icons[grade]}</div>
       <div class="results-grade ${grade.toLowerCase()}">${pct}%</div>
       <div class="results-sub">${msgs[grade]}</div>
-      ${window.ChecklistTrack && ChecklistTrack.signedIn() ? (realCorrect * 10 >= terms.length * 7
-        ? '<div class="results-sub" style="color:var(--emerald);font-weight:800">✓ Counts on your checklist (70%+ correct)</div>'
-        : '<div class="results-sub" style="color:var(--crimson);font-weight:800">Get 70% right to check this off on your checklist. Try again!</div>') : ''}
+      ${window.ChecklistTrack ? '<div class="results-sub" id="cl-result" style="font-weight:800;color:var(--dim)">' + (ChecklistTrack.signedIn() ? 'Saving to your checklist…' : 'Not signed in — sign in on the Quest page so this counts on your checklist.') + '</div>' : ''}
       <div class="results-stats">
         <div class="rs"><div class="rs-num" style="color:var(--emerald)">${correctCount}</div><div class="rs-label">Correct</div></div>
         <div class="rs"><div class="rs-num" style="color:var(--crimson)">${wrongCount}</div><div class="rs-label">Missed</div></div>
@@ -1236,6 +1239,19 @@ function renderResults() {
       <button class="btn btn-correct" onclick="resetGame();renderGame()">↺ Play Again</button>
       <button class="btn btn-next" onclick="history.back()">← Back to Chapter</button>
     </div>`;
+  if (clPromise && ChecklistTrack.signedIn()) clPromise.then(r => {
+    const el = document.getElementById('cl-result'); if (!el) return;
+    const ok = r && r.ok !== false;
+    const why = {
+      'round not finished': 'Too many cards weren\'t really answered (at least 80% must be).',
+      'round too fast': 'That was too fast — slow down and read each one.',
+      'score below 70%': 'You need 70% or more correct.',
+      'offline': 'No internet connection — play again when you\'re back online.',
+      'not signed in': 'Your sign-in expired — sign in again on the Quest page.'
+    }[r && r.reason] || ('It didn\'t save (' + (r && r.reason || 'unknown error') + ').');
+    el.style.color = ok ? 'var(--emerald)' : 'var(--crimson)';
+    el.textContent = ok ? '✓ Saved — counts on your checklist!' : '✗ Not checked off. ' + why + ' Try again!';
+  });
   document.getElementById('progress-fill').style.width = '100%';
 }
 
