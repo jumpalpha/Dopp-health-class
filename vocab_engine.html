@@ -848,6 +848,7 @@ let idx = 0, correctCount = 0, wrongCount = 0, streak = 0;
 // Checklist evidence: answers that were really attempted (not skipped / revealed / timed out).
 let realAnswered = 0, realCorrect = 0, roundStart = Date.now(), roundLogged = false;
 let timerInt = null;
+const WB_WORDS = 8;   // Word Builder words per round (was the whole deck, ~20)
 
 function load() {
   const ch = ALL_CHAPTERS[chapterNum] || ALL_CHAPTERS[1];
@@ -878,6 +879,7 @@ function resetGame() {
   idx = 0; correctCount = 0; wrongCount = 0; streak = 0;
   realAnswered = 0; realCorrect = 0; roundStart = Date.now(); roundLogged = false;
   terms = shuffle([...ALL_CHAPTERS[chapterNum].terms]);
+  if (gameMode === 'wordbuild') terms = terms.slice(0, WB_WORDS);   // Word Builder: short round
   clearInterval(timerInt);
   updateHUD();
   updateProgress();
@@ -1117,7 +1119,7 @@ function wbCheck() {
 function wbShowChoices() {
   if (!wb || wb.done) return;
   const right = terms[idx].t;
-  const others = shuffle(terms.filter(x => x.t !== right).map(x => x.t)).slice(0, 2);
+  const others = shuffle(ALL_CHAPTERS[chapterNum].terms.filter(x => x.t !== right).map(x => x.t)).slice(0, 2);
   wb.choices = shuffle([right, ...others]);
   wbPaint();
 }
