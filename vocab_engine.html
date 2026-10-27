@@ -48,6 +48,11 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-co
 .hud-pill.streak{color:var(--gold);border-color:rgba(255,215,0,0.3)}
 .hud-pill.total{color:var(--text)}
 
+/* ─── HOW TO PASS (below game) ─── */
+.howto{margin:22px 0 10px;padding:14px 18px;border-radius:12px;background:rgba(255,215,0,0.10);border:1px solid rgba(255,215,0,0.45);font:600 14px/1.5 'Nunito',sans-serif;color:var(--text)}
+.howto-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:1px;margin-bottom:6px}
+.howto ol{margin:0;padding-left:20px}.howto li{margin:3px 0}
+.howto-note{margin-top:8px;font-size:13px;color:var(--dim)}
 /* ─── FLASHCARD GAME ─── */
 .flashcard-wrap{perspective:1000px;margin-bottom:20px;cursor:pointer}
 .flashcard{width:100%;min-height:240px;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
@@ -187,6 +192,7 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-co
   <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
   <div class="score-hud" id="score-hud"></div>
   <div id="game-content"></div>
+  <div class="howto" id="howto"></div>
 </div>
 
 <script>
@@ -890,7 +896,39 @@ function updateProgress() {
   document.getElementById('progress-fill').style.width = (idx / terms.length * 100) + '%';
 }
 
+
+// ── HOW TO PASS (checklist rules; must match cl_log in supabase/student_checklist.sql) ──
+const HOWTO = {
+  flashcard: [
+    'Read the term, then <b>tap the card to flip it</b> and read the definition.',
+    'Tap <b>✓ Got It</b> or <b>✗ Still Learning</b>. Cards you don\'t flip first <b>don\'t count</b>.',
+    'Be honest — only tap Got It if you really knew it.',
+    'Go through the <b>whole deck</b> to the results screen.',
+    'Mark <b>70% or more</b> as Got It (after flipping).'],
+  speedquiz: [
+    'Pick the term that matches the definition <b>before the timer runs out</b>. Timeouts don\'t count.',
+    'Answer <b>every question</b> to reach the results screen.',
+    'Get <b>70% or more</b> correct.'],
+  wordbuild: [
+    'Build each word with the letter tiles (or use “3 choices”), then check it.',
+    '<b>Skip</b> and <b>Reveal answer</b> don\'t count as answers.',
+    'Finish <b>every word</b> to reach the results screen.',
+    'Get <b>70% or more</b> correct.'],
+  conceptmap: [
+    'Drag every term into a category, then tap <b>Check</b> on each set.',
+    'Terms you don\'t place and check don\'t count.',
+    'Finish <b>every set</b> to reach the results screen.',
+    'Get <b>70% or more</b> correct.']
+};
+function renderHowTo() {
+  const el = document.getElementById('howto'); if (!el) return;
+  el.innerHTML = `<div class="howto-title">✓ How to pass for your checklist</div>
+    <ol><li><b>Sign in first</b> (Quest login) or nothing is saved.</li>${(HOWTO[gameMode] || []).map(x => `<li>${x}</li>`).join('')}</ol>
+    <div class="howto-note">Don't rush — tapping through too fast won't count. When you pass, the results screen says “✓ Counts on your checklist.”</div>`;
+}
+
 function renderGame() {
+  renderHowTo();
   if (idx >= terms.length) { renderResults(); return; }
   const gc = document.getElementById('game-content');
   if (gameMode === 'flashcard') renderFlashcard(gc);
