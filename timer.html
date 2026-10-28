@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow">
+<title>Timer</title>
+<style>
+  :root{
+    --blue:#1877d3;
+    --gray:#666a70;
+    --yellow:#f4c430;
+    --panel:rgba(0,0,0,.22);
+    --white:#fff;
+  }
+
+  *{box-sizing:border-box}
+
+  html,body{
+    margin:0;
+    width:100%;
+    min-height:100%;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#111;
+    color:#fff;
+  }
+
+  body{
+    min-height:100vh;
+    transition:background-color .2s ease;
+  }
+
+  .app{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .status{
+    text-align:center;
+    margin-bottom:10px;
+  }
+
+  .phase{
+    font-size:clamp(28px,5vw,64px);
+    font-weight:900;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+
+  .round{
+    margin-top:8px;
+    font-size:clamp(18px,2.3vw,30px);
+    font-weight:700;
+  }
+
+  .timer{
+    font-size:clamp(100px,23vw,280px);
+    line-height:.9;
+    font-weight:900;
+    letter-spacing:-.05em;
+    text-shadow:0 4px 20px rgba(0,0,0,.35);
+    margin:20px 0 30px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:12px;
+    margin-bottom:18px;
+  }
+
+  button{
+    border:0;
+    border-radius:12px;
+    padding:14px 24px;
+    font-size:18px;
+    font-weight:800;
+    cursor:pointer;
+    background:#fff;
+    color:#111;
+    box-shadow:0 3px 10px rgba(0,0,0,.25);
+  }
+
+  button:hover{transform:translateY(-1px)}
+  button:active{transform:translateY(1px)}
+
+  .settings{
+    width:min(920px,100%);
+    background:var(--panel);
+    backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:16px;
+    padding:18px;
+  }
+
+  .settings h2{
+    margin:0 0 14px;
+    text-align:center;
+    font-size:22px;
+  }
+
+  .settings-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+  }
+
+  .settings-header h2{
+    margin:0;
+    flex:1;
+    text-align:left;
+  }
+
+  .mini-btn{
+    padding:9px 14px;
+    font-size:15px;
+    border-radius:9px;
+  }
+
+  .settings.collapsed{
+    width:auto;
+    min-width:260px;
+    padding:12px 14px;
+  }
+
+  .settings.collapsed .settings-body{
+    display:none;
+  }
+
+  .settings.collapsed .settings-header{
+    margin-bottom:0;
+  }
+
+  body.timer-maximized .settings{
+    display:none;
+  }
+
+  body.timer-maximized .app{
+    padding:10px;
+  }
+
+  body.timer-maximized .phase{
+    font-size:clamp(42px,7vw,92px);
+  }
+
+  body.timer-maximized .round{
+    font-size:clamp(24px,3vw,42px);
+  }
+
+  body.timer-maximized .timer{
+    font-size:clamp(170px,34vw,520px);
+    margin:20px 0 40px;
+  }
+
+  body.timer-maximized .controls button:not(#maximizeBtn){
+    display:none;
+  }
+
+  body.timer-maximized #maximizeBtn{
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    z-index:20;
+    opacity:.75;
+  }
+
+  body.timer-maximized #maximizeBtn:hover{
+    opacity:1;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(140px,1fr));
+    gap:14px;
+  }
+
+  .field{
+    background:rgba(255,255,255,.1);
+    padding:12px;
+    border-radius:12px;
+  }
+
+  label{
+    display:block;
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  input, select{
+    width:100%;
+    padding:10px 11px;
+    border-radius:9px;
+    border:1px solid rgba(255,255,255,.35);
+    font-size:18px;
+    font-weight:700;
+    text-align:center;
+  }
+
+  input[type="color"]{
+    height:46px;
+    padding:4px;
+    cursor:pointer;
+  }
+
+  .small{
+    margin-top:12px;
+    text-align:center;
+    font-size:13px;
+    opacity:.9;
+  }
+
+  body.flash-slow::before,
+  body.flash-medium::before,
+  body.flash-fast::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:rgba(255,255,255,.22);
+    z-index:0;
+  }
+
+  body.flash-slow::before{ animation:flashPulse 1s infinite; }
+  body.flash-medium::before{ animation:flashPulse .55s infinite; }
+  body.flash-fast::before{ animation:flashPulse .28s infinite; }
+
+  .app{
+    position:relative;
+    z-index:1;
+  }
+
+  @keyframes flashPulse{
+    0%,100%{opacity:0;}
+    50%{opacity:1;}
+  }
+
+  @media(max-width:700px){
+    .grid{grid-template-columns:1fr 1fr}
+  }
+
+  @media(max-width:430px){
+    .grid{grid-template-columns:1fr}
+    button{width:100%}
+  }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="app">
+  <div class="status">
+    <div id="phase" class="phase">BLUE</div>
+    <div id="round" class="round">Round 1 of 30</div>
+  </div>
+
+  <div id="timer" class="timer">1:20</div>
+
+  <div class="controls">
+    <button id="startPauseBtn">Start</button>
+    <button id="skipBtn">Skip Section</button>
+    <button id="resetBtn">Reset</button>
+    <button id="applyBtn">Apply Changes</button>
+    <button id="maximizeBtn">Maximize Timer</button>
+  </div>
+
+  <div class="settings" id="settingsPanel">
+    <div class="settings-header">
+      <h2>Timer Settings</h2>
+      <button id="minimizeSettingsBtn" class="mini-btn">Minimize Settings</button>
+    </div>
+    <div class="settings-body">
+    <div class="grid">
+      <div class="field">
+        <label for="roundsInput">Rounds</label>
+        <input id="roundsInput" type="number" min="1" max="999" value="30">
+      </div>
+      <div class="field">
+        <label for="blueInput">Section 1 seconds</label>
+        <input id="blueInput" type="number" min="1" max="3600" value="80">
+      </div>
+      <div class="field">
+        <label for="grayInput">Section 2 seconds</label>
+        <input id="grayInput" type="number" min="1" max="3600" value="80">
+      </div>
+      <div class="field">
+        <label for="yellowInput">Transition seconds</label>
+        <input id="yellowInput" type="number" min="1" max="3600" value="15">
+      </div>
+    </div>
+
+    <h2 style="margin-top:18px;">Sound Options</h2>
+    <div class="grid">
+      <div class="field" style="grid-column:span 2;">
+        <label for="soundSelect">Countdown sound</label>
+        <select id="soundSelect">
+          <option value="bomb" selected>Bomb Countdown</option>
+          <option value="arcade">Arcade Beeps</option>
+          <option value="sciFi">Sci-Fi Alert</option>
+          <option value="drum">Drum Hits</option>
+          <option value="laser">Laser Countdown</option>
+          <option value="bell">Bell / Chime</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:span 2;">
+        <label>&nbsp;</label>
+        <button id="testSoundBtn" style="width:100%;">Test Sound</button>
+      </div>
+    </div>
+
+    <h2 style="margin-top:18px;">Section Colors</h2>
+    <div class="grid">
+      <div class="field">
+        <label for="color1Input">Section 1 color</label>
+        <input id="color1Input" type="color" value="#1877d3">
+      </div>
+      <div class="field">
+        <label for="color2Input">Section 2 color</label>
+        <input id="color2Input" type="color" value="#666a70">
+      </div>
+      <div class="field">
+        <label for="color3Input">Transition color</label>
+        <input id="color3Input" type="color" value="#f4c430">
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="applyColorsBtn" style="width:100%;">Apply Colors</button>
+      </div>
+    </div>
+
+    <div class="small">Default sequence: 1:20 section 1 → 1:20 section 2 → 0:15 transition, repeated 30 times.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const phaseEl = document.getElementById('phase');
+  const roundEl = document.getElementById('round');
+  const timerEl = document.getElementById('timer');
+  const startPauseBtn = document.getElementById('startPauseBtn');
+  const skipBtn = document.getElementById('skipBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const applyBtn = document.getElementById('applyBtn');
+  const maximizeBtn = document.getElementById('maximizeBtn');
+  const settingsPanel = document.getElementById('settingsPanel');
+  const minimizeSettingsBtn = document.getElementById('minimizeSettingsBtn');
+
+  const roundsInput = document.getElementById('roundsInput');
+  const blueInput = document.getElementById('blueInput');
+  const grayInput = document.getElementById('grayInput');
+  const yellowInput = document.getElementById('yellowInput');
+  const soundSelect = document.getElementById('soundSelect');
+  const testSoundBtn = document.getElementById('testSoundBtn');
+  const color1Input = document.getElementById('color1Input');
+  const color2Input = document.getElementById('color2Input');
+  const color3Input = document.getElementById('color3Input');
+  const applyColorsBtn = document.getElementById('applyColorsBtn');
+
+  let settings = {
+    rounds: 30,
+    blue: 80,
+    gray: 80,
+    yellow: 15
+  };
+
+  const phases = [
+    { key:'blue', label:'SECTION 1', color:'#1877d3' },
+    { key:'gray', label:'SECTION 2', color:'#666a70' },
+    { key:'yellow', label:'TRANSITION', color:'#f4c430' }
+  ];
+
+  let currentRound = 1;
+  let phaseIndex = 0;
+  let timeLeft = settings.blue;
+  let running = false;
+  let intervalId = null;
+  let targetTime = null;
+  let lastBeepSecond = null;
+  let audioCtx = null;
+  let lastDramaTick = null;
+  let soundMode = 'bomb';
+
+  function clampInt(value, fallback, min=1, max=3600){
+    const n = parseInt(value,10);
+    if(Number.isNaN(n)) return fallback;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function formatTime(seconds){
+    const s = Math.max(0, Math.ceil(seconds));
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${mins}:${String(secs).padStart(2,'0')}`;
+  }
+
+  function currentPhase(){
+    return phases[phaseIndex];
+  }
+
+  function checkCountdownBeep(remaining){
+    if(remaining <= 0 || remaining > 10){
+      lastDramaTick = null;
+      return;
+    }
+
+    // Escalating "bomb timer" rhythm:
+    // 10–6 sec = 2 ticks/sec, 5–3 sec = 4 ticks/sec, final 3 sec = 8 ticks/sec.
+    let interval;
+    if(remaining <= 3) interval = 0.125;
+    else if(remaining <= 5) interval = 0.25;
+    else interval = 0.5;
+
+    const tickNumber = Math.floor(remaining / interval);
+
+    if(tickNumber !== lastDramaTick){
+      lastDramaTick = tickNumber;
+
+      // Rising pitch and louder attack as zero approaches.
+      const urgency = 1 - (remaining / 10);
+      const freq = 520 + urgency * 900;
+      dramaticTick(freq, remaining <= 3 ? 0.11 : 0.08, remaining);
+    }
+  }
+
+  function dramaticTick(freq, duration, remaining){
+    try{
+      if(!audioCtx) initAudio();
+      if(!audioCtx) return;
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+
+      const now = audioCtx.currentTime;
+      soundMode = soundSelect.value;
+
+      function tone(type, frequency, gainValue, dur, delay=0){
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(frequency, now + delay);
+        gain.gain.setValueAtTime(gainValue, now + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + delay);
+        osc.stop(now + delay + dur);
+      }
+
+      if(soundMode === 'bomb'){
+        tone('square', freq, 0.62, duration);
+        tone('sawtooth', Math.max(90, freq * 0.32), 0.24, duration * 1.35);
+        if(remaining <= 1) tone('square', 1650, 0.28, 0.07, 0.03);
+      }
+      else if(soundMode === 'arcade'){
+        tone('square', 700 + (10-remaining)*90, 0.42, 0.08);
+        tone('square', 1050 + (10-remaining)*110, 0.22, 0.05, 0.06);
+      }
+      else if(soundMode === 'sciFi'){
+        tone('sawtooth', 420 + (10-remaining)*120, 0.38, 0.16);
+        tone('sine', 900 + (10-remaining)*150, 0.24, 0.2);
+      }
+      else if(soundMode === 'drum'){
+        tone('sine', 110 + (10-remaining)*6, 0.78, 0.09);
+        tone('triangle', 180 + (10-remaining)*9, 0.28, 0.05);
+      }
+      else if(soundMode === 'laser'){
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.exponentialRampToValueAtTime(250, now + 0.12);
+        gain.gain.setValueAtTime(0.42, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
+      else if(soundMode === 'bell'){
+        tone('sine', 880 + (10-remaining)*35, 0.34, 0.24);
+        tone('sine', 1320 + (10-remaining)*45, 0.14, 0.18);
+      }
+    }catch(e){}
+  }
+
+  function updateFlash(remaining){
+    document.body.classList.remove('flash-slow','flash-medium','flash-fast');
+    if(remaining <= 0 || remaining > 10) return;
+
+    if(remaining <= 3){
+      document.body.classList.add('flash-fast');
+    }else if(remaining <= 6){
+      document.body.classList.add('flash-medium');
+    }else{
+      document.body.classList.add('flash-slow');
+    }
+  }
+
+  function render(){
+    const p = currentPhase();
+    document.body.style.backgroundColor = p.color;
+    phaseEl.textContent = p.label;
+    roundEl.textContent = `Round ${currentRound} of ${settings.rounds}`;
+    timerEl.textContent = formatTime(timeLeft);
+    updateFlash(timeLeft);
+    startPauseBtn.textContent = running ? 'Pause' : 'Start';
+  }
+
+  function stopInterval(){
+    if(intervalId){
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  }
+
+  function startTimer(){
+    if(running) return;
+    running = true;
+    targetTime = Date.now() + timeLeft * 1000;
+    startPauseBtn.textContent = 'Pause';
+
+    intervalId = setInterval(() => {
+      const remaining = (targetTime - Date.now()) / 1000;
+      timeLeft = Math.max(0, remaining);
+      checkCountdownBeep(remaining);
+      render();
+
+      if(remaining <= 0){
+        advancePhase();
+      }
+    }, 100);
+  }
+
+  function pauseTimer(){
+    if(!running) return;
+    timeLeft = Math.max(0, (targetTime - Date.now()) / 1000);
+    running = false;
+    stopInterval();
+    render();
+  }
+
+  function advancePhase(){
+    stopInterval();
+
+    if(phaseIndex < phases.length - 1){
+      phaseIndex++;
+    }else{
+      if(currentRound >= settings.rounds){
+        running = false;
+        timeLeft = 0;
+        document.body.classList.remove('flash-slow','flash-medium','flash-fast');
+        phaseEl.textContent = 'COMPLETE';
+        roundEl.textContent = `${settings.rounds} rounds finished`;
+        timerEl.textContent = '0:00';
+        document.body.style.backgroundColor = '#1f8f4e';
+        startPauseBtn.textContent = 'Start';
+        beep(880, 0.25);
+        setTimeout(() => beep(1040, 0.25), 300);
+        setTimeout(() => beep(1240, 0.4), 600);
+        return;
+      }
+      currentRound++;
+      phaseIndex = 0;
+    }
+
+    timeLeft = settings[currentPhase().key];
+    lastBeepSecond = null;
+    lastDramaTick = null;
+    beep(700, 0.18);
+    render();
+
+    if(running){
+      targetTime = Date.now() + timeLeft * 1000;
+      intervalId = setInterval(() => {
+        const remaining = (targetTime - Date.now()) / 1000;
+        timeLeft = Math.max(0, remaining);
+        checkCountdownBeep(remaining);
+        render();
+        if(remaining <= 0) advancePhase();
+      }, 100);
+    }
+  }
+
+  function resetTimer(){
+    running = false;
+    stopInterval();
+    currentRound = 1;
+    phaseIndex = 0;
+    timeLeft = settings.blue;
+    lastBeepSecond = null;
+    lastDramaTick = null;
+    render();
+  }
+
+  function applySettings(){
+    settings.rounds = clampInt(roundsInput.value, 30, 1, 999);
+    settings.blue = clampInt(blueInput.value, 80);
+    settings.gray = clampInt(grayInput.value, 80);
+    settings.yellow = clampInt(yellowInput.value, 15);
+
+    roundsInput.value = settings.rounds;
+    blueInput.value = settings.blue;
+    grayInput.value = settings.gray;
+    yellowInput.value = settings.yellow;
+
+    resetTimer();
+  }
+
+  function initAudio(){
+    try{
+      if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(audioCtx.state === 'suspended'){
+        audioCtx.resume();
+      }
+
+      // Play an effectively silent sound during the user's click.
+      // This unlocks browser audio so later countdown beeps are allowed.
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      gain.gain.value = 0.00001;
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.02);
+    }catch(e){}
+  }
+
+  function beep(freq=700, duration=.12){
+    try{
+      if(!audioCtx){
+        initAudio();
+      }
+      if(!audioCtx) return;
+
+      if(audioCtx.state === 'suspended'){
+        audioCtx.resume();
+      }
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.55, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioCtx.currentTime + duration
+      );
+
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + duration);
+    }catch(e){
+      console.log('Audio error:', e);
+    }
+  }
+
+  startPauseBtn.addEventListener('click', () => {
+    initAudio();
+    if(running) pauseTimer();
+    else startTimer();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    initAudio();
+    resetTimer();
+  });
+
+  skipBtn.addEventListener('click', () => {
+    initAudio();
+    if(running){
+      timeLeft = 0;
+      targetTime = Date.now();
+    }else{
+      advancePhase();
+    }
+  });
+
+  applyBtn.addEventListener('click', () => {
+    initAudio();
+    applySettings();
+  });
+
+
+  applyColorsBtn.addEventListener('click', () => {
+    phases[0].color = color1Input.value;
+    phases[1].color = color2Input.value;
+    phases[2].color = color3Input.value;
+    render();
+  });
+
+  testSoundBtn.addEventListener('click', () => {
+    initAudio();
+    soundMode = soundSelect.value;
+    let count = 0;
+    const demo = setInterval(() => {
+      count++;
+      dramaticTick(650 + count*120, 0.1, Math.max(1, 6-count));
+      if(count >= 5) clearInterval(demo);
+    }, 250);
+  });
+
+
+  minimizeSettingsBtn.addEventListener('click', () => {
+    settingsPanel.classList.toggle('collapsed');
+    const collapsed = settingsPanel.classList.contains('collapsed');
+    minimizeSettingsBtn.textContent = collapsed ? 'Show Settings' : 'Minimize Settings';
+  });
+
+  maximizeBtn.addEventListener('click', async () => {
+    const maximized = document.body.classList.toggle('timer-maximized');
+    maximizeBtn.textContent = maximized ? 'Exit Maximize' : 'Maximize Timer';
+
+    // Use browser fullscreen when allowed. The CSS maximize still works if fullscreen is blocked.
+    try{
+      if(maximized && !document.fullscreenElement){
+        await document.documentElement.requestFullscreen();
+      }else if(!maximized && document.fullscreenElement){
+        await document.exitFullscreen();
+      }
+    }catch(e){}
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    if(!document.fullscreenElement && document.body.classList.contains('timer-maximized')){
+      document.body.classList.remove('timer-maximized');
+      maximizeBtn.textContent = 'Maximize Timer';
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if(e.code === 'Space' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){
+      e.preventDefault();
+      running ? pauseTimer() : startTimer();
+    }
+    if(e.key.toLowerCase() === 'r' && document.activeElement.tagName !== 'INPUT'){
+      resetTimer();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -299,6 +299,7 @@ input, select, textarea { color: var(--text); }
     <div class="sb-section-label">Tools</div>
     <button class="sb-btn" onclick="showPage('notes',this)"><span class="sb-btn-icon">📝</span>Class Notes</button>
     <button class="sb-btn" onclick="showPage('print',this)"><span class="sb-btn-icon">🖨</span>Print / Export</button>
+    <button class="sb-btn" onclick="showPage('teachertools',this)"><span class="sb-btn-icon">🧰</span>Teacher Tools</button>
   </div>
 
   <div class="sb-bottom">
@@ -691,6 +692,22 @@ input, select, textarea { color: var(--text); }
         <div style="font-size:12px;color:var(--dim);line-height:1.4">Select any chapter and print all vocabulary terms and definitions.</div>
         <div class="btn btn-gold btn-sm" style="margin-top:12px;display:inline-block">Print</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── TEACHER TOOLS ── -->
+  <div class="page" id="page-teachertools">
+    <div class="page-hdr">
+      <div class="page-title">Teacher Tools</div>
+      <div class="page-sub">Classroom tools. Each opens in a new tab — project it on your board.</div>
+    </div>
+    <div class="three-col">
+      <a class="card" href="timer.html" target="_blank" rel="noopener" style="display:block;text-decoration:none;cursor:pointer">
+        <div style="font-size:28px;margin-bottom:8px">⏱</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Timer</div>
+        <div style="font-size:12px;color:var(--dim);line-height:1.4">Interval timer: Section 1 → Section 2 → Transition, repeated for set rounds (default 30 × 1:20 / 1:20 / 0:15). Countdown sounds, custom colors, full-screen mode. Space = start/pause, R = reset.</div>
+        <div class="btn btn-gold btn-sm" style="margin-top:12px;display:inline-block">Open timer ▶</div>
+      </a>
     </div>
   </div>
 
