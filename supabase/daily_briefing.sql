@@ -1,6 +1,7 @@
 -- ============================================================
 -- Daily Briefing: teacher announcement + Survey of the Day. Safe to re-run.
 -- Shown on welcome.html ("Welcome back" screen). Applied 2026-10-18.
+-- NOTE (2026-10-28): the survey parts below are replaced by survey_daily.sql (automatic, anonymous).
 --
 -- Same pattern as the rest of the site: RLS on, no policies; the website only calls
 -- the SECURITY DEFINER functions below. Students authenticate with id + PIN hash,

@@ -208,17 +208,23 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
   }
 
   // ───── briefing ─────
+  // Your own pick is only remembered on this device. The server stores totals, never who picked what.
+  const mineKey = id => 'dopp_survey_mine_' + id;
+  function getMine(id) { try { const v = localStorage.getItem(mineKey(id)); return v == null ? null : Number(v); } catch (e) { return null; } }
+  function setMine(id, i) { try { localStorage.setItem(mineKey(id), String(i)); } catch (e) {} }
   function surveyHTML(s) {
     if (!s) return '';
-    if (s.mine == null) {
+    if (!s.voted) {
       return `<div class="survey-q">🗳 Survey of the Day: ${esc(s.q)}</div>
-        <div class="choices">${s.opts.map((o, i) => `<button class="choice" data-choice="${i}">${esc(o)}</button>`).join('')}</div>`;
+        <div class="choices">${s.opts.map((o, i) => `<button class="choice" data-choice="${i}">${esc(o)}</button>`).join('')}</div>
+        <div class="res-note">Anonymous: only the class totals are saved. Your answer is final.</div>`;
     }
+    const mine = getMine(s.id);
     const total = s.opts.reduce((t, _, i) => t + ((s.counts && s.counts[i]) || 0), 0);
     return `<div class="survey-q">🗳 Survey of the Day: ${esc(s.q)}</div>` + s.opts.map((o, i) => {
       const n = (s.counts && s.counts[i]) || 0, pct = total ? Math.round(n * 100 / total) : 0;
-      return `<div class="res${i === s.mine ? ' mine' : ''}"><i style="width:${pct}%"></i><span>${i === s.mine ? '★ ' : ''}${esc(o)}</span><em>${pct}%</em></div>`;
-    }).join('') + `<div class="res-note">You picked ★. ${total} classmate${total === 1 ? '' : 's'} answered so far · <button class="switch" data-change style="color:var(--gold-text);margin:0">change my answer</button></div>`;
+      return `<div class="res${i === mine ? ' mine' : ''}"><i style="width:${pct}%"></i><span>${i === mine ? '★ ' : ''}${esc(o)}</span><em>${pct}%</em></div>`;
+    }).join('') + `<div class="res-note">${mine != null ? 'You picked ★. ' : ''}${total} classmate${total === 1 ? '' : 's'} answered so far · past days are on your <a href="quest.html#survey-cal" style="color:var(--gold-text)">Quest calendar</a></div>`;
   }
   function drawBrief() {
     const el = $('brief'); if (!el) return;
@@ -339,11 +345,11 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
         document.querySelectorAll('.choice').forEach(b => { b.disabled = false; });
         return;
       }
-      briefing.survey.mine = data.mine; briefing.survey.counts = data.counts;
+      setMine(briefing.survey.id, Number(t.dataset.choice));
+      briefing.survey = data;
       drawBrief(); toast('Thanks for voting! 🗳');
       return;
     }
-    if (t.hasAttribute('data-change') && briefing && briefing.survey) { briefing.survey.mine = null; drawBrief(); }
   });
 
   loadAll();

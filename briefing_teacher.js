@@ -32,11 +32,14 @@
         <textarea id="bt-ann" rows="4" maxlength="2000" placeholder="Example: Chapter 6 reading is due Friday. Bring headphones tomorrow!">${esc(B ? B.announcement : '')}</textarea>
         <p class="bt-note">Shows at the top of every student's Welcome screen until you change or clear it.${B && B.updated_at ? ' Last saved ' + esc(new Date(B.updated_at).toLocaleString()) + '.' : ''}</p></div>
       <div class="card"><div class="card-title">🗳 Survey of the Day</div>
-        <input id="bt-q" type="text" maxlength="300" placeholder="Question (leave empty for no survey)" value="${esc(s ? s.q : '')}">
+        <p class="bt-note">${B && B.weekend ? 'No survey on weekends. A new question appears automatically each school day.' :
+          s && s.bank_n ? 'Today\'s automatic question: #' + s.bank_n + ' of the 100-question bank. Students get the next one each school day, no repeats.' :
+          s ? 'Today you\'re using your own question. Tomorrow goes back to the automatic list.' : 'Survey is off for today. Type a question to turn it back on.'}</p>
+        <input id="bt-q" type="text" maxlength="300" placeholder="Question (leave empty for no survey today)" value="${esc(s ? s.q : '')}">
         <div id="bt-opts">${opts.map((o, i) => `<input class="bt-opt" type="text" maxlength="80" placeholder="Choice ${i + 1}" value="${esc(o)}">`).join('')}</div>
         <button class="btn btn-sm" data-bt="add">+ Add a choice</button>
-        <p class="bt-note">2–6 choices. Students tap one; they see the class totals only after they answer. Answers are counted, not shown by name.
-          Changing the question or choices starts a fresh survey with zero answers.</p>
+        <p class="bt-note">2–6 choices. Students tap one and see the class totals right after. Fully anonymous: only totals are saved, never who picked what, so answers are final.
+          Editing the question or choices replaces <b>today's</b> survey and resets its answers. Past days' totals show on each student's Quest calendar (🗳 pop-up).</p>
         ${results(s)}</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <button class="btn btn-gold" data-bt="save">💾 Save &amp; show to students</button>
@@ -75,7 +78,7 @@
           $('bt-opts').insertAdjacentHTML('beforeend', `<input class="bt-opt" type="text" maxlength="80" placeholder="Choice ${document.querySelectorAll('.bt-opt').length + 1}">`);
         }
         if (a === 'save') save(false);
-        if (a === 'clear' && confirm('Remove the announcement and the survey?')) save(true);
+        if (a === 'clear' && confirm('Remove the announcement and turn off today\'s survey?')) save(true);
         if (a === 'refresh') load();
       });
       wired = true;

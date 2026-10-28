@@ -148,6 +148,31 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 .streak-labels { display:flex; justify-content:space-between; margin-bottom:6px; }
 .streak-label { font-size:10px; color:var(--dim); text-align:center; }
 
+.streak-day { position:relative; }
+.sv-btn { position:absolute; right:-3px; bottom:-3px; width:22px; height:22px; border-radius:50%; border:1px solid #b8860b;
+  background:#FFE680; font-size:12px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+.sv-btn.new { box-shadow:0 0 0 2px rgba(0,229,160,0.6); }
+.sv-btn:hover, .sv-btn:focus-visible { transform:scale(1.12); outline:none; }
+.sv-legend { font-size:12px; color:var(--dim); margin:-18px 0 22px; }
+.sv-bg { position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:250; display:none; align-items:center; justify-content:center; padding:16px; }
+.sv-bg.show { display:flex; }
+.sv-box { position:relative; background:#0d1020; color:#F4EFFF; border:1px solid rgba(255,215,0,0.45); border-radius:16px; padding:22px 18px 18px;
+  max-width:380px; width:100%; max-height:85vh; overflow:auto; }
+.sv-x { position:absolute; top:8px; right:8px; width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.06); color:#F4EFFF; font-size:16px; cursor:pointer; }
+.sv-date { font-size:12px; color:rgba(244,239,255,0.75); font-weight:700; margin-bottom:4px; }
+.sv-q { font-size:17px; font-weight:800; margin:0 34px 14px 0; line-height:1.35; }
+.sv-res { position:relative; border:1px solid rgba(255,255,255,0.2); border-radius:9px; padding:9px 11px; margin-bottom:7px; overflow:hidden;
+  display:flex; justify-content:space-between; gap:10px; font-size:14px; font-weight:700; }
+.sv-res i { position:absolute; inset:0 auto 0 0; background:rgba(255,215,0,0.2); z-index:0; }
+.sv-res span, .sv-res em { position:relative; z-index:1; font-style:normal; }
+.sv-res.mine { border-color:rgba(255,215,0,0.8); }
+.sv-choice { display:block; width:100%; text-align:left; padding:11px 12px; margin-bottom:7px; border-radius:9px; cursor:pointer;
+  border:1.5px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.06); color:#F4EFFF; font-size:14px; font-weight:700; }
+.sv-choice:hover { border-color:rgba(255,215,0,0.7); }
+.sv-note { font-size:12px; color:rgba(244,239,255,0.75); margin-top:8px; line-height:1.45; }
+.sv-close { width:100%; margin-top:12px; padding:11px; border-radius:10px; border:0; cursor:pointer; font-weight:800; font-size:14px;
+  background:linear-gradient(135deg,#FFD700,#FF8C00); color:#1a1200; }
 /* NAME MODAL */
 .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; display:flex; align-items:center; justify-content:center; display:none; }
 .modal-bg.show { display:flex; }
@@ -348,7 +373,7 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
 </div>
 
 <!-- STREAK CALENDAR -->
-<div class="section">
+<div class="section" id="survey-cal">
   <div class="sec-header">
     <div class="sec-title">📅 Activity Streak</div>
     <span style="font-size:12px;color:var(--dim)">+5 XP each day you log in</span>
@@ -356,6 +381,16 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
   <div class="streak-month" id="streak-month"></div>
   <div class="streak-labels" id="streak-labels"></div>
   <div class="streak-grid" id="streak-grid"></div>
+  <div class="sv-legend" id="sv-legend" style="display:none">🗳 Tap a ballot to see that day's Survey of the Day results (anonymous totals).</div>
+</div>
+
+<!-- SURVEY RESULTS POP-UP -->
+<div class="sv-bg" id="sv-modal" role="dialog" aria-modal="true" aria-labelledby="sv-q">
+  <div class="sv-box">
+    <button class="sv-x" type="button" aria-label="Close" data-svclose>✕</button>
+    <div id="sv-body"></div>
+    <button class="sv-close" type="button" data-svclose>Close</button>
+  </div>
 </div>
 
 <!-- REALM PROGRESS -->
@@ -807,9 +842,90 @@ function renderStreak() {
     if (ds > todayS) div.style.opacity = '0.35';
     div.title = ds + (doneDays.has(ds) ? ' — logged in' : '');
     div.innerHTML = (d.getDate() === 1 || i === 0 ? '<span style="text-align:center"><span class="mo">' + d.toLocaleDateString([], { month: 'short' }) + '</span>' + d.getDate() + '</span>' : d.getDate());
+    div.dataset.ds = ds;
     grid.appendChild(div);
   }
+  loadSurveyCal(localDay(start), localDay(endD));
 }
+
+// ═══════════════════════════════════════════════════════════
+// SURVEY OF THE DAY on the calendar — anonymous totals in a pop-up.
+// Server keeps only totals (supabase/survey_daily.sql); your own pick is remembered on this device only.
+// ═══════════════════════════════════════════════════════════
+let surveyDays = {}, svCurrent = null;
+const svMine = id => { try { const v = localStorage.getItem('dopp_survey_mine_' + id); return v == null ? null : Number(v); } catch (e) { return null; } };
+let svFetched = { key: '', at: 0 };
+async function loadSurveyCal(from, to) {
+  if (!student || !studentPinHash) return;
+  const key = student.id + from + to;
+  if (svFetched.key !== key || Date.now() - svFetched.at > 60000) {   // don't re-ask the server on every re-render
+    let data, error;
+    try { ({ data, error } = await db.rpc('survey_calendar', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER, p_from: from, p_to: to })); }
+    catch (e) { return; }
+    if (error || !Array.isArray(data)) return;
+    surveyDays = {};
+    data.forEach(s => { surveyDays[s.id] = s; });
+    svFetched = { key, at: Date.now() };
+  }
+  svPaint();
+}
+function svPaint() {
+  let any = false;
+  document.querySelectorAll('#streak-grid .streak-day').forEach(cell => {
+    const s = surveyDays[cell.dataset.ds];
+    const old = cell.querySelector('.sv-btn'); if (old) old.remove();
+    if (!s) return;
+    any = true;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'sv-btn' + (s.open && !s.voted ? ' new' : '');
+    b.dataset.sv = s.id; b.textContent = '🗳';
+    b.setAttribute('aria-label', 'Survey of the Day for ' + s.id + (s.open && !s.voted ? ' (not answered yet)' : ''));
+    cell.appendChild(b);
+  });
+  document.getElementById('sv-legend').style.display = any ? 'block' : 'none';
+}
+function svDraw(s) {
+  const date = new Date(s.id + 'T12:00:00').toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+  let h = `<div class="sv-date">🗳 Survey of the Day · ${escH(date)}</div><div class="sv-q" id="sv-q">${escH(s.q)}</div>`;
+  if (!s.counts) {
+    h += s.opts.map((o, i) => `<button class="sv-choice" type="button" data-svpick="${i}">${escH(o)}</button>`).join('') +
+      `<div class="sv-note">Answer to see the class results. It's anonymous: only the totals are saved, and your answer is final.</div>`;
+  } else {
+    const mine = svMine(s.id), total = s.total || 0;
+    h += s.opts.map((o, i) => {
+      const n = (s.counts && s.counts[i]) || 0, pct = total ? Math.round(n * 100 / total) : 0;
+      return `<div class="sv-res${i === mine ? ' mine' : ''}"><i style="width:${pct}%"></i><span>${i === mine ? '★ ' : ''}${escH(o)}</span><em>${n} · ${pct}%</em></div>`;
+    }).join('') + `<div class="sv-note">${total} classmate${total === 1 ? '' : 's'} answered${s.open ? ' so far' : ''}.${mine != null ? ' ★ = your pick (only you can see that).' : ''}${!s.voted && !s.open ? ' Voting closed at the end of that day.' : ''}</div>`;
+  }
+  document.getElementById('sv-body').innerHTML = h;
+}
+function svOpen(id) {
+  const s = surveyDays[id]; if (!s) return;
+  svCurrent = id; svDraw(s);
+  const m = document.getElementById('sv-modal'); m.classList.add('show');
+  const f = m.querySelector('.sv-choice') || m.querySelector('.sv-x'); if (f) f.focus();
+}
+function svClose() { document.getElementById('sv-modal').classList.remove('show'); }
+document.addEventListener('click', async e => {
+  const open = e.target.closest('[data-sv]'); if (open) { e.preventDefault(); return svOpen(open.dataset.sv); }
+  if (e.target.closest('[data-svclose]') || e.target.id === 'sv-modal') return svClose();
+  const pick = e.target.closest('[data-svpick]');
+  if (pick) {
+    const s = svCurrent && surveyDays[svCurrent]; if (!s) return;
+    document.querySelectorAll('.sv-choice').forEach(b => { b.disabled = true; });
+    const choice = Number(pick.dataset.svpick);
+    const { data, error } = await db.rpc('survey_answer', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER, p_survey_id: s.id, p_choice: choice });
+    if (error) {
+      document.getElementById('sv-body').insertAdjacentHTML('beforeend', `<div class="sv-note" style="color:#FF8FA3">${/closed/i.test(error.message) ? 'Voting for that day is closed.' : "Couldn't save your answer. Try again."}</div>`);
+      document.querySelectorAll('.sv-choice').forEach(b => { b.disabled = false; });
+      return;
+    }
+    try { localStorage.setItem('dopp_survey_mine_' + s.id, String(choice)); } catch (e2) {}
+    surveyDays[s.id] = data; svDraw(data);
+    const b = document.querySelector(`.sv-btn[data-sv="${s.id}"]`); if (b) b.classList.remove('new');
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') svClose(); });
 
 function renderRealms(st) {
   const grid = document.getElementById('realm-grid');
