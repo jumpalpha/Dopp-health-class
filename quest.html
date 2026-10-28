@@ -926,6 +926,7 @@ document.addEventListener('click', async e => {
   }
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') svClose(); });
+window.addEventListener('dopp:survey', () => { svFetched.at = 0; renderStreak(); });   // voted in the daily pop-up (pwa.js)
 
 function renderRealms(st) {
   const grid = document.getElementById('realm-grid');

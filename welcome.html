@@ -217,7 +217,7 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
     if (!s.voted) {
       return `<div class="survey-q">🗳 Survey of the Day: ${esc(s.q)}</div>
         <div class="choices">${s.opts.map((o, i) => `<button class="choice" data-choice="${i}">${esc(o)}</button>`).join('')}</div>
-        <div class="res-note">Anonymous: only the class totals are saved. Your answer is final.</div>`;
+        <div class="res-note">💡 Tap your answer. Anonymous: only the class totals are saved, and your answer is final. Results show right after you vote; past days are on your <a href="quest.html#survey-cal" style="color:var(--gold-text)">Quest calendar</a> (tap a 🗳 badge).</div>`;
     }
     const mine = getMine(s.id);
     const total = s.opts.reduce((t, _, i) => t + ((s.counts && s.counts[i]) || 0), 0);
@@ -351,6 +351,9 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
       return;
     }
   });
+
+  // Voted in the once-a-day pop-up (pwa.js): show the results here too.
+  window.addEventListener('dopp:survey', e => { if (briefing && e.detail) { briefing.survey = e.detail; drawBrief(); } });
 
   loadAll();
 })();
