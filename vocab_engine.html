@@ -336,7 +336,7 @@ const ALL_CHAPTERS = {
     {t:"Reciprocity",d:"The mutual exchange of benefits, care, or support between people in a healthy relationship.",cat:"Relationships"},
     {t:"Jealousy",d:"A feeling of insecurity or fear of losing something or someone to another — can damage relationships.",cat:"Relationships"},
     {t:"Healthy relationship",d:"A relationship built on trust, respect, communication, equality, and support for each other's goals.",cat:"Relationships"},
-    {t:"\"I\" statements",d:"Phrases that express personal feelings without blaming others, beginning with \"I feel...\".",cat:"Skills"},
+    {t:"I statements",d:"Phrases that express personal feelings without blaming others, beginning with \"I feel...\".",cat:"Skills"},
     {t:"Peer pressure",d:"Influence from people your own age to act or think in a certain way.",cat:"Relationships"},
     {t:"Refusal skills",d:"Strategies used to say no to unwanted or risky behaviors.",cat:"Skills"},
     {t:"Boundaries",d:"Limits a person sets on what they consider acceptable behavior from others.",cat:"Relationships"},
@@ -1164,7 +1164,7 @@ function renderConceptMap(gc) {
     <div class="cmap-word-bank">
       <div class="cmap-bank-title">Word Bank</div>
       <div class="cmap-bank-chips" id="word-bank">
-        ${shuffled.map(t => `<div class="cmap-chip" id="chip-${t.t.replace(/\s/g,'_')}" draggable="true" ondragstart="cmDragStart(event,'${t.t.replace(/'/g,"\\'")}','${t.cat.replace(/'/g,"\\'")}')"><span>${t.t}</span></div>`).join('')}
+        ${shuffled.map(t => `<div class="cmap-chip" id="chip-${t.t.replace(/\s/g,'_')}" draggable="true" ondragstart="cmDragStart(event,'${t.t.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${t.cat.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"><span>${t.t}</span></div>`).join('')}
       </div>
     </div>
     <div class="cmap-categories">
