@@ -1,0 +1,786 @@
+[
+ [
+  "Would you rather be able to fly or be invisible?",
+  [
+   "Fly",
+   "Be invisible"
+  ]
+ ],
+ [
+  "Have you ever kissed someone (romantically)?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "How many hours of sleep did you get last night?",
+  [
+   "Under 6",
+   "6–7",
+   "8–9",
+   "10+"
+  ]
+ ],
+ [
+  "Have you ever had a crush on a teacher?",
+  [
+   "Yes",
+   "No",
+   "Not saying 🤐"
+  ]
+ ],
+ [
+  "Pineapple on pizza?",
+  [
+   "Yes, love it",
+   "Absolutely not",
+   "Never tried it"
+  ]
+ ],
+ [
+  "What would you do with $1,000 right now?",
+  [
+   "Save it",
+   "Spend it on stuff",
+   "Spend it on an experience",
+   "Give some away"
+  ]
+ ],
+ [
+  "Have you ever pretended to be sick to stay home?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Which would you give up for a month?",
+  [
+   "Your phone",
+   "Junk food",
+   "Music",
+   "Hanging out with friends"
+  ]
+ ],
+ [
+  "Do you think you'll live in Idaho as an adult?",
+  [
+   "Yes",
+   "No",
+   "No idea"
+  ]
+ ],
+ [
+  "Do you currently have a crush on someone?",
+  [
+   "Yes",
+   "No",
+   "It's complicated"
+  ]
+ ],
+ [
+  "Morning person or night owl?",
+  [
+   "Morning person",
+   "Night owl",
+   "Neither, I'm always tired"
+  ]
+ ],
+ [
+  "Have you ever broken a bone?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather know how you'll die or when you'll die?",
+  [
+   "How",
+   "When",
+   "Neither, thanks"
+  ]
+ ],
+ [
+  "What's your screen time on a normal school day?",
+  [
+   "Under 2 hours",
+   "2–4 hours",
+   "4–7 hours",
+   "7+ hours"
+  ]
+ ],
+ [
+  "Have you ever been on a date?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "If you could time travel once, where would you go?",
+  [
+   "The past",
+   "The future",
+   "I'd stay right here"
+  ]
+ ],
+ [
+  "Do you eat breakfast most school days?",
+  [
+   "Yes",
+   "No",
+   "Sometimes"
+  ]
+ ],
+ [
+  "Would you go to space if you had the chance?",
+  [
+   "In a heartbeat",
+   "Maybe",
+   "No way"
+  ]
+ ],
+ [
+  "Have you ever gotten in trouble for something you didn't do?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Which superpower would help your health most?",
+  [
+   "Never get tired",
+   "Never get sick",
+   "Heal instantly",
+   "Never feel stressed"
+  ]
+ ],
+ [
+  "Who do you talk to most when something's bothering you?",
+  [
+   "A parent",
+   "A friend",
+   "A sibling",
+   "Nobody"
+  ]
+ ],
+ [
+  "Do you believe in ghosts?",
+  [
+   "Yes",
+   "No",
+   "Kind of"
+  ]
+ ],
+ [
+  "Have you ever been stung by a bee?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather be the funniest or the smartest person in the room?",
+  [
+   "Funniest",
+   "Smartest"
+  ]
+ ],
+ [
+  "Do you think aliens exist?",
+  [
+   "Yes",
+   "No",
+   "Probably somewhere"
+  ]
+ ],
+ [
+  "Have you ever had your heart broken?",
+  [
+   "Yes",
+   "No",
+   "A little"
+  ]
+ ],
+ [
+  "How many glasses of water did you drink yesterday?",
+  [
+   "0–1",
+   "2–4",
+   "5–7",
+   "8+"
+  ]
+ ],
+ [
+  "Would you rather live in a big city or out in the country?",
+  [
+   "Big city",
+   "Small town",
+   "Country",
+   "Off the grid"
+  ]
+ ],
+ [
+  "Have you ever laughed so hard something came out your nose?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Which is the best season?",
+  [
+   "Spring",
+   "Summer",
+   "Fall",
+   "Winter"
+  ]
+ ],
+ [
+  "Do you think social media does more good or harm for teens?",
+  [
+   "More good",
+   "More harm",
+   "About even"
+  ]
+ ],
+ [
+  "Have you ever had a nickname you hated?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather have a pet dragon or a pet unicorn?",
+  [
+   "Dragon",
+   "Unicorn"
+  ]
+ ],
+ [
+  "Have you ever asked someone out?",
+  [
+   "Yes",
+   "No",
+   "I've thought about it"
+  ]
+ ],
+ [
+  "What's the best way to deal with stress?",
+  [
+   "Exercise",
+   "Music",
+   "Sleep",
+   "Talk to someone"
+  ]
+ ],
+ [
+  "Do you sing in the shower?",
+  [
+   "Every time",
+   "Sometimes",
+   "Never"
+  ]
+ ],
+ [
+  "Would you rather be famous or rich?",
+  [
+   "Famous",
+   "Rich",
+   "Neither"
+  ]
+ ],
+ [
+  "Have you ever been to the emergency room?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Do you check your phone within 5 minutes of waking up?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "How old do you think is the 'right' age to get married?",
+  [
+   "Under 22",
+   "22–25",
+   "26–30",
+   "30+"
+  ]
+ ],
+ [
+  "Have you ever eaten food that fell on the floor?",
+  [
+   "Yes (5-second rule)",
+   "No, gross"
+  ]
+ ],
+ [
+  "Would you rather never use social media again or never watch TV/streaming again?",
+  [
+   "Lose social media",
+   "Lose TV/streaming"
+  ]
+ ],
+ [
+  "How many hours a week do you exercise or play sports?",
+  [
+   "0–1",
+   "2–4",
+   "5–9",
+   "10+"
+  ]
+ ],
+ [
+  "Have you ever been caught sneaking a snack in class?",
+  [
+   "Yes",
+   "No",
+   "Never caught 😏"
+  ]
+ ],
+ [
+  "Do you want kids someday?",
+  [
+   "Yes",
+   "No",
+   "Not sure"
+  ]
+ ],
+ [
+  "Which would you rather do for a job?",
+  [
+   "Help people",
+   "Make lots of money",
+   "Be creative",
+   "Be my own boss"
+  ]
+ ],
+ [
+  "Have you ever had a dream that came true?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather have a rewind button or a pause button for your life?",
+  [
+   "Rewind",
+   "Pause"
+  ]
+ ],
+ [
+  "Have you ever had a 'secret admirer' (or been one)?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "What's your go-to energy source?",
+  [
+   "Food",
+   "Sleep",
+   "Energy drink/soda",
+   "Music"
+  ]
+ ],
+ [
+  "Do you think you could survive a week alone in the wilderness?",
+  [
+   "Easily",
+   "Barely",
+   "Not a chance"
+  ]
+ ],
+ [
+  "Have you ever cried at a movie?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather read minds or see the future?",
+  [
+   "Read minds",
+   "See the future"
+  ]
+ ],
+ [
+  "How do you feel about school starting before 8 a.m.?",
+  [
+   "It's fine",
+   "Too early",
+   "Way too early"
+  ]
+ ],
+ [
+  "Have you ever been embarrassed in front of your crush?",
+  [
+   "Yes",
+   "No",
+   "Every day"
+  ]
+ ],
+ [
+  "Which food could you eat every day for a month?",
+  [
+   "Pizza",
+   "Tacos",
+   "Chicken nuggets",
+   "Cereal"
+  ]
+ ],
+ [
+  "Have you ever stayed up all night?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather be a kid again or skip ahead to 25?",
+  [
+   "Kid again",
+   "Skip to 25",
+   "Stay right here"
+  ]
+ ],
+ [
+  "Do you have a job outside of school?",
+  [
+   "Yes",
+   "No",
+   "Looking for one"
+  ]
+ ],
+ [
+  "Do you think you're addicted to your phone?",
+  [
+   "Yes",
+   "No",
+   "Kind of"
+  ]
+ ],
+ [
+  "Have you ever had a friend who was a bad influence?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather explore the deep ocean or outer space?",
+  [
+   "Deep ocean",
+   "Outer space"
+  ]
+ ],
+ [
+  "How often do you eat dinner with your family?",
+  [
+   "Almost every night",
+   "A few times a week",
+   "Rarely"
+  ]
+ ],
+ [
+  "Have you ever lied about your age?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "What's the best thing about being a teenager?",
+  [
+   "Freedom",
+   "Friends",
+   "Fewer responsibilities",
+   "Honestly, nothing"
+  ]
+ ],
+ [
+  "Do you believe in love at first sight?",
+  [
+   "Yes",
+   "No",
+   "Maybe"
+  ]
+ ],
+ [
+  "Would you rather be really tall or really strong?",
+  [
+   "Tall",
+   "Strong"
+  ]
+ ],
+ [
+  "Have you ever forgotten someone's name right after meeting them?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Which would scare you more?",
+  [
+   "Spiders",
+   "Heights",
+   "Public speaking",
+   "The dark"
+  ]
+ ],
+ [
+  "How many close friends do you have?",
+  [
+   "0–1",
+   "2–3",
+   "4–6",
+   "7+"
+  ]
+ ],
+ [
+  "Have you ever sent a text to the wrong person?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather have no homework or no tests?",
+  [
+   "No homework",
+   "No tests"
+  ]
+ ],
+ [
+  "Do you think you'd survive a zombie apocalypse?",
+  [
+   "Yes",
+   "No",
+   "I'd be the zombie"
+  ]
+ ],
+ [
+  "Have you ever had a friendship end badly?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "What's your favorite way to move your body?",
+  [
+   "Team sports",
+   "Running/biking",
+   "Gym/weights",
+   "Dancing"
+  ]
+ ],
+ [
+  "Would you rather be able to talk to animals or speak every language?",
+  [
+   "Talk to animals",
+   "Speak every language"
+  ]
+ ],
+ [
+  "Have you ever been on a plane?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Do your parents know who your crush is?",
+  [
+   "Yes",
+   "No",
+   "No crush"
+  ]
+ ],
+ [
+  "What age do you think you'll be when you move out?",
+  [
+   "18",
+   "19–21",
+   "22–25",
+   "26+"
+  ]
+ ],
+ [
+  "Have you ever tried a food and immediately spit it out?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather lose your sense of taste or your sense of smell?",
+  [
+   "Taste",
+   "Smell"
+  ]
+ ],
+ [
+  "Do you think kindness or intelligence matters more in a partner?",
+  [
+   "Kindness",
+   "Intelligence",
+   "Both equally"
+  ]
+ ],
+ [
+  "Have you ever made a New Year's resolution and kept it?",
+  [
+   "Yes",
+   "No",
+   "Never made one"
+  ]
+ ],
+ [
+  "Which is the worst chore?",
+  [
+   "Dishes",
+   "Laundry",
+   "Cleaning bathroom",
+   "Taking out trash"
+  ]
+ ],
+ [
+  "Do you feel like adults listen to teenagers?",
+  [
+   "Usually",
+   "Sometimes",
+   "Rarely"
+  ]
+ ],
+ [
+  "Have you ever talked your way out of trouble?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather have a personal chef or a personal driver?",
+  [
+   "Chef",
+   "Driver"
+  ]
+ ],
+ [
+  "Have you ever had a sleepover where nobody slept?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Do you think you'd be a good parent someday?",
+  [
+   "Yes",
+   "No",
+   "Hopefully"
+  ]
+ ],
+ [
+  "Which matters most to you in a friend?",
+  [
+   "Loyalty",
+   "Humor",
+   "Honesty",
+   "Same interests"
+  ]
+ ],
+ [
+  "Have you ever been 'friend-zoned'?",
+  [
+   "Yes",
+   "No",
+   "I'm the one who did it"
+  ]
+ ],
+ [
+  "Would you rather never have to sleep or never have to eat?",
+  [
+   "Never sleep",
+   "Never eat"
+  ]
+ ],
+ [
+  "Do you get nervous before tests?",
+  [
+   "Always",
+   "Sometimes",
+   "Never"
+  ]
+ ],
+ [
+  "Have you ever pulled a prank that went wrong?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "Would you rather win an Olympic gold medal or an Oscar?",
+  [
+   "Olympic gold",
+   "Oscar"
+  ]
+ ],
+ [
+  "Do you think you'll go to college?",
+  [
+   "Yes",
+   "No",
+   "Trade school",
+   "Not sure"
+  ]
+ ],
+ [
+  "Have you ever held hands with someone you liked?",
+  [
+   "Yes",
+   "No"
+  ]
+ ],
+ [
+  "If you could change one school rule, which would it be?",
+  [
+   "Phone rules",
+   "Start time",
+   "Dress code",
+   "Homework load"
+  ]
+ ],
+ [
+  "Would you rather relive your best day or skip your worst day?",
+  [
+   "Relive the best",
+   "Skip the worst"
+  ]
+ ],
+ [
+  "How are you feeling about this trimester so far?",
+  [
+   "Great",
+   "Okay",
+   "Hanging in there",
+   "Rough"
+  ]
+ ]
+]
