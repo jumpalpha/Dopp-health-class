@@ -53,7 +53,7 @@ export async function requireOwner(req: Request): Promise<SupabaseClient | Respo
   if (uErr || !u?.user) return json(req, 401, { error: 'session invalid or expired' });
 
   const { data: ok, error } = await client.rpc('bs_is_owner');
-  if (error || ok !== true) return json(req, 403, { error: 'not authorized (owner + 2FA required)' });
+  if (error || ok !== true) return json(req, 403, { error: 'not authorized (owner sign-in required)' });
 
   return client;
 }

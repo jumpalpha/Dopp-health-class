@@ -2,8 +2,7 @@
 //
 // These two values are PUBLIC by design (Supabase's anon key is meant to ship in
 // browser code). They grant nothing on their own: every bs_* table, function and
-// storage bucket denies access unless the caller is the listed owner with a
-// completed 2FA sign-in.
+// storage bucket denies access unless the caller is the signed-in listed owner.
 //
 // NEVER put a service_role key, database password, AI API key, or any
 // manuscript text in this file — this folder is served publicly by GitHub Pages.

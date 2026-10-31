@@ -114,7 +114,7 @@ def _():
     anon(f"select public.bs_approve_proposal('{uuid.uuid4()}');", expect_error='permission denied')
     anon(f"select public.bs_rollback_chapter('{uuid.uuid4()}', '{uuid.uuid4()}');", expect_error='permission denied')
 
-@test('another signed-in account (even with 2FA) sees zero rows everywhere')
+@test('another signed-in account sees zero rows everywhere')
 def _():
     for t in ['chapters', 'masters', 'master_chapters', 'chapter_versions', 'proposals', 'annotations', 'audit_log', 'manuscripts', 'bookmarks', 'reading_state']:
         n = intruder(f'select count(*) from public.bs_{t};')[-1]
@@ -146,10 +146,9 @@ def _():
     w = json.loads(intruder('select public.bs_whoami();')[-1])
     assert w == {'owner_listed': False, 'aal': 'aal2'}, w
 
-@test('owner WITHOUT completing 2FA (aal1) sees nothing and cannot import')
+@test('owner signs in with password only (no 2FA step required)')
 def _():
-    assert owner1('select count(*) from public.bs_chapters;')[-1] == '0'
-    owner1(import_sql(SAMPLE), expect_error='not authorized')
+    assert owner1('select count(*) from public.bs_chapters;')[-1] == '15'
 
 @test('owner with 2FA reads all 15 chapters')
 def _(): assert owner('select count(*) from public.bs_chapters;')[-1] == '15'
@@ -228,7 +227,6 @@ def _():
 def _():
     owner("insert into storage.objects (bucket_id, name) values ('bs-manuscripts', 'uploads/master.docx');")
     assert intruder("select count(*) from storage.objects;")[-1] == '0'
-    assert owner1("select count(*) from storage.objects;")[-1] == '0'
     intruder("insert into storage.objects (bucket_id, name) values ('bs-manuscripts', 'evil.docx');", expect_error='row-level security')
     assert psql("select bool_or(public) from storage.buckets where id in ('bs-manuscripts','bs-audio');")[-1] == 'f'
 

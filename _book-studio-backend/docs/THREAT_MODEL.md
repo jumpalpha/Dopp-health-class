@@ -5,6 +5,8 @@ Owner: one author. No students, no other users.
 
 Legend: ✅ mitigated on this branch · 🧪 covered by an automated test · ⚠️ residual risk / owner action
 
+> **2026-10-31 change (owner's decision): the 2FA step was removed.** Access now needs only the owner's email + password. Rows B3 and B5 below no longer apply: anyone who learns or guesses the password can read and edit the book. Supabase Auth's per-IP sign-in rate limit still slows guessing. Re-enabling 2FA = re-adding the `aal2` check in `bs_is_owner()` and the TOTP screens.
+
 ## A. Exposure through the public website or repo
 
 | # | Threat | Mitigation | |

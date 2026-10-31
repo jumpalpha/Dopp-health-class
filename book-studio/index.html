@@ -14,7 +14,7 @@
 <!--
   Private author tool. This page is only a sign-in shell: it contains no
   manuscript text. All book content is fetched after sign-in from a separate,
-  locked-down backend that checks identity and 2FA on the server.
+  locked-down backend that checks identity on the server.
 -->
 
 <!-- ============ Sign-in ============ -->
@@ -35,27 +35,13 @@
       <button id="loginBtn" type="submit" class="primary">Sign in</button>
     </form>
 
-    <form id="mfaForm" class="stack" hidden>
-      <p>Enter the 6-digit code from your authenticator app.</p>
-      <label>Code<input id="mfaCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
-      <button type="submit" class="primary">Verify</button>
-      <button type="button" class="link" data-action="signout">Use a different account</button>
-    </form>
-
-    <form id="enrollForm" class="stack" hidden>
-      <p><strong>Set up two-step sign-in.</strong> Scan this with Google Authenticator, 1Password, Authy or similar, then enter the 6-digit code.</p>
-      <img id="enrollQr" alt="Authenticator QR code" width="180" height="180">
-      <p class="small">Can't scan? Enter this key: <code id="enrollSecret"></code></p>
-      <label>Code<input id="enrollCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
-      <button type="submit" class="primary">Turn on 2FA</button>
-    </form>
 
     <p id="gateMsg" class="msg" role="status"></p>
     <p class="small muted">Signed-in sessions end when this tab closes, and lock after inactivity.</p>
   </div>
 </main>
 
-<!-- ============ Studio (only shown after owner + 2FA verified) ============ -->
+<!-- ============ Studio (only shown after the owner signs in) ============ -->
 <div id="app" class="app" hidden>
   <header class="topbar">
     <button class="icon" data-action="toggle-nav" aria-label="Chapters">☰</button>

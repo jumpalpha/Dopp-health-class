@@ -1,6 +1,6 @@
 // Circumpunct Book Studio — client.
 // This file holds NO manuscript text and NO secrets. Everything is loaded after
-// sign-in from the private backend, which enforces owner + 2FA on the server.
+// sign-in from the private backend, which checks the signed-in owner on the server.
 // All manuscript/comment text is written to the page with textContent only.
 (() => {
   'use strict';
@@ -44,7 +44,7 @@
   }
   function fail(e, fallback) { console.warn(e); toast((e && e.message) || fallback || 'Something went wrong', true); }
   function gateMsg(text, ok) { const m = $('gateMsg'); m.textContent = text || ''; m.classList.toggle('ok', !!ok); }
-  function showOnly(formId) { for (const id of ['loginForm', 'mfaForm', 'enrollForm']) $(id).hidden = id !== formId; }
+  function showOnly(formId) { $('loginForm').hidden = formId !== 'loginForm'; }
 
   // ------------------------------------------------------------ theme
   function applyTheme(t) { document.documentElement.dataset.theme = t || 'auto'; }
@@ -110,40 +110,12 @@
     } finally { $('loginBtn').disabled = false; }
   }
 
-  let mfaFactorId = null;
-  async function afterPassword() {
-    const { data: aal, error } = await S.sb.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (error) return gateMsg('Could not check sign-in status.');
-    if (aal.currentLevel === 'aal2') return enterStudio();
-
-    const { data: f, error: fErr } = await S.sb.auth.mfa.listFactors();
-    if (fErr) return gateMsg('Could not load 2FA settings.');
-    const verified = (f.totp || []).filter((x) => x.status === 'verified');
-    if (verified.length) {
-      mfaFactorId = verified[0].id; showOnly('mfaForm'); $('mfaCode').focus(); return;
-    }
-    // First sign-in: enroll an authenticator. Clear any abandoned, unverified attempt first.
-    for (const x of (f.all || []).filter((x) => x.status === 'unverified')) await S.sb.auth.mfa.unenroll({ factorId: x.id });
-    const { data: en, error: enErr } = await S.sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Book Studio ' + new Date().toISOString().slice(0, 10) });
-    if (enErr) return gateMsg('Could not start 2FA setup: ' + enErr.message);
-    mfaFactorId = en.id;
-    $('enrollQr').src = en.totp.qr_code;
-    $('enrollSecret').textContent = en.totp.secret;
-    showOnly('enrollForm'); $('enrollCode').focus();
-  }
-
-  async function onVerify(ev, inputId) {
-    ev.preventDefault(); gateMsg('');
-    const code = $(inputId).value.trim();
-    const { error } = await S.sb.auth.mfa.challengeAndVerify({ factorId: mfaFactorId, code });
-    $(inputId).value = '';
-    if (error) return gateMsg(error.status === 429 ? 'Too many attempts. Wait and try again.' : 'That code did not work. Try the next one.');
-    await enterStudio();
-  }
+  // Password-only sign-in (2FA step removed at the owner's request).
+  async function afterPassword() { return enterStudio(); }
 
   async function enterStudio() {
     const { data: me, error } = await S.sb.rpc('bs_whoami');
-    if (error || !me || me.aal !== 'aal2') { flash('Could not confirm 2FA. Please sign in again.'); return signOut(); }
+    if (error || !me) { flash('Could not confirm sign-in. Please sign in again.'); return signOut(); }
     if (!me.owner_listed) { flash('This account is not authorized for the Book Studio.'); return S.sb.auth.signOut({ scope: 'local' }); }
     const { data: u } = await S.sb.auth.getUser();
     S.uid = u.user.id;
@@ -635,8 +607,6 @@
     Promise.resolve(fn()).catch((e) => fail(e));
   });
   $('loginForm').addEventListener('submit', onLogin);
-  $('mfaForm').addEventListener('submit', (e) => onVerify(e, 'mfaCode'));
-  $('enrollForm').addEventListener('submit', (e) => onVerify(e, 'enrollCode'));
   $('commentFab').addEventListener('mousedown', (e) => e.preventDefault());   // keep the selection
   $('commentFab').addEventListener('click', newComment);
   $('fileInput').addEventListener('change', onFilePicked);
