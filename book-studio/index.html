@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://*.supabase.co; media-src 'self' blob: https://*.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'">
+<title>Book Studio</title>
+<link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<!--
+  Private author tool. This page is only a sign-in shell: it contains no
+  manuscript text. All book content is fetched after sign-in from a separate,
+  locked-down backend that checks identity and 2FA on the server.
+-->
+
+<!-- ============ Sign-in ============ -->
+<main id="gate" class="gate" aria-live="polite">
+  <div class="gate-card">
+    <div class="mark" aria-hidden="true"><span></span></div>
+    <h1>Book Studio</h1>
+    <p class="sub">Private author workspace</p>
+
+    <div id="notConfigured" class="notice" hidden>
+      Backend not connected yet. This shell is waiting for the private Book Studio
+      server to be set up and approved. No book content is stored on this website.
+    </div>
+
+    <form id="loginForm" class="stack" autocomplete="on">
+      <label>Email<input id="email" type="email" autocomplete="username" required></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required minlength="8"></label>
+      <button id="loginBtn" type="submit" class="primary">Sign in</button>
+    </form>
+
+    <form id="mfaForm" class="stack" hidden>
+      <p>Enter the 6-digit code from your authenticator app.</p>
+      <label>Code<input id="mfaCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
+      <button type="submit" class="primary">Verify</button>
+      <button type="button" class="link" data-action="signout">Use a different account</button>
+    </form>
+
+    <form id="enrollForm" class="stack" hidden>
+      <p><strong>Set up two-step sign-in.</strong> Scan this with Google Authenticator, 1Password, Authy or similar, then enter the 6-digit code.</p>
+      <img id="enrollQr" alt="Authenticator QR code" width="180" height="180">
+      <p class="small">Can't scan? Enter this key: <code id="enrollSecret"></code></p>
+      <label>Code<input id="enrollCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
+      <button type="submit" class="primary">Turn on 2FA</button>
+    </form>
+
+    <p id="gateMsg" class="msg" role="status"></p>
+    <p class="small muted">Signed-in sessions end when this tab closes, and lock after inactivity.</p>
+  </div>
+</main>
+
+<!-- ============ Studio (only shown after owner + 2FA verified) ============ -->
+<div id="app" class="app" hidden>
+  <header class="topbar">
+    <button class="icon" data-action="toggle-nav" aria-label="Chapters">☰</button>
+    <div class="brand"><span class="mark sm" aria-hidden="true"><span></span></span><span id="bookTitle">Book Studio</span></div>
+    <div class="spacer"></div>
+    <button class="icon" data-action="theme" aria-label="Toggle dark or light mode">◐</button>
+    <details class="menu">
+      <summary class="icon" aria-label="More">⋯</summary>
+      <div class="menu-body">
+        <button data-action="export-docx">Export current text (.docx)</button>
+        <button data-action="export-md">Export current text (.md)</button>
+        <button data-action="show-masters">Dated masters…</button>
+        <button data-action="import-docx">Import Word file…</button>
+        <button data-action="show-audit">Edit log…</button>
+        <hr>
+        <button data-action="signout">Sign out</button>
+      </div>
+    </details>
+  </header>
+
+  <nav id="nav" class="nav" aria-label="Chapters">
+    <div class="nav-head">Chapters</div>
+    <ol id="chapterList"></ol>
+    <div class="nav-head">Bookmarks</div>
+    <ul id="bookmarkList" class="small"></ul>
+  </nav>
+
+  <main class="reader-wrap">
+    <div class="toolbar">
+      <div class="tts" role="group" aria-label="Listen">
+        <button data-action="tts-prev" aria-label="Previous paragraph">⏮</button>
+        <button data-action="tts-play" id="ttsPlay" aria-label="Play">▶</button>
+        <button data-action="tts-stop" aria-label="Stop">■</button>
+        <button data-action="tts-next" aria-label="Next paragraph">⏭</button>
+        <select id="ttsVoice" aria-label="Voice"></select>
+        <label class="rate">Speed <input id="ttsRate" type="range" min="0.6" max="1.8" step="0.1" value="1"></label>
+      </div>
+      <div class="actions">
+        <button data-action="bookmark">🔖 Bookmark</button>
+        <button data-action="propose">✎ Propose edit</button>
+        <button data-action="history">History</button>
+        <button data-action="proposals" id="proposalsBtn">Proposals</button>
+      </div>
+    </div>
+    <article id="reader" class="reader" tabindex="0"></article>
+    <div class="chapter-pager">
+      <button data-action="prev-chapter">← Previous</button>
+      <span id="progressLabel" class="small muted"></span>
+      <button data-action="next-chapter">Next →</button>
+    </div>
+  </main>
+
+  <aside id="side" class="side" aria-label="Comments">
+    <div class="side-head">Comments <span class="small muted">— select text to comment</span></div>
+    <ul id="commentList"></ul>
+  </aside>
+
+  <button id="commentFab" class="fab" hidden>💬 Comment</button>
+</div>
+
+<!-- ============ Shared dialog ============ -->
+<dialog id="dlg">
+  <form method="dialog" class="dlg-inner">
+    <header><h2 id="dlgTitle"></h2><button value="close" class="icon" aria-label="Close">✕</button></header>
+    <div id="dlgBody" class="dlg-body"></div>
+    <footer id="dlgFoot"></footer>
+  </form>
+</dialog>
+
+<input id="fileInput" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+
+<script src="../vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script src="diff.js"></script>
+<script src="studio.js"></script>
+</body>
+</html>

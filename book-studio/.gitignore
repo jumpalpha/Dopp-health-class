@@ -1,0 +1,13 @@
+# Never commit manuscript or audio files here (this repo is PUBLIC).
+*.docx
+*.doc
+*.odt
+*.rtf
+*.pages
+*.epub
+*.mp3
+*.m4a
+*.wav
+*.ogg
+.env
+.env.*

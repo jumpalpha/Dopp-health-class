@@ -36,6 +36,7 @@ self.addEventListener('fetch', e => {
     return;
   }
   if (url.origin !== location.origin) return;              // Supabase and everything else: straight to the network
+  if (url.pathname.startsWith('/book-studio/')) return;     // private author tool: never saved on the device
   if (/\.pdf$/i.test(url.pathname)) return;                 // textbook PDFs: too big to keep offline
 
   // Our own pages and files: internet first, saved copy if offline or slow.
