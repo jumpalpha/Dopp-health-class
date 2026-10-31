@@ -49,7 +49,7 @@ with sync_playwright() as p:
 
     # 1. Unconfigured shell
     ctx, pg = page_for(viewport={'width': 1280, 'height': 860})
-    pg.route('**/book-studio/config.js', lambda r: r.fulfill(content_type='text/javascript',
+    pg.route('**/book-studio/config.js*', lambda r: r.fulfill(content_type='text/javascript',
         body="window.BOOK_STUDIO_CONFIG={supabaseUrl:'',supabaseAnonKey:''};"))
     pg.goto(BASE); pg.wait_for_timeout(400)
     check('unconfigured: notice shown', pg.is_visible('#notConfigured'))
@@ -62,7 +62,7 @@ with sync_playwright() as p:
 
     # 2. Class project config is refused
     ctx, pg = page_for(viewport={'width': 1280, 'height': 860})
-    pg.route('**/book-studio/config.js', lambda r: r.fulfill(content_type='text/javascript',
+    pg.route('**/book-studio/config.js*', lambda r: r.fulfill(content_type='text/javascript',
         body="window.BOOK_STUDIO_CONFIG={supabaseUrl:'https://gmeyamrlqfrabtslsweu.supabase.co',supabaseAnonKey:'x.y.z'};"))
     pg.goto(BASE); pg.wait_for_timeout(400)
     check('class-project config refused', 'refused' in pg.inner_text('#notConfigured').lower() and pg.is_disabled('#loginBtn'))
@@ -70,7 +70,7 @@ with sync_playwright() as p:
 
     # 3. Configured (fake dedicated project): sign-in enabled, nothing fetched until submit
     ctx, pg = page_for(viewport={'width': 1280, 'height': 860})
-    pg.route('**/book-studio/config.js', lambda r: r.fulfill(content_type='text/javascript',
+    pg.route('**/book-studio/config.js*', lambda r: r.fulfill(content_type='text/javascript',
         body="window.BOOK_STUDIO_CONFIG={supabaseUrl:'https://example-studio.supabase.co',supabaseAnonKey:'eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiJ9.c2lnbmF0dXJlc2ln'};"))
     pg.route('https://example-studio.supabase.co/**', lambda r: r.fulfill(status=400, content_type='application/json',
         body='{"error":"invalid_grant","error_description":"Invalid login credentials"}'))
