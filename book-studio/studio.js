@@ -541,10 +541,16 @@
   const synth = window.speechSynthesis;
   function loadVoices() {
     if (!synth) { document.querySelector('.tts').hidden = true; return; }
-    const sel = $('ttsVoice'), saved = store.get('bs-voice');
-    const voices = synth.getVoices().filter((v) => /^en/i.test(v.lang)).concat(synth.getVoices().filter((v) => !/^en/i.test(v.lang)));
+    const sel = $('ttsVoice');
+    // Rank voices so the most natural-sounding ones come first and are picked by default:
+    // Microsoft "Natural"/"Online" (Edge), Apple Premium/Enhanced/Siri (Safari), then Google (Chrome).
+    const score = (v) => (/natural|neural|online/i.test(v.name) ? 40 : /premium|enhanced|siri/i.test(v.name) ? 35 : /google/i.test(v.name) ? 20 : 0)
+      + (/^en-US/i.test(v.lang) ? 3 : /^en/i.test(v.lang) ? 2 : 0) + (v.localService ? 0 : 1);
+    const voices = synth.getVoices().slice().sort((a, b) => score(b) - score(a));
+    const saved = store.get('bs-voice');
+    const pick = voices.find((v) => v.name === saved) || voices[0];
     sel.textContent = '';
-    for (const v of voices) sel.append(el('option', { value: v.name, text: `${v.name} (${v.lang})`, selected: v.name === saved }));
+    for (const v of voices) sel.append(el('option', { value: v.name, text: `${score(v) >= 20 ? '★ ' : ''}${v.name} (${v.lang})`, selected: v === pick }));
     sel.hidden = !voices.length;
   }
   function ttsUtter(i) {
