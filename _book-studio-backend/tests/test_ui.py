@@ -49,6 +49,8 @@ with sync_playwright() as p:
 
     # 1. Unconfigured shell
     ctx, pg = page_for(viewport={'width': 1280, 'height': 860})
+    pg.route('**/book-studio/config.js', lambda r: r.fulfill(content_type='text/javascript',
+        body="window.BOOK_STUDIO_CONFIG={supabaseUrl:'',supabaseAnonKey:''};"))
     pg.goto(BASE); pg.wait_for_timeout(400)
     check('unconfigured: notice shown', pg.is_visible('#notConfigured'))
     check('unconfigured: sign-in disabled', pg.is_disabled('#loginBtn') and pg.is_disabled('#email'))

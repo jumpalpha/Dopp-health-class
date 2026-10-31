@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   const client = await requireOwner(req);
   if (client instanceof Response) return client;
 
-  const { error: rl } = await client.rpc('consume_rate_limit', { p_bucket: 'export' });
+  const { error: rl } = await client.rpc('bs_consume_rate_limit', { p_bucket: 'export' });
   if (rl) return json(req, rl.code === 'P0429' ? 429 : 403, { error: rl.message });
 
   let source = 'current';
@@ -21,17 +21,17 @@ Deno.serve(async (req) => {
   let rows: { chapter_no: number; title: string; body: string }[] = [];
 
   if (source === 'current') {
-    const { data: ms } = await client.from('manuscripts').select('title').order('created_at').limit(1).maybeSingle();
+    const { data: ms } = await client.from('bs_manuscripts').select('title').order('created_at').limit(1).maybeSingle();
     if (ms?.title) title = ms.title;
-    const { data, error } = await client.from('chapters').select('chapter_no,title,body').order('chapter_no');
+    const { data, error } = await client.from('bs_chapters').select('chapter_no,title,body').order('chapter_no');
     if (error) return json(req, 400, { error: error.message });
     rows = data ?? [];
   } else {
     if (!/^[0-9a-f-]{36}$/i.test(source)) return json(req, 400, { error: 'bad master id' });
-    const { data: m } = await client.from('masters').select('label,master_date').eq('id', source).maybeSingle();
+    const { data: m } = await client.from('bs_masters').select('label,master_date').eq('id', source).maybeSingle();
     if (!m) return json(req, 404, { error: 'master not found' });
     stamp = `${m.master_date}-master`;
-    const { data, error } = await client.from('master_chapters').select('chapter_no,title,body').eq('master_id', source).order('chapter_no');
+    const { data, error } = await client.from('bs_master_chapters').select('chapter_no,title,body').eq('master_id', source).order('chapter_no');
     if (error) return json(req, 400, { error: error.message });
     rows = data ?? [];
   }

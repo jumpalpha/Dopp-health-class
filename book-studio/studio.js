@@ -142,7 +142,7 @@
   }
 
   async function enterStudio() {
-    const { data: me, error } = await S.sb.rpc('whoami');
+    const { data: me, error } = await S.sb.rpc('bs_whoami');
     if (error || !me || me.aal !== 'aal2') { flash('Could not confirm 2FA. Please sign in again.'); return signOut(); }
     if (!me.owner_listed) { flash('This account is not authorized for the Book Studio.'); return S.sb.auth.signOut({ scope: 'local' }); }
     const { data: u } = await S.sb.auth.getUser();
@@ -171,12 +171,12 @@
   async function loadAll(keepChapterId) {
     const sb = S.sb;
     const [ms, ch, rs, bm, an, pr] = await Promise.all([
-      sb.from('manuscripts').select('title').order('created_at').limit(1).maybeSingle(),
-      sb.from('chapters').select('id,chapter_no,title,body,current_version_id,updated_at').order('chapter_no'),
-      sb.from('reading_state').select('chapter_id,scroll_pct').maybeSingle(),
-      sb.from('bookmarks').select('id,chapter_id,char_offset,label,created_at').order('created_at', { ascending: false }),
-      sb.from('annotations').select('*').order('start_offset'),
-      sb.from('proposals').select('id,chapter_id,base_version_id,proposed_title,proposed_body,rationale,author_label,created_at').eq('status', 'pending').order('created_at'),
+      sb.from('bs_manuscripts').select('title').order('created_at').limit(1).maybeSingle(),
+      sb.from('bs_chapters').select('id,chapter_no,title,body,current_version_id,updated_at').order('chapter_no'),
+      sb.from('bs_reading_state').select('chapter_id,scroll_pct').maybeSingle(),
+      sb.from('bs_bookmarks').select('id,chapter_id,char_offset,label,created_at').order('created_at', { ascending: false }),
+      sb.from('bs_annotations').select('*').order('start_offset'),
+      sb.from('bs_proposals').select('id,chapter_id,base_version_id,proposed_title,proposed_body,rationale,author_label,created_at').eq('status', 'pending').order('created_at'),
     ]);
     const err = [ms, ch, rs, bm, an, pr].find((r) => r.error);
     if (err) return fail(err.error, 'Could not load the manuscript');
@@ -263,7 +263,7 @@
       if (!S.current || !S.uid || !S.sb) return;
       const w = document.querySelector('.reader-wrap');
       const pct = Math.max(0, Math.min(1, w.scrollTop / Math.max(1, w.scrollHeight - w.clientHeight)));
-      await S.sb.from('reading_state').upsert({ user_id: S.uid, chapter_id: S.current.id, scroll_pct: pct, updated_at: new Date().toISOString() });
+      await S.sb.from('bs_reading_state').upsert({ user_id: S.uid, chapter_id: S.current.id, scroll_pct: pct, updated_at: new Date().toISOString() });
     }, 1500);
   }
 
@@ -291,7 +291,7 @@
           $('nav').classList.remove('open');
         } }), ' ',
         el('button', { class: 'link', 'aria-label': 'Remove bookmark', text: '×', onclick: async () => {
-          const { error } = await S.sb.from('bookmarks').delete().eq('id', b.id);
+          const { error } = await S.sb.from('bs_bookmarks').delete().eq('id', b.id);
           if (error) return fail(error);
           S.bookmarks = S.bookmarks.filter((x) => x !== b); renderBookmarks();
         } })));
@@ -301,7 +301,7 @@
     if (!S.current) return;
     const p = S.paras[firstVisibleParaIdx()] || { start: 0, text: '' };
     const label = `${S.current.title} — “${p.text.trim().split(/\s+/).slice(0, 6).join(' ')}…”`;
-    const { data, error } = await S.sb.from('bookmarks').insert({ chapter_id: S.current.id, char_offset: p.start, label: label.slice(0, 200) }).select().single();
+    const { data, error } = await S.sb.from('bs_bookmarks').insert({ chapter_id: S.current.id, char_offset: p.start, label: label.slice(0, 200) }).select().single();
     if (error) return fail(error);
     S.bookmarks.unshift(data); renderBookmarks(); toast('Bookmarked');
   }
@@ -325,7 +325,7 @@
             dialog('Delete comment?', el('p', { text: 'This removes the comment. A copy is kept in the edit log.' }), [
               { label: 'Cancel' },
               { label: 'Delete', cls: 'danger', onClick: async () => {
-                const { error } = await S.sb.from('annotations').delete().eq('id', a.id);
+                const { error } = await S.sb.from('bs_annotations').delete().eq('id', a.id);
                 if (error) throw error;
                 S.annotations = S.annotations.filter((x) => x !== a); openChapterKeepScroll();
               } }]);
@@ -342,7 +342,7 @@
     openChapter(S.current, null); requestAnimationFrame(() => (w.scrollTop = top));
   }
   async function updateComment(a, patch) {
-    const { data, error } = await S.sb.from('annotations').update(patch).eq('id', a.id).select().single();
+    const { data, error } = await S.sb.from('bs_annotations').update(patch).eq('id', a.id).select().single();
     if (error) return fail(error);
     Object.assign(a, data); openChapterKeepScroll();
   }
@@ -388,7 +388,7 @@
       { label: 'Cancel' },
       { label: 'Save comment', cls: 'primary', onClick: async () => {
         if (!ta.value.trim()) return true;
-        const { data, error } = await S.sb.from('annotations').insert({
+        const { data, error } = await S.sb.from('bs_annotations').insert({
           chapter_id: S.current.id, version_id: S.current.current_version_id,
           start_offset: s.start, end_offset: s.end, quote, comment: ta.value.trim(),
         }).select().single();
@@ -412,7 +412,7 @@
       { label: 'Cancel' },
       { label: 'Save proposal', cls: 'primary', onClick: async () => {
         if (ta.value === c.body && t.value === c.title) { toast('No changes to propose'); return true; }
-        const { error } = await S.sb.from('proposals').insert({
+        const { error } = await S.sb.from('bs_proposals').insert({
           chapter_id: c.id, base_version_id: c.current_version_id,
           proposed_title: t.value.trim() || c.title, proposed_body: ta.value, rationale: why.value.trim() || null, author_label: 'owner',
         });
@@ -449,11 +449,11 @@
     dialog('Review — ' + ch.title, parts, [
       { label: 'Back', onClick: () => { showProposals(); return true; } },
       { label: 'Reject', cls: 'danger', onClick: async () => {
-        const { error } = await S.sb.rpc('reject_proposal', { p_proposal: p.id }); if (error) throw error;
+        const { error } = await S.sb.rpc('bs_reject_proposal', { p_proposal: p.id }); if (error) throw error;
         toast('Proposal rejected'); await loadAll(S.current?.id);
       } },
       stale ? null : { label: 'Approve & replace text', cls: 'primary', onClick: async () => {
-        const { error } = await S.sb.rpc('approve_proposal', { p_proposal: p.id }); if (error) throw error;
+        const { error } = await S.sb.rpc('bs_approve_proposal', { p_proposal: p.id }); if (error) throw error;
         toast('Approved — new version saved'); await loadAll(ch.id);
       } },
     ].filter(Boolean));
@@ -462,7 +462,7 @@
   // ------------------------------------------------------------ history
   async function showHistory() {
     const c = S.current; if (!c) return;
-    const { data, error } = await S.sb.from('chapter_versions').select('id,version_no,source,note,created_at').eq('chapter_id', c.id).order('version_no', { ascending: false });
+    const { data, error } = await S.sb.from('bs_chapter_versions').select('id,version_no,source,note,created_at').eq('chapter_id', c.id).order('version_no', { ascending: false });
     if (error) return fail(error);
     const list = el('ul', { class: 'list' });
     for (const v of data) {
@@ -477,13 +477,13 @@
   }
   async function compareVersion(v) {
     const c = S.current;
-    const { data, error } = await S.sb.from('chapter_versions').select('body').eq('id', v.id).single();
+    const { data, error } = await S.sb.from('bs_chapter_versions').select('body').eq('id', v.id).single();
     if (error) return fail(error);
     const box = el('div'); const n = window.StudioDiff.render(box, data.body, c.body);
     dialog(`Version ${v.version_no} → current`, [el('div', { class: 'small muted', text: `${n} change${n === 1 ? '' : 's'} since version ${v.version_no} · green = added since, red = removed since` }), box], [
       { label: 'Back', onClick: () => { showHistory(); return true; } },
       { label: `Restore version ${v.version_no}`, cls: 'primary', onClick: async () => {
-        const { error: e2 } = await S.sb.rpc('rollback_chapter', { p_chapter: c.id, p_to_version: v.id }); if (e2) throw e2;
+        const { error: e2 } = await S.sb.rpc('bs_rollback_chapter', { p_chapter: c.id, p_to_version: v.id }); if (e2) throw e2;
         toast(`Restored version ${v.version_no} as a new version`); await loadAll(c.id);
       } }]);
   }
@@ -517,7 +517,7 @@
     download(new Blob([md], { type: 'text/markdown' }), `${S.title.replace(/[^A-Za-z0-9]+/g, '_')}_${new Date().toISOString().slice(0, 10)}.md`);
   }
   async function showMasters() {
-    const { data, error } = await S.sb.from('masters').select('id,label,master_date,source_filename,word_count,created_at').order('created_at', { ascending: false });
+    const { data, error } = await S.sb.from('bs_masters').select('id,label,master_date,source_filename,word_count,created_at').order('created_at', { ascending: false });
     if (error) return fail(error);
     const list = el('ul', { class: 'list' });
     if (!data.length) list.append(el('li', { class: 'muted', text: 'No masters yet. Import your Word file to create the first one.' }));
@@ -545,7 +545,7 @@
         const safe = file.name.replace(/[^A-Za-z0-9._ -]+/g, '_').slice(-150);
         const path = `uploads/${new Date().toISOString().replace(/[:.]/g, '-')}_${safe}`;
         toast('Uploading…');
-        const { error: upErr } = await S.sb.storage.from('manuscripts').upload(path, file, { upsert: false, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        const { error: upErr } = await S.sb.storage.from('bs-manuscripts').upload(path, file, { upsert: false, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
         if (upErr) throw upErr;
         const res = await callFunction('import-docx', { storage_path: path, label: label.value.trim(), master_date: date.value, title: S.chapters.length ? S.title : 'The Circumpunct' });
         const r = await res.json();
@@ -554,7 +554,7 @@
       } }]);
   }
   async function showAudit() {
-    const { data, error } = await S.sb.from('audit_log').select('at,action,entity,detail').order('id', { ascending: false }).limit(150);
+    const { data, error } = await S.sb.from('bs_audit_log').select('at,action,entity,detail').order('id', { ascending: false }).limit(150);
     if (error) return fail(error);
     const list = el('ul', { class: 'list' });
     if (!data.length) list.append(el('li', { class: 'muted', text: 'No edits yet.' }));

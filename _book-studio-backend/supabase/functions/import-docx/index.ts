@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
   const label = String(body.label ?? `Master ${date}`).slice(0, 200);
   const title = String(body.title ?? 'The Circumpunct').slice(0, 200);
 
-  const { data: file, error: dlErr } = await client.storage.from('manuscripts').download(path);
+  const { data: file, error: dlErr } = await client.storage.from('bs-manuscripts').download(path);
   if (dlErr || !file) return json(req, 404, { error: 'file not found in private storage' });
   if (file.size > MAX_BYTES) return json(req, 413, { error: 'file too large' });
 
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     return json(req, 422, { error: `could not read the Word file: ${(e as Error).message}` });
   }
 
-  const { data, error } = await client.rpc('import_master', {
+  const { data, error } = await client.rpc('bs_import_master', {
     p_title: title,
     p_label: label,
     p_master_date: date,

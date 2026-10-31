@@ -48,10 +48,11 @@ export async function requireOwner(req: Request): Promise<SupabaseClient | Respo
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  const { data: u, error: uErr } = await client.auth.getUser();
+  // Pass the token explicitly: with no stored session, getUser() would otherwise fail.
+  const { data: u, error: uErr } = await client.auth.getUser(auth.replace(/^Bearer\s+/, ''));
   if (uErr || !u?.user) return json(req, 401, { error: 'session invalid or expired' });
 
-  const { data: ok, error } = await client.rpc('is_owner');
+  const { data: ok, error } = await client.rpc('bs_is_owner');
   if (error || ok !== true) return json(req, 403, { error: 'not authorized (owner + 2FA required)' });
 
   return client;

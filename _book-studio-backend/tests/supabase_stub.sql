@@ -48,3 +48,9 @@ alter table storage.objects enable row level security;
 grant usage on schema storage to anon, authenticated, service_role;
 grant all on storage.objects to anon, authenticated, service_role;
 grant select on storage.buckets to anon, authenticated, service_role;
+
+-- A pre-existing app table in the shared project (stands in for Worst Song Ever /
+-- the week planner). The Book Studio migration must not change its privileges.
+create table public.songs (id int primary key, title text);
+insert into public.songs values (1, 'existing song');
+create function public.rate(int) returns int language sql as 'select $1';

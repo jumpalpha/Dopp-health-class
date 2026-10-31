@@ -1,6 +1,6 @@
 # Circumpunct Book Studio — implementation notes
 
-Status: **first deliverable, not deployed.** Nothing has been applied to any Supabase project, and `book-studio/config.js` is blank, so the shell on this branch cannot reach any backend.
+Status: **live (approved by owner 2026-10-31).** Backend is the **worst-songs** Supabase project: the org was at its 2-free-project limit, so instead of a new paid project every Book Studio table, function and bucket is `bs_`-prefixed and the setup touches nothing else (a test proves other apps keep their access). The student-data class project is never used.
 
 ## 1. What I found (hosting and domain)
 
