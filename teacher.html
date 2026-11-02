@@ -282,6 +282,7 @@ input, select, textarea { color: var(--text); }
     <button class="sb-btn" onclick="showPage('tracker',this)"><span class="sb-btn-icon">🗺</span>Realm Tracker</button>
     <button class="sb-btn" onclick="showPage('briefing',this)"><span class="sb-btn-icon">📣</span>Daily Briefing</button>
     <button class="sb-btn" onclick="showPage('checklist',this)"><span class="sb-btn-icon">✅</span>Student Checklist Draft</button>
+    <button class="sb-btn" onclick="showPage('finance',this)"><span class="sb-btn-icon">💰</span>Cost of Your Future</button>
   </div>
 
   <hr class="sb-divider">
@@ -515,6 +516,15 @@ input, select, textarea { color: var(--text); }
   </div>
 
   <!-- ── WEEK PLANNER ── -->
+  <!-- ── FINANCIAL HEALTH: The Cost of Your Future (finance.html) — review + scoring ── -->
+  <div class="page" id="page-finance">
+    <div class="page-hdr">
+      <div class="page-title">The Cost of Your Future</div>
+      <div class="page-sub">Financial Health assignment: who has started, who has submitted, their numbers, reflections, and your rubric scores.</div>
+    </div>
+    <div id="ft-root"></div>
+  </div>
+
   <!-- ── DAILY BRIEFING (announcement + Survey of the Day on the student Welcome screen) ── -->
   <div class="page" id="page-briefing">
     <div class="page-hdr">
@@ -1410,6 +1420,7 @@ function renderPage(id) {
   else if(id==='notes') loadNotes();
   else if(id==='checklist' && window.renderChecklistDraft) renderChecklistDraft();
   else if(id==='briefing' && window.renderBriefing) renderBriefing();
+  else if(id==='finance' && window.renderFinanceTeacher) renderFinanceTeacher();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2004,5 +2015,7 @@ renderOverview();
 </script>
 <script src="checklist_teacher.js"></script>
 <script src="briefing_teacher.js"></script>
+<script src="finance_calc.js"></script>
+<script src="finance_teacher.js"></script>
 </body>
 </html>
