@@ -1,0 +1,8 @@
+# GitHub Pages: keep working files off the public website (they stay in the repo).
+exclude:
+  - supabase
+  - tools
+  - docs
+  - AGENTS.md
+  - README.md
+  - wellness-255-signup-guide.md

@@ -90,7 +90,7 @@
 // (saved by checklist.html / welcome.html). Hidden on teacher, projected-game, print and game-app pages.
 (function () {
   var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-  if (/^(checklist|teacher|teacher-admin|live_host|live|print_quest|offline|404|sub_guide|parents|visitor|save_test|wellness-255-signup-guide|legacy-resources)\.html$/.test(page)) return;
+  if (/^(checklist|teacher|teacher-admin|live_host|live|print_quest|offline|404|sub_guide|parents|visitor|wellness-255-signup-guide|legacy-resources)\.html$/.test(page)) return;
   if (/^game\d\d_/.test(page) || document.documentElement.getAttribute('data-app-name')) return;
   var signedIn = false, pct = null;
   try {
@@ -179,7 +179,7 @@
 (function () {
   var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   if (window.top !== window.self) return;
-  if (/^(teacher|teacher-admin|live_host|live|print_quest|offline|404|sub_guide|parents|visitor|save_test|wellness-255-signup-guide|legacy-resources)\.html$/.test(page)) return;
+  if (/^(teacher|teacher-admin|live_host|live|print_quest|offline|404|sub_guide|parents|visitor|wellness-255-signup-guide|legacy-resources)\.html$/.test(page)) return;
   if (/^game\d\d_/.test(page) || document.documentElement.getAttribute('data-app-name')) return;
   var URL = 'https://gmeyamrlqfrabtslsweu.supabase.co', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
   var d = new Date(), today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
