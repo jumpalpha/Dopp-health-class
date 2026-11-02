@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<title>The Cost of Your Future — Dopp Health Class</title>
+<meta name="description" content="Financial Health: can your dream career afford your dream lifestyle? Predict your costs, research real ones, and run the numbers.">
+<link rel="canonical" href="https://doppsclass.com/finance.html">
+<meta property="og:title" content="The Cost of Your Future — Dopp Health Class">
+<meta property="og:description" content="Can your dream career afford your dream lifestyle?">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/finance.html">
+<meta name="twitter:card" content="summary">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --indigo:#140c2e; --indigo-2:#231650; --gold:#FFD700; --gold-deep:#8a6400; --gold-line:#c99a00;
+  --parch:#fbf5e6; --parch-2:#f3e9cf; --card:#fffdf7; --ink:#1C1A2E; --dim:#4f4a63; --line:rgba(28,26,46,.16);
+  --blue-bg:#e6f0ff; --blue-line:#2463c9; --blue-ink:#123a7a;
+  --yel-bg:#fff4c7; --yel-line:#b8860b; --yel-ink:#5a4100;
+  --good:#0f7a4f; --good-bg:#e3f6ec; --bad:#b0243a; --bad-bg:#fde8eb; --mid:#8a5a00; --mid-bg:#fff2d6;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Nunito',system-ui,sans-serif;font-size:16px;line-height:1.55;color:var(--ink);
+  background:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(168,85,247,.08),transparent 70%),var(--parch)}
+a{color:#3b2a8f}
+:focus-visible{outline:3px solid #5b8cff;outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* nav (same links as the rest of the site) */
+nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 24px;background:rgba(210,196,168,.98);border-bottom:1px solid var(--line)}
+.nav-logo{font-family:'Cinzel',serif;font-weight:700;color:#7a5c00;text-decoration:none;white-space:nowrap}
+.nav-logo span{color:var(--dim);font-weight:600}
+.nav-links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav-link{padding:6px 12px;border-radius:8px;font-weight:800;font-size:14px;color:var(--dim);text-decoration:none;white-space:nowrap}
+.nav-link:hover{background:rgba(28,26,46,.06);color:var(--ink)}
+
+/* hero */
+.hero{background:linear-gradient(160deg,var(--indigo) 0%,var(--indigo-2) 100%);color:#fff;padding:34px 20px 70px;text-align:center;position:relative}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:40px;background:var(--parch);clip-path:polygon(0 100%,100% 100%,100% 30%,50% 100%,0 30%)}
+.hero .kicker{font-family:'Cinzel',serif;letter-spacing:3px;font-size:12px;color:var(--gold);text-transform:uppercase}
+.hero h1{font-family:'Cinzel',serif;font-weight:900;font-size:clamp(28px,5vw,46px);margin:8px 0 6px;color:var(--gold);text-shadow:0 2px 0 #000}
+.hero p{margin:0 auto;max-width:620px;color:#e7e2ff;font-size:18px}
+.who{margin-top:12px;font-size:14px;color:#cfc8f5}
+
+main{max-width:1000px;margin:-30px auto 60px;padding:0 16px;position:relative;z-index:2}
+
+/* quest path */
+.path{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:0 6px 20px rgba(20,12,46,.08)}
+.path ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;position:relative}
+.path li{text-align:center}
+.path button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding:4px 0;border-radius:10px}
+.path button:focus-visible{outline:3px solid #5b8cff}
+.path button[disabled]{cursor:not-allowed;opacity:.45}
+.gem{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:14px;
+  background:#eee6d2;color:var(--dim);border:2px solid #d6c9a6;transition:transform .15s}
+.path .done .gem{background:var(--good);color:#fff;border-color:var(--good)}
+.path .cur .gem{background:var(--gold);color:var(--indigo);border-color:var(--gold-deep);transform:scale(1.12)}
+.path .lbl{font-size:12px;font-weight:800;color:var(--dim);line-height:1.2}
+.path .cur .lbl{color:var(--ink)}
+.bar{height:6px;border-radius:99px;background:#eee6d2;margin-top:10px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#f0a400);width:0;transition:width .3s}
+.savebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--dim)}
+.savebar .s-ok{color:var(--good);font-weight:800}.savebar .s-bad{color:var(--bad);font-weight:800}
+
+/* step cards */
+.step{display:none;margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:24px clamp(16px,3vw,32px);box-shadow:0 6px 20px rgba(20,12,46,.06)}
+.step.on{display:block}
+.step-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.step-num{font-family:'Cinzel',serif;font-weight:900;color:var(--indigo);background:var(--gold);border-radius:10px;padding:4px 10px;font-size:14px;white-space:nowrap}
+.step h2{font-family:'Cinzel',serif;font-size:clamp(20px,3vw,26px);margin:0;color:var(--indigo)}
+.lead{color:var(--dim);margin:4px 0 18px}
+h3{font-size:17px;margin:22px 0 8px;color:var(--indigo)}
+.note{background:var(--parch-2);border-left:4px solid var(--gold-line);padding:10px 14px;border-radius:8px;font-size:15px;margin:14px 0}
+.warn{background:var(--mid-bg);border-left:4px solid #d08a00;padding:10px 14px;border-radius:8px;font-size:15px;margin:14px 0}
+.okbox{background:var(--good-bg);border-left:4px solid var(--good);padding:10px 14px;border-radius:8px;margin:14px 0}
+.badbox{background:var(--bad-bg);border-left:4px solid var(--bad);padding:10px 14px;border-radius:8px;margin:14px 0}
+
+/* forms */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label.f{display:flex;flex-direction:column;gap:5px;font-weight:800;font-size:14px}
+label.f small{font-weight:600;color:var(--dim)}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);padding:10px 12px;border:2px solid #cfc6b0;border-radius:10px;background:#fff;width:100%}
+input[disabled],select[disabled],textarea[disabled]{background:#f2efe7;color:#555}
+.in-blue{background:var(--blue-bg);border-color:var(--blue-line);color:var(--blue-ink);font-weight:800}
+.in-gold{background:var(--yel-bg);border-color:var(--yel-line);color:var(--yel-ink);font-weight:800}
+.money{position:relative}
+.money>span{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--dim);pointer-events:none}
+.money>input{padding-left:24px}
+.err{color:var(--bad);font-size:13px;font-weight:800;min-height:0}
+.err:empty{display:none}
+.radio-row{display:flex;gap:10px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;padding:9px 14px;border:2px solid #cfc6b0;border-radius:999px;background:#fff;font-weight:800;cursor:pointer;font-size:15px}
+.chip input{width:auto;margin:0}
+.chip:has(input:checked){border-color:var(--indigo);background:#ece7ff}
+
+.btn{font:inherit;font-weight:900;font-size:16px;border-radius:12px;padding:12px 20px;border:2px solid transparent;cursor:pointer}
+.btn-gold{background:var(--gold);color:var(--indigo);border-color:var(--gold-deep)}
+.btn-gold:hover{filter:brightness(1.05)}
+.btn-ink{background:var(--indigo);color:#fff}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.nav-btns{display:flex;justify-content:space-between;gap:10px;margin-top:26px;flex-wrap:wrap}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
+.tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tile .k{font-size:13px;font-weight:800;color:var(--dim)}
+.tile .v{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12px;color:var(--dim)}
+.tile.pos .v{color:var(--good)}.tile.neg .v{color:var(--bad)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{background:var(--parch-2);font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)}
+td.n,th.n{text-align:right}
+tfoot td{font-weight:900;background:#faf6ea}
+.pill{display:inline-block;font-size:11px;font-weight:900;padding:2px 8px;border-radius:999px;letter-spacing:.3px}
+.p-direct{background:var(--good-bg);color:var(--good)}.p-partial{background:var(--mid-bg);color:var(--mid)}.p-none{background:#ececf3;color:#4a4a62}
+.pos{color:var(--bad)}.negv{color:var(--good)}
+.cat-cell{min-width:150px}
+.map-note{font-size:13px;color:var(--dim);margin-top:2px}
+
+/* research rows (stack on phones) */
+.rrow{display:grid;grid-template-columns:1.3fr .8fr 1fr 1fr;gap:10px;align-items:start;padding:12px 0;border-bottom:1px solid var(--line)}
+.rrow:last-child{border-bottom:0}
+.rrow .cat{font-weight:900}
+.rrow .predv{font-weight:800;color:var(--blue-ink);background:var(--blue-bg);border-radius:8px;padding:9px 10px;text-align:right}
+@media (max-width:720px){
+  .rrow{grid-template-columns:1fr 1fr}
+  .rrow .cat{grid-column:1/-1}
+}
+
+/* meter */
+.meter{margin:16px 0 6px}
+.meter .track{position:relative;height:18px;border-radius:99px;background:linear-gradient(90deg,#e45468 0%,#f2b33d 50%,#f2b33d 52.5%,#2fae73 57%,#2fae73 100%)}
+.meter .pin{position:absolute;top:-7px;width:6px;height:32px;margin-left:-3px;background:var(--indigo);border-radius:3px;box-shadow:0 0 0 2px #fff;transition:left .3s}
+.meter .ticks{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--dim);margin-top:6px}
+.verdict{font-family:'Cinzel',serif;font-size:24px;font-weight:900;margin-top:6px}
+.verdict.surplus{color:var(--good)}.verdict.balanced{color:var(--mid)}.verdict.shortfall{color:var(--bad)}
+
+.seg{display:inline-flex;border:2px solid var(--indigo);border-radius:12px;overflow:hidden}
+.seg button{font:inherit;font-weight:900;padding:9px 14px;border:0;background:#fff;color:var(--indigo);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--indigo);color:#fff}
+
+details.box{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px 16px;margin:14px 0}
+details.box>summary{cursor:pointer;font-weight:900;color:var(--indigo)}
+
+.chart svg{width:100%;height:auto;display:block}
+textarea.refl{min-height:260px;line-height:1.6}
+.counter{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:800;margin-top:6px}
+.lockbadge{display:inline-flex;align-items:center;gap:6px;background:var(--indigo);color:var(--gold);font-weight:900;font-size:13px;padding:4px 10px;border-radius:999px}
+.banner{border-radius:12px;padding:14px 16px;margin-top:14px;font-weight:700}
+.banner.sub{background:var(--good-bg);border:2px solid var(--good)}
+.banner.gate{background:#fff;border:2px solid var(--gold-line)}
+.imgprev{max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+.sum h3{border-bottom:2px solid var(--gold);padding-bottom:4px}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px}
+.kv dt{font-weight:800;color:var(--dim)}.kv dd{margin:0}
+.reflect-out{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
+
+@media (max-width:720px){
+  nav{padding:10px 12px}.nav-link{font-size:13px;padding:6px 8px}
+  .path ol{grid-template-columns:repeat(4,1fr);row-gap:10px}
+  .path .lbl{font-size:11px}
+}
+@media print{
+  nav,.path,.nav-btns,.no-print,.hero::after{display:none!important}
+  body{background:#fff}
+  .hero{background:#fff;color:#000;padding:0 0 10px}.hero h1{color:#000;text-shadow:none}.hero p,.who{color:#333}
+  main{margin:0;max-width:none}
+  .step{display:none!important;box-shadow:none;border:0;padding:0}
+  .step.printme{display:block!important}
+  .tile,.tbl-wrap{break-inside:avoid}
+}
+</style>
+<link rel="stylesheet" href="shared.css">
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+
+<nav aria-label="Site">
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="side_quests.html">Side Quests</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="checklist.html" style="background:#FFD700;color:#1A1030;font-weight:900;border-radius:999px">📋 Checklist</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="kicker">Financial Health · WELL 255</div>
+  <h1>The Cost of Your Future</h1>
+  <p>Can your dream career afford your dream lifestyle?</p>
+  <div class="who" id="who" aria-live="polite"></div>
+</header>
+
+<main>
+  <div id="gate" class="banner gate" hidden></div>
+
+  <section class="path no-print" aria-label="Assignment progress">
+    <ol id="path"></ol>
+    <div class="bar" aria-hidden="true"><i id="barfill"></i></div>
+    <div class="savebar"><span id="progtext"></span><span id="savestate" role="status" aria-live="polite"></span></div>
+  </section>
+
+  <div id="subbanner" class="banner sub" hidden></div>
+
+  <!-- ═════════ STEP 0 ═════════ -->
+  <section class="step" id="s0" aria-labelledby="h0">
+    <div class="step-head"><span class="step-num">Step 0</span><h2 id="h0">Understanding Interest</h2></div>
+    <p class="lead">Before you plan a life, know what borrowing money costs. Interest is the price you pay to use someone else's money.</p>
+    <div class="grid">
+      <label class="f">Amount borrowed
+        <span class="money"><span>$</span><input id="i_p" inputmode="decimal" autocomplete="off" value="1000"></span>
+        <span class="err" id="e_p"></span></label>
+      <label class="f">Annual interest rate (%)
+        <input id="i_r" inputmode="decimal" autocomplete="off" value="7"><span class="err" id="e_r"></span></label>
+    </div>
+    <div class="tiles" aria-live="polite">
+      <div class="tile"><div class="k">Simple interest for 1 year</div><div class="v" id="o_si">$70.00</div><div class="s" id="o_sif">$1,000 × 7%</div></div>
+      <div class="tile"><div class="k">Simple interest, 5 years</div><div class="v" id="o_si5"></div><div class="s">interest only on what you borrowed</div></div>
+      <div class="tile"><div class="k">Compound interest, 5 years</div><div class="v" id="o_ci5"></div><div class="s">interest also charged on past interest (once a year)</div></div>
+    </div>
+    <div class="note"><b>Simple vs. compound:</b> <i>Simple</i> interest is figured only on the amount you borrowed. <i>Compound</i> interest is also charged on interest that has already built up, so the cost grows faster over time — the gap between the two tiles above. Real loans and credit cards can also have fees, minimum payments, and different compounding schedules, so always read the terms.</div>
+    <h3 id="q0">Check your understanding</h3>
+    <p>You borrow <b>$2,000</b> at <b>5% simple interest</b> for one year. How much interest do you owe?</p>
+    <div class="radio-row" role="radiogroup" aria-labelledby="q0" id="quiz">
+      <label class="chip"><input type="radio" name="quiz" value="a"> $10</label>
+      <label class="chip"><input type="radio" name="quiz" value="b"> $100</label>
+      <label class="chip"><input type="radio" name="quiz" value="c"> $1,000</label>
+      <label class="chip"><input type="radio" name="quiz" value="d"> $2,100</label>
+    </div>
+    <div id="quizfb" aria-live="polite"></div>
+    <div class="nav-btns"><span></span><button class="btn btn-gold" data-go="1">Next: Choose Your Career →</button></div>
+  </section>
+
+  <!-- ═════════ STEP 1 ═════════ -->
+  <section class="step" id="s1" aria-labelledby="h1">
+    <div class="step-head"><span class="step-num">Step 1</span><h2 id="h1">Choose Your Future Career</h2></div>
+    <p class="lead">Pick a career you could really see yourself doing. This is a plan for your future self — not your family's real income.</p>
+    <div class="grid">
+      <label class="f">Planned occupation<input id="c_job" maxlength="80" autocomplete="off" placeholder="e.g. Registered Nurse"></label>
+      <label class="f">Expected first-year salary (per year)
+        <span class="money"><span>$</span><input id="c_salary" inputmode="decimal" autocomplete="off" placeholder="0"></span><span class="err" id="e_c_salary"></span></label>
+      <label class="f">Average days worked per week<input id="c_days" inputmode="decimal" autocomplete="off" placeholder="5"><span class="err" id="e_c_days"></span></label>
+      <label class="f">Average hours worked per day<input id="c_hours" inputmode="decimal" autocomplete="off" placeholder="8"><span class="err" id="e_c_hours"></span></label>
+      <label class="f">State or city where you plan to live<input id="c_place" maxlength="80" autocomplete="off" placeholder="e.g. Idaho Falls, ID"></label>
+    </div>
+    <h3 id="srcq">Where did your salary number come from?</h3>
+    <div class="radio-row" role="radiogroup" aria-labelledby="srcq">
+      <label class="chip"><input type="radio" name="salsrc" value="researched"> I researched it</label>
+      <label class="chip"><input type="radio" name="salsrc" value="guess"> It's my guess</label>
+    </div>
+    <div id="salurlwrap" hidden>
+      <label class="f" style="margin-top:12px">Where you found it (web address)<input id="c_salurl" inputmode="url" maxlength="300" placeholder="https://www.bls.gov/ooh/…"></label>
+      <p class="map-note">Good places to look: the Bureau of Labor Statistics <a href="https://www.bls.gov/ooh/" target="_blank" rel="noopener">Occupational Outlook Handbook</a> or <a href="https://www.careeronestop.org/" target="_blank" rel="noopener">CareerOneStop</a>. Use a starting or entry-level number if you can find one.</p>
+    </div>
+    <div class="tiles" aria-live="polite">
+      <div class="tile"><div class="k">Hours per week</div><div class="v" id="o_wk">—</div></div>
+      <div class="tile"><div class="k">Work hours per year</div><div class="v" id="o_yr">—</div><div class="s">hours/day × days/week × 52 weeks</div></div>
+      <div class="tile"><div class="k">Gross hourly earnings</div><div class="v" id="o_hr">—</div><div class="s">before any taxes</div></div>
+    </div>
+    <div id="salbadge"></div>
+    <div class="nav-btns"><button class="btn btn-ghost" data-go="0">← Back</button><button class="btn btn-gold" data-go="2">Next: Predict Your Lifestyle →</button></div>
+  </section>
+
+  <!-- ═════════ STEP 2 ═════════ -->
+  <section class="step" id="s2" aria-labelledby="h2">
+    <div class="step-head"><span class="step-num">Step 2</span><h2 id="h2">Predict Your Lifestyle</h2></div>
+    <p class="lead">Before you look anything up, guess what <b>you</b> would spend <b>each month</b> living on your own. No research yet — the point is to see how close your instincts are. Put 0 for anything you won't pay.</p>
+    <div id="lockstate"></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Category</th><th class="n">My estimate per month</th></tr></thead>
+      <tbody id="predbody"></tbody>
+      <tfoot>
+        <tr><td>Monthly total</td><td class="n" id="o_pm">$0.00</td></tr>
+        <tr><td>Annual total (× 12)</td><td class="n" id="o_pa">$0.00</td></tr>
+      </tfoot>
+    </table></div>
+    <div class="nav-btns"><button class="btn btn-ghost" data-go="1">← Back</button>
+      <button class="btn btn-gold" id="lockbtn">🔒 Lock my estimates &amp; start research</button></div>
+  </section>
+
+  <!-- ═════════ STEP 3 ═════════ -->
+  <section class="step" id="s3" aria-labelledby="h3">
+    <div class="step-head"><span class="step-num">Step 3</span><h2 id="h3">Research Real Living Expenses</h2></div>
+    <p class="lead">Now find out what life really costs. Your locked guesses are shown in <span style="color:var(--blue-ink);font-weight:900">blue</span>; put what you find in the <span style="color:var(--yel-ink);font-weight:900;background:var(--yel-bg);padding:0 4px;border-radius:4px">gold</span> boxes.</p>
+    <ol>
+      <li>Open the <a href="https://livingwage.mit.edu/" target="_blank" rel="noopener"><b>MIT Living Wage Calculator</b></a> (opens a new tab).</li>
+      <li>Search for the state, then the county or city closest to where you plan to live.</li>
+      <li>Pick the column for your household (for example, <i>1 adult, 0 children</i>), then find the <b>Typical Expenses</b> table.</li>
+      <li>MIT lists <b>yearly</b> amounts. Use the converter below to change them to monthly.</li>
+    </ol>
+    <div class="warn">This page does <b>not</b> pull numbers from MIT for you. Every number must come from your own research.</div>
+
+    <h3>About your research</h3>
+    <div class="grid">
+      <label class="f">Location researched<input id="r_location" maxlength="100" placeholder="e.g. Bonneville County, ID"></label>
+      <label class="f">Household type
+        <select id="r_household">
+          <option value="">Choose…</option>
+          <option>1 adult, 0 children</option><option>1 adult, 1 child</option><option>1 adult, 2 children</option>
+          <option>2 adults (1 working), 0 children</option><option>2 adults (both working), 0 children</option>
+          <option>2 adults (1 working), 1 child</option><option>2 adults (both working), 1 child</option>
+          <option>2 adults (both working), 2 children</option><option>Other</option>
+        </select></label>
+      <label class="f">Source web address<input id="r_url" inputmode="url" maxlength="300" placeholder="https://livingwage.mit.edu/…"><small>Copy the address of the exact results page.</small></label>
+      <label class="f">Date researched<input id="r_date" type="date"></label>
+    </div>
+
+    <details class="box" open>
+      <summary>Yearly → monthly converter</summary>
+      <div class="grid" style="margin-top:10px;align-items:end">
+        <label class="f">Yearly amount<span class="money"><span>$</span><input id="cv_in" inputmode="decimal" placeholder="13,200"></span></label>
+        <div class="tile"><div class="k">÷ 12 = monthly</div><div class="v" id="cv_out">$0.00</div></div>
+        <label class="f">Put it in
+          <select id="cv_to"></select></label>
+        <button class="btn btn-ink" id="cv_go" type="button">Use this number</button>
+      </div>
+    </details>
+
+    <h3>How the MIT list matches the worksheet</h3>
+    <p class="map-note">MIT doesn't use the same 12 categories. <span class="pill p-direct">MATCH</span> = MIT has the same line. <span class="pill p-partial">PARTLY</span> = MIT lumps it with other things. <span class="pill p-none">NOT IN MIT</span> = research it somewhere else (or set your own goal). If you use your own number, say where it came from.</p>
+    <div id="resrows"></div>
+    <div class="tbl-wrap" style="margin-top:10px"><table><tfoot>
+      <tr><td>Researched monthly total</td><td class="n" id="o_rm">$0.00</td></tr>
+      <tr><td>Researched annual total (× 12)</td><td class="n" id="o_ra">$0.00</td></tr>
+    </tfoot></table></div>
+
+    <h3>Evidence screenshot <small style="font-weight:600;color:var(--dim)">(optional)</small></h3>
+    <p class="map-note">Take a screenshot of the MIT expenses table and add it here. Crop out anything personal — just the expense table is needed. Pictures are shrunk before they are saved.</p>
+    <input type="file" id="r_img" accept="image/png,image/jpeg,image/webp" aria-label="Add a screenshot">
+    <div class="err" id="e_img"></div>
+    <div id="imgwrap"></div>
+    <div class="nav-btns"><button class="btn btn-ghost" data-go="2">← Back</button><button class="btn btn-gold" data-go="4">Next: Compare →</button></div>
+  </section>
+
+  <!-- ═════════ STEP 4 ═════════ -->
+  <section class="step" id="s4" aria-labelledby="h4">
+    <div class="step-head"><span class="step-num">Step 4</span><h2 id="h4">Compare Predictions With Reality</h2></div>
+    <p class="lead">How close were your instincts? Difference = researched − your estimate. A <span class="pos" style="font-weight:900">red +</span> means real life costs more than you guessed.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Category</th><th class="n">My estimate</th><th class="n">Researched</th><th class="n">Difference</th><th class="n">% of real cost</th></tr></thead>
+      <tbody id="cmpbody"></tbody>
+      <tfoot id="cmpfoot"></tfoot>
+    </table></div>
+    <p class="map-note">Want to change a number? Researched costs can be edited in Step 3. Your estimates stay locked so the comparison stays honest.</p>
+    <div class="tiles" id="cmptiles"></div>
+    <div class="chart" id="chart" role="img" aria-label="Bar chart comparing estimates with researched costs"></div>
+    <div id="cmpfb" aria-live="polite"></div>
+    <div class="nav-btns"><button class="btn btn-ghost" data-go="3">← Back</button><button class="btn btn-gold" id="done4">Next: Taxes &amp; Affordability →</button></div>
+  </section>
+
+  <!-- ═════════ STEP 5 ═════════ -->
+  <section class="step" id="s5" aria-labelledby="h5">
+    <div class="step-head"><span class="step-num">Step 5</span><h2 id="h5">Taxes, Income &amp; Affordability</h2></div>
+    <p class="lead">Your salary isn't what you take home. Taxes come out first. Does what's left cover your <b>researched</b> lifestyle?</p>
+    <div class="seg" role="group" aria-label="Tax method">
+      <button type="button" id="tm_s" aria-pressed="true">Classroom (25% + 6%)</button>
+      <button type="button" id="tm_r" aria-pressed="false">More realistic (2026)</button>
+    </div>
+    <div id="taxexplain"></div>
+    <div id="dash" aria-live="polite"></div>
+
+    <details class="box" id="whatif">
+      <summary>🧪 Try a what-if (this never changes what you turn in)</summary>
+      <p class="map-note">Experiment: raise your salary, find a roommate, drive an older car… Your real numbers stay saved exactly as they are.</p>
+      <div class="grid">
+        <label class="f">What-if salary<span class="money"><span>$</span><input id="w_salary" inputmode="decimal"></span></label>
+        <label class="f">What-if housing per month<span class="money"><span>$</span><input id="w_housing" inputmode="decimal"></span></label>
+        <label class="f">What-if transportation per month<span class="money"><span>$</span><input id="w_transportation" inputmode="decimal"></span></label>
+        <label class="f">What-if food per month<span class="money"><span>$</span><input id="w_food" inputmode="decimal"></span></label>
+        <label class="f">What-if entertainment per month<span class="money"><span>$</span><input id="w_entertainment" inputmode="decimal"></span></label>
+        <label class="f">What-if savings per month<span class="money"><span>$</span><input id="w_savings" inputmode="decimal"></span></label>
+      </div>
+      <div id="wdash"></div>
+      <button class="btn btn-ghost" id="w_reset" type="button">Reset what-if to my real numbers</button>
+    </details>
+
+    <label class="chip" style="margin-top:16px;display:inline-flex"><input type="checkbox" id="ack5"> I looked at my results and checked whether my career can support my lifestyle.</label>
+    <div class="nav-btns"><button class="btn btn-ghost" data-go="4">← Back</button><button class="btn btn-gold" data-go="6">Next: Reflection →</button></div>
+  </section>
+
+  <!-- ═════════ STEP 6 ═════════ -->
+  <section class="step" id="s6" aria-labelledby="h6">
+    <div class="step-head"><span class="step-num">Step 6</span><h2 id="h6">Written Reflection</h2></div>
+    <p class="lead">Write at least <b>five complete sentences</b> in your own words. Answer each question:</p>
+    <ol>
+      <li>What surprised you most about the cost of living?</li>
+      <li>Which expense did you underestimate the most? <span id="hintunder" class="map-note"></span></li>
+      <li>Can your chosen career support your desired lifestyle?</li>
+      <li>What changes could improve your financial situation?</li>
+      <li>What did you learn about financial health?</li>
+    </ol>
+    <label class="sr-only" for="refl">Your reflection</label>
+    <textarea id="refl" class="refl" maxlength="6000" placeholder="Start writing here…"></textarea>
+    <div class="counter"><span id="sentcount" aria-live="polite">0 of 5 complete sentences</span><span id="wordcount" style="color:var(--dim)">0 words</span></div>
+    <p class="map-note">A complete sentence has at least four words and ends with a period, question mark, or exclamation point. Your writing saves automatically.</p>
+    <div class="nav-btns"><button class="btn btn-ghost" data-go="5">← Back</button><button class="btn btn-gold" data-go="7">Next: Review &amp; Submit →</button></div>
+  </section>
+
+  <!-- ═════════ STEP 7 ═════════ -->
+  <section class="step sum" id="s7" aria-labelledby="h7">
+    <div class="step-head"><span class="step-num">Step 7</span><h2 id="h7">Review and Submit</h2></div>
+    <div id="summary"></div>
+    <div id="missing" aria-live="polite"></div>
+    <div class="nav-btns no-print">
+      <button class="btn btn-ghost" data-go="6">← Back</button>
+      <span style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-ghost" id="printbtn" type="button">🖨 Print / Save as PDF</button>
+        <button class="btn btn-gold" id="submitbtn" type="button">Submit Assignment</button>
+      </span>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/supabase.js"></script>
+<script src="finance_calc.js"></script>
+<script>
+(function () {
+'use strict';
+const F = window.FinanceCalc;
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRI = (window.TERM && TERM.id) || '2026-T1';
+const STEPS = ['Interest', 'Career', 'Predict', 'Research', 'Compare', 'Afford', 'Reflect', 'Submit'];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const usd = (n, d) => (n < 0 ? '−' : '') + '$' + Math.abs(n || 0).toLocaleString('en-US', { minimumFractionDigits: d === 0 ? 0 : 2, maximumFractionDigits: d === 0 ? 0 : 2 });
+const pct = n => n == null ? '—' : (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n).toFixed(0) + '%';
+
+// ── who is this ──
+function session() {
+  try {
+    const sid = localStorage.getItem('qSID_' + TRI), pin = sessionStorage.getItem('qPIN_' + TRI);
+    return sid && pin ? { sid, pin } : null;
+  } catch (e) { return null; }
+}
+const DEMO = /[?&]demo=1\b/.test(location.search);
+const S = session();
+const MODE = S ? 'cloud' : (DEMO ? 'demo' : 'none');
+const db = (MODE === 'cloud' && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const BACKUP_KEY = S ? 'fin_unsynced_' + TRI + '_' + S.sid : 'fin_demo_' + TRI;   // per-student; removed once the cloud has it
+
+// ── state ──
+let D = blank();
+let META = { status: 'draft', image: null, scores: null, teacher_note: null, submitted_at: null };
+let cur = 0;
+function blank() {
+  return { v: 1, step0: { p: 1000, r: 7, quiz: '' }, career: { salarySource: '' }, predicted: {},
+    research: { values: {} }, tax: { mode: 'simplified', state: 'ID', customRate: '' }, whatif: null,
+    reflection: '', done: {}, visited: {} };
+}
+const submitted = () => META.status === 'submitted';
+const locked = () => !!D.predLockedAt;
+
+// ── saving ──
+let saveTimer = null, saving = false, again = false, dirty = false;
+function setSave(text, cls) { const el = $('savestate'); el.textContent = text; el.className = cls || ''; }
+function queueSave() {
+  if (submitted() || MODE === 'none') return;
+  dirty = true;
+  try { localStorage.setItem(BACKUP_KEY, JSON.stringify(MODE === 'demo' ? { at: Date.now(), data: D, meta: META } : { at: Date.now(), data: D })); } catch (e) {}
+  setSave('Saving…');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flush, 900);
+}
+async function flush() {
+  if (MODE === 'demo') { dirty = false; setSave('Saved on this device (practice mode)', 's-ok'); return true; }
+  if (saving) { again = true; return; }
+  saving = true; dirty = false;
+  const payload = JSON.parse(JSON.stringify(D));
+  const { data, error } = await db.rpc('fin_save', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI, p_data: payload });
+  saving = false;
+  if (error) {
+    dirty = true;
+    if (/submitted/i.test(error.message)) { await loadCloud(); render(); }
+    else if (/not signed in/i.test(error.message)) setSave('Not saved — sign in again on the Quest page', 's-bad');
+    else { setSave('Not saved yet — will retry (your work is kept on this device)', 's-bad'); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 5000); }
+    return false;
+  }
+  if (data && data.pred_locked_at && !D.predLockedAt) D.predLockedAt = data.pred_locked_at;
+  if (!dirty) { try { localStorage.removeItem(BACKUP_KEY); } catch (e) {} }
+  setSave('Saved ✓ ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }), 's-ok');
+  if (again) { again = false; return flush(); }
+  return true;
+}
+window.addEventListener('beforeunload', e => { if (dirty && MODE === 'cloud') { e.preventDefault(); e.returnValue = ''; } });
+
+async function loadCloud() {
+  const { data, error } = await db.rpc('fin_get', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI });
+  if (error) throw error;
+  let backup = null;
+  try { backup = JSON.parse(localStorage.getItem(BACKUP_KEY) || 'null'); } catch (e) {}
+  if (data) {
+    META = { status: data.status, image: data.image, scores: data.scores, teacher_note: data.teacher_note, submitted_at: data.submitted_at, returned_at: data.returned_at };
+    D = Object.assign(blank(), data.data || {});
+    if (data.pred_locked_at) D.predLockedAt = data.pred_locked_at;
+    // unsynced work on this device that is newer than the cloud copy wins (unless already submitted)
+    if (backup && !submitted() && backup.at > Date.parse(data.updated_at || 0)) {
+      const keepPred = D.predLockedAt ? D.predicted : null;
+      D = Object.assign(blank(), backup.data);
+      if (keepPred) { D.predicted = keepPred; D.predLockedAt = data.pred_locked_at; }
+      queueSave();
+    }
+  } else if (backup) { D = Object.assign(blank(), backup.data); queueSave(); }
+}
+function loadDemo() {
+  try { const b = JSON.parse(localStorage.getItem(BACKUP_KEY) || 'null'); if (b) { D = Object.assign(blank(), b.data); META = b.meta || META; } } catch (e) {}
+}
+function saveDemoMeta() { try { localStorage.setItem(BACKUP_KEY, JSON.stringify({ at: Date.now(), data: D, meta: META })); } catch (e) {} }
+
+// ── path / navigation ──
+function canEnter(n) { return n <= 3 ? (n < 3 || locked()) : locked(); }
+function renderPath() {
+  const ol = $('path');
+  ol.innerHTML = STEPS.map((t, i) => {
+    const cls = [D.done[i] ? 'done' : '', i === cur ? 'cur' : ''].join(' ');
+    const dis = !canEnter(i);
+    return `<li class="${cls}"><button type="button" data-go="${i}" ${dis ? 'disabled title="Lock your Step 2 estimates first"' : ''} aria-current="${i === cur ? 'step' : 'false'}">
+      <span class="gem">${D.done[i] ? '✓' : i}</span><span class="lbl">${t}</span></button></li>`;
+  }).join('');
+  const n = Object.keys(D.done).filter(k => D.done[k]).length;
+  $('barfill').style.width = (n / 8 * 100) + '%';
+  $('progtext').textContent = submitted() ? 'Submitted' : n + ' of 8 steps complete';
+}
+function go(n) {
+  n = Math.max(0, Math.min(7, Number(n)));
+  if (!canEnter(n)) { flashLock(); return; }
+  cur = n; D.visited[n] = true;
+  document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('on', i === n));
+  renderPath(); renderStep(n);
+  if (!submitted()) { D.lastStep = n; queueSave(); }
+  const h = document.querySelector('#s' + n + ' h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+  window.scrollTo({ top: document.querySelector('.path').offsetTop - 70, behavior: 'smooth' });
+}
+function flashLock() {
+  go(2);
+  $('lockstate').innerHTML = '<div class="warn">Finish and <b>lock</b> your estimates first. Research comes after you guess.</div>';
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go]');
+  if (b && !b.disabled) { e.preventDefault(); markDoneOnLeave(cur, Number(b.dataset.go)); go(b.dataset.go); }
+});
+function markDoneOnLeave(from, to) {
+  if (to <= from || submitted()) return;
+  if (from === 0 && D.step0.quiz) D.done[0] = true;
+  if (from === 1 && step1Complete()) D.done[1] = true;
+  if (from === 3 && step3Complete()) D.done[3] = true;
+  if (from === 6 && F.sentences(D.reflection).meaningful >= 5) D.done[6] = true;
+}
+
+// ── generic money input binding ──
+function bindMoney(el, errEl, get, set, max) {
+  el.addEventListener('input', () => {
+    const c = F.checkMoney(el.value, max);
+    if (errEl) errEl.textContent = c.ok ? '' : c.msg;
+    el.setAttribute('aria-invalid', c.ok ? 'false' : 'true');
+    if (!c.ok) return;
+    set(c.blank ? '' : c.value); recalc(); queueSave();
+  });
+  el.value = get() === '' || get() == null ? '' : get();
+}
+
+// ── STEP 0 ──
+function step0() {
+  const p = $('i_p'), r = $('i_r');
+  p.value = D.step0.p; r.value = D.step0.r;
+  bindMoney(p, $('e_p'), () => D.step0.p, v => D.step0.p = v, 1e7);
+  bindMoney(r, $('e_r'), () => D.step0.r, v => D.step0.r = v, 100);
+  document.querySelectorAll('input[name=quiz]').forEach(x => {
+    x.checked = x.value === D.step0.quiz;
+    x.addEventListener('change', () => { D.step0.quiz = x.value; D.done[0] = true; quizFb(); renderPath(); queueSave(); });
+  });
+  quizFb();
+}
+function quizFb() {
+  const a = D.step0.quiz, el = $('quizfb');
+  if (!a) { el.innerHTML = ''; return; }
+  el.innerHTML = a === 'b'
+    ? '<div class="okbox">✅ Right. $2,000 × 5% = <b>$100</b> for one year.</div>'
+    : '<div class="badbox">Not quite. Simple interest = amount borrowed × rate: $2,000 × 0.05 = <b>$100</b>. ($2,100 is what you’d repay in total.)</div>';
+}
+function out0() {
+  const p = F.num(D.step0.p), r = F.num(D.step0.r);
+  $('o_si').textContent = usd(F.simpleInterest(p, r));
+  $('o_sif').textContent = usd(p, 0) + ' × ' + r + '%';
+  $('o_si5').textContent = usd(F.simpleInterest(p, r, 5));
+  $('o_ci5').textContent = usd(F.compoundInterest(p, r, 5));
+}
+
+// ── STEP 1 ──
+function step1() {
+  const c = D.career;
+  ['job', 'place'].forEach(k => { const el = $('c_' + k); el.value = c[k] || ''; el.addEventListener('input', () => { c[k] = el.value; queueSave(); }); });
+  bindMoney($('c_salary'), $('e_c_salary'), () => c.salary, v => c.salary = v, 5e6);
+  bindMoney($('c_days'), $('e_c_days'), () => c.days, v => c.days = v, 7);
+  bindMoney($('c_hours'), $('e_c_hours'), () => c.hours, v => c.hours = v, 24);
+  $('c_salurl').value = c.salaryUrl || '';
+  $('c_salurl').addEventListener('input', e => { c.salaryUrl = e.target.value.trim(); queueSave(); badge1(); });
+  document.querySelectorAll('input[name=salsrc]').forEach(x => {
+    x.checked = x.value === c.salarySource;
+    x.addEventListener('change', () => { c.salarySource = x.value; $('salurlwrap').hidden = x.value !== 'researched'; badge1(); queueSave(); });
+  });
+  $('salurlwrap').hidden = c.salarySource !== 'researched';
+}
+function step1Complete() {
+  const c = D.career;
+  return !F.isBlank(c.job) && F.num(c.salary) > 0 && F.num(c.days) > 0 && F.num(c.hours) > 0 && !F.isBlank(c.place) && !!c.salarySource;
+}
+function badge1() {
+  const c = D.career, el = $('salbadge');
+  if (c.salarySource === 'researched') el.innerHTML = c.salaryUrl ? '<div class="okbox">📚 Researched salary — source recorded.</div>' : '<div class="warn">Add the web address where you found your salary, or mark it as a guess.</div>';
+  else if (c.salarySource === 'guess') el.innerHTML = '<div class="warn">🤔 This salary is a <b>guess</b>. That’s allowed, but a researched number earns more credit and gives you a truer answer.</div>';
+  else el.innerHTML = '';
+}
+function out1() {
+  const c = D.career, h = F.workHours(c.days, c.hours);
+  $('o_wk').textContent = h.weeklyHours ? h.weeklyHours.toLocaleString() : '—';
+  $('o_yr').textContent = h.annualHours ? h.annualHours.toLocaleString() : '—';
+  const hr = F.hourlyFrom(c.salary, h.annualHours);
+  $('o_hr').textContent = hr == null || !F.num(c.salary) ? '—' : usd(hr) + '/hr';
+}
+
+// ── STEP 2 ──
+function step2() {
+  $('predbody').innerHTML = F.CATS.map(c => `<tr><td><label for="p_${c.key}">${esc(c.label)}</label></td>
+    <td class="n"><span class="money" style="display:inline-block;max-width:180px"><span>$</span><input id="p_${c.key}" class="in-blue" inputmode="decimal" autocomplete="off" placeholder="0"></span>
+    <div class="err" id="e_p_${c.key}"></div></td></tr>`).join('');
+  F.CATS.forEach(c => bindMoney($('p_' + c.key), $('e_p_' + c.key), () => D.predicted[c.key], v => D.predicted[c.key] = v, 1e6));
+  $('lockbtn').addEventListener('click', lockPredictions);
+}
+function lockPredictions() {
+  if (locked()) { go(3); return; }
+  const miss = F.CATS.filter(c => F.isBlank(D.predicted[c.key]));
+  if (miss.length) {
+    $('lockstate').innerHTML = `<div class="warn">Fill in every category first (use 0 if you won’t pay it). Missing: ${miss.map(c => esc(c.label)).join(', ')}.</div>`;
+    $('p_' + miss[0].key).focus(); return;
+  }
+  if (!confirm('Lock your estimates?\n\nAfter this you can’t change them — that’s how we keep the comparison honest.')) return;
+  D.predLockedAt = new Date().toISOString();
+  D.done[2] = true;
+  if (MODE === 'demo') saveDemoMeta();
+  queueSave(); flush();
+  applyLocks(); go(3);
+}
+function out2() {
+  const t = F.totals(D.predicted);
+  $('o_pm').textContent = usd(t.monthly); $('o_pa').textContent = usd(t.annual);
+}
+
+// ── STEP 3 ──
+function step3() {
+  const r = D.research; r.values = r.values || {};
+  ['location', 'household', 'url', 'date'].forEach(k => {
+    const el = $('r_' + k); el.value = r[k] || '';
+    el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { r[k] = el.value.trim(); queueSave(); });
+  });
+  if (!r.date && !submitted()) { const d = new Date(); $('r_date').value = d.toISOString().slice(0, 10); }
+  $('resrows').innerHTML = F.CATS.map(c => {
+    const pill = c.mit === 'direct' ? '<span class="pill p-direct">MATCH</span>' : c.mit === 'partial' ? '<span class="pill p-partial">PARTLY</span>' : '<span class="pill p-none">NOT IN MIT</span>';
+    return `<div class="rrow">
+      <div class="cat">${esc(c.label)} ${pill}<div class="map-note">MIT line: <b>${esc(c.mitLine)}</b>. ${esc(c.note)}</div></div>
+      <div><div class="map-note">My estimate</div><div class="predv" id="pv_${c.key}">$0</div></div>
+      <label class="f"><span class="map-note">Researched / month</span><span class="money"><span>$</span><input id="rv_${c.key}" class="in-gold" inputmode="decimal" autocomplete="off" placeholder="0"></span><span class="err" id="e_rv_${c.key}"></span></label>
+      <label class="f"><span class="map-note">Where this number came from</span>
+        <select id="rs_${c.key}"><option value="mit">MIT Living Wage Calculator</option><option value="own">My own research</option></select>
+        <input id="rn_${c.key}" maxlength="160" placeholder="Source or how you figured it" hidden></label>
+    </div>`;
+  }).join('');
+  F.CATS.forEach(c => {
+    const vals = r.values;
+    const row = () => (vals[c.key] = vals[c.key] || { v: '', src: c.mit === 'none' ? 'own' : 'mit', note: '' });
+    bindMoney($('rv_' + c.key), $('e_rv_' + c.key), () => (vals[c.key] || {}).v, v => { row().v = v; }, 1e6);
+    const sel = $('rs_' + c.key), note = $('rn_' + c.key);
+    sel.value = (vals[c.key] && vals[c.key].src) || (c.mit === 'none' ? 'own' : 'mit');
+    note.value = (vals[c.key] && vals[c.key].note) || '';
+    note.hidden = sel.value !== 'own';
+    sel.addEventListener('change', () => { row().src = sel.value; note.hidden = sel.value !== 'own'; queueSave(); });
+    note.addEventListener('input', () => { row().note = note.value; queueSave(); });
+  });
+  $('cv_to').innerHTML = F.CATS.map(c => `<option value="${c.key}">${esc(c.label)}</option>`).join('');
+  $('cv_in').addEventListener('input', () => { const c = F.checkMoney($('cv_in').value, 1e8); $('cv_out').textContent = c.ok ? usd(c.value / 12) : '—'; });
+  $('cv_go').addEventListener('click', () => {
+    const c = F.checkMoney($('cv_in').value, 1e8);
+    if (!c.ok || c.blank) return;
+    const k = $('cv_to').value, m = F.round2(c.value / 12);
+    r.values[k] = Object.assign({ src: 'mit', note: '' }, r.values[k], { v: m });
+    $('rv_' + k).value = m; recalc(); queueSave();
+    $('rv_' + k).focus();
+  });
+  $('r_img').addEventListener('change', onImage);
+  renderImg();
+}
+function step3Complete() {
+  const r = D.research || {};
+  return ['location', 'household', 'url', 'date'].every(k => !F.isBlank(r[k])) &&
+    F.KEYS.every(k => r.values[k] && !F.isBlank(r.values[k].v) && !(r.values[k].src === 'own' && F.isBlank(r.values[k].note)));
+}
+function out3() {
+  F.CATS.forEach(c => { const el = $('pv_' + c.key); if (el) el.textContent = F.isBlank(D.predicted[c.key]) ? '—' : usd(F.num(D.predicted[c.key])); });
+  const t = F.totals(D.research.values);
+  $('o_rm').textContent = usd(t.monthly); $('o_ra').textContent = usd(t.annual);
+}
+// screenshot: shrink to a small JPEG before saving
+async function onImage(e) {
+  const file = e.target.files && e.target.files[0]; $('e_img').textContent = '';
+  if (!file) return;
+  if (!/^image\/(png|jpeg|webp)$/.test(file.type)) { $('e_img').textContent = 'Please choose a PNG, JPG, or WebP picture.'; return; }
+  if (file.size > 15 * 1024 * 1024) { $('e_img').textContent = 'That picture is too big (15 MB max).'; return; }
+  try {
+    const url = await shrink(file);
+    if (MODE === 'cloud') {
+      const { error } = await db.rpc('fin_image', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI, p_img: url });
+      if (error) { $('e_img').textContent = 'Could not save the picture: ' + error.message; return; }
+    }
+    META.image = url; if (MODE === 'demo') saveDemoMeta();
+    renderImg();
+  } catch (err) { $('e_img').textContent = 'Could not read that picture.'; }
+  e.target.value = '';
+}
+function shrink(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(u);
+      let w = img.naturalWidth, h = img.naturalHeight; const max = 1400;
+      if (w > max || h > max) { const s = max / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(img, 0, 0, w, h);
+      let q = 0.8, out = cv.toDataURL('image/jpeg', q);
+      while (out.length > 650000 && q > 0.35) { q -= 0.1; out = cv.toDataURL('image/jpeg', q); }
+      if (out.length > 650000) { cv.width = Math.round(w / 2); cv.height = Math.round(h / 2); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); out = cv.toDataURL('image/jpeg', 0.6); }
+      res(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('bad image')); };
+    img.src = u;
+  });
+}
+function renderImg() {
+  const w = $('imgwrap');
+  if (!META.image) { w.innerHTML = ''; return; }
+  w.innerHTML = `<img class="imgprev" alt="Your evidence screenshot" src="${META.image}">` +
+    (submitted() ? '' : '<div><button class="btn btn-ghost" type="button" id="imgdel" style="margin-top:8px">Remove picture</button></div>');
+  const del = $('imgdel');
+  if (del) del.addEventListener('click', async () => {
+    if (MODE === 'cloud') { const { error } = await db.rpc('fin_image', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI, p_img: null }); if (error) { $('e_img').textContent = error.message; return; } }
+    META.image = null; if (MODE === 'demo') saveDemoMeta(); renderImg();
+  });
+}
+
+// ── STEP 4 ──
+function out4() {
+  const cmp = F.compare(D.predicted, D.research.values);
+  $('cmpbody').innerHTML = cmp.rows.map(r => `<tr><td>${esc(r.label)}</td><td class="n">${usd(r.predicted)}</td><td class="n">${usd(r.researched)}</td>
+    <td class="n ${r.diff > 0 ? 'pos' : r.diff < 0 ? 'negv' : ''}">${r.diff > 0 ? '+' : ''}${usd(r.diff)}</td><td class="n">${pct(r.pct)}</td></tr>`).join('');
+  $('cmpfoot').innerHTML = `<tr><td>Monthly total</td><td class="n">${usd(cmp.predictedMonthly)}</td><td class="n">${usd(cmp.researchedMonthly)}</td><td class="n ${cmp.diffMonthly > 0 ? 'pos' : 'negv'}">${cmp.diffMonthly > 0 ? '+' : ''}${usd(cmp.diffMonthly)}</td><td class="n">${pct(cmp.pct)}</td></tr>
+    <tr><td>Annual total</td><td class="n">${usd(cmp.predictedAnnual)}</td><td class="n">${usd(cmp.researchedAnnual)}</td><td class="n ${cmp.diffAnnual > 0 ? 'pos' : 'negv'}">${cmp.diffAnnual > 0 ? '+' : ''}${usd(cmp.diffAnnual)}</td><td class="n"></td></tr>`;
+  $('cmptiles').innerHTML = `
+    <div class="tile"><div class="k">Biggest underestimate</div><div class="v">${cmp.under ? esc(cmp.under.label) : 'None'}</div><div class="s">${cmp.under ? 'real cost was ' + usd(cmp.under.diff) + '/mo more' : 'you never guessed too low'}</div></div>
+    <div class="tile"><div class="k">Biggest overestimate</div><div class="v">${cmp.over ? esc(cmp.over.label) : 'None'}</div><div class="s">${cmp.over ? 'real cost was ' + usd(-cmp.over.diff) + '/mo less' : 'you never guessed too high'}</div></div>
+    <div class="tile"><div class="k">Overall</div><div class="v">${pct(cmp.pct)}</div><div class="s">${cmp.diffMonthly >= 0 ? 'reality costs more than you guessed' : 'you guessed higher than reality'}</div></div>`;
+  $('chart').innerHTML = chartSVG(cmp.rows);
+  const a = Math.abs(cmp.pct || 0);
+  let msg;
+  if (!cmp.researchedMonthly) msg = '<div class="note">Add your researched costs in Step 3 to see how you did.</div>';
+  else if (a <= 10) msg = '<div class="okbox">🎯 Sharp instincts — your total was within 10% of reality. Look at the individual lines: even good totals can hide big misses that cancel out.</div>';
+  else if (cmp.diffMonthly > 0) msg = `<div class="note">💡 Real life costs about <b>${usd(cmp.diffMonthly, 0)} more per month</b> than you expected. That’s really common — most people your age have never seen a rent bill or an insurance premium. Now you know, and knowing is the whole point.</div>`;
+  else msg = `<div class="note">💡 You guessed <b>${usd(-cmp.diffMonthly, 0)} more per month</b> than the research shows. Check whether your lifestyle includes things the basic MIT budget leaves out (like eating out or a newer car) — those are real choices with real costs.</div>`;
+  $('cmpfb').innerHTML = msg;
+  $('hintunder').textContent = cmp.under ? '(Your numbers say: ' + cmp.under.label + '.)' : '';
+}
+function chartSVG(rows) {
+  const W = 640, lh = 34, top = 30, left = 140, right = 20, H = top + rows.length * lh + 10;
+  const max = Math.max(1, ...rows.map(r => Math.max(r.predicted, r.researched)));
+  const sx = v => (v / max) * (W - left - right);
+  let g = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,sans-serif">
+    <rect x="${left}" y="6" width="12" height="12" fill="#2463c9" rx="2"/><text x="${left + 18}" y="16" font-size="13" fill="#1C1A2E">My estimate</text>
+    <rect x="${left + 120}" y="6" width="12" height="12" fill="#d4a106" rx="2"/><text x="${left + 138}" y="16" font-size="13" fill="#1C1A2E">Researched</text>`;
+  rows.forEach((r, i) => {
+    const y = top + i * lh;
+    g += `<text x="${left - 8}" y="${y + 16}" font-size="13" text-anchor="end" fill="#1C1A2E">${esc(r.label)}</text>
+      <rect x="${left}" y="${y + 2}" width="${sx(r.predicted)}" height="12" rx="2" fill="#2463c9"><title>${esc(r.label)} estimate ${usd(r.predicted)}</title></rect>
+      <rect x="${left}" y="${y + 16}" width="${sx(r.researched)}" height="12" rx="2" fill="#d4a106"><title>${esc(r.label)} researched ${usd(r.researched)}</title></rect>`;
+  });
+  return g + '</svg>';
+}
+
+// ── STEP 5 ──
+function step5() {
+  const setMode = m => { D.tax.mode = m; $('tm_s').setAttribute('aria-pressed', m !== 'realistic'); $('tm_r').setAttribute('aria-pressed', m === 'realistic'); recalc(); queueSave(); };
+  $('tm_s').addEventListener('click', () => setMode('simplified'));
+  $('tm_r').addEventListener('click', () => setMode('realistic'));
+  $('tm_s').setAttribute('aria-pressed', D.tax.mode !== 'realistic'); $('tm_r').setAttribute('aria-pressed', D.tax.mode === 'realistic');
+  $('ack5').checked = !!D.done[5];
+  $('ack5').addEventListener('change', () => { D.done[5] = $('ack5').checked; renderPath(); queueSave(); });
+  ['salary', 'housing', 'transportation', 'food', 'entertainment', 'savings'].forEach(k => {
+    $('w_' + k).addEventListener('input', () => {
+      const c = F.checkMoney($('w_' + k).value, 5e6); if (!c.ok) return;
+      ensureWhatif(); if (k === 'salary') D.whatif.salary = c.value; else D.whatif.values[k] = c.value;
+      outWhatif(); queueSave();
+    });
+  });
+  $('w_reset').addEventListener('click', () => { D.whatif = null; ensureWhatif(); fillWhatif(); outWhatif(); queueSave(); });
+}
+function ensureWhatif() {
+  if (D.whatif) return;
+  const v = {}; F.KEYS.forEach(k => v[k] = F.num((D.research.values[k] || {}).v));
+  D.whatif = { salary: F.num(D.career.salary), values: v };
+}
+function fillWhatif() { ensureWhatif(); $('w_salary').value = D.whatif.salary; ['housing', 'transportation', 'food', 'entertainment', 'savings'].forEach(k => $('w_' + k).value = D.whatif.values[k]); }
+function stateExplain() {
+  const t = D.tax;
+  if (t.mode !== 'realistic') return `<div class="note"><b>Classroom assumptions (from the original worksheet):</b> 25% federal income tax + 6% Idaho income tax, both taken from your <b>gross salary</b>. These are simplified teaching numbers, <b>not</b> a real tax calculation. With these rates you keep 69% of your salary.</div>`;
+  return `<div class="note"><b>More realistic, 2026 rules (single filer, standard deduction, no other deductions):</b> federal income tax brackets after the $16,100 standard deduction; Social Security 6.2% (up to $184,500); Medicare 1.45%; plus state income tax.
+    <div class="grid" style="margin-top:10px"><label class="f">State income tax
+      <select id="t_state"><option value="ID">Idaho — flat 5.3%</option><option value="none">A state with no income tax</option><option value="custom">Another state (enter its rate)</option></select></label>
+      <label class="f" id="t_customwrap" ${t.state === 'custom' ? '' : 'hidden'}>Flat rate to use (%)<input id="t_custom" inputmode="decimal" value="${esc(t.customRate)}"><small>Many states use brackets; a single rate is an estimate.</small></label></div>
+    <small>Still an estimate: real paychecks also have health-insurance premiums, retirement contributions, and other deductions. Sources: IRS 2026 adjustments, SSA 2026 wage base, Tax Foundation (Idaho 2026).</small></div>`;
+}
+function dashHTML(a, title, sheet) {
+  const tx = a.taxes;
+  const taxLines = tx.mode === 'realistic'
+    ? `federal ${usd(tx.federal, 0)} · state ${usd(tx.state, 0)} · Social Security ${usd(tx.socialSecurity, 0)} · Medicare ${usd(tx.medicare, 0)}`
+    : `federal 25% ${usd(tx.federal, 0)} · Idaho 6% ${usd(tx.state, 0)}`;
+  const m = a.meter;
+  return `${title ? '<h3>' + title + '</h3>' : ''}
+  <div class="tiles">
+    <div class="tile"><div class="k">Expected gross salary</div><div class="v">${usd(a.salary, 0)}</div><div class="s">per year, before taxes</div></div>
+    <div class="tile"><div class="k">Estimated taxes</div><div class="v">${usd(tx.total, 0)}</div><div class="s">${taxLines}</div></div>
+    <div class="tile"><div class="k">Take-home income</div><div class="v">${usd(a.takeHome, 0)}</div><div class="s">${usd(a.takeHome / 12, 0)} per month</div></div>
+    <div class="tile"><div class="k">Essential spending</div><div class="v">${usd(a.essentialAnnual, 0)}</div><div class="s">11 categories × 12 months (no savings)</div></div>
+    <div class="tile"><div class="k">Savings goal</div><div class="v">${usd(a.savingsAnnual, 0)}</div><div class="s">per year</div></div>
+    <div class="tile ${a.surplus >= 0 ? 'pos' : 'neg'}"><div class="k">${a.surplus >= 0 ? 'Surplus' : 'Deficit'} per year</div><div class="v">${usd(a.surplus, 0)}</div><div class="s">${usd(a.surplusMonthly, 0)} per month</div></div>
+    <div class="tile"><div class="k">Required gross income</div><div class="v">${usd(a.requiredGross, 0)}</div><div class="s">salary needed to cover spending + savings after taxes</div></div>
+    <div class="tile"><div class="k">Required hourly earnings</div><div class="v">${a.requiredHourly == null ? '—' : usd(a.requiredHourly) + '/hr'}</div><div class="s">${a.currentHourly == null ? 'enter days & hours in Step 1' : 'your career: ' + usd(a.currentHourly) + '/hr'}</div></div>
+  </div>
+  <div class="meter" aria-label="Affordability: ${m.label}">
+    <div class="track"><div class="pin" style="left:${m.pos}%"></div></div>
+    <div class="ticks"><span>Shortfall</span><span>Balanced</span><span>Surplus</span></div>
+    <div class="verdict ${m.level}">${m.label}</div>
+    <div class="map-note">${m.level === 'shortfall' ? 'Your take-home pay doesn’t cover this lifestyle yet. Try the what-if box: what would have to change?' : m.level === 'balanced' ? 'You can just cover it, with less than 5% to spare. One surprise bill could tip you over.' : 'You can afford this lifestyle with money to spare.'}</div>
+  </div>
+  ${sheet ? `<details class="box"><summary>How the original worksheet did it (and why we changed it)</summary>
+    <p>The worksheet added 25% and 6% <i>of your expenses</i>: ${usd(a.annualNeed, 0)} + ${usd(sheet.federal, 0)} + ${usd(sheet.state, 0)} = <b>${usd(sheet.total, 0)}</b>.</p>
+    <p>But taxes are taken from <i>income</i>, not expenses. To keep ${usd(a.annualNeed, 0)} after losing 31% to taxes, you actually need ${usd(a.annualNeed, 0)} ÷ 0.69 = <b>${usd(a.requiredGross, 0)}</b>.</p></details>` : ''}`;
+}
+function out5() {
+  $('taxexplain').innerHTML = stateExplain();
+  const st = $('t_state');
+  if (st) {
+    st.value = D.tax.state || 'ID';
+    st.disabled = submitted();
+    st.addEventListener('change', () => { D.tax.state = st.value; queueSave(); out5(); });
+    const cr = $('t_custom');
+    cr.disabled = submitted();
+    cr.addEventListener('input', () => { const c = F.checkMoney(cr.value, 20); if (!c.ok) return; D.tax.customRate = c.blank ? '' : c.value; queueSave(); outDash(); });
+  }
+  outDash();
+}
+function outDash() {
+  const a = F.affordability({ salary: D.career.salary, days: D.career.days, hours: D.career.hours, values: D.research.values, tax: D.tax });
+  $('dash').innerHTML = dashHTML(a, '', D.tax.mode !== 'realistic' ? F.sheetMethodIncome(a.annualNeed) : null);
+  outWhatif();
+}
+function outWhatif() {
+  if (!D.whatif) { $('wdash').innerHTML = ''; return; }
+  const a = F.affordability({ salary: D.whatif.salary, days: D.career.days, hours: D.career.hours, values: D.whatif.values, tax: D.tax });
+  $('wdash').innerHTML = dashHTML(a, 'What-if result');
+}
+
+// ── STEP 6 ──
+function step6() {
+  const t = $('refl'); t.value = D.reflection || '';
+  t.addEventListener('input', () => { D.reflection = t.value; out6(); queueSave(); });
+}
+function out6() {
+  const s = F.sentences(D.reflection);
+  const el = $('sentcount');
+  el.textContent = s.meaningful + ' of 5 complete sentences' + (s.meaningful >= 5 ? ' ✓' : '');
+  el.style.color = s.meaningful >= 5 ? 'var(--good)' : 'var(--ink)';
+  $('wordcount').textContent = (D.reflection ? s.words : 0) + ' words';
+  if (s.meaningful >= 5 && !D.done[6]) { D.done[6] = true; renderPath(); }
+}
+
+// ── STEP 7 ──
+function out7() {
+  const c = D.career, r = D.research, cmp = F.compare(D.predicted, r.values);
+  const a = F.affordability({ salary: c.salary, days: c.days, hours: c.hours, values: r.values, tax: D.tax });
+  const rows = cmp.rows.map(x => `<tr><td>${esc(x.label)}</td><td class="n">${usd(x.predicted)}</td><td class="n">${usd(x.researched)}</td><td class="n">${x.diff > 0 ? '+' : ''}${usd(x.diff)}</td><td>${esc(((r.values[x.key] || {}).src === 'own' ? 'Own: ' + ((r.values[x.key] || {}).note || '') : 'MIT'))}</td></tr>`).join('');
+  let scoreHTML = '';
+  if (META.scores) {
+    const sc = META.scores;
+    const tot = F.RUBRIC.reduce((t, [k]) => t + (sc[k] == null ? 0 : sc[k]), 0);
+    const graded = F.RUBRIC.every(([k]) => sc[k] != null);
+    scoreHTML = `<h3>Mr. Dopp's score</h3><div class="tbl-wrap"><table><tbody>${F.RUBRIC.map(([k, l, m]) => `<tr><td>${esc(l)}</td><td class="n">${sc[k] == null ? '—' : sc[k]} / ${m}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>Total${graded ? '' : ' (so far)'}</td><td class="n">${tot} / 100</td></tr></tfoot></table></div>${META.teacher_note ? '<div class="note">' + esc(META.teacher_note) + '</div>' : ''}`;
+  }
+  $('summary').innerHTML = `
+    <h3>Career</h3><dl class="kv">
+      <dt>Occupation</dt><dd>${esc(c.job || '—')}</dd>
+      <dt>First-year salary</dt><dd>${usd(F.num(c.salary), 0)} <span class="pill ${c.salarySource === 'researched' ? 'p-direct' : 'p-partial'}">${c.salarySource === 'researched' ? 'RESEARCHED' : c.salarySource === 'guess' ? 'GUESS' : '—'}</span>${c.salaryUrl ? ' <a href="' + esc(c.salaryUrl) + '" target="_blank" rel="noopener noreferrer">source</a>' : ''}</dd>
+      <dt>Schedule</dt><dd>${F.num(c.days)} days × ${F.num(c.hours)} hrs = ${F.workHours(c.days, c.hours).annualHours.toLocaleString()} hrs/yr (${a.currentHourly == null ? '—' : usd(a.currentHourly) + '/hr'})</dd>
+      <dt>Plans to live in</dt><dd>${esc(c.place || '—')}</dd></dl>
+    <h3>Budget: my estimate vs. research</h3>
+    <div class="tbl-wrap"><table><thead><tr><th>Category</th><th class="n">Estimate</th><th class="n">Researched</th><th class="n">Difference</th><th>Source</th></tr></thead><tbody>${rows}</tbody>
+      <tfoot><tr><td>Monthly</td><td class="n">${usd(cmp.predictedMonthly)}</td><td class="n">${usd(cmp.researchedMonthly)}</td><td class="n">${usd(cmp.diffMonthly)}</td><td></td></tr>
+      <tr><td>Annual</td><td class="n">${usd(cmp.predictedAnnual)}</td><td class="n">${usd(cmp.researchedAnnual)}</td><td class="n">${usd(cmp.diffAnnual)}</td><td></td></tr></tfoot></table></div>
+    <h3>Taxes &amp; affordability <small style="font-weight:600;color:var(--dim)">(${D.tax.mode === 'realistic' ? '2026 estimate' : 'classroom 25% + 6%'})</small></h3>
+    <dl class="kv"><dt>Estimated taxes</dt><dd>${usd(a.taxes.total, 0)}</dd><dt>Take-home</dt><dd>${usd(a.takeHome, 0)}</dd>
+      <dt>Spending + savings</dt><dd>${usd(a.annualNeed, 0)}</dd><dt>${a.surplus >= 0 ? 'Surplus' : 'Deficit'}</dt><dd>${usd(a.surplus, 0)} / year</dd>
+      <dt>Required income</dt><dd>${usd(a.requiredGross, 0)} / year${a.requiredHourly == null ? '' : ' · ' + usd(a.requiredHourly) + '/hr'}</dd>
+      <dt>Result</dt><dd><b class="verdict ${a.meter.level}" style="font-size:18px">${a.meter.label}</b></dd></dl>
+    <h3>Research evidence</h3><dl class="kv"><dt>Location</dt><dd>${esc(r.location || '—')}</dd><dt>Household</dt><dd>${esc(r.household || '—')}</dd>
+      <dt>Source</dt><dd>${r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.url) + '</a>' : '—'}</dd><dt>Date</dt><dd>${esc(r.date || '—')}</dd>
+      <dt>Screenshot</dt><dd>${META.image ? 'attached' : 'none (optional)'}</dd></dl>
+    ${META.image ? `<img class="imgprev" alt="Evidence screenshot" src="${META.image}">` : ''}
+    <h3>Reflection</h3><div class="reflect-out">${esc(D.reflection || '—')}</div>
+    ${scoreHTML}`;
+  const miss = F.missing(D);
+  const btn = $('submitbtn');
+  if (submitted()) {
+    $('missing').innerHTML = '';
+    btn.disabled = true; btn.textContent = '✓ Submitted';
+  } else if (MODE === 'none') {
+    $('missing').innerHTML = '<div class="warn">Sign in on the Quest page to submit.</div>'; btn.disabled = true;
+  } else if (miss.length) {
+    $('missing').innerHTML = `<div class="warn"><b>Before you can submit (${miss.length}):</b><ul>${miss.slice(0, 12).map(m => '<li>' + esc(m) + '</li>').join('')}${miss.length > 12 ? '<li>…and ' + (miss.length - 12) + ' more</li>' : ''}</ul></div>`;
+    btn.disabled = true; btn.textContent = 'Submit Assignment';
+  } else {
+    $('missing').innerHTML = '<div class="okbox">Everything required is done. Read it over, then submit.</div>';
+    btn.disabled = false; btn.textContent = 'Submit Assignment';
+  }
+}
+async function submit() {
+  const btn = $('submitbtn');
+  if (F.missing(D).length || submitted()) return;
+  if (!confirm('Submit "The Cost of Your Future"?\n\nAfter you submit, you can view your work but not change it.')) return;
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  D.done[7] = true;
+  if (MODE === 'demo') {
+    META.status = 'submitted'; META.submitted_at = new Date().toISOString(); saveDemoMeta(); afterSubmit(); return;
+  }
+  clearTimeout(saveTimer);
+  while (saving) await new Promise(r => setTimeout(r, 100));     // let any save already on its way finish first
+  const ok = await flush();
+  if (ok === false) { btn.disabled = false; btn.textContent = 'Submit Assignment'; alert('Could not save your latest work, so it was not submitted. Check your connection and try again.'); return; }
+  const { data, error } = await db.rpc('fin_submit', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI });
+  if (error) { btn.disabled = false; btn.textContent = 'Submit Assignment'; $('missing').innerHTML = '<div class="badbox">' + esc(error.message) + '</div>'; return; }
+  META.status = 'submitted'; META.submitted_at = data.submitted_at;
+  try { localStorage.removeItem(BACKUP_KEY); } catch (e) {}
+  afterSubmit();
+}
+function afterSubmit() { applyLocks(); render(); go(7); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+// ── locks & rendering ──
+function applyLocks() {
+  const all = submitted();
+  document.querySelectorAll('.step input, .step select, .step textarea').forEach(el => {
+    if (el.closest('#whatif')) { el.disabled = false; return; }          // what-if always playable
+    el.disabled = all;
+  });
+  if (locked()) F.CATS.forEach(c => { const el = $('p_' + c.key); if (el) el.disabled = true; });
+  $('lockbtn').textContent = locked() ? 'Next: Research →' : '🔒 Lock my estimates & start research';
+  $('lockstate').innerHTML = locked() ? `<p><span class="lockbadge">🔒 Locked ${new Date(D.predLockedAt).toLocaleDateString()}</span> Your original estimates are saved and can’t be changed.</p>` : '';
+  if (all) $('r_img').hidden = true;
+  $('subbanner').hidden = !all;
+  if (all) $('subbanner').innerHTML = `✅ Submitted ${META.submitted_at ? new Date(META.submitted_at).toLocaleString() : ''}. You can look through every step; nothing can be changed now. Need a fix? Ask Mr. Dopp to return it.`;
+  else if (META.returned_at) { $('subbanner').hidden = false; $('subbanner').className = 'banner gate'; $('subbanner').innerHTML = '↩️ Mr. Dopp returned this so you can make changes. Submit again when you’re done.'; }
+}
+function recalc() { out0(); out1(); out2(); out3(); if (cur >= 4) renderStep(cur); }
+function renderStep(n) {
+  if (n === 4) out4();
+  if (n === 5) { out5(); fillWhatif(); }
+  if (n === 6) { out4(); out6(); }
+  if (n === 7) out7();
+}
+function render() { out0(); out1(); badge1(); out2(); out3(); out6(); out7(); applyLocks(); renderPath(); }
+
+// ── start ──
+async function start() {
+  const who = $('who');
+  if (MODE === 'none') {
+    $('gate').hidden = false;
+    $('gate').innerHTML = '🔑 <b>Sign in first</b> so your work saves to your account and can be turned in. <a href="quest.html">Go to the Quest page to sign in</a>, then come back here. <br><span class="map-note">Just looking? <a href="finance.html?demo=1">Open practice mode</a> (saves on this device only; can’t be turned in).</span>';
+  } else if (MODE === 'demo') {
+    who.textContent = 'Practice mode — saved on this device only. Nothing is turned in.';
+    loadDemo();
+  } else {
+    let name = ''; try { name = (window.DoppRemember && DoppRemember.get() || {}).name || ''; } catch (e) {}
+    who.textContent = name ? 'Signed in as ' + name : 'Signed in';
+    setSave('Loading…');
+    try { await loadCloud(); setSave(submitted() ? 'Submitted' : 'Saved ✓', 's-ok'); }
+    catch (e) { setSave('Could not load your saved work: ' + (e.message || e), 's-bad'); }
+  }
+  step0(); step1(); step2(); step3(); step5(); step6();
+  $('submitbtn').addEventListener('click', submit);
+  $('done4').addEventListener('click', () => { D.done[4] = true; queueSave(); go(5); });
+  $('printbtn').addEventListener('click', () => { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's7')); out7(); window.print(); });
+  render();
+  const start = submitted() ? 7 : (Number.isInteger(D.lastStep) ? D.lastStep : 0);
+  cur = canEnter(start) ? start : 2;
+  document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('on', i === cur));
+  renderPath(); renderStep(cur);
+}
+start();
+})();
+</script>
+</body>
+</html>
