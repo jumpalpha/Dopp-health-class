@@ -74,7 +74,7 @@
     ['game13_pictionary', 'Health Pictionary Blitz', 'Team'], ['game14_shark_tank', 'Health Shark Tank', 'Boss · Ch 28'],
     ['dopp_spin', 'Dopp Spin', 'Daily'], ['game15_myth_busters', 'Myth Busters', 'Daily']];
   const SIDE_QUESTS = [['wcq', 'Weight Control Quest', 'weight-control-quest.html'], ['reflection', 'Reflection Paper Coach', 'side_quests.html'],
-    ['whatif', 'The "What If" Game', 'side_quests.html'], ['song', 'Song Maker', 'song_maker.html'],
+    ['whatif', 'The "What If" Game', 'side_quests.html'],
     ['finance', 'The Cost of Your Future', 'finance.html']];
 
   // Verified XP rules (checked in the database, Oct 15 2026). Quest XP is separate and self-reported.
@@ -316,7 +316,6 @@
     const quests = SIDE_QUESTS.map(([k, t, href]) => {
       let st = 'not_started', detail = 'Optional';
       if (k === 'wcq' && b.wcq) { st = b.wcq.submitted ? 'complete' : 'in_progress'; detail = b.wcq.submitted ? 'submitted' : 'stage ' + (b.wcq.stage || 0); }
-      if (k === 'song' && [...projects].some(p => /song/.test(p))) { st = 'in_progress'; detail = 'saved work found (not verified)'; }
       // finance.html: the database writes these markers (supabase/finance_quest.sql)
       if (k === 'finance' && projects.has('finance_quest_done')) { st = 'complete'; detail = 'submitted'; }
       else if (k === 'finance' && projects.has('finance_quest')) { st = 'in_progress'; detail = 'saved, not submitted yet'; }
