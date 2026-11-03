@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<title>Ask Mr. Dopp — Legend of Wellness</title>
+<meta name="description" content="Ask Mr. Dopp a health question anonymously, and read the answers he's posted for the class.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --emerald-text:#00704D; --sky:#38BFFF; --crimson:#FF3B5C;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,.04); }
+.wrap { max-width:720px; margin:0 auto; padding:22px 16px 60px; }
+.hero { position:relative; overflow:hidden; border-radius:20px; padding:26px 22px 22px; color:#fff; text-align:center;
+  background:radial-gradient(circle at 20% 0%, #3b2a7a 0%, #1C1A2E 60%), #1C1A2E; box-shadow:0 10px 30px rgba(28,26,46,.18); }
+.hero::after { content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(rgba(255,215,0,.5) 1px, transparent 1.5px); background-size:34px 34px; opacity:.18; }
+.hero > * { position:relative; z-index:1; }
+.hero .ic { font-size:40px; }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(26px,6vw,36px); color:var(--gold); text-shadow:0 2px 0 #000, 0 0 18px rgba(255,215,0,.35); line-height:1.15; margin-top:4px; }
+.hero p { font-size:15px; color:rgba(255,255,255,.82); margin-top:8px; line-height:1.55; }
+.anon { display:inline-flex; gap:8px; align-items:center; margin-top:14px; font-weight:800; font-size:13.5px; color:#1C1A2E;
+  background:var(--emerald); border-radius:999px; padding:7px 14px; }
+.sec { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px 16px; margin-top:16px; }
+.sec h2 { font-family:'Cinzel',serif; font-size:17px; color:var(--gold-text); margin-bottom:10px; }
+label { display:block; font-size:13px; font-weight:800; margin:4px 0 6px; }
+select, textarea { width:100%; font:600 15px 'Nunito',sans-serif; color:var(--text); background:var(--bg); border:1.5px solid var(--border);
+  border-radius:12px; padding:11px 12px; outline:none; }
+select:focus, textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,215,0,.18); }
+textarea { min-height:130px; resize:vertical; line-height:1.5; margin-bottom:4px; }
+.count { font-size:12px; color:var(--dim); text-align:right; }
+.send { width:100%; margin-top:12px; font:900 16px 'Nunito',sans-serif; padding:14px; border-radius:14px; border:none; cursor:pointer;
+  background:linear-gradient(180deg,#FFE34D,#FFC400); color:#1C1A2E; box-shadow:0 4px 0 #a37d00; }
+.send:active { transform:translateY(3px); box-shadow:0 1px 0 #a37d00; }
+.send[disabled] { opacity:.6; cursor:default; }
+.note { font-size:12.5px; color:var(--dim); line-height:1.55; margin-top:10px; }
+.ok { display:none; margin-top:12px; padding:12px 14px; border-radius:12px; font-weight:700; font-size:14px; line-height:1.5;
+  background:rgba(0,229,160,.12); border:1px solid rgba(0,229,160,.45); color:var(--emerald-text); }
+.err { display:none; margin-top:12px; padding:12px 14px; border-radius:12px; font-weight:700; font-size:14px;
+  background:rgba(255,59,92,.08); border:1px solid rgba(255,59,92,.35); color:#B4123A; }
+.safety { background:#fff4f6; border:1.5px solid rgba(255,59,92,.45); border-radius:14px; padding:13px 14px; margin-top:16px; font-size:14px; line-height:1.55; }
+.safety b { color:#B4123A; }
+.safety a { color:#B4123A; font-weight:800; }
+.qa { border-top:1px solid var(--border); padding:14px 2px 12px; }
+.qa:first-of-type { border-top:none; padding-top:4px; }
+.qa .q { font-weight:800; font-size:15px; line-height:1.5; white-space:pre-wrap; }
+.qa .q::before { content:'Q  '; color:var(--sky); font-family:'Cinzel',serif; }
+.qa .a { margin-top:8px; font-size:15px; line-height:1.6; white-space:pre-wrap; background:#fff8e1; border-left:4px solid var(--gold); border-radius:10px; padding:10px 12px; }
+.qa .meta { font-size:11.5px; color:var(--dim); margin-top:6px; }
+.tag { font-size:10px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; padding:2px 7px; border-radius:5px; background:#e6f6ff; color:#0a5f96; margin-right:6px; }
+.empty { font-size:14px; color:var(--dim); padding:4px 0; }
+.search { margin-bottom:10px; width:100%; font:600 14px 'Nunito',sans-serif; padding:9px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg); outline:none; }
+.msg { background:#fff; border:1px solid var(--border); border-radius:16px; padding:26px 20px; text-align:center; font-size:15px; line-height:1.6; margin-top:16px; }
+.btn-dark { display:inline-block; margin-top:12px; font:800 15px 'Nunito',sans-serif; padding:12px 18px; border-radius:12px; background:#1C1A2E; color:var(--gold); text-decoration:none; }
+.hp { position:absolute; left:-9999px; top:-9999px; }
+@media (max-width:480px) { nav { padding:10px 14px; } }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="welcome.html">🏠 Today</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="ic" aria-hidden="true">🙋</div>
+    <h1>Ask Mr. Dopp</h1>
+    <p>Got a health question you don't want to ask out loud? Ask it here. Mr. Dopp may answer it in class or post the answer below for everyone.</p>
+    <div class="anon">🔒 100% anonymous — your name is never saved with your question</div>
+  </section>
+
+  <div id="app"></div>
+
+  <div class="safety" role="note">
+    <b>Need help now?</b> This box is anonymous, so Mr. Dopp <b>can't reply to you</b> or know who needs help.
+    If you or someone you know is hurting, unsafe, or thinking about suicide, talk to a trusted adult or a school counselor today,
+    or call or text <a href="tel:988">988</a> (Suicide &amp; Crisis Lifeline, 24/7). In an emergency, call <a href="tel:911">911</a>.
+  </div>
+</div>
+
+<script src="vendor/supabase.js"></script>
+<script>
+(function () {
+  const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+  const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const TOPICS = ['Health question', 'Relationships & dating', 'Body & growing up', 'Mental health & stress', 'Drugs, alcohol & vaping', 'Food, fitness & sleep', 'A chapter I\'m reading', 'Something else'];
+
+  let ses = null, board = [];
+
+  function session() {
+    try {
+      const r = window.DoppRemember && DoppRemember.get();
+      const id = localStorage.getItem('qSID_' + TRIMESTER) || (r && r.sid), pin = sessionStorage.getItem('qPIN_' + TRIMESTER) || (r && r.pin);
+      return id && pin ? { id, pin } : null;
+    } catch (e) { return null; }
+  }
+
+  function signInMessage(extra) {
+    $('app').innerHTML = `<div class="msg"><b>Sign in first</b><br>${extra || 'Only students in Mr. Dopp\'s class can ask. Sign in once on the Quest page with your class code, last name and PIN.'}
+      <br><small style="color:var(--dim)">Signing in only proves you're in the class. Your question is still saved with no name attached.</small><br>
+      <a class="btn-dark" href="quest.html">⚔ Sign in on the Quest page</a></div>`;
+  }
+
+  function render() {
+    $('app').innerHTML = `
+      <section class="sec">
+        <h2>✍ Your question</h2>
+        <form id="f" autocomplete="off">
+          <label for="topic">What's it about?</label>
+          <select id="topic">${TOPICS.map(t => `<option>${esc(t)}</option>`).join('')}</select>
+          <label for="body" style="margin-top:12px">Ask anything (keep it respectful)</label>
+          <textarea id="body" maxlength="1000" placeholder="Example: Is it bad to drink energy drinks before practice?" required></textarea>
+          <div class="count"><span id="n">0</span>/1000</div>
+          <input class="hp" id="hp" tabindex="-1" aria-hidden="true">
+          <button class="send" id="send" type="submit">🔒 Send anonymously</button>
+          <div class="ok" id="ok"></div><div class="err" id="err"></div>
+          <p class="note">Don't put your name or anyone else's name in the question. You can ask up to 3 questions a day.
+            Mr. Dopp reads every question and picks which ones to answer for the class.</p>
+        </form>
+      </section>
+      <section class="sec">
+        <h2>💬 Answered questions</h2>
+        <div id="board"><div class="empty">Loading…</div></div>
+      </section>`;
+    $('body').addEventListener('input', () => { $('n').textContent = $('body').value.length; });
+    $('f').addEventListener('submit', send);
+  }
+
+  function drawBoard() {
+    const el = $('board'); if (!el) return;
+    if (!board.length) { el.innerHTML = '<div class="empty">No answers posted yet. Be the first to ask!</div>'; return; }
+    const term = (($('find') && $('find').value) || '').toLowerCase();
+    const list = term ? board.filter(x => (x.body + ' ' + x.answer + ' ' + x.topic).toLowerCase().includes(term)) : board;
+    el.innerHTML = (board.length > 5 ? `<input class="search" id="find" placeholder="🔍 Search answers…" value="${esc(term)}">` : '') +
+      (list.length ? list.map(x => `<div class="qa"><div class="q">${esc(x.body)}</div><div class="a">${esc(x.answer)}</div>
+        <div class="meta"><span class="tag">${esc(x.topic)}</span>${x.answered_on ? 'Answered ' + esc(new Date(x.answered_on + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })) : ''}</div></div>`).join('')
+        : '<div class="empty">No answers match that search.</div>');
+    const f = $('find');
+    if (f) { f.oninput = drawBoard; if (term) { f.focus(); f.setSelectionRange(term.length, term.length); } }
+  }
+
+  async function loadBoard() {
+    const { data, error } = await db.rpc('ask_board', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER });
+    if (error) {
+      if (/not signed in/i.test(error.message)) { if (window.DoppRemember) DoppRemember.clear(); return signInMessage('This device\'s saved login doesn\'t work anymore. Please sign in again.'); }
+      $('board').innerHTML = '<div class="empty">Couldn\'t load the answers right now. Try again in a minute.</div>'; return;
+    }
+    board = data || [];
+    drawBoard();
+  }
+
+  async function send(e) {
+    e.preventDefault();
+    const ok = $('ok'), err = $('err'), btn = $('send');
+    ok.style.display = err.style.display = 'none';
+    if ($('hp').value) return;
+    const body = $('body').value.trim();
+    if (body.length < 3) { err.textContent = 'Please type your question first.'; err.style.display = 'block'; return; }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    const { data, error } = await db.rpc('ask_submit', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER, p_topic: $('topic').value, p_body: body });
+    btn.disabled = false; btn.textContent = '🔒 Send anonymously';
+    if (error) {
+      err.textContent = /3 questions|1000|type your/i.test(error.message) ? error.message : 'Couldn\'t send it right now. Please try again.';
+      err.style.display = 'block'; return;
+    }
+    $('body').value = ''; $('n').textContent = '0';
+    const left = data && data.left_today;
+    ok.innerHTML = `✓ Sent! Mr. Dopp got your question with no name on it.${left === 0 ? ' That was your last one for today.' : left ? ' You can ask ' + left + ' more today.' : ''} Watch for the answer in class or below.`;
+    ok.style.display = 'block';
+  }
+
+  ses = session();
+  if (!ses) return signInMessage();
+  render();
+  loadBoard();
+})();
+</script>
+</body>
+</html>
