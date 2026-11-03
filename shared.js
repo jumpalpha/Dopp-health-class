@@ -30,7 +30,7 @@
     var files = [];
     if (!window.TERM) files.push('term.js');                    // remembered-device login + current trimester
     if (!window.StudentSave) files.push('student-save.js');     // saves Quick Check answers to the student's account
-    files.push('quick_checks_data.js', 'quick_checks.js', 'chapter_path.js');
+    files.push('quick_checks_data.js', 'quick_checks.js', 'chapter_path.js', 'podcast.js');
     if (!window.ChecklistTrack) files.push('checklist_track.js');
     files.forEach(function (f) {
       var s = document.createElement('script'); s.src = f; s.async = false;
