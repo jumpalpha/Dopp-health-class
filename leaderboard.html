@@ -68,6 +68,8 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 .podium-3 { border-color:rgba(205,127,50,0.25); background:rgba(205,127,50,0.03); min-height:150px; }
 .podium-rank   { font-size:32px; margin-bottom:6px; }
 .podium-avatar { font-size:36px; margin-bottom:8px; }
+.podium-badges { margin-top:6px; display:flex; justify-content:center; }
+.podium-badges .dbadge { justify-content:center; }
 .podium-name   { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; word-break:break-word; }
 .podium-period { font-size:11px; color:var(--dim); margin-bottom:8px; }
 .podium-xp     { font-family:'Cinzel',serif; font-size:20px; font-weight:700; color:#8a6d00; }
@@ -107,6 +109,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
 </style>
 <link rel="stylesheet" href="shared.css">
 <script src="vendor/supabase.js"></script>
+<script src="badges.js"></script>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
 <body>
@@ -143,6 +146,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
       <div class="podium-period" id="pod-2-period">—</div>
       <div class="podium-xp"    id="pod-2-xp">—</div>
       <div class="podium-tasks"  id="pod-2-tasks"></div>
+      <div class="podium-badges" id="pod-2-badges"></div>
     </div>
     <div class="podium-card podium-1">
       <div class="podium-rank">🥇</div>
@@ -151,6 +155,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
       <div class="podium-period" id="pod-1-period">—</div>
       <div class="podium-xp"    id="pod-1-xp">—</div>
       <div class="podium-tasks"  id="pod-1-tasks"></div>
+      <div class="podium-badges" id="pod-1-badges"></div>
     </div>
     <div class="podium-card podium-3">
       <div class="podium-rank">🥉</div>
@@ -159,6 +164,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100;
       <div class="podium-period" id="pod-3-period">—</div>
       <div class="podium-xp"    id="pod-3-xp">—</div>
       <div class="podium-tasks"  id="pod-3-tasks"></div>
+      <div class="podium-badges" id="pod-3-badges"></div>
     </div>
   </div>
 
@@ -236,9 +242,10 @@ async function loadData(showLoading) {
   if (showLoading || !allData.length)
     document.getElementById('lb-body').innerHTML = '<tr><td colspan="7" class="lb-empty">⏳ Summoning heroes…</td></tr>';
 
-  const [lbRes, vxRes] = await Promise.all([
+  const [lbRes, vxRes, bdg] = await Promise.all([
     db.rpc('get_leaderboard_data', { p_trimester: TRIMESTER }),
-    db.rpc('get_verified_xp', { p_trimester: TRIMESTER })
+    db.rpc('get_verified_xp', { p_trimester: TRIMESTER }),
+    window.DoppBadges ? DoppBadges.loadAll(db, TRIMESTER) : Promise.resolve({})
   ]);
   const { data, error } = lbRes;
   const vx = {}; (vxRes.data || []).forEach(v => { vx[v.student_id] = v; });
@@ -255,7 +262,8 @@ async function loadData(showLoading) {
     return {
       id: s.id, display_name: s.display_name, avatar: s.avatar, class_code: s.class_code,
       tasks, xp: tasks * XP_PER_TASK + daySet.size * XP_PER_DAY, days: daySet.size, streak: streakFrom(daySet),
-      vxp: vx[s.id] ? vx[s.id].verified_xp : 0, mastered: vx[s.id] ? vx[s.id].mastery_passed : 0
+      vxp: vx[s.id] ? vx[s.id].verified_xp : 0, mastered: vx[s.id] ? vx[s.id].mastery_passed : 0,
+      bdg: bdg[s.id] || null
     };
   }).sort((a, b) => b.vxp - a.vxp || b.xp - a.xp || b.streak - a.streak || b.days - a.days);
 
@@ -299,6 +307,7 @@ function renderPodium(rows) {
     document.getElementById(`pod-${pos}-name`).textContent   = s ? s.display_name : '—';
     document.getElementById(`pod-${pos}-period`).textContent = s ? periodLabel(s.class_code) : '—';
     document.getElementById(`pod-${pos}-xp`).textContent     = s ? s.vxp.toLocaleString() + ' XP' : '—';
+    document.getElementById(`pod-${pos}-badges`).innerHTML   = s && window.DoppBadges ? DoppBadges.chip(s.bdg, { max: 2 }) : '';
     document.getElementById(`pod-${pos}-tasks`).textContent  = s ? (s.mastered ? '🎓 ' + s.mastered + ' chapter' + (s.mastered === 1 ? '' : 's') + ' mastered' : s.tasks + ' quest tasks') : '';
   });
 }
@@ -318,7 +327,7 @@ function renderTable(rows) {
     return `<tr>
       <td style="text-align:center">${rankIcon(i)}</td>
       <td style="font-size:20px">${esc(s.avatar || '⚔')}</td>
-      <td style="font-weight:700;color:var(--text)">${esc(s.display_name)}</td>
+      <td style="font-weight:700;color:var(--text)">${esc(s.display_name)}${s.bdg && s.bdg.count && window.DoppBadges ? '<div style="margin-top:3px">' + DoppBadges.chip(s.bdg) + '</div>' : ''}</td>
       <td style="font-size:12px;color:var(--dim)">${esc(periodLabel(s.class_code))}</td>
       <td style="font-family:'Cinzel',serif;font-weight:700;color:#0a7a55">${s.vxp.toLocaleString()}${s.mastered ? ' <span style="font-family:Nunito,sans-serif;font-size:11px;color:var(--dim)">🎓' + s.mastered + '</span>' : ''}</td>
       <td style="font-size:13px;color:var(--dim)">${s.xp.toLocaleString()}</td>

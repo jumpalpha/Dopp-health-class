@@ -94,6 +94,7 @@ select{font:inherit;font-weight:700;padding:8px 10px;border-radius:10px;border:1
 </div>
 
 <script src="vendor/supabase.js"></script>
+<script src="badges.js"></script>
 <script src="pet_sprite.js"></script>
 <script>
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
@@ -104,7 +105,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const STAGE = { egg:'Egg', baby:'Baby', child:'Child', teen:'Teen', adult:'Adult' };
 const FORM = { radiant:'Radiant', steady:'Steady', scruffy:'Scruffy', sugar:'Sugar-Crashed' };
-let pets = [];
+let pets = [], BDG = {};
+const bchip = (p, max) => (window.DoppBadges && p.sid && BDG[p.sid]) ? DoppBadges.chip(BDG[p.sid], { max: max }) : '';
 
 const col = v => v >= 60 ? 'var(--emerald)' : v >= 30 ? 'var(--gold)' : 'var(--crimson)';
 const label = p => p.alive ? ((p.form ? FORM[p.form] + ' ' : '') + STAGE[p.stage]) : '👻 Faded';
@@ -114,7 +116,7 @@ function renderBoard(){
     .sort((a, b) => b.health - a.health || b.streak - a.streak || b.age_days - a.age_days).slice(0, 10);
   $('board').innerHTML = top.length ? top.map((p, i) =>
     '<div class="rank"><div class="n">' + (i + 1) + '</div>' + petSpriteSVG(p, { tight: true }) +
-    '<div class="who"><b>' + esc(p.name) + '</b><span>' + esc(p.owner) + ' · ' + label(p) + ' · 🔥 ' + p.streak + '</span></div>' +
+    '<div class="who"><b>' + esc(p.name) + '</b><span>' + esc(p.owner) + ' · ' + label(p) + ' · 🔥 ' + p.streak + '</span>' + (bchip(p, 2) ? '<div style="margin-top:3px">' + bchip(p, 2) + '</div>' : '') + '</div>' +
     '<div class="hp" style="color:' + col(p.health) + '">❤️ ' + p.health + '</div></div>').join('')
     : '<p class="dim">No hatched sprites yet. The board fills up once sprites hatch.</p>';
 }
@@ -128,6 +130,7 @@ function renderGallery(){
   $('gallery').innerHTML = list.map(p =>
     '<div class="card">' + petSpriteSVG(p, { tight: true }) + '<div class="nm">' + esc(p.name) + '</div><div class="ow">' + esc(p.owner) + '</div>' +
     '<div class="meta">' + label(p) + ' · 🔥 ' + p.streak + ' · 🛍️ ' + (p.upgrades || 0) + '</div>' +
+    (bchip(p, 1) ? '<div class="meta" style="margin-top:4px">' + bchip(p, 1) + '</div>' : '') +
     '<div class="mini"><div style="width:' + p.health + '%;background:' + col(p.health) + '"></div></div></div>').join('');
   $('empty').style.display = pets.length ? 'none' : 'block';
 }
@@ -154,6 +157,7 @@ async function load(){
   if (error){ $('err').textContent = 'Could not load sprites: ' + error.message; $('board').innerHTML = ''; return; }
   pets = data || [];
   renderBoard(); renderGallery();
+  if (window.DoppBadges) { BDG = await DoppBadges.loadAll(db, TRIMESTER); renderBoard(); renderGallery(); }
 }
 async function loadHof(){
   if (!db) return;
