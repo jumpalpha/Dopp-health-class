@@ -441,6 +441,7 @@ const ACHIEVEMENTS = DoppBadges.ACHIEVEMENTS;
 // STATE
 // ═══════════════════════════════════════════════════════════
 let student     = null;       // { id, display_name, avatar, class_code }
+let badgeExtra  = {};          // arcade/trail/shop/mastery/survey/finance counts for achievements
 let doneKeys    = new Set();  // completed task_keys
 let doneDays    = new Set();  // active day strings YYYY-MM-DD
 let selectedAv  = '⚔';
@@ -461,6 +462,7 @@ async function loadProgress() {
   ]);
   doneKeys = new Set((tasks || []).map(t => t.task_key));
   doneDays = new Set((days || []).map(d => d.day_date));
+  badgeExtra = await DoppBadges.loadExtra(db, TRIMESTER, student.id);
 }
 async function init() {
   const sid = localStorage.getItem('qSID_' + TRIMESTER);
@@ -675,7 +677,7 @@ function calcStats() {
     else break;
   }
   xp += doneDays.size * XP_PER_DAY;
-  return { xp, badges, totalTasks, bossTasks, vocabTasks, streak, totalDays: doneDays.size };
+  return DoppBadges.withExtra({ xp, badges, totalTasks, bossTasks, vocabTasks, streak, totalDays: doneDays.size }, badgeExtra);
 }
 
 function calcCompletedChapters() {
@@ -966,7 +968,7 @@ async function resetAll() {
   if (!student) return;
   if (!confirm('Reset ALL your progress? This cannot be undone.')) return;
   await db.rpc('reset_student_progress', { p_student_id: student.id, p_pin_hash: studentPinHash });
-  doneKeys = new Set(); doneDays = new Set();
+  doneKeys = new Set(); doneDays = new Set(); badgeExtra = {};
   render(); showToast('Progress reset. New adventure begins!');
 }
 function showModal() {
@@ -975,7 +977,7 @@ function showModal() {
       localStorage.removeItem('qSID_' + TRIMESTER);
       sessionStorage.removeItem('qPIN_' + TRIMESTER);
       if (window.DoppRemember) DoppRemember.clear();
-      student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set();
+      student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set(); badgeExtra = {};
       clChecked = false; document.getElementById('cl-link').style.display = 'none';
       nmShown = false; document.getElementById('nm-box').style.display = 'none';
       showStep(1);

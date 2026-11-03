@@ -45,6 +45,14 @@ var ACHIEVEMENTS = [
   { id:'master', icon:'⚔️', name:'Master of Wellness', desc:'Complete ALL 9 realms', req: s => s.badges.length >= 9 },
   { id:'streak30', icon:'🌙', name:'Month of Mastery', desc:'30-day activity streak', req: s => s.streak >= 30 },
   { id:'perfect', icon:'💎', name:'Perfect Hero', desc:'Complete every single task', req: s => s.totalTasks >= TOTAL_TASKS },
+  { id:'arcade10', icon:'🕹️', name:'Arcade Explorer', desc:'Play 10 different arcade games', req: s => (s.arcadeGames || 0) >= 10 },
+  { id:'arcade_top', icon:'🏆', name:'Arcade Champion', desc:'Hold the #1 score on any arcade game', req: s => (s.arcadeTops || 0) >= 1 },
+  { id:'trail', icon:'🐂', name:'Trail Blazer', desc:'Finish the trail game', req: s => (s.trailFinishes || 0) >= 1 },
+  { id:'stylist', icon:'🛍️', name:'Sprite Stylist', desc:'Buy 5 Sprite Shop upgrades', req: s => (s.upgrades || 0) >= 5 },
+  { id:'mastery5', icon:'🎓', name:'Mastery Scholar', desc:'Pass 5 Chapter Mastery Checks', req: s => (s.mastered || 0) >= 5 },
+  { id:'mastery16', icon:'📜', name:'Mastery Legend', desc:'Pass Mastery Checks for all of chapters 1–16', req: s => (s.masteredCore || 0) >= 16 },
+  { id:'voice', icon:'🗳️', name:'Class Voice', desc:'Vote in 20 Surveys of the Day', req: s => (s.surveyVotes || 0) >= 20 },
+  { id:'money', icon:'💰', name:'Money Smart', desc:'Submit The Cost of Your Future', req: s => !!s.financeDone },
 ];
 
 var idahoDate = function (d) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver' }).format(d); };
@@ -56,8 +64,12 @@ function streakFrom(daySet) {
   return n;
 }
 
+// Extra counts from get_badge_data (arcade, trail, shop, mastery, surveys, finance)
+var EXTRA_KEYS = ['arcadeGames','arcadeTops','trailFinishes','upgrades','mastered','masteredCore','surveyVotes','financeDone'];
+function withExtra(s, extra) { EXTRA_KEYS.forEach(function (k) { if (extra && extra[k] != null) s[k] = extra[k]; }); return s; }
+
 // Same math as the Quest page, from raw task keys + login days.
-function stats(taskKeys, dayDates) {
+function stats(taskKeys, dayDates, extra) {
   var keys = new Set(taskKeys || []), days = new Set((dayDates || []).map(String));
   var xp = 0, badges = [], totalTasks = 0, bossTasks = 0, vocabTasks = 0, realms = [];
   REALMS.forEach(function (r) {
@@ -74,6 +86,7 @@ function stats(taskKeys, dayDates) {
   xp += days.size * XP_PER_DAY;
   var s = { xp: xp, badges: badges, realms: realms, totalTasks: totalTasks, bossTasks: bossTasks, vocabTasks: vocabTasks,
             streak: streakFrom(days), totalDays: days.size };
+  withExtra(s, extra);
   s.achievements = ACHIEVEMENTS.filter(function (a) { try { return a.req(s); } catch (e) { return false; } });
   s.count = s.badges.length + s.achievements.length;
   return s;
@@ -113,10 +126,18 @@ async function loadAll(db, trimester) {
   var out = {};
   try {
     var res = await db.rpc('get_badge_data', { p_trimester: trimester });
-    (res.data || []).forEach(function (r) { out[r.id] = stats(r.task_keys, r.day_dates); });
+    (res.data || []).forEach(function (r) { out[r.id] = stats(r.task_keys, r.day_dates, r.extra); });
   } catch (e) {}
   return out;
 }
 
-window.DoppBadges = { REALMS: REALMS, ACHIEVEMENTS: ACHIEVEMENTS, TOTAL_TASKS: TOTAL_TASKS, stats: stats, chip: chip, loadAll: loadAll };
+// Extra counts for one student (Quest page)
+async function loadExtra(db, trimester, studentId) {
+  try {
+    var res = await db.rpc('get_badge_data', { p_trimester: trimester, p_student_id: studentId });
+    return (res.data && res.data[0] && res.data[0].extra) || {};
+  } catch (e) { return {}; }
+}
+
+window.DoppBadges = { REALMS: REALMS, ACHIEVEMENTS: ACHIEVEMENTS, TOTAL_TASKS: TOTAL_TASKS, stats: stats, chip: chip, loadAll: loadAll, loadExtra: loadExtra, withExtra: withExtra };
 })();
