@@ -5,7 +5,7 @@
  */
 (function () {
   var EPISODES = {
-    // 1: { src: 'podcasts/ch01.mp3', title: 'Understanding Health & Wellness' }
+    1: { src: 'podcasts/ch01.mp3', title: 'Health Literacy and Cumulative Risk' }
   };
 
   var m = location.pathname.match(/chapter(\d{2})\.html$/i);
