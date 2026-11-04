@@ -5,7 +5,8 @@
  */
 (function () {
   var EPISODES = {
-    1: { src: 'podcasts/ch01.mp3', title: 'Health Literacy and Cumulative Risk' }
+    1: { src: 'podcasts/ch01.mp3', title: 'Health Literacy and Cumulative Risk' },
+    2: { src: 'podcasts/ch02.mp3', title: 'Refusal Skills, SMART Goals and Health Consumerism' }
   };
 
   var m = location.pathname.match(/chapter(\d{2})\.html$/i);
