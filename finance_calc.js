@@ -267,7 +267,6 @@
     if (isBlank(r.location)) m.push('Step 3: location researched');
     if (isBlank(r.household)) m.push('Step 3: household type');
     if (isBlank(r.url) || !/^https?:\/\/\S+\.\S+/i.test(String(r.url).trim())) m.push('Step 3: source web address (starts with https://)');
-    if (isBlank(r.date)) m.push('Step 3: date researched');
     KEYS.forEach(k => {
       const x = r.values && r.values[k];
       if (!x || isBlank(x.v)) m.push('Step 3: researched cost for ' + CATS.find(c2 => c2.key === k).label);
@@ -296,8 +295,8 @@
     // Researched expenses & evidence (25)
     const resN = KEYS.filter(k => filled(vals, k) && !(vals[k].src === 'own' && isBlank(vals[k].note))).length;
     let research = Math.round((resN / 12) * 15);
-    ['location', 'household', 'date'].forEach(f => { if (!isBlank(r[f])) research += 1; });
-    if (/^https?:\/\/\S+\.\S+/i.test(String(r.url || '').trim())) research += 3;
+    ['location', 'household'].forEach(f => { if (!isBlank(r[f])) research += 1; });
+    if (/^https?:\/\/\S+\.\S+/i.test(String(r.url || '').trim())) research += 4;
     if (opts && opts.hasImage) research += 4;
     // Calculations & comparison (20): quiz right + reached and finished Steps 4 and 5
     let calc = 0;

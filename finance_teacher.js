@@ -111,7 +111,7 @@
         <div><b>Career:</b> ${esc(c.job || '—')}<br><b>Salary:</b> ${usd(c.salary)} — ${c.salarySource === 'researched' ? 'researched' + (c.salaryUrl ? ` (<a href="${esc(c.salaryUrl)}" target="_blank" rel="noopener noreferrer">source</a>)` : ' (no source given)') : c.salarySource === 'guess' ? '<b>guess</b>' : '—'}<br>
           <b>Schedule:</b> ${F.num(c.days)} d × ${F.num(c.hours)} h = ${F.workHours(c.days, c.hours).annualHours.toLocaleString()} hrs/yr<br><b>Lives in:</b> ${esc(c.place || '—')}<br>
           <b>Interest question:</b> ${d.step0 && d.step0.quiz ? (d.step0.quiz === 'b' ? '✅ correct' : '❌ answered ' + esc(d.step0.quiz)) : '—'}</div>
-        <div><b>Research:</b> ${esc(rs.location || '—')} · ${esc(rs.household || '—')} · ${esc(rs.date || '—')}<br>
+        <div><b>Research:</b> ${esc(rs.location || '—')} · ${esc(rs.household || '—')}<br>
           <b>Source:</b> ${rs.url ? `<a href="${esc(rs.url)}" target="_blank" rel="noopener noreferrer">${esc(rs.url)}</a>` : '—'}<br>
           <b>Screenshot:</b> ${r.has_image ? `<button class="btn btn-sm" data-ft="img" data-id="${r.id}">View</button>` : 'none'}<div id="ft-img"></div></div>
         <div><b>Taxes (${d.tax && d.tax.mode === 'realistic' ? '2026 estimate' : 'classroom 25%+6%'}):</b> ${usd(a.taxes.total)}<br><b>Take-home:</b> ${usd(a.takeHome)}<br>

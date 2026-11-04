@@ -318,7 +318,6 @@ textarea.refl{min-height:260px;line-height:1.6}
           <option>2 adults (both working), 2 children</option><option>Other</option>
         </select></label>
       <label class="f">Source web address<input id="r_url" inputmode="url" maxlength="300" placeholder="https://livingwage.mit.edu/…"><small>Copy the address of the exact results page.</small></label>
-      <label class="f">Date researched<input id="r_date" type="date"></label>
     </div>
 
     <details class="box" open>
@@ -665,11 +664,10 @@ function out2() {
 // ── STEP 3 ──
 function step3() {
   const r = D.research; r.values = r.values || {};
-  ['location', 'household', 'url', 'date'].forEach(k => {
+  ['location', 'household', 'url'].forEach(k => {
     const el = $('r_' + k); el.value = r[k] || '';
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { r[k] = el.value.trim(); queueSave(); });
   });
-  if (!r.date && !submitted()) { const d = new Date(); $('r_date').value = d.toISOString().slice(0, 10); }
   $('resrows').innerHTML = F.CATS.map(c => {
     const pill = c.mit === 'direct' ? '<span class="pill p-direct">MATCH</span>' : c.mit === 'partial' ? '<span class="pill p-partial">PARTLY</span>' : '<span class="pill p-none">NOT IN MIT</span>';
     return `<div class="rrow">
@@ -707,7 +705,7 @@ function step3() {
 }
 function step3Complete() {
   const r = D.research || {};
-  return ['location', 'household', 'url', 'date'].every(k => !F.isBlank(r[k])) &&
+  return ['location', 'household', 'url'].every(k => !F.isBlank(r[k])) &&
     F.KEYS.every(k => r.values[k] && !F.isBlank(r.values[k].v) && !(r.values[k].src === 'own' && F.isBlank(r.values[k].note)));
 }
 function out3() {
@@ -925,7 +923,7 @@ function out7() {
       <dt>Required income</dt><dd>${usd(a.requiredGross, 0)} / year${a.requiredHourly == null ? '' : ' · ' + usd(a.requiredHourly) + '/hr'}</dd>
       <dt>Result</dt><dd><b class="verdict ${a.meter.level}" style="font-size:18px">${a.meter.label}</b></dd></dl>
     <h3>Research evidence</h3><dl class="kv"><dt>Location</dt><dd>${esc(r.location || '—')}</dd><dt>Household</dt><dd>${esc(r.household || '—')}</dd>
-      <dt>Source</dt><dd>${r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.url) + '</a>' : '—'}</dd><dt>Date</dt><dd>${esc(r.date || '—')}</dd>
+      <dt>Source</dt><dd>${r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.url) + '</a>' : '—'}</dd>
       <dt>Screenshot</dt><dd>${META.image ? 'attached' : 'none (optional)'}</dd></dl>
     ${META.image ? `<img class="imgprev" alt="Evidence screenshot" src="${META.image}">` : ''}
     <h3>Reflection</h3><div class="reflect-out">${esc(D.reflection || '—')}</div>

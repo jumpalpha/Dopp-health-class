@@ -186,7 +186,6 @@ begin
   if btrim(coalesce(d->'research'->>'location', '')) = '' then miss := array_append(miss, 'location researched'::text); end if;
   if btrim(coalesce(d->'research'->>'household', '')) = '' then miss := array_append(miss, 'household type'::text); end if;
   if coalesce(d->'research'->>'url', '') !~* '^\s*https?://\S+\.\S+' then miss := array_append(miss, 'source web address'::text); end if;
-  if btrim(coalesce(d->'research'->>'date', '')) = '' then miss := array_append(miss, 'date researched'::text); end if;
   foreach k in array public._fin_keys() loop
     if not public._fin_money(d->'research'->'values'->k->'v') then miss := array_append(miss, ('researched ' || k)::text); end if;
   end loop;
