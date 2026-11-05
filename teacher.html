@@ -835,7 +835,7 @@ input, select, textarea { color: var(--text); }
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
         <div>
           <div class="card-title" style="margin-bottom:2px">Weight Control Quest</div>
-          <div style="font-size:12px;color:var(--dim)">Student progress, submissions, and reality-check attempts.</div>
+          <div style="font-size:12px;color:var(--dim)">Island quest: steps done (of 6), turn-ins, and test tries.</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <label class="form-label" for="wq-trimester" style="margin:0">Trimester</label>
@@ -864,17 +864,17 @@ input, select, textarea { color: var(--text); }
         <div class="stat-card">
           <div class="sc-num" id="wq-stat-progress">-</div>
           <div class="sc-label">In Progress</div>
-          <div class="sc-sub">Stages 1-4</div>
+          <div class="sc-sub">Started, not turned in</div>
         </div>
         <div class="stat-card highlight">
           <div class="sc-num" id="wq-stat-submitted">-</div>
           <div class="sc-label">Submitted</div>
-          <div class="sc-sub">Final PDF step</div>
+          <div class="sc-sub">Turned in</div>
         </div>
         <div class="stat-card">
           <div class="sc-num" id="wq-stat-tries">-</div>
-          <div class="sc-label">Average Try Count</div>
-          <div class="sc-sub">Reality check</div>
+          <div class="sc-label">Average Test Tries</div>
+          <div class="sc-sub">Know-your-food test</div>
         </div>
       </div>
 
@@ -888,7 +888,7 @@ input, select, textarea { color: var(--text); }
               <th>Submitted</th>
               <th>Submitted At</th>
               <th>Last Updated</th>
-              <th>Try Count</th>
+              <th>Test Tries</th>
             </tr>
           </thead>
           <tbody id="wq-body">
@@ -1978,7 +1978,7 @@ function updateWeightQuestStats(rows) {
   const notStarted = rows.filter(row => Number(row.stage_completed || 0) === 0).length;
   const inProgress = rows.filter(row => {
     const stage = Number(row.stage_completed || 0);
-    return stage > 0 && stage < 5 && !row.is_submitted;
+    return stage > 0 && !row.is_submitted;
   }).length;
   const submitted = rows.filter(row => row.is_submitted).length;
   const tryCounts = rows
@@ -2002,11 +2002,11 @@ function getWeightQuestTrimester() {
 }
 
 function formatWeightQuestStage(stage) {
-  const safeStage = Math.max(0, Math.min(5, Number(stage) || 0));
-  const pct = Math.round(safeStage / 5 * 100);
+  const safeStage = Math.max(0, Math.min(6, Number(stage) || 0));
+  const pct = Math.round(safeStage / 6 * 100);
   return `<div style="display:flex;align-items:center;gap:6px">
     <div class="progress-mini" style="width:72px"><div class="progress-mini-fill" style="width:${pct}%"></div></div>
-    <span style="font-size:11px;color:var(--dim)">Stage ${safeStage}/5</span></div>`;
+    <span style="font-size:11px;color:var(--dim)">Step ${safeStage}/6</span></div>`;
 }
 
 function formatDateTime(value) {

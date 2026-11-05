@@ -73,7 +73,7 @@
     ['game11_taboo', 'Health Taboo', 'Team'], ['game12_would_you_rather', 'Would You Rather', 'Daily'],
     ['game13_pictionary', 'Health Pictionary Blitz', 'Team'], ['game14_shark_tank', 'Health Shark Tank', 'Boss · Ch 28'],
     ['dopp_spin', 'Dopp Spin', 'Daily'], ['game15_myth_busters', 'Myth Busters', 'Daily']];
-  const SIDE_QUESTS = [['reflection', 'Reflection Paper Coach', 'side_quests.html'],
+  const SIDE_QUESTS = [['wcq', 'Weight Control Quest', 'weight-control-quest.html'], ['reflection', 'Reflection Paper Coach', 'side_quests.html'],
     ['whatif', 'The "What If" Game', 'side_quests.html'],
     ['finance', 'The Cost of Your Future', 'finance.html']];
 

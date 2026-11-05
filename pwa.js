@@ -128,7 +128,7 @@
 // Teacher preview: open weight-control-quest.html?preview=dopp (remembered for that tab).
 // To release it to students, set WCQ_LOCKED = false, run tools/build_pwa.py, and push.
 (function () {
-  var WCQ_LOCKED = true, PAGE = 'weight-control-quest.html';
+  var WCQ_LOCKED = false, PAGE = 'weight-control-quest.html';
   if (!WCQ_LOCKED) return;
   var preview = false;
   try {
