@@ -198,6 +198,18 @@ footer a[href="teacher.html"] {
   border: 1px solid var(--border);
 }
 .btn-secondary:hover { border-color: rgba(255,255,255,0.2); }
+/* Colored hero tiles: each link sets --c */
+.hero-btns .btn-secondary[style*="--c"],
+body.site-home .hero-btns .btn-secondary[style*="--c"] {
+  background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 78%, #1C1A2E)) !important;
+  border: none !important;
+  color: #0a0600 !important;
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--c) 40%, transparent) !important;
+}
+.hero-btns .btn-secondary[style*="--c"]:hover,
+body.site-home .hero-btns .btn-secondary[style*="--c"]:hover {
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--c) 60%, transparent) !important;
+}
 
 /* ── SECTION WRAPPER ── */
 .section {
@@ -551,14 +563,14 @@ footer {
   </p>
   <div class="hero-btns">
     <a href="chapters.html" class="btn-hero btn-primary">⚔ Enter the Quest</a>
-    <a href="arcade.html" class="btn-hero btn-secondary">🎮 Game Arcade</a>
-    <a href="side_quests.html" class="btn-hero btn-secondary">🗺 Side Quests</a>
-    <a href="pick_a_side.html" class="btn-hero btn-secondary">⚖ Pick a Side</a>
-    <a href="ask.html" class="btn-hero btn-secondary">🙋 Ask Mr. Dopp</a>
-    <a href="live.html" class="btn-hero btn-secondary">📲 Join Live Game</a>
-    <a href="pet.html" class="btn-hero btn-secondary">🌱 Wellness Sprite</a>
-    <a href="mastery.html" class="btn-hero btn-secondary">🎓 Chapter Mastery</a>
-    <a href="https://worstsong.com/" class="btn-hero btn-secondary" target="_blank" rel="noopener">🎵 Listen to the Worst Songs Ever</a>
+    <a href="arcade.html" class="btn-hero btn-secondary" style="--c:#38BFFF">🎮 Game Arcade</a>
+    <a href="side_quests.html" class="btn-hero btn-secondary" style="--c:#00E5A0">🗺 Side Quests</a>
+    <a href="pick_a_side.html" class="btn-hero btn-secondary" style="--c:#FF3B5C">⚖ Pick a Side</a>
+    <a href="ask.html" class="btn-hero btn-secondary" style="--c:#B57BFF">🙋 Ask Mr. Dopp</a>
+    <a href="live.html" class="btn-hero btn-secondary" style="--c:#2CC4C9">📲 Join Live Game</a>
+    <a href="pet.html" class="btn-hero btn-secondary" style="--c:#9BE15D">🌱 Wellness Sprite</a>
+    <a href="mastery.html" class="btn-hero btn-secondary" style="--c:#FF6FB5">🎓 Chapter Mastery</a>
+    <a href="https://worstsong.com/" class="btn-hero btn-secondary" style="--c:#7C8CFF" target="_blank" rel="noopener">🎵 Listen to the Worst Songs Ever</a>
   </div>
   <div data-pwa-install style="margin-top:14px;display:flex;justify-content:center"></div>
 </div>
