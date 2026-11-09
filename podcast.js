@@ -8,7 +8,9 @@
     1: { src: 'podcasts/ch01.mp3', title: 'Health Literacy and Cumulative Risk' },
     2: { src: 'podcasts/ch02.mp3', title: 'Refusal Skills, SMART Goals and Health Consumerism' },
     3: { src: 'podcasts/ch03.mp3', title: 'How Sleep Deprivation Sabotages Teen Resilience' },
-    4: { src: 'podcasts/ch04.mp3', title: 'How Stress Hormones Affect Your Body' }
+    4: { src: 'podcasts/ch04.mp3', title: 'How Stress Hormones Affect Your Body' },
+    5: { src: 'podcasts/ch05.mp3', title: 'Recognizing Mental Disorders and Crisis Signs' },
+    6: { src: 'podcasts/ch06.mp3', title: 'Setting Boundaries with Assertive Communication' }
   };
 
   var m = location.pathname.match(/chapter(\d{2})\.html$/i);
