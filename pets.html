@@ -111,7 +111,7 @@ let pets = [], BDG = {};
 const bchip = (p, max) => (window.DoppBadges && p.sid && BDG[p.sid]) ? DoppBadges.chip(BDG[p.sid], { max: max }) : '';
 
 const col = v => v >= 60 ? 'var(--emerald)' : v >= 30 ? 'var(--gold)' : 'var(--crimson)';
-const label = p => p.alive ? ((p.form ? FORM[p.form] + ' ' : '') + STAGE[p.stage]) : '👻 Faded';
+const label = p => p.title ? '👑 ' + p.title : p.alive ? ((p.form ? FORM[p.form] + ' ' : '') + STAGE[p.stage]) : '👻 Faded';
 
 function renderBoard(){
   const top = pets.filter(p => p.alive && p.stage !== 'egg')
@@ -175,7 +175,7 @@ async function showHof(){
   $('hofGrid').innerHTML = list.length ? list.map((p, i) =>
     '<div class="card">' + (i < 3 ? '<div style="font-size:20px">' + ['🥇','🥈','🥉'][i] + '</div>' : '') + petSpriteSVG(p, { tight: true }) +
     '<div class="nm">' + esc(p.name) + '</div><div class="ow">' + esc(p.owner) + (p.period ? ' · ' + esc(p.period) : '') + '</div>' +
-    '<div class="meta">' + esc(STAGE[p.stage] || p.stage || '') + ' · best 🔥 ' + (p.best_streak || 0) + '</div></div>').join('')
+    '<div class="meta">' + esc(p.title || STAGE[p.stage] || p.stage || '') + ' · best 🔥 ' + (p.best_streak || 0) + '</div></div>').join('')
     : '<p class="dim">No sprites graduated that trimester.</p>';
 }
 $('sort').onchange = renderGallery;

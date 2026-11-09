@@ -932,7 +932,7 @@ async function spriteCard() {
       document.getElementById('sc-cta').textContent = '🥚 Hatch one →';
     } else {
       pic.innerHTML = window.petSpriteSVG ? petSpriteSVG(p) : '🌱';
-      const stage = { egg:'Egg', baby:'Baby', child:'Child', teen:'Teen', adult:'Adult' }[p.stage] || '';
+      const stage = p.title || { egg:'Egg', baby:'Baby', child:'Child', teen:'Teen', adult:'Adult' }[p.stage] || '';
       document.getElementById('sc-name').textContent = p.name;
       document.getElementById('sc-sub').textContent = !p.alive
         ? p.name + ' has faded away. Answer questions to revive it!'

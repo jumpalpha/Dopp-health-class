@@ -287,7 +287,7 @@ function render(pop){
   $('pName').textContent = p.name;
   document.querySelectorAll('.rvName').forEach(e => e.textContent = p.name);
   $('chips').innerHTML =
-    '<span class="chip">' + (p.form ? FORM_NAME[p.form] + ' ' : '') + STAGE_NAME[p.stage] + '</span>' +
+    '<span class="chip">' + (p.title ? '👑 ' + p.title : (p.form ? FORM_NAME[p.form] + ' ' : '') + STAGE_NAME[p.stage]) + '</span>' +
     '<span class="chip">🎂 ' + p.age_days + ' day' + (p.age_days === 1 ? '' : 's') + '</span>' +
     '<span class="chip">🔥 ' + p.streak + ' day streak</span>' +
     (p.deaths ? '<span class="chip">👻 revived ' + p.deaths + '×</span>' : '') +
@@ -298,6 +298,7 @@ function render(pop){
   $('status').textContent = p.stage === 'egg' && p.alive ? 'Your egg is waiting. Log a habit or answer a question to hatch it!' : (MOOD_TEXT[mood] || MOOD_TEXT.happy)(p.name);
   // growth hint
   if (!p.alive) $('growth').textContent = '';
+  else if (p.immortal) $('growth').textContent = 'Ancient of Days: timeless, always healthy, and its streak only grows.';
   else if (p.stage === 'adult') $('growth').textContent = 'Fully grown! Keep it healthy to stay at the top of the gallery.';
   else if (p.stage === 'egg') $('growth').textContent = '';
   else {
