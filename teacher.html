@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="local-guard.js"></script>
 <meta charset="UTF-8">
 <script src="dark_mode.js"></script>
 <script src="term.js"></script>
@@ -1668,7 +1669,8 @@ function renderVocabPage() {
 // ═══════════════════════════════════════════════════════════
 function renderChaptersPage() {
   const colors = ['#38BFFF','#38BFFF','#a855f7','#a855f7','#a855f7','#FF3B5C','#FF3B5C','#FF3B5C','#FF3B5C','#00E5A0','#00E5A0','#00E5A0','#FF8C00','#FF8C00','#FF8C00','#FF8C00','#38BFFF','#38BFFF','#FF3B5C','#FF3B5C','#FF3B5C','#FF3B5C','#aaa','#aaa','#aaa','#FFD700','#FFD700','#FFD700'];
-  const SLUGS = ['Understanding_Health_and_Wellness','Skills_for_a_Healthy_Life','Mental_and_Emotional_Health','Managing_Stress','Mental_and_Emotional_Problems','Building_Healthy_Relationships','Conflict_Resolution','Violence_Prevention','Family_Relationships','Nutrition_for_Health','Managing_Weight','Physical_Activity','Personal_Health_Care','Skeletal_Muscular_and_Nervous_Systems','Cardiovascular_Respiratory_and_Digestive_Systems','Endocrine_and_Reproductive_Health','The_Beginning_of_the_Life_Cycle','The_Life_Cycle_Continues','Medicines_and_Drugs','Tobacco','Alcohol','Illegal_Drugs','Communicable_Diseases','STIs_and_HIV_AIDS','Noncommunicable_Diseases_and_Disabilities','Safety_and_Injury_Prevention','First_Aid_and_Emergencies','Community_and_Environmental_Health'];
+  // Must match the PDF filenames exactly (Chapter_NN_<slug>.pdf). Fixed 2026-11-08: Ch2 and Ch7–9 were wrong.
+  const SLUGS = ['Understanding_Health_and_Wellness','Taking_Charge_of_Your_Health','Achieving_Mental_and_Emotional_Health','Managing_Stress_and_Coping_with_Loss','Mental_and_Emotional_Problems','Skills_for_Healthy_Relationships','Family_Relationships','Peer_Relationships','Resolving_Conflicts_and_Preventing_Violence','Nutrition_for_Health','Managing_Weight_and_Eating_Behaviors','Physical_Activity_and_Fitness','Personal_Health_Care','Skeletal_Muscular_and_Nervous_Systems','Cardiovascular_Respiratory_and_Digestive_Systems','Endocrine_and_Reproductive_Health','The_Beginning_of_the_Life_Cycle','The_Life_Cycle_Continues','Medicines_and_Drugs','Tobacco','Alcohol','Illegal_Drugs','Communicable_Diseases','STIs_and_HIV_AIDS','Noncommunicable_Diseases_and_Disabilities','Safety_and_Injury_Prevention','First_Aid_and_Emergencies','Community_and_Environmental_Health'];
   const grid = document.getElementById('chapter-pdf-grid');
   REALMS.forEach(r => {
     grid.innerHTML += `<div style="margin-bottom:20px">

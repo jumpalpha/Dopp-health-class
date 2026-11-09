@@ -117,7 +117,7 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   function startReader() {
-    var m = location.pathname.match(/chapter(\d{2})\.html$/i);
+    var m = (location.pathname.match(/chapter(\d{2})\.html$/i) || location.pathname.match(/\/chapters\/(\d{1,2})\/?$/));
     if (!m) return;
     var c = parseInt(m[1], 10), rows = BANK[c];
     if (!rows) return;
@@ -136,7 +136,7 @@
       var ok = picked ? picked === q.a : a[0] === 1;
       return ok ? '<div class="qc-fb ok">✓ Right! ' + esc(q.why) + '</div>'
         : '<div class="qc-fb no">❌ The answer is “' + esc(q.a) + '.” ' + esc(q.why) +
-          (picked ? ' <i>It\'s now in your <a href="review.html">Review Deck</a> for practice.</i>' : '') + '</div>';
+          (picked ? ' <i>It\'s now in your <a href="/review.html">Review Deck</a> for practice.</i>' : '') + '</div>';
     }
     function lessonTitle(x) { var h = x.el.querySelector('h3'); return h ? h.textContent.trim() : 'Lesson ' + x.L; }
 

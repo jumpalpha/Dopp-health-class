@@ -1,0 +1,10 @@
+:HL["/_next/static/chunks/260mp154-mh15.css","style"]
+:HL["/_next/static/chunks/0_fhenbb-a6rj.css","style"]
+:HL["/_next/static/media/07a39a8a4660cc7c-s.p.0r6juujl39pe6.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/605ce01b664af129-s.p.0wgildi0cnwt9.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/8056169c9d560660-s.p.41rroleoq1br7.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+4:[["children",{"s":"__PAGE__","h":160}]]
+3:[["children",{"s":{"n":"game","t":"d","k":"game03_wheel_of_fortune","s":[]},"h":96,"c":"$Q4"}]]
+2:[["children",{"s":"play","h":96,"c":"$Q3"}]]
+1:[["children",{"s":"arcade","h":64,"c":"$Q2"}]]
+0:{"b":"zbGpu12WE54n70AbN7Lxk","t":{"t":{"s":"","h":16,"c":"$Q1"}}}

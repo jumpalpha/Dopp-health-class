@@ -44,7 +44,7 @@
   function local() { try { return JSON.parse(localStorage.getItem('dopp_ch_progress_' + term()) || '{}'); } catch (e) { return {}; } }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
-  var m = location.pathname.match(/chapter(\d{2})\.html$/i);
+  var m = (location.pathname.match(/chapter(\d{2})\.html$/i) || location.pathname.match(/\/chapters\/(\d{1,2})\/?$/));
   if (!m) return;
   var CH = parseInt(m[1], 10), PAD = m[1];
   var realm = REALMS.filter(function (r) { return r.indexOf(CH) >= 0; })[0] || [CH];
@@ -87,19 +87,19 @@
       title = 'Answer each lesson\'s Quick Check';
       sub = s.done ? 'All ' + s.of + ' Quick Checks answered' : s.n + ' of ' + s.of + ' answered · they appear at the end of each lesson';
       var dk = window.QuickChecks ? QuickChecks.deck().filter(function (q) { return q.c === CH; }).length : 0;
-      if (dk) act = '<a href="review.html?ch=' + CH + '">Review ' + dk + ' missed question' + (dk === 1 ? '' : 's') + ' →</a>';
+      if (dk) act = '<a href="/review.html?ch=' + CH + '">Review ' + dk + ' missed question' + (dk === 1 ? '' : 's') + ' →</a>';
     } else if (s.key === 'vocab') {
       title = 'Play all 4 vocab games (70%+)';
       sub = s.n + ' of 4 done';
       act = MODES.map(function (x) {
         var d = s.v[x[0]];
-        return '<a class="cp-chip' + (d ? ' on' : '') + '" href="vocab_engine.html?ch=' + CH + x[2] + '">' + (d ? '✓ ' : '') + x[1] + '</a>';
+        return '<a class="cp-chip' + (d ? ' on' : '') + '" href="/vocab_engine.html?ch=' + CH + x[2] + '">' + (d ? '✓ ' : '') + x[1] + '</a>';
       }).join('');
     } else if (s.key === 'mastery') {
       title = 'Pass the Chapter Mastery check';
       var ms = s.ms || {};
       sub = s.done ? 'Passed · +50 Verified XP earned' : ms.attempts ? 'Best ' + (ms.best || 0) + '/10 · need 8 · ' + ms.attempts + ' tr' + (ms.attempts === 1 ? 'y' : 'ies') : '10 vocab questions · 8 right passes · +50 Verified XP';
-      act = s.done ? '' : '<a href="mastery.html?ch=' + CH + '">Take the Mastery check →</a>';
+      act = s.done ? '' : '<a href="/mastery.html?ch=' + CH + '">Take the Mastery check →</a>';
       if (!s.done) cls += ' cp-boss';
     }
     return '<li class="cp-step ' + cls + '"><span class="cp-ic">' + ic + '</span><div><b>' + title + '</b><small>' + esc(sub) + '</small>' +
@@ -113,7 +113,7 @@
     el.innerHTML = '<div class="side-title">Your Chapter ' + CH + ' Path</div>' +
       '<div class="cp-top"><b>' + done + ' of 4</b> steps done' + (done === 4 ? ' · <span class="cp-win">Chapter complete! 🏆</span>' : '') + '</div>' +
       '<div class="progress-bar"><div class="progress-fill" style="width:' + (done * 25) + '%"></div></div>' +
-      (F.signedIn ? '' : '<div class="cp-warn">You\'re not signed in, so reading, vocab and Mastery can\'t be recorded. <a href="quest.html">Sign in on the Quest page</a>.</div>') +
+      (F.signedIn ? '' : '<div class="cp-warn">You\'re not signed in, so reading, vocab and Mastery can\'t be recorded. <a href="/quest.html">Sign in on the Quest page</a>.</div>') +
       '<ol class="cp-steps">' + st.map(stepHTML).join('') + '</ol>' +
       '<div class="cp-note">🔒 Every step checks itself off when you do it. Nothing to turn in.</div>';
 

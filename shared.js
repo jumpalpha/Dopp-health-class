@@ -49,3 +49,20 @@ function openAI(url, title, desc) {
   setTimeout(() => { toast.style.transition='opacity .4s'; toast.style.opacity='0'; setTimeout(() => toast.remove(), 400); }, 2800);
   window.open(url, '_blank');
 }
+
+// Outside-site notice for ChatGPT "AI Guide" activities (added 2026-11-09).
+(function () {
+  function addAINotice() {
+    document.querySelectorAll('.activity-list').forEach(function (list) {
+      if (!list.querySelector('.act-tag.ai-guide') || list.querySelector('.ai-notice')) return;
+      var n = document.createElement('p');
+      n.className = 'ai-notice';
+      n.setAttribute('role', 'note');
+      n.style.cssText = 'margin:4px 2px 0;font-size:13px;line-height:1.45;color:var(--dim,#9aa3b8)';
+      n.textContent = '🤖 AI Guide activities open ChatGPT, an outside site that is not run by Dopps Class (a free account is needed). Don’t type your name or other personal information there.';
+      list.appendChild(n);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addAINotice);
+  else addAINotice();
+})();

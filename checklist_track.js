@@ -96,7 +96,7 @@
   }
 
   function startReader() {
-    var m = location.pathname.match(/chapter(\d{2})\.html$/i);
+    var m = (location.pathname.match(/chapter(\d{2})\.html$/i) || location.pathname.match(/\/chapters\/(\d{1,2})\/?$/));
     if (!m) return;
     var chapter = parseInt(m[1], 10);
     var secs = Array.prototype.filter.call(document.querySelectorAll('.reader-scroll .reader-section'),
