@@ -929,7 +929,7 @@ function resetGame() {
   realAnswered = 0; realCorrect = 0; roundStart = Date.now(); roundLogged = false;
   terms = shuffle([...ALL_CHAPTERS[chapterNum].terms]);
   if (gameMode === 'wordbuild') terms = terms.slice(0, WB_WORDS);   // Word Builder: short round
-  if (gameMode === 'conceptmap') { cm = null; const d = cmData(); if (d) terms = terms.filter(t => t.t in d.gi); }   // terms on the map
+  if (gameMode === 'conceptmap') { cm = null; const d = cmData(); if (d) terms = cmPickTerms(terms, d); }   // 10 random terms on the map
   clearInterval(timerInt);
   updateHUD();
   updateProgress();
@@ -1210,6 +1210,15 @@ document.addEventListener('keydown', e => {
 // and the term is added to the map under its correct big idea (✓ or ✗), so the map shows the
 // chapter's real structure as it grows. Choices unlock after a short pause so students read first.
 const CM_WAIT_MEANING = 1200, CM_WAIT_IDEA = 700;
+const CM_TERMS = 10;   // terms per round (2026-11-09: was the whole chapter, ~20)
+// A round is CM_TERMS random terms from the map, with at least one from every big idea so the
+// finished map still shows the whole chapter. `shuffled` arrives already shuffled.
+function cmPickTerms(shuffled, d) {
+  const mapped = shuffled.filter(t => t.t in d.gi), pick = [];
+  d.groups.forEach((g, i) => { const t = mapped.find(x => d.gi[x.t] === i); if (t) pick.push(t); });
+  mapped.forEach(t => { if (pick.length < CM_TERMS && !pick.includes(t)) pick.push(t); });
+  return shuffle(pick.slice(0, CM_TERMS));
+}
 const CM_COLORS = ['#38BFFF', '#00C48A', '#FF3B5C', '#a855f7', '#E0A800'];
 let cm = null;
 
@@ -1249,7 +1258,8 @@ function cmIntro(gc) {
 function cmMeaningChoices(term) {
   // the right meaning + one from the same big idea (harder: it's a close cousin) + one from another big idea
   const g = cm.d.gi[term.t];
-  const pool = terms.filter(x => x.t !== term.t && x.d !== term.d);
+  // wrong choices come from every mapped term in the chapter, not just this round's 10
+  const pool = ALL_CHAPTERS[chapterNum].terms.filter(x => x.t in cm.d.gi && x.t !== term.t && x.d !== term.d);
   const same = shuffle(pool.filter(x => cm.d.gi[x.t] === g));
   const other = shuffle(pool.filter(x => cm.d.gi[x.t] !== g));
   const picks = [same[0] || other[1], other[0]].filter(Boolean);
