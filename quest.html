@@ -16,260 +16,394 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://doppsclass.com/quest.html">
 <meta name="twitter:card" content="summary">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
+/* ═══ Quest page, rebuilt 2026-11 to match the new Legend of Wellness site (src/app/globals.css) ═══ */
 :root {
-  --gold:#FFD700; --gold-dim:#8a6d00; --emerald:#00E5A0; --sky:#38BFFF;
-  --crimson:#FF3B5C; --purple:#a855f7; --orange:#FF8C00;
-  --bg:#FDFAF2; --card:rgba(28,26,46,0.05); --border:rgba(28,26,46,0.12);
-  --text:#1C1A2E; --dim:rgba(28,26,46,0.65);
+  --ink:#07071a; --ink-2:#0d0d26; --fg:#eef0ff; --muted:#a3a6c8; --line:rgba(255,255,255,.09);
+  --gold:#ffd166; --amber:#ff9f1c; --emerald:#00e5a0; --sky:#38bfff; --crimson:#ff3b5c; --violet:#a855f7;
+  --display:'Bricolage Grotesque','Geist',system-ui,sans-serif; --sans:'Geist',system-ui,sans-serif; --mono:'Geist Mono',ui-monospace,monospace;
+  /* old names some shared scripts still read */
+  --text:var(--fg); --dim:var(--muted); --border:var(--line); --card:rgba(255,255,255,.04);
 }
 * { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
-
-/* STARFIELD */
-#stars { position:fixed; inset:0; pointer-events:none; z-index:0;
-  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,215,0,0.07) 0%, transparent 70%),
-              radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,229,160,0.05) 0%, transparent 60%), #FDFAF2; }
-#stars::before { content:''; position:absolute; inset:0;
-  background-image:
-    radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.7) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 40% 10%, rgba(255,215,0,0.9) 0%, transparent 100%),
-    radial-gradient(1px 1px at 65% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1px 1px at 85% 70%, rgba(56,191,255,0.8) 0%, transparent 100%),
-    radial-gradient(1px 1px at 25% 75%, rgba(255,255,255,0.6) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 75% 15%, rgba(0,229,160,0.7) 0%, transparent 100%); }
-
-/* NAV */
-nav { position:fixed; top:0; left:0; right:0; z-index:100;
-  display:flex; align-items:center; justify-content:space-between; padding:12px 28px;
-  background:rgba(248,244,232,0.97); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
-.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold); text-decoration:none; }
-.nav-logo span { color:var(--dim); font-weight:400; }
-.nav-links { display:flex; gap:6px; }
-.nav-link { padding:6px 14px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim);
-  text-decoration:none; border:1px solid transparent; transition:all .2s; }
-.nav-link:hover { color:var(--text); border-color:var(--border); background:var(--card); }
-.nav-link.active { color:var(--gold); border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.06); }
-
-/* HERO / XP BAR */
-.hero { position:relative; z-index:1; padding:90px 28px 0; max-width:1100px; margin:0 auto; }
-.hero-top { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:28px; flex-wrap:wrap; }
-.hero-left {}
-.hero-name-row { display:flex; align-items:center; gap:14px; margin-bottom:6px; }
-.hero-avatar { width:56px; height:56px; border-radius:14px; background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.1));
-  border:2px solid rgba(255,215,0,0.3); display:flex; align-items:center; justify-content:center; font-size:28px; cursor:pointer; }
-.hero-name { font-family:'Cinzel Decorative',serif; font-size:clamp(18px,3vw,28px); font-weight:700; color:var(--text); }
-.hero-title-tag { font-family:'Cinzel',serif; font-size:12px; color:var(--gold); letter-spacing:1px; margin-top:3px; }
+html { color-scheme:dark; scroll-behavior:smooth; background:var(--ink); }
+body { font-family:var(--sans); background:var(--ink); color:var(--fg); min-height:100vh; overflow-x:hidden; -webkit-font-smoothing:antialiased; line-height:1.5; }
+a { color:inherit; }
+button { font:inherit; color:inherit; }
+::selection { background:rgba(255,209,102,.35); color:#fff; }
+:focus-visible { outline:2px solid var(--gold); outline-offset:2px; border-radius:6px; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-.xp-section { margin-top:14px; max-width:500px; }
-.xp-labels { display:flex; justify-content:space-between; font-size:12px; color:var(--dim); margin-bottom:6px; }
-.xp-val { color:var(--gold); font-weight:700; }
-.xp-track { height:10px; background:rgba(255,255,255,0.06); border-radius:5px; overflow:hidden; }
-.xp-fill { height:100%; border-radius:5px; background:linear-gradient(90deg,#FFD700,#FF8C00); transition:width 1s ease; }
-.hero-stats { display:flex; gap:12px; flex-wrap:wrap; }
-.hero-stat { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 18px; text-align:center; min-width:90px; }
-.sprite-card { display:none; align-items:center; gap:16px; margin:0 0 24px; padding:14px 18px; background:var(--card); border:1px solid var(--border); border-radius:14px; text-decoration:none; color:var(--text); transition:transform .15s, border-color .15s; }
-.sprite-card:hover { transform:translateY(-2px); border-color:var(--gold-dim); }
-.sprite-card .sc-pic { width:84px; height:84px; flex:0 0 84px; display:flex; align-items:center; justify-content:center; }
+
+/* AURORA + GRAIN (same as the React layout) */
+.aurora { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.aurora i { position:absolute; border-radius:50%; filter:blur(64px); animation:drift 22s ease-in-out infinite alternate; }
+.aurora i:nth-child(1) { left:-20%; top:-30%; width:70vw; height:80vh; background:radial-gradient(closest-side,rgba(56,191,255,.22),transparent); }
+.aurora i:nth-child(2) { right:-15%; top:10%; width:60vw; height:70vh; background:radial-gradient(closest-side,rgba(168,85,247,.2),transparent); animation-delay:-8s; }
+.aurora i:nth-child(3) { left:20%; bottom:-30%; width:70vw; height:70vh; background:radial-gradient(closest-side,rgba(255,159,28,.12),transparent); animation-delay:-14s; }
+.aurora b { position:absolute; inset:0; background:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:64px 64px; -webkit-mask-image:radial-gradient(ellipse at top,#000 20%,transparent 70%); mask-image:radial-gradient(ellipse at top,#000 20%,transparent 70%); }
+body::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.06;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+@keyframes drift { from { transform:translate3d(-4%,-2%,0) scale(1); } to { transform:translate3d(4%,3%,0) scale(1.12); } }
+@keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+@keyframes pop { 50% { transform:scale(1.25); } }
+
+.glass { background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)); border:1px solid var(--line); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+.accent-card { position:relative; background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015)); border:1px solid var(--line);
+  transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease; }
+.accent-card::before { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(120% 80% at 0% 0%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 60%); opacity:.55; transition:opacity .25s ease; }
+.accent-card:hover { border-color:color-mix(in srgb,var(--accent) 55%,transparent); box-shadow:0 18px 50px -18px color-mix(in srgb,var(--accent) 60%,transparent); }
+.accent-card:hover::before { opacity:1; }
+.text-gradient { background:linear-gradient(115deg,#fff4d6 0%,#ffd166 30%,#ff9f1c 60%,#ff3b5c 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.eyebrow { display:inline-flex; align-items:center; gap:10px; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,209,102,.85); }
+.eyebrow::before { content:""; width:28px; height:1px; background:currentColor; }
+
+/* NAV (copy of components/nav.tsx) */
+.site-nav { position:fixed; inset:0 0 auto 0; z-index:50; padding:12px 12px 0; }
+.site-nav nav { max-width:1280px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px 16px; border-radius:16px;
+  border:1px solid transparent; transition:all .3s; }
+.site-nav.scrolled nav, .site-nav.open nav { border-color:var(--line); background:rgba(7,7,26,.8); box-shadow:0 10px 40px -15px rgba(0,0,0,.8); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); }
+.brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.brand i { display:grid; place-items:center; width:36px; height:36px; border-radius:12px; font-style:normal; font-size:18px; color:var(--ink);
+  background:linear-gradient(135deg,var(--gold),var(--amber),var(--crimson)); box-shadow:0 0 24px -4px rgba(255,159,28,.7); transition:transform .2s; }
+.brand:hover i { transform:rotate(-8deg); }
+.brand span { font-family:var(--display); font-size:17px; font-weight:800; letter-spacing:-.01em; line-height:1; }
+.brand em { font-style:normal; font-weight:500; color:var(--muted); }
+.nav-links { display:none; align-items:center; gap:4px; }
+.nav-links a { position:relative; padding:8px 12px; border-radius:8px; font-size:14px; font-weight:600; color:var(--muted); text-decoration:none; transition:color .2s; }
+.nav-links a:hover, .nav-links a[aria-current] { color:var(--fg); }
+.nav-links a[aria-current]::after { content:""; position:absolute; left:12px; right:12px; bottom:-2px; height:2px; border-radius:2px; background:linear-gradient(90deg,var(--gold),var(--amber)); }
+.nav-right { display:flex; align-items:center; gap:8px; }
+.icon-btn { display:grid; place-items:center; width:36px; height:36px; border-radius:12px; color:var(--muted); background:none; border:0; cursor:pointer; text-decoration:none; transition:all .2s; }
+.icon-btn:hover { background:rgba(255,255,255,.05); color:var(--fg); }
+.icon-btn svg { width:18px; height:18px; }
+.cl-btn { display:none; align-items:center; gap:6px; padding:8px 14px; border-radius:12px; background:var(--gold); color:var(--ink); font-size:14px; font-weight:700; text-decoration:none;
+  box-shadow:0 6px 24px -8px rgba(255,209,102,.9); transition:filter .2s; }
+.cl-btn:hover { filter:brightness(1.1); }
+.menu-btn { color:var(--fg); }
+.mobile-menu { display:none; max-width:1280px; margin:8px auto 0; padding:8px; border-radius:16px; animation:rise .4s cubic-bezier(.2,.7,.2,1) both; }
+.site-nav.open .mobile-menu { display:block; }
+.mobile-menu a { display:block; padding:12px 16px; border-radius:12px; font-weight:600; color:var(--muted); text-decoration:none; }
+.mobile-menu a:hover, .mobile-menu a[aria-current] { background:rgba(255,255,255,.05); color:var(--fg); }
+@media (min-width:640px) { .cl-btn { display:flex; } }
+@media (min-width:1024px) { .nav-links { display:flex; } .menu-btn, .site-nav .mobile-menu { display:none !important; } }
+
+/* PAGE */
+main { position:relative; z-index:10; }
+.wrap { max-width:1180px; margin:0 auto; padding:0 20px; }
+.section { padding-top:56px; }
+.sec-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+.sec-head h2 { font-family:var(--display); font-size:clamp(24px,3.2vw,32px); font-weight:800; letter-spacing:-.02em; line-height:1.1; margin-top:8px; }
+.sec-note { font-size:14px; color:var(--muted); }
+.signed-out .only-in, .signed-in .only-out { display:none !important; }
+
+/* SIGNED-OUT HERO */
+.signin-hero { margin-top:112px; padding:clamp(28px,5vw,56px); border-radius:28px; overflow:hidden; position:relative; display:grid; gap:28px; align-items:center; }
+@media (min-width:860px) { .signin-hero { grid-template-columns:1.3fr 1fr; } }
+.signin-hero h1 { font-family:var(--display); font-size:clamp(36px,6vw,64px); font-weight:800; letter-spacing:-.03em; line-height:1; margin:14px 0 16px; }
+.signin-hero p { color:var(--muted); font-size:17px; max-width:520px; }
+.btn-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; }
+.btn-primary { display:inline-flex; align-items:center; gap:8px; padding:14px 22px; border-radius:16px; border:0; cursor:pointer; text-decoration:none;
+  background:linear-gradient(90deg,var(--gold),var(--amber),#ff6b3d); color:#1a0d00; font-weight:800; font-size:16px;
+  box-shadow:0 12px 34px -10px rgba(255,159,28,.85); transition:transform .15s,box-shadow .15s; }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 16px 40px -10px rgba(255,159,28,.95); }
+.btn-ghost { display:inline-flex; align-items:center; gap:8px; padding:13px 20px; border-radius:16px; cursor:pointer; text-decoration:none; font-weight:700; font-size:15px;
+  background:rgba(255,255,255,.04); border:1px solid var(--line); color:var(--fg); transition:all .2s; }
+.btn-ghost:hover { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); }
+.how { display:grid; gap:12px; }
+.how div { display:flex; gap:14px; align-items:flex-start; padding:14px 16px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid var(--line); }
+.how b { display:grid; place-items:center; flex:0 0 34px; height:34px; border-radius:10px; background:rgba(255,209,102,.12); color:var(--gold); font-family:var(--display); font-size:16px; }
+.how strong { display:block; font-size:15px; }
+.how p { font-size:inherit; max-width:none; }
+.how span { font-size:13.5px; color:var(--muted); }
+
+/* SIGNED-IN HERO */
+.hero { margin-top:112px; display:grid; gap:20px; }
+@media (min-width:960px) { .hero { grid-template-columns:1.55fr 1fr; } }
+.hero-main { padding:clamp(22px,3.5vw,36px); border-radius:28px; position:relative; overflow:hidden; }
+.hero-id { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.hero-avatar { width:72px; height:72px; flex:0 0 72px; border-radius:22px; display:grid; place-items:center; font-size:38px; cursor:pointer; border:1px solid rgba(255,209,102,.35);
+  background:linear-gradient(135deg,rgba(255,209,102,.22),rgba(255,59,92,.12)); box-shadow:0 0 40px -12px rgba(255,159,28,.8); transition:transform .2s; }
+.hero-avatar:hover { transform:rotate(-6deg) scale(1.04); }
+.hero-who { flex:1; min-width:200px; }
+.hero-name { font-family:var(--display); font-size:clamp(30px,4.6vw,46px); font-weight:800; letter-spacing:-.03em; line-height:1.02; overflow-wrap:anywhere; }
+.hero-title-tag { display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:5px 12px; border-radius:999px; font-size:13px; font-weight:700;
+  color:var(--gold); background:rgba(255,209,102,.1); border:1px solid rgba(255,209,102,.3); }
+.ring { position:relative; width:112px; height:112px; flex:0 0 112px; }
+.ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+.ring circle { fill:none; stroke-width:9; }
+.ring .track { stroke:rgba(255,255,255,.07); }
+.ring .fill { stroke:url(#ringGrad); stroke-linecap:round; transition:stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1); }
+.ring div { position:absolute; inset:0; display:grid; place-content:center; text-align:center; }
+.ring strong { font-family:var(--display); font-size:28px; font-weight:800; line-height:1; }
+.ring span { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.04em; }
+.xp-section { margin-top:24px; }
+.xp-labels { display:flex; justify-content:space-between; gap:12px; font-size:13px; color:var(--muted); margin-bottom:8px; font-weight:600; }
+.xp-val { color:var(--gold); font-weight:800; font-family:var(--mono); }
+.xp-track { height:12px; border-radius:999px; background:rgba(255,255,255,.06); overflow:hidden; border:1px solid var(--line); }
+.xp-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--gold),var(--amber),#ff6b3d); box-shadow:0 0 18px rgba(255,159,28,.6); transition:width 1s ease; }
+.hero-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; align-items:center; }
+.mini-link { background:none; border:0; cursor:pointer; color:var(--muted); font-size:13px; font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+.mini-link:hover { color:var(--fg); }
+#cl-link { display:none; align-items:center; gap:8px; padding:11px 16px; border-radius:14px; background:var(--gold); color:var(--ink); font-weight:800; font-size:15px; text-decoration:none;
+  box-shadow:0 8px 26px -10px rgba(255,209,102,.9); }
+#cl-link small { font-weight:600; font-size:13px; opacity:.8; }
+#nm-box { font-size:13px; color:var(--muted); }
+#nm-box a { color:var(--muted); font-weight:600; }
+#nm-form { margin-top:10px; }
+#nm-input { padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.05); color:var(--fg); font:600 14px var(--sans); width:220px; max-width:100%; }
+#nm-send { padding:9px 14px; border-radius:10px; border:0; background:var(--gold); color:var(--ink); font:800 13px var(--sans); cursor:pointer; }
+#nm-err { color:#ff8da1; font-weight:700; }
+
+.hero-side { display:grid; gap:20px; }
+.stats { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+.stat { --accent:var(--gold); padding:16px; border-radius:20px; }
+.stat .ic { font-size:20px; }
+.hs-num { font-family:var(--display); font-size:30px; font-weight:800; letter-spacing:-.02em; line-height:1.1; margin-top:6px; }
+.hs-label { font-size:12px; color:var(--muted); font-weight:600; }
+
+/* NEXT UP */
+.next-up { --accent:var(--sky); display:flex; align-items:center; gap:18px; padding:20px 22px; border-radius:24px; margin-top:20px; flex-wrap:wrap; }
+.next-up .nu-ic { display:grid; place-items:center; width:54px; height:54px; flex:0 0 54px; border-radius:16px; font-size:26px; background:color-mix(in srgb,var(--accent) 16%,transparent); border:1px solid color-mix(in srgb,var(--accent) 40%,transparent); }
+.next-up .nu-text { flex:1; min-width:200px; position:relative; }
+.next-up .nu-text small { font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+.next-up .nu-text strong { display:block; font-family:var(--display); font-size:21px; font-weight:800; letter-spacing:-.01em; line-height:1.2; margin-top:2px; }
+.next-up .nu-text span { font-size:13px; color:var(--muted); }
+.next-up .nu-actions { display:flex; gap:10px; flex-wrap:wrap; position:relative; }
+.next-up.done-all { --accent:var(--emerald); }
+
+/* SPRITE CARD */
+.sprite-card { --accent:var(--emerald); display:none; align-items:center; gap:16px; padding:16px 18px; border-radius:24px; text-decoration:none; color:var(--fg); }
+.sprite-card .sc-pic { width:84px; height:84px; flex:0 0 84px; display:flex; align-items:center; justify-content:center; position:relative; }
 .sprite-card .sc-pic svg { width:100%; height:100%; display:block; }
 .sprite-card .sc-pic.big-emoji { font-size:46px; }
-.sprite-card .sc-info { flex:1; min-width:0; }
-.sprite-card .sc-name { font-family:'Cinzel',serif; font-weight:700; font-size:18px; }
-.sprite-card .sc-sub { font-size:13px; color:var(--dim); margin-top:2px; }
-.sprite-card .sc-bars { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:12px; font-weight:700; color:var(--dim); }
-.sprite-card .sc-cta { flex:0 0 auto; padding:9px 14px; border-radius:10px; background:#1C1A2E; color:#FFD700; font-weight:800; font-size:14px; white-space:nowrap; }
-@media (max-width:560px){ .sprite-card { flex-wrap:wrap; } .sprite-card .sc-cta { width:100%; text-align:center; } }
-.hs-num { font-family:'Cinzel Decorative',serif; font-size:22px; font-weight:700; color:var(--gold); }
-.hs-label { font-size:11px; color:var(--dim); margin-top:2px; font-weight:600; }
-
-/* SECTION */
-.section { position:relative; z-index:1; padding:28px 28px 0; max-width:1100px; margin:0 auto; }
-.sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.sec-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; color:var(--gold-dim); letter-spacing:1px; text-transform:uppercase; }
-.sec-action { font-size:12px; color:var(--dim); cursor:pointer; text-decoration:underline; }
-
-/* REALM CARDS */
-.realm-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:12px; margin-bottom:32px; }
-.realm-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; cursor:pointer;
-  transition:all .25s; position:relative; overflow:hidden; }
-.realm-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px;
-  background:var(--rc,var(--gold)); }
-.realm-card:hover { border-color:rgba(255,255,255,0.15); transform:translateY(-2px); }
-.realm-card.completed { border-color:rgba(255,215,0,0.25); }
-.realm-card.completed::before { background:linear-gradient(90deg,var(--gold),#00E5A0); }
-.rc-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.rc-icon { font-size:24px; }
-.rc-badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700;
-  background:rgba(255,215,0,0.1); color:var(--gold); border:1px solid rgba(255,215,0,0.2); }
-.rc-badge.earned { background:rgba(255,215,0,0.2); border-color:rgba(255,215,0,0.5); }
-.rc-name { font-family:'Cinzel',serif; font-size:15px; font-weight:700; color:var(--text); margin-bottom:3px; }
-.rc-meta { font-size:12px; color:var(--dim); margin-bottom:12px; }
-.rc-chapters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
-.rc-ch { width:28px; height:28px; border-radius:7px; background:rgba(255,255,255,0.05);
-  border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
-  font-size:11px; font-weight:700; color:var(--dim); cursor:pointer; transition:all .15s; }
-.rc-ch:hover { border-color:rgba(255,255,255,0.25); }
-.rc-ch.done { background:rgba(255,215,0,0.15); border-color:rgba(255,215,0,0.4); color:var(--gold); }
-.rc-ch.partial { background:rgba(56,191,255,0.1); border-color:rgba(56,191,255,0.3); color:var(--sky); }
-.realm-progress { height:5px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; }
-.realm-progress-fill { height:100%; background:var(--rc,var(--gold)); border-radius:3px; transition:width .6s ease; }
-
-/* CHAPTER CHECKLIST */
-.ch-detail { display:none; margin-top:12px; border-top:1px solid var(--border); padding-top:12px; }
-.ch-detail.open { display:block; }
-.ch-task { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.04); cursor:pointer; }
-.ch-task:last-child { border:none; }
-.ch-task:hover .task-check { border-color:rgba(255,215,0,0.5); }
-.task-check { width:20px; height:20px; border-radius:5px; border:1.5px solid var(--border); flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .15s; }
-.task-check.checked { background:rgba(0,229,160,0.2); border-color:var(--emerald); color:var(--emerald); }
-.task-label { font-size:13px; color:var(--dim); flex:1; }
-.task-label.checked-label { text-decoration:line-through; color:rgba(240,244,255,0.3); }
-.task-xp { font-size:11px; font-weight:700; color:var(--gold-dim); margin-left:auto; }
-
-/* ACHIEVEMENT WALL */
-.achievement-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:32px; }
-.ach-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 12px; text-align:center; transition:all .2s; }
-.ach-card.unlocked { border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.04); }
-.ach-card.locked { opacity:.4; filter:grayscale(1); }
-.ach-icon { font-size:30px; margin-bottom:8px; }
-.ach-name { font-size:12px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.3; }
-.ach-desc { font-size:10px; color:var(--dim); line-height:1.4; }
-.ach-unlocked-tag { font-size:10px; color:var(--gold); font-weight:700; margin-top:5px; }
+.sprite-card .sc-info { flex:1; min-width:0; position:relative; }
+.sprite-card .sc-name { font-family:var(--display); font-weight:800; font-size:19px; letter-spacing:-.01em; }
+.sprite-card .sc-sub { font-size:13px; color:var(--muted); margin-top:2px; }
+.sprite-card .sc-bars { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:12px; font-weight:700; color:var(--muted); }
+.sprite-card .sc-cta { position:relative; flex:0 0 auto; padding:9px 14px; border-radius:12px; background:rgba(0,229,160,.14); border:1px solid rgba(0,229,160,.4); color:var(--emerald); font-weight:800; font-size:14px; white-space:nowrap; }
+@media (max-width:560px) { .sprite-card { flex-wrap:wrap; } .sprite-card .sc-cta { width:100%; text-align:center; } }
 
 /* STREAK CALENDAR */
-.streak-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:28px; }
-.streak-day { aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.04); border:1px solid var(--border); transition:all .2s; }
-.streak-day.active { background:rgba(255,215,0,0.2); border-color:rgba(255,215,0,0.5); }
-.streak-day.today { border-color:var(--gold); box-shadow:0 0 8px rgba(255,215,0,0.3); }
-.streak-day { display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:var(--dim); }
-.streak-day.active { color:var(--text); }
-.streak-day .mo { font-size:9px; display:block; line-height:1; }
-.streak-month { font-size:13px; font-weight:800; color:var(--text); margin-bottom:8px; }
-.streak-labels { display:flex; justify-content:space-between; margin-bottom:6px; }
-.streak-label { font-size:10px; color:var(--dim); text-align:center; }
+.cal { padding:22px; border-radius:24px; }
+.streak-month { font-family:var(--display); font-size:17px; font-weight:700; margin-bottom:14px; }
+.streak-labels { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px; }
+.streak-label { font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-align:center; }
+.streak-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.streak-day { position:relative; aspect-ratio:1; border-radius:12px; background:rgba(255,255,255,.03); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--muted); transition:all .2s; }
+.streak-day.active { background:linear-gradient(135deg,rgba(255,209,102,.3),rgba(255,159,28,.18)); border-color:rgba(255,209,102,.55); color:#fff; box-shadow:0 6px 20px -10px rgba(255,159,28,.8); }
+.streak-day.today { border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,209,102,.35); }
+@media (min-width:641px) { .streak-day { aspect-ratio:auto; height:60px; } }
+.streak-day .mo { display:block; font-size:9px; line-height:1; color:var(--gold); font-family:var(--mono); text-transform:uppercase; }
+.sv-btn { position:absolute; right:-4px; bottom:-4px; width:24px; height:24px; border-radius:50%; border:1px solid rgba(255,209,102,.7);
+  background:#241d3a; font-size:12px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:transform .15s; }
+.sv-btn.new { box-shadow:0 0 0 2px rgba(0,229,160,.75); }
+.sv-btn:hover, .sv-btn:focus-visible { transform:scale(1.15); }
+.sv-legend { font-size:13px; color:var(--muted); margin-top:14px; }
+.cal-foot { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:14px; font-size:13px; color:var(--muted); }
+.cal-foot b { color:var(--gold); }
 
-.streak-day { position:relative; }
-.sv-btn { position:absolute; right:-3px; bottom:-3px; width:22px; height:22px; border-radius:50%; border:1px solid #b8860b;
-  background:#FFE680; font-size:12px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
-.sv-btn.new { box-shadow:0 0 0 2px rgba(0,229,160,0.6); }
-.sv-btn:hover, .sv-btn:focus-visible { transform:scale(1.12); outline:none; }
-.sv-legend { font-size:12px; color:var(--dim); margin:-18px 0 22px; }
-.sv-bg { position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:250; display:none; align-items:center; justify-content:center; padding:16px; }
-.sv-bg.show { display:flex; }
-.sv-box { position:relative; background:#0d1020; color:#F4EFFF; border:1px solid rgba(255,215,0,0.45); border-radius:16px; padding:22px 18px 18px;
-  max-width:380px; width:100%; max-height:85vh; overflow:auto; }
-.sv-x { position:absolute; top:8px; right:8px; width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.3);
-  background:rgba(255,255,255,0.06); color:#F4EFFF; font-size:16px; cursor:pointer; }
-.sv-date { font-size:12px; color:rgba(244,239,255,0.75); font-weight:700; margin-bottom:4px; }
-.sv-q { font-size:17px; font-weight:800; margin:0 34px 14px 0; line-height:1.35; }
-.sv-res { position:relative; border:1px solid rgba(255,255,255,0.2); border-radius:9px; padding:9px 11px; margin-bottom:7px; overflow:hidden;
-  display:flex; justify-content:space-between; gap:10px; font-size:14px; font-weight:700; }
-.sv-res i { position:absolute; inset:0 auto 0 0; background:rgba(255,215,0,0.2); z-index:0; }
+/* POP-UPS */
+.sv-bg, .modal-bg { position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(4,4,16,.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+.sv-bg { z-index:250; }
+.sv-bg.show, .modal-bg.show { display:flex; }
+.sv-box, .modal-box { position:relative; width:100%; max-height:88vh; overflow:auto; color:var(--fg); border-radius:24px; padding:26px 22px 22px;
+  background:linear-gradient(180deg,rgba(23,22,52,.97),rgba(12,12,32,.98)); border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.06); animation:rise .35s cubic-bezier(.2,.7,.2,1) both; }
+.sv-box { max-width:400px; }
+.modal-box { max-width:420px; }
+.sv-x, .modal-x { position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--fg); font-size:16px; cursor:pointer; }
+.sv-x:hover, .modal-x:hover { background:rgba(255,255,255,.1); }
+.sv-date { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:6px; }
+.sv-q { font-family:var(--display); font-size:20px; font-weight:800; margin:0 40px 16px 0; line-height:1.25; }
+.sv-res { position:relative; border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:8px; overflow:hidden; display:flex; justify-content:space-between; gap:10px; font-size:14px; font-weight:700; }
+.sv-res i { position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg,rgba(255,209,102,.28),rgba(255,159,28,.16)); z-index:0; }
 .sv-res span, .sv-res em { position:relative; z-index:1; font-style:normal; }
-.sv-res.mine { border-color:rgba(255,215,0,0.8); }
-.sv-choice { display:block; width:100%; text-align:left; padding:11px 12px; margin-bottom:7px; border-radius:9px; cursor:pointer;
-  border:1.5px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.06); color:#F4EFFF; font-size:14px; font-weight:700; }
-.sv-choice:hover { border-color:rgba(255,215,0,0.7); }
-.sv-note { font-size:12px; color:rgba(244,239,255,0.75); margin-top:8px; line-height:1.45; }
-.sv-close { width:100%; margin-top:12px; padding:11px; border-radius:10px; border:0; cursor:pointer; font-weight:800; font-size:14px;
-  background:linear-gradient(135deg,#FFD700,#FF8C00); color:#1a1200; }
-/* NAME MODAL */
-.modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; display:flex; align-items:center; justify-content:center; display:none; }
-.modal-bg.show { display:flex; }
-.modal-box { --text:#F4EFFF; --dim:rgba(244,239,255,0.75); --border:rgba(255,255,255,0.25);
-  background:#0d1020; color:var(--text); border:1px solid var(--border); border-radius:18px; padding:32px; max-width:360px; width:90%; }
-.modal-input::placeholder { color:rgba(244,239,255,0.6); opacity:1; }
-.modal-title { font-family:'Cinzel Decorative',serif; font-size:20px; font-weight:700;
-  background:linear-gradient(135deg,var(--gold),#FF8C00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
-.modal-sub { font-size:13px; color:var(--dim); margin-bottom:20px; line-height:1.5; }
-.modal-input { width:100%; background:rgba(255,255,255,0.06); border:1.5px solid var(--border); border-radius:10px;
-  color:var(--text); font-size:16px; font-weight:700; padding:12px 16px; font-family:'Nunito',sans-serif; margin-bottom:12px; }
-.modal-input:focus { outline:none; border-color:rgba(255,215,0,0.4); }
-.modal-avatars { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
-.av-opt { font-size:24px; cursor:pointer; padding:6px; border-radius:8px; border:2px solid transparent; transition:all .15s; }
-.av-opt:hover,.av-opt.sel { border-color:var(--gold); background:rgba(255,215,0,0.1); }
-.modal-btn { width:100%; padding:13px; border-radius:10px; background:linear-gradient(135deg,#FFD700,#FF8C00);
-  border:none; color:#0a0600; font-size:15px; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; }
-.modal-error { font-size:12px; color:var(--crimson); margin-bottom:10px; min-height:16px; }
-.modal-label { display:block; font-size:12px; font-weight:800; color:var(--gold); margin:2px 0 4px; text-align:left; }
-.modal-hint { font-size:12px; color:var(--dim); margin-top:10px; line-height:1.4; }
-.roster { max-height:42vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:4px 0 14px; padding:2px; }
-.roster-btn { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border);
-  background:rgba(255,255,255,0.06); color:inherit; font:800 15px 'Nunito',sans-serif; cursor:pointer; text-align:left; min-height:46px; }
-.roster-btn:hover, .roster-btn:focus { border-color:var(--gold); background:rgba(255,215,0,0.1); outline:none; }
-.roster-btn .av { font-size:20px; }
-.roster-empty { grid-column:1/-1; font-size:13px; color:var(--dim); padding:8px; }
-.new-btn { background:rgba(255,255,255,0.08); color:var(--gold); border:1.5px dashed rgba(255,215,0,0.5); }
-.match-box { background:rgba(255,215,0,0.1); border:1.5px solid rgba(255,215,0,0.5); border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:14px; text-align:left; }
-.match-box .row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-.match-box button { flex:1; padding:9px; border-radius:8px; font:800 13px 'Nunito',sans-serif; cursor:pointer; border:1.5px solid var(--border); background:rgba(255,255,255,0.08); color:inherit; }
-.match-box button.yes { background:linear-gradient(135deg,#FFD700,#FF8C00); color:#1a1200; border:none; }
-@media (max-width:420px){ .roster { grid-template-columns:1fr; } }
-.modal-back { display:block; margin-top:10px; font-size:12px; color:var(--dim); cursor:pointer;
-  background:none; border:none; text-decoration:underline; font-family:'Nunito',sans-serif; width:100%; text-align:center; }
+.sv-res.mine { border-color:rgba(255,209,102,.8); }
+.sv-choice { display:block; width:100%; text-align:left; padding:12px 14px; margin-bottom:8px; border-radius:12px; cursor:pointer; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--fg); font-size:15px; font-weight:700; }
+.sv-choice:hover { border-color:rgba(255,209,102,.7); background:rgba(255,209,102,.08); }
+.sv-note { font-size:13px; color:var(--muted); margin-top:10px; line-height:1.5; }
+.sv-close { width:100%; margin-top:14px; padding:12px; border-radius:14px; border:0; cursor:pointer; font-weight:800; font-size:15px; background:linear-gradient(90deg,var(--gold),var(--amber)); color:#1a0d00; }
 
-/* BUTTONS */
-.btn { padding:9px 20px; border-radius:9px; border:none; font-size:13px; font-weight:700;
-  cursor:pointer; font-family:'Nunito',sans-serif; transition:all .15s; }
-.btn-gold { background:rgba(255,215,0,0.12); color:var(--gold); border:1px solid rgba(255,215,0,0.25); }
-.btn-gold:hover { background:rgba(255,215,0,0.2); }
-.btn-danger { background:rgba(255,59,92,0.1); color:var(--crimson); border:1px solid rgba(255,59,92,0.2); font-size:12px; padding:6px 14px; }
+.modal-title { font-family:var(--display); font-size:28px; font-weight:800; letter-spacing:-.02em; margin:0 40px 8px 0;
+  background:linear-gradient(115deg,#fff4d6,#ffd166 35%,#ff9f1c 70%,#ff3b5c); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.modal-sub { font-size:14px; color:var(--muted); margin-bottom:18px; line-height:1.5; }
+.modal-input { width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14); border-radius:14px; color:var(--fg); font:700 16px var(--sans); padding:13px 16px; margin-bottom:12px; transition:border-color .2s,box-shadow .2s; }
+.modal-input::placeholder { color:rgba(238,240,255,.45); }
+.modal-input:focus { outline:none; border-color:rgba(255,209,102,.6); box-shadow:0 0 0 3px rgba(255,209,102,.18); }
+.modal-avatars { display:grid; grid-template-columns:repeat(8,1fr); gap:6px; margin-bottom:14px; }
+.av-opt { font-size:22px; cursor:pointer; padding:6px 0; text-align:center; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.03); transition:all .15s; }
+.av-opt:hover, .av-opt.sel { border-color:var(--gold); background:rgba(255,209,102,.12); }
+@media (max-width:420px) { .modal-avatars { grid-template-columns:repeat(4,1fr); } }
+.modal-btn { width:100%; padding:14px; border-radius:14px; border:0; cursor:pointer; font:800 16px var(--sans); color:#1a0d00;
+  background:linear-gradient(90deg,var(--gold),var(--amber),#ff6b3d); box-shadow:0 12px 30px -12px rgba(255,159,28,.85); }
+.modal-btn:hover { filter:brightness(1.06); }
+.modal-error { font-size:13px; color:#ff8da1; margin-bottom:10px; min-height:18px; font-weight:600; }
+.modal-error a { color:inherit; }
+.modal-label { display:block; font-size:12px; font-weight:700; color:var(--gold); margin:2px 0 6px; }
+.modal-hint { font-size:13px; color:var(--muted); margin-top:12px; line-height:1.45; }
+.roster { max-height:42vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:4px 0 14px; padding:2px; }
+.roster-btn { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:inherit;
+  font:700 15px var(--sans); cursor:pointer; text-align:left; min-height:48px; }
+.roster-btn:hover, .roster-btn:focus { border-color:var(--gold); background:rgba(255,209,102,.1); outline:none; }
+.roster-btn .av { font-size:20px; }
+.roster-empty { grid-column:1/-1; font-size:13px; color:var(--muted); padding:8px; }
+.modal-btn.new-btn { background:rgba(255,209,102,.06); color:var(--gold); border:1px dashed rgba(255,209,102,.55); box-shadow:none; }
+.match-box { background:rgba(255,209,102,.08); border:1px solid rgba(255,209,102,.45); border-radius:14px; padding:12px 14px; margin-bottom:12px; font-size:14px; }
+.match-box .row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.match-box button { flex:1; padding:10px; border-radius:10px; font:800 13px var(--sans); cursor:pointer; border:1px solid var(--line); background:rgba(255,255,255,.06); color:inherit; }
+.match-box button.yes { background:linear-gradient(90deg,var(--gold),var(--amber)); color:#1a0d00; border:0; }
+@media (max-width:420px) { .roster { grid-template-columns:1fr; } }
+.modal-back { display:block; margin-top:12px; font-size:13px; color:var(--muted); cursor:pointer; background:none; border:0; text-decoration:underline; text-underline-offset:3px; font-family:var(--sans); width:100%; text-align:center; }
+.modal-back:hover { color:var(--fg); }
+
+/* REALMS */
+.realm-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; align-items:start; }
+@media (max-width:420px) { .realm-grid { grid-template-columns:1fr; } }
+.realm-card { --accent:var(--gold); border-radius:24px; overflow:hidden; }
+.realm-card.current { border-color:color-mix(in srgb,var(--accent) 65%,transparent); box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent),0 20px 60px -24px color-mix(in srgb,var(--accent) 70%,transparent); }
+.realm-card.current::before { opacity:1; }
+.rc-head { position:relative; display:block; width:100%; text-align:left; background:none; border:0; cursor:pointer; padding:20px 20px 18px; }
+.rc-top { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+.rc-icon { display:grid; place-items:center; width:46px; height:46px; border-radius:14px; font-size:24px;
+  background:color-mix(in srgb,var(--accent) 16%,transparent); border:1px solid color-mix(in srgb,var(--accent) 40%,transparent); }
+.rc-tags { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.rc-badge, .rc-now { padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:700; white-space:nowrap; }
+.rc-badge { color:var(--muted); background:rgba(255,255,255,.04); border:1px solid var(--line); }
+.rc-badge.earned { color:var(--gold); background:rgba(255,209,102,.12); border-color:rgba(255,209,102,.45); }
+.rc-now { color:var(--ink); background:var(--accent); }
+.rc-roman { font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.18em; color:var(--accent); }
+.rc-name { font-family:var(--display); font-size:21px; font-weight:800; letter-spacing:-.01em; line-height:1.15; margin-top:2px; }
+.rc-meta { font-size:13px; color:var(--muted); margin:4px 0 14px; }
+.rc-bar { display:flex; align-items:center; gap:10px; }
+.realm-progress { flex:1; height:8px; background:rgba(255,255,255,.06); border-radius:999px; overflow:hidden; }
+.realm-progress-fill { height:100%; background:var(--accent); border-radius:999px; box-shadow:0 0 12px color-mix(in srgb,var(--accent) 70%,transparent); transition:width .6s ease; }
+.realm-card.completed .realm-progress-fill { background:linear-gradient(90deg,var(--gold),var(--emerald)); }
+.rc-pct { font-family:var(--mono); font-size:12px; font-weight:600; color:var(--fg); min-width:38px; text-align:right; }
+.rc-chev { display:inline-block; transition:transform .25s; color:var(--muted); font-size:13px; }
+.rc-head[aria-expanded="true"] .rc-chev { transform:rotate(180deg); }
+.rc-chapters { position:relative; display:flex; gap:6px; flex-wrap:wrap; padding:0 20px 16px; }
+.rc-ch { padding:5px 10px; border-radius:10px; background:rgba(255,255,255,.04); border:1px solid var(--line); font-size:12px; font-weight:700; color:var(--muted); text-decoration:none; transition:all .15s; }
+.rc-ch:hover { border-color:color-mix(in srgb,var(--accent) 60%,transparent); color:var(--fg); }
+.rc-ch.done { background:rgba(255,209,102,.14); border-color:rgba(255,209,102,.45); color:var(--gold); }
+.rc-ch.partial { background:rgba(56,191,255,.1); border-color:rgba(56,191,255,.35); color:var(--sky); }
+.ch-detail { position:relative; display:grid; grid-template-rows:0fr; transition:grid-template-rows .3s ease; }
+.ch-detail.open { grid-template-rows:1fr; }
+.ch-detail > div { overflow:hidden; }
+.ch-detail ul { list-style:none; margin:0 14px 14px; padding:6px; border-radius:16px; background:rgba(0,0,0,.18); border:1px solid var(--line); }
+.ch-task { display:flex; align-items:center; gap:12px; width:100%; padding:10px 10px; border-radius:12px; background:none; border:0; cursor:pointer; text-align:left; transition:background .15s; }
+.ch-task:hover:not(:disabled) { background:rgba(255,255,255,.05); }
+.ch-task:disabled { cursor:default; }
+.task-check { width:22px; height:22px; flex:0 0 22px; border-radius:7px; border:1.5px solid rgba(255,255,255,.25); display:grid; place-items:center; font-size:12px; font-weight:800; transition:all .15s; }
+.task-check.checked { background:var(--emerald); border-color:var(--emerald); color:var(--ink); }
+.task-check.checked.pop { animation:pop .35s ease; }
+.task-label { font-size:14px; color:var(--fg); flex:1; line-height:1.35; }
+.task-label.checked-label { text-decoration:line-through; text-decoration-color:rgba(255,255,255,.3); color:var(--muted); }
+.task-xp { font-family:var(--mono); font-size:11px; font-weight:600; color:var(--gold); white-space:nowrap; }
+.task-boss .task-label { color:var(--gold); font-weight:700; }
+
+/* ACHIEVEMENTS */
+.ach-count { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--gold); padding:6px 12px; border-radius:999px; background:rgba(255,209,102,.1); border:1px solid rgba(255,209,102,.3); }
+.achievement-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+@media (max-width:420px) { .achievement-grid { grid-template-columns:repeat(2,1fr); } }
+.ach-card { --accent:var(--gold); padding:18px 14px; border-radius:20px; text-align:center; }
+.ach-card.unlocked { border-color:rgba(255,209,102,.35); }
+.ach-card.locked { opacity:.45; filter:grayscale(1); }
+.ach-card.locked:hover { opacity:.7; }
+.ach-icon { position:relative; font-size:32px; margin-bottom:8px; }
+.ach-name { position:relative; font-size:14px; font-weight:800; line-height:1.25; margin-bottom:4px; }
+.ach-desc { position:relative; font-size:12px; color:var(--muted); line-height:1.4; }
+.ach-unlocked-tag { position:relative; font-size:11px; color:var(--gold); font-weight:700; margin-top:8px; }
+
+/* DANGER ZONE */
+.danger { margin-top:56px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:16px 20px; border-radius:20px;
+  border:1px dashed rgba(255,59,92,.35); background:rgba(255,59,92,.04); font-size:14px; color:var(--muted); }
+.danger strong { color:var(--fg); }
+.btn-danger { padding:9px 16px; border-radius:12px; border:1px solid rgba(255,59,92,.45); background:rgba(255,59,92,.1); color:#ff8da1; font:700 13px var(--sans); cursor:pointer; }
+.btn-danger:hover { background:rgba(255,59,92,.18); }
 
 /* TOAST */
-.toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px);
-  background:#0d1020; border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:14px 24px;
-  font-size:14px; font-weight:700; color:var(--gold); z-index:300; transition:transform .3s ease; white-space:nowrap; }
-.toast.show { transform:translateX(-50%) translateY(0); }
+.toast { position:fixed; bottom:24px; left:50%; z-index:300; transform:translate(-50%,120px); max-width:calc(100% - 32px);
+  padding:13px 22px; border-radius:999px; background:linear-gradient(135deg,var(--gold),var(--amber)); color:#1a1000; font-weight:800; font-size:15px;
+  box-shadow:0 14px 34px -10px rgba(255,159,28,.9); transition:transform .35s cubic-bezier(.2,.7,.2,1); text-align:center; }
+.toast.show { transform:translate(-50%,0); }
 
-/* FOOTER */
-footer { position:relative; z-index:1; border-top:1px solid var(--border); padding:24px 28px;
-  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:40px; }
-.footer-brand { font-family:'Cinzel',serif; font-size:13px; color:var(--gold); font-weight:600; }
+/* FOOTER (copy of components/footer.tsx) */
+.site-footer { position:relative; z-index:10; margin-top:96px; border-top:1px solid var(--line); background:rgba(13,13,38,.6); backdrop-filter:blur(8px); }
+.site-footer .cols { max-width:1280px; margin:0 auto; display:grid; gap:48px; padding:64px 24px; }
+@media (min-width:768px) { .site-footer .cols { grid-template-columns:1.4fr repeat(3,1fr); } }
+.site-footer .f-brand { font-family:var(--display); font-size:24px; font-weight:800; }
+.site-footer p { margin-top:12px; max-width:320px; font-size:14px; line-height:1.6; color:var(--muted); }
+.site-footer .tags { margin-top:20px; font-family:var(--mono); font-size:12px; letter-spacing:.06em; color:rgba(163,166,200,.7); }
+.site-footer h3 { margin-bottom:16px; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,209,102,.8); }
+.site-footer ul { list-style:none; display:grid; gap:10px; }
+.site-footer a { font-size:14px; color:var(--muted); text-decoration:none; transition:color .2s; }
+.site-footer a:hover { color:var(--fg); }
+.site-footer .bottom { border-top:1px solid var(--line); padding:24px; text-align:center; font-size:12px; color:rgba(163,166,200,.6); }
 
-@media(max-width:700px) {
-  nav { padding:11px 16px; }
-  .hero,.section { padding-left:16px; padding-right:16px; }
-  .hero { padding-top:80px; }
-  .hero-top { flex-direction:column; }
-  .realm-grid { grid-template-columns:1fr; }
-  .achievement-grid { grid-template-columns:repeat(3,1fr); }
+.reveal { animation:rise .7s cubic-bezier(.2,.7,.2,1) both; }
+@media (max-width:640px) {
+  .wrap { padding:0 16px; }
+  .signin-hero, .hero { margin-top:96px; }
+  .hero-main { border-radius:24px; }
+  .ring { width:92px; height:92px; flex-basis:92px; }
+  .ring strong { font-size:23px; }
+  .streak-grid, .streak-labels { gap:4px; }
+  .streak-day { border-radius:9px; font-size:12px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
 }
 </style>
-<link rel="stylesheet" href="shared.css">
 <script src="vendor/supabase.js"></script>
 <script src="badges.js"></script>
 <script src="pet_sprite.js"></script>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
-<body>
-<div id="stars"></div>
-<h1 class="sr-only">Your Quest</h1>
+<body class="signed-out">
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset=".55" stop-color="#ff9f1c"/><stop offset="1" stop-color="#ff3b5c"/></linearGradient></defs></svg>
 
-<!-- NAV -->
-<nav>
-  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
-  <div class="nav-links">
-    <a class="nav-link" href="index.html">Home</a>
-    <a class="nav-link" href="chapters.html">Chapters</a>
-    <a class="nav-link" href="arcade.html">Arcade</a>
-    <a class="nav-link" href="search.html">🔍 Search</a>
-    <a class="nav-link" href="quest.html">⚔ Quest</a>
-    <a class="nav-link" href="pet.html">🌱 My Sprite</a>
-    <a class="nav-link nav-cl" href="checklist.html" style="background:#FFD700;color:#1A1030;font-weight:900;border-radius:999px">📋 Checklist</a>
-    <a class="nav-link" href="leaderboard.html">🏆 Hall</a>  </div>
-</nav>
+<!-- NAV (same as the site nav) -->
+<header class="site-nav" id="site-nav">
+  <nav aria-label="Main">
+    <a class="brand" href="/"><i>⚔</i><span>Legend <em>of</em> Wellness</span></a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/chapters">Chapters</a>
+      <a href="/realms">Realms</a>
+      <a href="/arcade">Arcade</a>
+      <a href="/quest.html" aria-current="page">Quest</a>
+      <a href="/pet.html">My Sprite</a>
+      <a href="/leaderboard.html">Hall</a>
+    </div>
+    <div class="nav-right">
+      <a class="icon-btn" href="/search.html" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></a>
+      <a class="cl-btn" href="/checklist.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg> Checklist</a>
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    </div>
+  </nav>
+  <div class="mobile-menu glass" id="mobile-menu">
+    <a href="/">Home</a><a href="/chapters">Chapters</a><a href="/realms">Realms</a><a href="/arcade">Arcade</a>
+    <a href="/quest.html" aria-current="page">Quest</a><a href="/pet.html">My Sprite</a><a href="/leaderboard.html">Hall</a><a href="/checklist.html">Checklist</a>
+  </div>
+</header>
 
 <!-- LOGIN MODAL (3 steps) -->
-<div class="modal-bg" id="modal">
+<div class="modal-bg" id="modal" role="dialog" aria-modal="true" aria-label="Sign in to your quest">
   <div class="modal-box">
+    <button class="modal-x" type="button" aria-label="Close" onclick="closeModal()">✕</button>
 
-    <!-- Step 1: Class code + last name -->
+    <!-- Step 1: Class code -->
     <div id="mstep1">
       <div class="modal-title">Enter the Quest</div>
       <div class="modal-sub">Enter your class code to continue.</div>
-      <input class="modal-input" id="m-code" placeholder="Class Code (e.g. PERIOD1)" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkClass()">
+      <input class="modal-input" id="m-code" placeholder="Class Code (e.g. PERIOD1)" maxlength="12" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkClass()" autocomplete="off">
       <div class="modal-error" id="m-err1"></div>
       <button class="modal-btn" onclick="checkClass()">Continue →</button>
     </div>
@@ -303,6 +437,7 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
       <input class="modal-input" id="m-last-new" placeholder="Your LAST name" maxlength="30" autocomplete="family-name">
       <label class="modal-label" for="m-display">First name or nickname</label>
       <input class="modal-input" id="m-display" placeholder="First name or nickname" maxlength="20">
+      <div class="modal-label">Pick your hero</div>
       <div class="modal-avatars" id="avatar-opts">
         <div class="av-opt sel" onclick="selAv(this,'⚔')">⚔</div>
         <div class="av-opt" onclick="selAv(this,'🛡')">🛡</div>
@@ -324,68 +459,127 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<!-- HERO SECTION -->
-<div class="hero">
-  <div class="hero-top">
-    <div class="hero-left">
-      <div class="hero-name-row">
-        <div class="hero-avatar" id="hero-avatar" onclick="showModal()">⚔</div>
-        <div>
+<main>
+<div class="wrap">
+
+  <!-- SIGNED OUT -->
+  <section class="signin-hero glass only-out reveal" aria-labelledby="so-title">
+    <div>
+      <span class="eyebrow">Your Quest</span>
+      <h1 id="so-title">Sign in to <span class="text-gradient">your quest</span></h1>
+      <p>Track every realm you clear, every badge you earn, and every day you show up. Your progress saves to your class account, so it follows you to any device.</p>
+      <div class="btn-row">
+        <button class="btn-primary" type="button" onclick="showModal()">⚔ Sign in with my class code</button>
+        <a class="btn-ghost" href="/realms">Explore the 9 realms</a>
+      </div>
+    </div>
+    <div class="how">
+      <div><b>1</b><p><strong>Enter your class code</strong><span>Mr. Dopp gives it to your period.</span></p></div>
+      <div><b>2</b><p><strong>Tap your name, type your PIN</strong><span>New? Create your hero in 30 seconds.</span></p></div>
+      <div><b>3</b><p><strong>Check off tasks, earn XP</strong><span>25 XP per task, 5 XP for each day you log in.</span></p></div>
+    </div>
+  </section>
+
+  <!-- SIGNED IN -->
+  <section class="hero only-in reveal" aria-labelledby="hero-name">
+    <div class="hero-main glass">
+      <h1 class="sr-only">Your Quest</h1>
+      <div class="hero-id">
+        <button class="hero-avatar" id="hero-avatar" type="button" onclick="showModal()" title="Log out" aria-label="Log out">⚔</button>
+        <div class="hero-who">
+          <span class="eyebrow">Your Quest</span>
           <div class="hero-name" id="hero-name">Health Hero</div>
-          <div class="hero-title-tag" id="hero-title-tag">Wellness Apprentice</div>
-          <div id="nm-box" style="display:none;margin-top:6px;font-size:13px">
-            <a href="#" id="nm-open" style="color:var(--dim);font-weight:700">✏️ Change my name</a>
-            <span id="nm-status" style="color:var(--dim)"></span>
-            <div id="nm-form" style="display:none;margin-top:6px">
-              <input id="nm-input" maxlength="20" placeholder="New first name or nickname" autocomplete="off"
-                style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font:600 14px 'Nunito',sans-serif;width:210px;max-width:100%">
-              <button id="nm-send" style="padding:7px 12px;border-radius:8px;border:none;background:#1C1A2E;color:#FFD700;font:800 13px 'Nunito',sans-serif;cursor:pointer">Ask Mr. Dopp</button>
-              <div style="color:var(--dim);margin-top:4px">Your new name shows up after Mr. Dopp approves it. Your last name and PIN don't change.</div>
-              <div id="nm-err" style="color:#c0233f;font-weight:700"></div>
-            </div>
-          </div>
+          <div class="hero-title-tag"><span aria-hidden="true">★</span> <span id="hero-title-tag">Wellness Apprentice</span></div>
+        </div>
+        <div class="ring" aria-label="Quest progress">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="52"/><circle class="fill" id="ring-fill" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg>
+          <div><strong id="ring-pct">0%</strong><span>of tasks</span></div>
         </div>
       </div>
       <div class="xp-section">
-        <div class="xp-labels">
-          <span>Experience Points</span>
-          <span class="xp-val" id="xp-label">0 / 2,800 XP</span>
-        </div>
+        <div class="xp-labels"><span>Experience Points</span><span class="xp-val" id="xp-label">0 / 2,800 XP</span></div>
         <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
       </div>
-      <a id="cl-link" href="checklist.html" style="display:none;margin-top:14px;padding:13px 20px;border-radius:14px;background:#FFD700;color:#1A1030;border:2.5px solid #1A1030;box-shadow:0 4px 0 #1A1030;font-weight:900;font-size:17px;text-decoration:none;width:max-content;max-width:100%">📋 My Trimester Checklist <span style="font-weight:700;font-size:14px">— see what to do next →</span></a>
+      <div class="hero-actions">
+        <a id="cl-link" href="checklist.html">📋 My Trimester Checklist <small>see what to do next →</small></a>
+        <button class="mini-link" type="button" onclick="showModal()">Log out</button>
+      </div>
+      <div id="nm-box" style="display:none;margin-top:12px">
+        <a href="#" id="nm-open">✏️ Change my name</a>
+        <span id="nm-status"></span>
+        <div id="nm-form" style="display:none">
+          <input id="nm-input" maxlength="20" placeholder="New first name or nickname" autocomplete="off">
+          <button id="nm-send">Ask Mr. Dopp</button>
+          <div style="margin-top:6px">Your new name shows up after Mr. Dopp approves it. Your last name and PIN don't change.</div>
+          <div id="nm-err"></div>
+        </div>
+      </div>
     </div>
-    <div class="hero-stats">
-      <div class="hero-stat"><div class="hs-num" id="stat-badges">0</div><div class="hs-label">Badges</div></div>
-      <div class="hero-stat"><div class="hs-num" id="stat-chapters">0</div><div class="hs-label">Chapters</div></div>
-      <div class="hero-stat"><div class="hs-num" id="stat-streak">0</div><div class="hs-label">Day Streak</div></div>
-      <div class="hero-stat"><div class="hs-num" id="stat-xp">0</div><div class="hs-label">Total XP</div></div>
+    <div class="hero-side">
+      <div class="stats">
+        <div class="stat accent-card" style="--accent:var(--gold)"><div class="ic" aria-hidden="true">🏅</div><div class="hs-num" id="stat-badges">0</div><div class="hs-label">Badges</div></div>
+        <div class="stat accent-card" style="--accent:var(--sky)"><div class="ic" aria-hidden="true">📖</div><div class="hs-num" id="stat-chapters">0</div><div class="hs-label">Chapters read</div></div>
+        <div class="stat accent-card" style="--accent:var(--crimson)"><div class="ic" aria-hidden="true">🔥</div><div class="hs-num" id="stat-streak">0</div><div class="hs-label">Day streak</div></div>
+        <div class="stat accent-card" style="--accent:var(--emerald)"><div class="ic" aria-hidden="true">⚡</div><div class="hs-num" id="stat-xp">0</div><div class="hs-label">Total XP</div></div>
+      </div>
+      <a class="sprite-card accent-card" id="sprite-card" href="pet.html" aria-label="Go to my Wellness Sprite">
+        <div class="sc-pic" id="sc-pic"></div>
+        <div class="sc-info">
+          <div class="sc-name" id="sc-name">My Wellness Sprite</div>
+          <div class="sc-sub" id="sc-sub"></div>
+          <div class="sc-bars" id="sc-bars"></div>
+        </div>
+        <span class="sc-cta" id="sc-cta">🌱 Care for it →</span>
+      </a>
     </div>
-  </div>
-  <a class="sprite-card" id="sprite-card" href="pet.html" aria-label="Go to my Wellness Sprite">
-    <div class="sc-pic" id="sc-pic"></div>
-    <div class="sc-info">
-      <div class="sc-name" id="sc-name">My Wellness Sprite</div>
-      <div class="sc-sub" id="sc-sub"></div>
-      <div class="sc-bars" id="sc-bars"></div>
-    </div>
-    <span class="sc-cta" id="sc-cta">🌱 Care for it →</span>
-  </a>
-</div>
+  </section>
 
-<!-- STREAK CALENDAR -->
-<div class="section" id="survey-cal">
-  <div class="sec-header">
-    <div class="sec-title">📅 Activity Streak</div>
-    <span style="font-size:12px;color:var(--dim)">+5 XP each day you log in</span>
+  <!-- NEXT UP -->
+  <section class="next-up accent-card only-in" id="next-up" aria-live="polite"></section>
+
+  <!-- STREAK CALENDAR -->
+  <section class="section only-in" id="survey-cal" aria-labelledby="cal-h">
+    <div class="sec-head">
+      <div><span class="eyebrow">Show up daily</span><h2 id="cal-h">Activity streak</h2></div>
+      <span class="sec-note">+5 XP each day you log in</span>
+    </div>
+    <div class="cal glass">
+      <div class="streak-month" id="streak-month"></div>
+      <div class="streak-labels" id="streak-labels"></div>
+      <div class="streak-grid" id="streak-grid"></div>
+      <div class="sv-legend" id="sv-legend" style="display:none">🗳 Tap a ballot to see that day's Survey of the Day results (anonymous totals).</div>
+    </div>
+  </section>
+
+  <!-- REALM PROGRESS -->
+  <section class="section" aria-labelledby="realms-h">
+    <div class="sec-head">
+      <div><span class="eyebrow">The world map</span><h2 id="realms-h"><span class="only-in">Realm progress</span><span class="only-out">The 9 realms of your quest</span></h2></div>
+      <span class="sec-note only-in">Tap a realm to see and check off its tasks</span>
+      <span class="sec-note only-out">Sign in to check off tasks and earn badges</span>
+    </div>
+    <div class="realm-grid" id="realm-grid"></div>
+  </section>
+
+  <!-- ACHIEVEMENTS -->
+  <section class="section" aria-labelledby="ach-h">
+    <div class="sec-head">
+      <div><span class="eyebrow">Trophy room</span><h2 id="ach-h">Achievements</h2></div>
+      <span class="ach-count only-in" id="ach-count">0 / 20 unlocked</span>
+    </div>
+    <div class="achievement-grid" id="ach-grid"></div>
+  </section>
+
+  <!-- DANGER ZONE -->
+  <div class="danger only-in">
+    <span><strong>Start over?</strong> Resetting erases all your checked tasks, days and badges. It can't be undone.</span>
+    <button class="btn-danger" type="button" onclick="resetAll()">Reset all progress</button>
   </div>
-  <div class="streak-month" id="streak-month"></div>
-  <div class="streak-labels" id="streak-labels"></div>
-  <div class="streak-grid" id="streak-grid"></div>
-  <div class="sv-legend" id="sv-legend" style="display:none">🗳 Tap a ballot to see that day's Survey of the Day results (anonymous totals).</div>
+
 </div>
+</main>
 
 <!-- SURVEY RESULTS POP-UP -->
 <div class="sv-bg" id="sv-modal" role="dialog" aria-modal="true" aria-labelledby="sv-q">
@@ -396,25 +590,25 @@ footer { position:relative; z-index:1; border-top:1px solid var(--border); paddi
   </div>
 </div>
 
-<!-- REALM PROGRESS -->
-<div class="section">
-  <div class="sec-header">
-    <div class="sec-title">🗺 Realm Progress</div>
-    <span class="sec-action" onclick="resetAll()">Reset Progress</span>
+<!-- FOOTER (same as the site footer) -->
+<footer class="site-footer">
+  <div class="cols">
+    <div>
+      <div class="f-brand"><span class="text-gradient">The Legend of Wellness</span></div>
+      <p>Mr. Dopp's health class as an epic quest — 28 chapters, 9 realms, and more than 50 games.</p>
+      <div class="tags">#OnedayIwokeup · #Doppitup</div>
+    </div>
+    <div><h3>Explore</h3><ul>
+      <li><a href="/chapters">All Chapters</a></li><li><a href="/realms">The 9 Realms</a></li><li><a href="/arcade">Game Arcade</a></li>
+      <li><a href="/side_quests.html">Side Quests</a></li><li><a href="/search.html">Search</a></li></ul></div>
+    <div><h3>Students</h3><ul>
+      <li><a href="/leaderboard.html">Hall of Champions</a></li><li><a href="/pet.html">My Wellness Sprite</a></li><li><a href="/mastery.html">Chapter Mastery</a></li>
+      <li><a href="/print_quest.html">Print Quest Sheet</a></li><li><a href="/visitor.html">Visitors (past students)</a></li></ul></div>
+    <div><h3>Adults</h3><ul>
+      <li><a href="/teacher.html">Teacher Dashboard</a></li><li><a href="/parents.html">Parents &amp; Guardians</a></li><li><a href="/sub_guide.html">Sub Guide</a></li>
+      <li><a href="/legacy-resources.html">Classroom Archive</a></li><li><a href="/suggest-improvement.html">Suggest an Improvement</a></li></ul></div>
   </div>
-  <div class="realm-grid" id="realm-grid"></div>
-</div>
-
-<!-- ACHIEVEMENTS -->
-<div class="section">
-  <div class="sec-header"><div class="sec-title">🏆 Achievements</div></div>
-  <div class="achievement-grid" id="ach-grid"></div>
-</div>
-
-<footer>
-  <div class="footer-brand">⚔ The Legend of Wellness</div>
-  <div style="font-size:13px;color:var(--dim)">#OnedayIwokeup · #Doppitup</div>
-  <button class="btn btn-danger" onclick="resetAll()">Reset All Progress</button>
+  <div class="bottom">Dopp Health Class</div>
 </footer>
 
 <script>
@@ -487,8 +681,7 @@ async function init() {
     sessionStorage.removeItem('qPIN_' + TRIMESTER);
     if (window.DoppRemember) DoppRemember.clear();
   }
-  showStep(1);
-  document.getElementById('modal').classList.add('show');
+  render();   // signed-out view: hero with a sign-in button + realm preview
 }
 function showStep(n) {
   document.getElementById('mstep1').style.display  = n === 1 ? 'block' : 'none';
@@ -694,7 +887,13 @@ function calcCompletedChapters() {
 }
 
 function render() {
-  if (!student) return;
+  document.body.classList.toggle('signed-in', !!student);
+  document.body.classList.toggle('signed-out', !student);
+  if (!student) {   // preview: realms and achievements with nothing checked
+    const st0 = calcStats();
+    renderRealms(st0); renderAchievements(st0);
+    return;
+  }
   const st = calcStats();
   document.getElementById('hero-avatar').textContent   = student.avatar || '⚔';
   document.getElementById('hero-name').textContent     = student.display_name || 'Health Hero';
@@ -705,7 +904,11 @@ function render() {
   document.getElementById('stat-xp').textContent       = st.xp.toLocaleString();
   document.getElementById('xp-label').textContent      = `${st.xp.toLocaleString()} / ${TOTAL_XP.toLocaleString()} XP`;
   document.getElementById('xp-fill').style.width       = Math.min(100, st.xp / TOTAL_XP * 100) + '%';
-  renderStreak(); renderRealms(st); renderAchievements(st);
+  const totalTasks = REALMS.reduce((n, r) => n + r.tasks.length, 0);
+  const pct = Math.round(st.totalTasks / totalTasks * 100);
+  document.getElementById('ring-pct').textContent = pct + '%';
+  document.getElementById('ring-fill').style.strokeDashoffset = String(326.73 * (1 - st.totalTasks / totalTasks));
+  renderStreak(); renderRealms(st); renderAchievements(st); renderNextUp();
   checklistLink();
   spriteCard();
   if (!nmShown) { nmShown = true; nameStatus(); }
@@ -892,51 +1095,120 @@ document.addEventListener('click', async e => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') svClose(); });
 window.addEventListener('dopp:survey', () => { svFetched.at = 0; renderStreak(); });   // voted in the daily pop-up (pwa.js)
 
+const ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX'];
+const openRealms = new Set();
+let justChecked = null;
+// The realm you're working on: the first one that isn't finished.
+function currentRealmId() {
+  const r = REALMS.find(r => !r.tasks.every((_, ti) => doneKeys.has(`${r.id}_${ti}`)));
+  return r ? r.id : null;
+}
 function renderRealms(st) {
   const grid = document.getElementById('realm-grid');
+  const cur = student ? currentRealmId() : null;
+  if (student && cur && !renderRealms.opened) { openRealms.add(cur); renderRealms.opened = true; }   // open the current realm once
   grid.innerHTML = '';
-  REALMS.forEach(r => {
+  REALMS.forEach((r, i) => {
     const done = r.tasks.filter((_,ti) => doneKeys.has(`${r.id}_${ti}`)).length;
     const pct = Math.round(done / r.tasks.length * 100);
     const completed = done === r.tasks.length;
     const badgeEarned = st.badges.includes(r.badge);
-    const card = document.createElement('div');
-    card.className = 'realm-card' + (completed ? ' completed' : '');
-    card.style.setProperty('--rc', r.color);
+    const open = openRealms.has(r.id);
+    const card = document.createElement('article');
+    card.className = 'realm-card accent-card' + (completed ? ' completed' : '') + (r.id === cur ? ' current' : '');
+    card.style.setProperty('--accent', r.color);
     card.innerHTML = `
-      <div class="rc-top">
-        <div class="rc-icon">${r.icon}</div>
-        <div class="rc-badge${badgeEarned?' earned':''}">${badgeEarned?'★ ':''}${r.badge}</div>
-      </div>
-      <div class="rc-name">${r.name}</div>
-      <div class="rc-meta">${r.days} · Ch ${r.chapters.join(', ')} · ${done}/${r.tasks.length} tasks · ${pct}%</div>
-      <div class="rc-chapters">${r.chapters.map(c=>`<a class="rc-ch${done>0?(completed?' done':' partial'):''}" href="chapter${String(c).padStart(2,'0')}.html" title="Ch ${c}" onclick="event.stopPropagation()">${c}</a>`).join('')}</div>
-      <div class="realm-progress"><div class="realm-progress-fill" style="width:${pct}%"></div></div>
-      <div class="ch-detail" id="detail-${r.id}">
+      <button class="rc-head" type="button" aria-expanded="${open}" aria-controls="detail-${r.id}">
+        <div class="rc-top">
+          <div class="rc-icon" aria-hidden="true">${r.icon}</div>
+          <div class="rc-tags">
+            ${r.id === cur ? '<span class="rc-now">You are here</span>' : ''}
+            <span class="rc-badge${badgeEarned?' earned':''}">${badgeEarned?'★ ':'🔒 '}${r.badge}</span>
+          </div>
+        </div>
+        <div class="rc-roman">REALM ${ROMAN[i] || i + 1}</div>
+        <div class="rc-name">${r.name}</div>
+        <div class="rc-meta">${r.days} · ${done}/${r.tasks.length} tasks <span class="rc-chev" aria-hidden="true">▾</span></div>
+        <div class="rc-bar"><div class="realm-progress"><div class="realm-progress-fill" style="width:${pct}%"></div></div><span class="rc-pct">${pct}%</span></div>
+      </button>
+      <div class="rc-chapters">${r.chapters.map(c=>`<a class="rc-ch${done>0?(completed?' done':' partial'):''}" href="/chapters/${c}" title="Open Chapter ${c}">Ch ${c}</a>`).join('')}</div>
+      <div class="ch-detail${open ? ' open' : ''}" id="detail-${r.id}" role="region" aria-label="${r.name} tasks"><div><ul>
         ${r.tasks.map((task,ti)=>{
-          const checked = doneKeys.has(`${r.id}_${ti}`);
+          const key = `${r.id}_${ti}`;
+          const checked = doneKeys.has(key);
           const isBoss = task.toLowerCase().includes('boss');
-          return `<div class="ch-task" onclick="toggleTask('${r.id}',${ti})">
-            <div class="task-check${checked?' checked':''}">${checked?'✓':''}</div>
-            <div class="task-label${checked?' checked-label':''}">${isBoss?'👑 ':''}${task}</div>
-            <div class="task-xp">+${XP_PER_TASK} XP</div>
-          </div>`;
+          return `<li><button class="ch-task${isBoss?' task-boss':''}" type="button" data-task="${r.id}" data-ti="${ti}" aria-pressed="${checked}"${student?'':' disabled'}${open?'':' tabindex="-1"'}>
+            <span class="task-check${checked?' checked':''}${checked && justChecked===key?' pop':''}" aria-hidden="true">${checked?'✓':''}</span>
+            <span class="task-label${checked?' checked-label':''}">${isBoss?'👑 ':''}${task}</span>
+            <span class="task-xp">+${XP_PER_TASK} XP</span>
+          </button></li>`;
         }).join('')}
-      </div>`;
-    card.onclick = () => toggleDetail(r.id);
+      </ul></div></div>`;
     grid.appendChild(card);
   });
+  justChecked = null;
 }
+document.addEventListener('click', e => {
+  const head = e.target.closest('.rc-head');
+  if (head) { toggleDetail(head.getAttribute('aria-controls').replace('detail-', '')); return; }
+  const t = e.target.closest('[data-task]');
+  if (t && !t.disabled) { const key = t.dataset.task + '_' + t.dataset.ti; if (!doneKeys.has(key)) justChecked = key; toggleTask(t.dataset.task, Number(t.dataset.ti)); }
+});
 
 function toggleDetail(id) {
   const el = document.getElementById('detail-' + id);
-  if (el) el.classList.toggle('open');
+  if (!el) return;
+  const open = !el.classList.contains('open');
+  if (open) openRealms.add(id); else openRealms.delete(id);
+  el.classList.toggle('open', open);
+  const head = document.querySelector(`.rc-head[aria-controls="detail-${id}"]`);
+  if (head) head.setAttribute('aria-expanded', String(open));
+  el.querySelectorAll('.ch-task').forEach(b => { if (open) b.removeAttribute('tabindex'); else b.setAttribute('tabindex', '-1'); });
+}
+
+// "Next up": the first unfinished task, in realm order, with a link to where you do it.
+function taskLink(task, realm) {
+  const ch = task.match(/Ch(?:apter)?\s*(\d+)/i);
+  if (ch) return { href: '/chapters/' + ch[1], label: 'Open Chapter ' + ch[1] };
+  if (/final boss/i.test(task)) return { href: '/arcade', label: 'Go to the arcade' };
+  if (/jeopardy/i.test(task)) return { href: '/arcade/play/game01_jeopardy/', label: 'Play Health Jeopardy' };
+  if (/millionaire/i.test(task)) return { href: '/arcade/play/game04_millionaire/', label: 'Play Millionaire' };
+  return { href: '/chapters/' + realm.chapters[0], label: 'Open Chapter ' + realm.chapters[0] };
+}
+function renderNextUp() {
+  const box = document.getElementById('next-up');
+  for (const r of REALMS) {
+    const ti = r.tasks.findIndex((_, i) => !doneKeys.has(`${r.id}_${i}`));
+    if (ti === -1) continue;
+    const task = r.tasks[ti], link = taskLink(task, r);
+    const left = r.tasks.length - r.tasks.filter((_, i) => doneKeys.has(`${r.id}_${i}`)).length;
+    box.classList.remove('done-all');
+    box.style.setProperty('--accent', r.color);
+    box.innerHTML = `
+      <div class="nu-ic" aria-hidden="true">${/boss/i.test(task) ? '👑' : r.icon}</div>
+      <div class="nu-text">
+        <small>Next up · ${r.name}</small>
+        <strong>${task}</strong>
+        <span>${left} task${left === 1 ? '' : 's'} left to earn the <b>${r.badge}</b> badge · +${XP_PER_TASK} XP</span>
+      </div>
+      <div class="nu-actions">
+        <a class="btn-primary" href="${link.href}">${link.label} →</a>
+        <button class="btn-ghost" type="button" data-task="${r.id}" data-ti="${ti}">✓ Mark done</button>
+      </div>`;
+    return;
+  }
+  box.classList.add('done-all');
+  box.innerHTML = `<div class="nu-ic" aria-hidden="true">🏆</div><div class="nu-text"><small>Quest complete</small>
+    <strong>Every realm cleared. You're a Master of Wellness!</strong><span>Keep your streak going and help a classmate finish theirs.</span></div>
+    <div class="nu-actions"><a class="btn-primary" href="/leaderboard.html">See the Hall →</a></div>`;
 }
 
 function renderAchievements(st) {
+  const got = ACHIEVEMENTS.filter(a => a.req(st)).length;
+  document.getElementById('ach-count').textContent = `${got} / ${ACHIEVEMENTS.length} unlocked`;
   document.getElementById('ach-grid').innerHTML = ACHIEVEMENTS.map(a => {
     const unlocked = a.req(st);
-    return `<div class="ach-card${unlocked?' unlocked':' locked'}">
+    return `<div class="ach-card accent-card${unlocked?' unlocked':' locked'}">
       <div class="ach-icon">${a.icon}</div>
       <div class="ach-name">${a.name}</div>
       <div class="ach-desc">${a.desc}</div>
@@ -982,14 +1254,28 @@ function showModal() {
       student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set(); badgeExtra = {};
       clChecked = false; document.getElementById('cl-link').style.display = 'none';
       nmShown = false; document.getElementById('nm-box').style.display = 'none';
-      showStep(1);
-      document.getElementById('modal').classList.add('show');
+      spriteLoaded = false; document.getElementById('sprite-card').style.display = 'none';
+      openRealms.clear(); renderRealms.opened = false;
+      render();
+      showToast('Logged out. See you next time! ⚔');
     }
   } else {
     showStep(1);
     document.getElementById('modal').classList.add('show');
+    setTimeout(() => document.getElementById('m-code').focus(), 60);
   }
 }
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── site nav (same behavior as the React nav) ──
+(function () {
+  const nav = document.getElementById('site-nav'), btn = document.getElementById('menu-btn');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+  btn.addEventListener('click', () => { const open = !nav.classList.contains('open'); nav.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open)); });
+})();
 
 function selAv(el, av) {
   document.querySelectorAll('.av-opt').forEach(e => e.classList.remove('sel'));
