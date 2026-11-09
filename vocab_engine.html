@@ -149,6 +149,52 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-co
 .cmap-word-bank{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:16px}
 .cmap-bank-title{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--dim);margin-bottom:10px;font-family:'Cinzel',serif}
 .cmap-bank-chips{display:flex;flex-wrap:wrap;gap:8px;min-height:40px}
+/* Concept Map (reworked 2026-11-09) */
+.cm2-intro,.cm2-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px 22px 18px;margin-bottom:18px;line-height:1.55}
+.cm2-kicker{font:800 12px 'Nunito',sans-serif;letter-spacing:2px;text-transform:uppercase;color:var(--sky)}
+.cm2-h{font-family:'Cinzel',serif;font-size:22px;margin:4px 0 10px}
+.cm2-intro p{margin:0 0 10px;font-size:15px}
+.cm2-steps{margin:6px 0 12px;padding-left:22px;font-size:15px}.cm2-steps li{margin:4px 0}
+.cm2-note{padding:9px 12px;border-radius:10px;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.4)}
+.cm2-ideas-title{font:800 12px 'Nunito',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin:14px 0 8px}
+.cm2-ideas{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:16px}
+.cm2-idea{border-left:4px solid var(--c);background:color-mix(in srgb,var(--c) 8%,transparent);border-radius:10px;padding:9px 12px;font-size:14px}
+.cm2-idea b{display:block;color:var(--c);font-size:14.5px}.cm2-idea span{color:var(--text)}
+.cm2-count{font-size:12px;font-weight:800;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.cm2-term{font-family:'Cinzel',serif;font-size:28px;font-weight:700;margin:4px 0 14px;line-height:1.2}
+.cm2-q{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15.5px;margin:14px 0 8px}
+.cm2-num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--sky);color:#06263a;font-size:13px}
+.cm2-opts,.cm2-hubs{display:grid;gap:8px}
+.cm2-hubs{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.cm2-opt,.cm2-hub{text-align:left;font:600 15px/1.45 'Nunito',sans-serif;color:var(--text);background:var(--card);border:2px solid var(--border);border-radius:12px;padding:11px 14px;cursor:pointer;transition:border-color .15s,background .15s,opacity .3s}
+.cm2-hub{border-left:6px solid var(--c)}
+.cm2-hub b{display:block;color:var(--c);font-size:15px;margin-bottom:2px}.cm2-hub span{font-size:13.5px;color:var(--text)}
+.cm2-opt:hover:not([disabled]),.cm2-hub:hover:not([disabled]){border-color:var(--sky);background:rgba(56,191,255,.08)}
+.cm2-opt[disabled],.cm2-hub[disabled]{cursor:default}
+.cm2-wait{opacity:.55}
+.cm2-opt.right,.cm2-hub.right{border-color:#00b37e;background:rgba(0,229,160,.13)}
+.cm2-opt.wrong,.cm2-hub.wrong{border-color:var(--crimson);background:rgba(255,59,92,.1)}
+.cm2-fb{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14.5px}
+.cm2-fb.ok{background:rgba(0,229,160,.12);border:1px solid rgba(0,179,126,.45)}
+.cm2-fb.no{background:rgba(255,59,92,.08);border:1px solid rgba(255,59,92,.4)}
+.cm2-why{display:inline-block;margin-top:4px;color:var(--dim);font-size:13.5px}
+.cm2-result{margin:12px 0 4px;font-weight:800;font-size:14px}
+.cm2-result.ok{color:#00a06e}.cm2-result.no{color:var(--crimson)}
+.cm2-card .fc-controls{margin-top:12px}
+.cm2-map{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:18px}
+.cm2-map-empty{text-align:center;color:var(--dim);font-size:14px}
+.cm2-map-title{font:800 12px 'Nunito',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.cm2-map-title span{text-transform:none;letter-spacing:0;color:var(--text)}
+.cm2-map-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.cm2-node{border:2px solid var(--c);border-radius:14px;padding:10px;background:color-mix(in srgb,var(--c) 6%,transparent)}
+.cm2-node-name{font-weight:800;color:var(--c);font-size:14px;margin-bottom:6px}
+.cm2-node-chips{display:flex;flex-wrap:wrap;gap:5px}
+.cm2-chip{font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--border)}
+.cm2-chip.ok{background:rgba(0,229,160,.14);border-color:rgba(0,179,126,.5)}
+.cm2-chip.no{background:rgba(255,59,92,.1);border-color:rgba(255,59,92,.45)}
+.cm2-chip.none{color:var(--dim)}
+.cm2-map-note{margin-top:10px;font-size:13px;color:var(--dim)}
+@media (max-width:520px){.cm2-term{font-size:23px}.cm2-intro,.cm2-card{padding:16px}}
 
 /* ─── RESULTS ─── */
 .results-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:32px;text-align:center;margin-bottom:20px}
@@ -197,6 +243,7 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-co
   <div class="howto" id="howto"></div>
 </div>
 
+<script src="concept_map_data.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // VOCAB DATA — All 28 Chapters
@@ -882,6 +929,7 @@ function resetGame() {
   realAnswered = 0; realCorrect = 0; roundStart = Date.now(); roundLogged = false;
   terms = shuffle([...ALL_CHAPTERS[chapterNum].terms]);
   if (gameMode === 'wordbuild') terms = terms.slice(0, WB_WORDS);   // Word Builder: short round
+  if (gameMode === 'conceptmap') { cm = null; const d = cmData(); if (d) terms = terms.filter(t => t.t in d.gi); }   // terms on the map
   clearInterval(timerInt);
   updateHUD();
   updateProgress();
@@ -919,9 +967,9 @@ const HOWTO = {
     'Finish <b>every word</b> to reach the results screen.',
     'Get <b>70% or more</b> correct.'],
   conceptmap: [
-    'Drag every term into a category, then tap <b>Check</b> on each set.',
-    'Terms you don\'t place and check don\'t count.',
-    'Finish <b>every set</b> to reach the results screen.',
+    'For each term, first pick what it <b>means</b>, then pick the <b>big idea</b> it belongs to. Each big idea says what belongs in it.',
+    'A term counts only when <b>both</b> answers are right. Every answer tells you why.',
+    'Finish <b>every term</b> to reach the results screen.',
     'Get <b>70% or more</b> correct.']
 };
 function renderHowTo() {
@@ -1154,65 +1202,156 @@ document.addEventListener('keydown', e => {
 });
 
 // ── CONCEPT MAP ──
-let cm_placements = {}, cm_checked = false;
-function renderConceptMap(gc) {
-  cm_placements = {}; cm_checked = false;
-  const batch = terms.slice(idx, Math.min(idx + 12, terms.length));
-  const cats = [...new Set(batch.map(t => t.cat))];
-  const catColors = ['#38BFFF','#00E5A0','#FF3B5C','#a855f7','#FFD700','#FF8C00'];
-  const shuffled = shuffle([...batch]);
+// Reworked 2026-11-09 (students reported the old drag-and-drop as "mindless" and "guessing").
+// Big ideas and their reasons live in concept_map_data.js. For each term the student:
+//   1. picks what the term MEANS (3 choices; 2 are other terms from this chapter), then
+//   2. picks the BIG IDEA it belongs to — each big idea shows a one-sentence description.
+// A term counts as correct only when both answers are right. Every answer explains why right away,
+// and the term is added to the map under its correct big idea (✓ or ✗), so the map shows the
+// chapter's real structure as it grows. Choices unlock after a short pause so students read first.
+const CM_WAIT_MEANING = 1200, CM_WAIT_IDEA = 700;
+const CM_COLORS = ['#38BFFF', '#00C48A', '#FF3B5C', '#a855f7', '#E0A800'];
+let cm = null;
+
+function cmEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function cmData() {
+  const data = window.CONCEPT_MAP && CONCEPT_MAP[chapterNum];
+  if (!data) return null;
+  const gi = {};
+  data.groups.forEach((g, i) => g.terms.forEach(t => { gi[t] = i; }));
+  return { groups: data.groups, gi };
+}
+function cmStart() {
+  cm.started = true; roundStart = Date.now();
+  renderGame();
+}
+function cmIntro(gc) {
+  const d = cm.d;
   gc.innerHTML = `
-    <div class="cmap-instruction">Drag each term into the correct category. Click Check when done.</div>
-    <div class="cmap-word-bank">
-      <div class="cmap-bank-title">Word Bank</div>
-      <div class="cmap-bank-chips" id="word-bank">
-        ${shuffled.map(t => `<div class="cmap-chip" id="chip-${t.t.replace(/\s/g,'_')}" draggable="true" ondragstart="cmDragStart(event,'${t.t.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${t.cat.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"><span>${t.t}</span></div>`).join('')}
+    <div class="cm2-intro">
+      <div class="cm2-kicker">🗺 Concept Map</div>
+      <h2 class="cm2-h">See how this chapter's ideas connect</h2>
+      <p><b>Why do this?</b> Knowing a definition is step one. Knowing which <b>big idea</b> a word belongs to is how you really understand a chapter.
+      It's how your brain files information so you can find it later. Tests and real life ask “how does this connect?”, not just “what does this word mean?”</p>
+      <ol class="cm2-steps">
+        <li><b>Read the term and pick what it means.</b> One of three choices.</li>
+        <li><b>Pick the big idea it belongs to.</b> Read the descriptions below. They tell you exactly what belongs in each one.</li>
+        <li><b>Read the feedback.</b> Every answer tells you why. Your map grows as you go.</li>
+      </ol>
+      <p class="cm2-note">A term only counts when <b>both</b> answers are right, so guessing won't get you through. Reading will.</p>
+      <div class="cm2-ideas-title">This chapter's ${d.groups.length} big ideas</div>
+      <div class="cm2-ideas">
+        ${d.groups.map((g, i) => `<div class="cm2-idea" style="--c:${CM_COLORS[i % CM_COLORS.length]}"><b>${cmEsc(g.name)}</b><span>${cmEsc(g.idea)}</span></div>`).join('')}
       </div>
-    </div>
-    <div class="cmap-categories">
-      ${cats.map((cat, ci) => `
-        <div class="cmap-cat" id="cat-${ci}" style="--cat-border:${catColors[ci]}44;--cat-bg:${catColors[ci]}08;--cat-color:${catColors[ci]}"
-          ondragover="event.preventDefault();this.classList.add('drag-over')"
-          ondragleave="this.classList.remove('drag-over')"
-          ondrop="cmDrop(event,'${cat.replace(/'/g,"\\'")}',${ci})">
-          <div class="cmap-cat-title">${cat}</div>
-          <div class="cmap-drop-zone" id="dz-${ci}"></div>
-        </div>`).join('')}
-    </div>
-    <div class="fc-controls">
-      <button class="btn btn-correct" onclick="cmCheck()">✓ Check Answers</button>
-      <button class="btn btn-restart" onclick="renderGame()">↺ Try Again</button>
-      <button class="btn btn-next" onclick="cmNext()">Next Set →</button>
+      <div class="fc-controls"><button class="btn btn-next" onclick="cmStart()">Start mapping → (${terms.length} terms)</button></div>
     </div>`;
 }
-let cmDragData = null;
-function cmDragStart(e, term, cat) { cmDragData = { term, cat }; }
-function cmDrop(e, cat, ci) {
-  e.preventDefault();
-  document.getElementById('cat-' + ci).classList.remove('drag-over');
-  if (!cmDragData) return;
-  cm_placements[cmDragData.term] = { placed: cat, correct: cmDragData.cat };
-  const dz = document.getElementById('dz-' + ci);
-  const chip = document.getElementById('chip-' + cmDragData.term.replace(/\s/g, '_'));
-  if (dz && chip) { dz.appendChild(chip); }
-  cmDragData = null;
+function cmMeaningChoices(term) {
+  // the right meaning + one from the same big idea (harder: it's a close cousin) + one from another big idea
+  const g = cm.d.gi[term.t];
+  const pool = terms.filter(x => x.t !== term.t && x.d !== term.d);
+  const same = shuffle(pool.filter(x => cm.d.gi[x.t] === g));
+  const other = shuffle(pool.filter(x => cm.d.gi[x.t] !== g));
+  const picks = [same[0] || other[1], other[0]].filter(Boolean);
+  return shuffle([term, ...picks]).map(x => x.d);
 }
-function cmCheck() {
-  if (cm_checked) return;
-  cm_checked = true;
-  let c = 0, w = 0;
-  Object.entries(cm_placements).forEach(([term, data]) => {
-    const chip = document.getElementById('chip-' + term.replace(/\s/g, '_'));
-    if (!chip) return;
-    if (data.placed === data.correct) { chip.classList.add('correct-chip'); c++; }
-    else { chip.classList.add('wrong-chip'); w++; }
+function cmUnlock(sel, ms) {
+  setTimeout(() => document.querySelectorAll(sel).forEach(b => { b.disabled = false; b.classList.remove('cm2-wait'); }), ms);
+}
+function renderConceptMap(gc) {
+  if (!cm) cm = { d: cmData(), placed: [], started: false };
+  if (!cm.d) { gc.innerHTML = '<div class="cmap-instruction">The concept map for this chapter is coming soon.</div>'; return; }
+  if (!cm.started) { cmIntro(gc); return; }
+  const term = terms[idx];
+  cm.cur = { term, step: 1, choices: cmMeaningChoices(term), meaningOk: null, ideaOk: null };
+  cmDraw(gc);
+  cmUnlock('.cm2-opt', CM_WAIT_MEANING);
+}
+function cmDraw(gc) {
+  gc = gc || document.getElementById('game-content');
+  const c = cm.cur, t = c.term, g = cm.d.groups[cm.d.gi[t.t]];
+  let h = `<div class="cm2-card">
+    <div class="cm2-count">Term ${idx + 1} of ${terms.length}</div>
+    <div class="cm2-term">${cmEsc(t.t)}</div>
+    <div class="cm2-q"><span class="cm2-num">1</span> What does it mean?</div>
+    <div class="cm2-opts">`;
+  c.choices.forEach((d, i) => {
+    let cls = '';
+    if (c.meaningOk !== null) { if (d === t.d) cls = ' right'; else if (d === c.meaningPick) cls = ' wrong'; }
+    h += `<button class="cm2-opt${cls}${c.step === 1 ? ' cm2-wait' : ''}" ${c.step === 1 ? 'disabled' : 'disabled'} onclick="cmMeaning(${i})">${cmEsc(d)}</button>`;
   });
-  correctCount += c; wrongCount += w; streak = c > 0 ? streak + c : 0;
-  realAnswered += c + w; realCorrect += c;
-  idx = Math.min(idx + 12, terms.length);
-  updateHUD(); updateProgress();
+  h += '</div>';
+  if (c.meaningOk !== null) {
+    h += c.meaningOk
+      ? `<div class="cm2-fb ok">✓ Right. <b>${cmEsc(t.t)}</b>: ${cmEsc(t.d)}</div>`
+      : `<div class="cm2-fb no">✗ Not that one. <b>${cmEsc(t.t)}</b> means: ${cmEsc(t.d)}</div>`;
+    h += `<div class="cm2-q"><span class="cm2-num">2</span> Which big idea does it belong to?</div><div class="cm2-hubs">`;
+    cm.d.groups.forEach((gr, i) => {
+      let cls = '';
+      if (c.ideaOk !== null) { if (gr === g) cls = ' right'; else if (i === c.ideaPick) cls = ' wrong'; }
+      h += `<button class="cm2-hub${cls}${c.step === 2 ? ' cm2-wait' : ''}" style="--c:${CM_COLORS[i % CM_COLORS.length]}" disabled onclick="cmIdea(${i})"><b>${cmEsc(gr.name)}</b><span>${cmEsc(gr.idea)}</span></button>`;
+    });
+    h += '</div>';
+  }
+  if (c.ideaOk !== null) {
+    const wrongG = c.ideaOk ? null : cm.d.groups[c.ideaPick];
+    h += c.ideaOk
+      ? `<div class="cm2-fb ok">✓ Yes. <b>${cmEsc(t.t)}</b> belongs in <b>${cmEsc(g.name)}</b>: ${cmEsc(g.idea)}</div>`
+      : `<div class="cm2-fb no">✗ It belongs in <b>${cmEsc(g.name)}</b>: ${cmEsc(g.idea)}<br><span class="cm2-why">“${cmEsc(wrongG.name)}” is for: ${cmEsc(wrongG.idea)}</span></div>`;
+    const both = c.meaningOk && c.ideaOk;
+    h += `<div class="cm2-result ${both ? 'ok' : 'no'}">${both ? '✓ Counts as correct: both answers right.' : '✗ Doesn\'t count yet: both answers have to be right. It\'s on your map so you can review it.'}</div>
+      <div class="fc-controls"><button class="btn btn-next" id="cm2-next" onclick="cmNext()">${idx + 1 < terms.length ? 'Next term →' : 'See my map →'}</button></div>`;
+  }
+  h += '</div>' + cmMapHTML(false);
+  gc.innerHTML = h;
+  if (c.step === 1) document.querySelectorAll('.cm2-opt').forEach(b => { if (!b.classList.contains('cm2-wait')) b.disabled = false; });
+  const nx = document.getElementById('cm2-next'); if (nx) nx.focus({ preventScroll: true });
 }
-function cmNext() { if (!cm_checked) idx = Math.min(idx + 12, terms.length); updateHUD(); updateProgress(); renderGame(); }
+function cmMeaning(i) {
+  const c = cm.cur; if (c.step !== 1) return;
+  c.meaningPick = c.choices[i]; c.meaningOk = c.meaningPick === c.term.d; c.step = 2;
+  cmDraw();
+  cmUnlock('.cm2-hub', CM_WAIT_IDEA);
+}
+function cmIdea(i) {
+  const c = cm.cur; if (c.step !== 2) return;
+  c.ideaPick = i; c.ideaOk = cm.d.groups[i] === cm.d.groups[cm.d.gi[c.term.t]]; c.step = 3;
+  const both = c.meaningOk && c.ideaOk;
+  realAnswered++;
+  if (both) { correctCount++; realCorrect++; streak++; } else { wrongCount++; streak = 0; }
+  cm.placed.push({ t: c.term.t, g: cm.d.gi[c.term.t], ok: both });
+  updateHUD();
+  cmDraw();
+}
+function cmNext() {
+  if (!cm || !cm.cur || cm.cur.step !== 3) return;
+  idx++; updateHUD(); updateProgress(); renderGame();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function cmMapHTML(final) {
+  if (!cm || !cm.placed.length) return final ? '' : `<div class="cm2-map cm2-map-empty">Your map will grow here as you place terms.</div>`;
+  const title = (ALL_CHAPTERS[chapterNum] || {}).title || '';
+  return `<div class="cm2-map">
+    <div class="cm2-map-title">${final ? 'Your finished map' : 'Your map so far'} · <span>${cmEsc(title)}</span></div>
+    <div class="cm2-map-grid">
+      ${cm.d.groups.map((g, i) => {
+        const items = cm.placed.filter(p => p.g === i);
+        return `<div class="cm2-node" style="--c:${CM_COLORS[i % CM_COLORS.length]}">
+          <div class="cm2-node-name">${cmEsc(g.name)}</div>
+          <div class="cm2-node-chips">${items.map(p => `<span class="cm2-chip ${p.ok ? 'ok' : 'no'}" title="${p.ok ? 'Both answers right' : 'Review this one'}">${p.ok ? '✓' : '✗'} ${cmEsc(p.t)}</span>`).join('') || '<span class="cm2-chip none">—</span>'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${final ? '<div class="cm2-map-note">✗ terms are filed under the big idea they really belong to. Review them, then play again.</div>' : ''}
+  </div>`;
+}
+document.addEventListener('keydown', e => {
+  if (gameMode !== 'conceptmap' || !cm || !cm.cur || !cm.started) return;
+  if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  const n = parseInt(e.key, 10);
+  if (cm.cur.step === 1 && n >= 1 && n <= 3) { const b = document.querySelectorAll('.cm2-opt')[n - 1]; if (b && !b.disabled) b.click(); }
+  else if (cm.cur.step === 2 && n >= 1 && n <= cm.d.groups.length) { const b = document.querySelectorAll('.cm2-hub')[n - 1]; if (b && !b.disabled) b.click(); }
+});
 
 // ── RESULTS ──
 function renderResults() {
@@ -1256,6 +1395,7 @@ function renderResults() {
     el.style.color = ok ? 'var(--emerald)' : 'var(--crimson)';
     el.textContent = ok ? '✓ Saved — counts on your checklist!' : '✗ Not checked off. ' + why + ' Try again!';
   });
+  if (gameMode === 'conceptmap' && cm) document.getElementById('game-content').insertAdjacentHTML('beforeend', cmMapHTML(true));
   document.getElementById('progress-fill').style.width = '100%';
 }
 
