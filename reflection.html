@@ -402,6 +402,50 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
       past: d => `Let's start with my ${d} health and where I began.`, story: d => `Something happened that changed things.`, present: d => `So where am I now?`, future: d => `Here's where I'm headed.`, thennow: d => `My ${d} health has changed quite a bit.`,
       conclHead: 'Wrapping Up', concl: 'So, what does all of this add up to?', close: 'That\'s me, at least for now.' }
   };
+  // Extra lead-ins so the same sentence doesn't open all 8 sections (T's own line is the first choice; they rotate by dimension).
+  const MORE = {
+    formal: {
+      past: [d => `My ${d} health began from a particular starting point.`, d => `To understand my ${d} health, it helps to begin with where I started.`],
+      story: [d => `A specific event changed my perspective on ${d} health.`, d => `A turning point in my ${d} health came from one experience.`],
+      present: [d => `At present, my ${d} health looks different.`, d => `Currently, my approach to ${d} health has shifted.`],
+      future: [d => `In the future, I intend to keep developing my ${d} health.`, d => `My goals for my ${d} health are specific.`] },
+    heartfelt: {
+      past: [d => `My ${d} health didn't always look the way it does now.`, d => `I want to be honest about where my ${d} health began.`, d => `Looking back at my ${d} health takes me to an earlier version of me.`],
+      story: [d => `Something happened that I still think about.`, d => `One experience stayed with me.`, d => `I still remember this clearly.`],
+      present: [d => `That changed me.`, d => `I am not the same person now.`, d => `Here is where I am today.`],
+      future: [d => `When I picture my future, this is what I see.`, d => `My hope for the future is simple.`, d => `This is the person I want to become.`] },
+    inspirational: {
+      past: [d => `My ${d} health journey started from humble beginnings.`, d => `Growth always starts somewhere, and for my ${d} health, it started here.`],
+      story: [d => `Then something changed everything.`, d => `And then one moment lit the way forward.`],
+      present: [d => `Today I am stronger for it.`, d => `Now I can see real progress.`],
+      future: [d => `The best is still ahead.`, d => `My future self is waiting, and I am working toward it.`] },
+    reflective: {
+      past: [d => `When I reflect on my ${d} health, I notice where I started.`, d => `My ${d} health has a history worth looking at.`],
+      story: [d => `One moment in particular made me stop and think.`, d => `An experience made me look at this differently.`],
+      present: [d => `Looking at the present, I see a difference.`, d => `Today, I understand this part of my health better.`],
+      future: [d => `Looking ahead, I have a sense of where I want to go.`, d => `When I think about what comes next, I know what I want.`] },
+    story: {
+      past: [d => `Chapter one of my ${d} health opens like this.`, d => `Picture my ${d} health at the beginning.`],
+      story: [d => `Then came the moment that changed the plot.`, d => `But one day, the story took a turn.`],
+      present: [d => `The story picks up today.`, d => `Fast forward to now.`],
+      future: [d => `What happens next is up to me.`, d => `The story isn't over yet.`] },
+    conversational: {
+      past: [d => `So, my ${d} health. Here's where it started.`, d => `First, a little background on my ${d} health.`],
+      story: [d => `Then something happened.`, d => `Here's the moment that stuck with me.`],
+      present: [d => `These days, it's different.`, d => `Here's what it looks like now.`],
+      future: [d => `What's next for me?`, d => `Looking ahead, here's the plan.`] }
+  };
+  // If the student's answer already opens the way the lead-in would ("One moment I'll never forget…"), skip the lead-in.
+  const ECHO = {
+    past: /^(when I think (about|back)|thinking back|looking back)\b/i,
+    story: /^(one (moment|time|day|night|experience)|there (was|is) (one|a) (moment|time)|it happened|something happened|then)\b/i,
+    present: /^(today|these days|nowadays)\b/i,
+    future: /^(here('s| is) what I hope|my hope)\b/i
+  };
+  function leadIn(t, tone, k, d, i) {
+    const opts = [t[k]].concat((MORE[tone] || {})[k] || []);
+    return opts[i % opts.length](d);
+  }
   function clean(t) {
     t = String(t || '').replace(/\s+/g, ' ').trim();
     if (!t) return '';
@@ -419,9 +463,13 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
     if (me) intro.push(t.intro + ' ' + me);
     if (into) intro.push(t.into + ' ' + into);
     out.sections.push({ head: t.introHead, paras: intro });
-    DIMS.forEach(([dk, nm]) => {
+    const tone = T[D.tone] ? D.tone : 'reflective';
+    DIMS.forEach(([dk, nm], i) => {
       const d = nm.toLowerCase();
-      const paras = partsOf(dk).map(k => { const w = words_of(dk, k); return w ? t[k](d) + ' ' + w : ''; }).filter(Boolean);
+      const paras = partsOf(dk).map(k => {
+        const w = words_of(dk, k); if (!w) return '';
+        return ECHO[k] && ECHO[k].test(w) ? w : leadIn(t, tone, k, d, i) + ' ' + w;
+      }).filter(Boolean);
       out.sections.push({ head: nm + ' Health', paras });
     });
     const ahead = words_of('intro', 'ahead');
@@ -431,13 +479,14 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
   const paperText = p => p.title + '\n\n' + p.sections.map(s => s.head + '\n\n' + s.paras.join('\n\n')).join('\n\n');
   const countWords = p => p.sections.reduce((n, s) => n + s.paras.reduce((m, x) => m + words(x), 0), 0);
 
-  const EXAMPLE = /\b(for example|for instance|one time|once|one day|one night|last (week|night|month|year|weekend|summer)|yesterday|when i|the time|like when|remember|that day|that night)\b|\d/i;
+  // A specific example: anything the story check accepts as a real moment (EVENT), plus these phrases.
+  const EXAMPLE = /\b(for example|for instance|one (time|moment|day|night|morning|afternoon|weekend)|once|last (week|night|month|year|weekend|spring|summer|fall|winter|season)|yesterday|when (i|a|my|we|our)|the time|like when|remember|that (day|night|week|year|summer|moment))\b|\d/i;
   function dimText(dk) { return partsOf(dk).map(k => words_of(dk, k)).join(' '); }
   function checks() {
     return DIMS.map(([dk, nm, ic]) => {
       const short = D.short.includes(dk), txt = dimText(dk), n = words(txt);
       const story = short ? null : words(words_of(dk, 'story')) >= 15;
-      const example = EXAMPLE.test(txt);
+      const example = EXAMPLE.test(txt) || EVENT.test(txt);
       const thick = n >= (short ? 50 : 100);
       const fixKey = !short && !story ? 'story' : !thick ? (short ? 'thennow' : 'present') : (short ? 'thennow' : 'past');
       return { dk, nm, ic, short, story, example, thick, n, ok: (short || story) && example && thick, fixKey };
