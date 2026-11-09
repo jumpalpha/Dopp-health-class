@@ -1,11 +1,293 @@
-<!doctype html>
-<html lang="en"><head>
-<!-- pages-stub: redirect written by scripts/pages-postbuild.mjs -->
-<script src="/local-guard.js"></script>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Opening game…</title>
-<meta http-equiv="refresh" content="0; url=/arcade/play/game10_imposter/">
-<link rel="canonical" href="/arcade/play/game10_imposter/">
-</head><body style="font-family:system-ui,sans-serif;background:#140c2e;color:#fff;padding:24px">
-<p>This page moved. <a style="color:#FFD700" href="/arcade/play/game10_imposter/">Continue →</a></p>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<title>Health Imposter — Legend of Wellness</title>
+<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<link rel="canonical" href="https://doppsclass.com/game10_imposter.html">
+<meta property="og:title" content="Health Imposter — Legend of Wellness">
+<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/game10_imposter.html">
+<meta name="twitter:card" content="summary">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0a0f1a;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:14px 20px;text-align:center;margin-bottom:14px}
+.hdr-title{font-size:22px;font-weight:700;background:linear-gradient(135deg,#ef4444,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px}
+.hdr-sub{font-size:12px;color:#6b7280;margin-top:3px}
+.alert-banner{background:#7f1d1d;border:1px solid #ef4444;border-radius:8px;padding:10px 14px;text-align:center;margin-bottom:12px;font-size:14px;font-weight:600;color:#fca5a5;letter-spacing:.5px}
+.players-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px}
+.crew-card{border-radius:10px;padding:10px;text-align:center;border:2px solid #374151;background:#111827;transition:border-color .2s}
+.crew-card.imposter{border-color:#ef4444}
+.crew-card.ejected{opacity:.25;border-color:#374151}
+.crew-card.accused{border-color:#f59e0b;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{border-color:#f59e0b}50%{border-color:#ef4444}}
+.crew-avatar{font-size:26px;margin-bottom:4px}
+.crew-name{font-size:12px;font-weight:600;color:#e5e7eb;margin-bottom:2px}
+.crew-role{font-size:10px;color:#6b7280}
+.vote-count{font-size:14px;font-weight:700;color:#ef4444;margin-top:2px}
+.statement-card{background:#111827;border:1px solid #374151;border-radius:12px;padding:16px;margin-bottom:12px}
+.statement-from{font-size:11px;color:#6b7280;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.avatar-sm{font-size:18px}
+.statement-text{font-size:15px;color:#f3f4f6;line-height:1.6;font-style:italic;padding:10px 14px;background:#0a0f1a;border-radius:8px;border-left:3px solid #374151;margin-bottom:8px}
+.statement-text.wrong{border-left-color:#ef4444;background:#1c0a0a}
+.statement-text.correct{border-left-color:#10b981;background:#0a1c14}
+.fact-check{font-size:12px;line-height:1.5;padding:8px 12px;border-radius:6px;display:none;margin-top:6px}
+.fact-check.show{display:block}
+.fact-check.busted{background:#7f1d1d;color:#fca5a5}
+.fact-check.verified{background:#064e3b;color:#6ee7b7}
+.vote-section{background:#111827;border:2px solid #ef4444;border-radius:12px;padding:14px;margin-bottom:12px}
+.vote-title{font-size:14px;font-weight:700;color:#ef4444;margin-bottom:8px;text-align:center;letter-spacing:1px}
+.vote-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.vote-btn{background:#0a0f1a;border:1.5px solid #374151;border-radius:8px;padding:8px;cursor:pointer;text-align:center;font-size:12px;color:#fff;transition:border-color .15s}
+.vote-btn:hover:not(.disabled){border-color:#ef4444}
+.vote-btn.voted{border-color:#ef4444;background:#1c0a0a}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-eject{background:#ef4444;color:#fff;font-size:15px;padding:12px 28px}
+.btn-reveal{background:#a855f7;color:#fff}
+.btn-next{background:#1d4ed8;color:#fff}
+.btn-reset{background:#374151;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.status{background:#111827;border-radius:8px;padding:10px;font-size:13px;color:#9ca3af;text-align:center;margin-bottom:10px;min-height:36px}
+.result-box{border-radius:12px;padding:20px;text-align:center;margin-bottom:14px}
+.result-box.imposter-caught{background:#064e3b;border:2px solid #10b981}
+.result-box.imposter-escaped{background:#7f1d1d;border:2px solid #ef4444}
+.result-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.task-list{background:#111827;border-radius:10px;padding:14px;margin-bottom:12px}
+.task-title{font-size:13px;font-weight:600;color:#a855f7;margin-bottom:8px}
+.task-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1f2937;font-size:13px;color:#d1d5db;cursor:pointer}
+.task-item:last-child{border-bottom:none}
+.task-item.done{color:#10b981;text-decoration:line-through;opacity:.6}
+.task-check{width:16px;height:16px;border-radius:3px;border:1.5px solid #374151;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px}
+.task-check.checked{background:#10b981;border-color:#10b981;color:#fff}
+.progress{height:6px;background:#111827;border-radius:3px;margin-bottom:10px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(135deg,#ef4444,#a855f7);border-radius:3px;transition:width .4s}
+.suspicion-row{margin-top:5px;font-size:11px;display:flex;gap:6px;justify-content:center}
+.susp-bad{color:#ef4444;font-weight:700}
+.susp-good{color:#10b981;font-weight:700}
+@keyframes flashPulse{0%{opacity:0}25%{opacity:.92}100%{opacity:0}}
+.meeting-flash{position:fixed;inset:0;background:#7f1d1d;z-index:200;pointer-events:none;animation:flashPulse .55s ease-out forwards;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;text-align:center;padding:20px}
+@keyframes ejectSpin{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(-70px) rotate(720deg);opacity:0}}
+.eject-avatar{font-size:56px;animation:ejectSpin 1.1s ease-in forwards;display:inline-block}
+@keyframes confettiFloat{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(-140px) rotate(360deg);opacity:0}}
+.confetti-piece{position:absolute;top:0;font-size:22px;animation:confettiFloat 1.6s ease-out forwards;pointer-events:none}
+.rank-box{background:#111827;border-radius:10px;padding:14px;margin-bottom:12px;text-align:center}
+</style>
+<link rel="stylesheet" href="shared.css">
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div id="app"></div>
+<script>
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+function _shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const STATEMENTS=_shuf(JSON.parse(_dx("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","doppclass2026")));
+
+const NAMES=["Alex","Sam","Jordan","Riley","Morgan","Casey"];
+const AVATARS=["🟦","🟥","🟨","🟩","🟪","🟧"];
+
+function _beep(freq,dur,type,delay){delay=delay||0;try{const ctx=_beep.ctx||(_beep.ctx=new (window.AudioContext||window.webkitAudioContext)());const o=ctx.createOscillator();const g=ctx.createGain();o.type=type||'sine';o.frequency.value=freq;const t0=ctx.currentTime+delay;g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.15,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+dur+0.05);}catch(e){}}
+function _sndVerified(){_beep(880,0.12,'sine');_beep(1318.5,0.15,'sine',0.08);}
+function _sndBusted(){_beep(300,0.14,'square');_beep(220,0.18,'square',0.1);}
+function _sndMeeting(){_beep(160,0.3,'sawtooth');}
+function _sndCaught(){[523.25,659.25,783.99,1046.5].forEach((f,i)=>_beep(f,0.18,'square',i*0.1));}
+function _sndEscaped(){[392,349.23,311.13,261.63].forEach((f,i)=>_beep(f,0.25,'triangle',i*0.15));}
+
+function assignRoles(){
+  const wrongPool=_shuf(STATEMENTS.filter(s=>s.wrong));
+  const truePool=STATEMENTS.filter(s=>!s.wrong);
+  imposterIdx=Math.floor(Math.random()*6);
+  const imposterStmts=wrongPool.slice(0,2);
+  const rest=_shuf([...wrongPool.slice(2),...truePool]);
+  imposterStmts.forEach(s=>{s.speaker=imposterIdx;});
+  const others=[0,1,2,3,4,5].filter(i=>i!==imposterIdx);
+  others.forEach((p,idx)=>{rest[idx*2].speaker=p;rest[idx*2+1].speaker=p;});
+  const order=_shuf([...imposterStmts,...rest]);
+  STATEMENTS.length=0;
+  order.forEach(s=>STATEMENTS.push(s));
+}
+
+let imposterIdx=0;
+let statIdx=0;let phase='game';let votes={};let ejected=[];let imposterCaught=false;
+let tasks=['Check: Is vaping safe?','Check: What is U=U?','Check: Is the sugar-hyperactivity link real?','Review CPR guidelines','Verify vaccine recommendations'];
+let tasksDone=[];
+let score=0;
+let revealed=new Set();
+let suspicion={};
+NAMES.forEach((_,i)=>suspicion[i]={busted:0,verified:0});
+assignRoles();
+
+function render(){
+  const g=document.getElementById('app');
+  if(phase==='result'){renderResult(ejected[ejected.length-1]);return;}
+  if(statIdx>=STATEMENTS.length){phase='vote';renderVote();return;}
+  const stmt=STATEMENTS[statIdx];
+  const isRevealed=revealed.has(statIdx);
+  g.innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH IMPOSTER</div><div class="hdr-sub">Find who is spreading health misinformation!</div></div>
+    <div class="alert-banner">⚠ ALERT: A Health Imposter is spreading false health information. Identify them before they corrupt the class!</div>
+    <div class="progress"><div class="progress-fill" style="width:${Math.round(statIdx/STATEMENTS.length*100)}%"></div></div>
+    <div class="players-grid">${NAMES.map((n,i)=>`
+      <div class="crew-card${ejected.includes(i)?' ejected':''}">
+        <div class="crew-avatar">${AVATARS[i]}</div>
+        <div class="crew-name">${n}</div>
+        <div class="crew-role">${ejected.includes(i)?'Ejected':'Crewmate'}</div>
+        ${(suspicion[i].busted||suspicion[i].verified)?`<div class="suspicion-row">${suspicion[i].busted?`<span class="susp-bad">🚫${suspicion[i].busted}</span>`:''}${suspicion[i].verified?`<span class="susp-good">✓${suspicion[i].verified}</span>`:''}</div>`:''}
+      </div>`).join('')}
+    </div>
+    <div class="task-list">
+      <div class="task-title">📋 Fact-Check Tasks (click to complete)</div>
+      ${tasks.map((t,i)=>`<div class="task-item${tasksDone.includes(i)?' done':''}" onclick="completeTask(${i})"><div class="task-check${tasksDone.includes(i)?' checked':''}">${tasksDone.includes(i)?'✓':''}</div>${t}</div>`).join('')}
+    </div>
+    <div class="statement-card">
+      <div class="statement-from"><span class="avatar-sm">${AVATARS[stmt.speaker]}</span><strong style="color:#e5e7eb">${NAMES[stmt.speaker]}</strong> <span style="color:#6b7280">says:</span></div>
+      <div class="statement-text${stmt.wrong?' wrong':''}">"${stmt.text}"</div>
+      <div class="fact-check${stmt.wrong?' busted':' verified'}${isRevealed?' show':''}" id="fact-check">
+        ${stmt.wrong?'🚫 MISINFORMATION DETECTED':'✅ FACT VERIFIED'}: ${stmt.fact}
+      </div>
+    </div>
+    <div class="status" id="status">${isRevealed?(stmt.wrong?'MISINFORMATION DETECTED! +200 pts for catching it!':'True statement confirmed. +100 pts.'):'Statement '+(statIdx+1)+' of '+STATEMENTS.length+'. Discuss with your team — is this true or false?'}</div>
+    <div class="btns">
+      <button class="btn btn-reveal" id="reveal-btn" onclick="revealFact()"${isRevealed?' disabled style="opacity:.4;cursor:default"':''}>Fact Check</button>
+      <button class="btn btn-next" onclick="nextStatement()">Next Statement</button>
+      <button class="btn btn-eject" onclick="callMeeting()">Call Meeting — Vote!</button>
+    </div>`;
+}
+
+function revealFact(){
+  if(revealed.has(statIdx))return;
+  revealed.add(statIdx);
+  const stmt=STATEMENTS[statIdx];
+  if(!stmt.wrong){score+=100;suspicion[stmt.speaker].verified++;_sndVerified();}
+  else{score+=200;suspicion[stmt.speaker].busted++;_sndBusted();}
+  render();
+}
+
+function nextStatement(){statIdx++;render();}
+
+function completeTask(i){
+  if(!tasksDone.includes(i))tasksDone.push(i);
+  render();
+}
+
+function callMeeting(){
+  _sndMeeting();
+  const flash=document.createElement('div');
+  flash.className='meeting-flash';
+  flash.textContent='🚨 EMERGENCY MEETING 🚨';
+  document.body.appendChild(flash);
+  setTimeout(()=>{flash.remove();renderVote();},550);
+}
+
+function renderVote(){
+  phase='vote';
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">EMERGENCY MEETING</div><div class="hdr-sub">Vote out the Health Imposter!</div></div>
+    <div class="alert-banner">Someone is spreading health misinformation. VOTE THEM OUT!</div>
+    <div class="vote-section">
+      <div class="vote-title">🗳 WHO IS THE IMPOSTER?</div>
+      <div style="font-size:13px;color:#9ca3af;text-align:center;margin-bottom:10px">Based on the misinformation you heard — who do you suspect?</div>
+      <div class="vote-grid">${NAMES.map((n,i)=>{
+        if(ejected.includes(i)) return '';
+        const vc=Object.values(votes).filter(v=>v===i).length;
+        return `<div class="vote-btn${vc>0?' voted':''}" onclick="castVote(${i})">${AVATARS[i]} ${n}<br><span style="color:#ef4444;font-weight:700">${vc} vote${vc!==1?'s':''}</span></div>`;
+      }).join('')}</div>
+    </div>
+    <div class="btns">
+      <button class="btn btn-eject" onclick="eject()">EJECT!</button>
+      <button class="btn btn-reset" onclick="phase='game';render()">Skip Voting</button>
+    </div>`;
+}
+
+let voteKey=0;
+function castVote(i){votes[voteKey++]=i;renderVote();}
+
+function eject(){
+  const tally={};
+  Object.values(votes).forEach(i=>{tally[i]=(tally[i]||0)+1;});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){alert('No votes cast!');return;}
+  const ejectedIdx=parseInt(sorted[0][0]);
+  ejected.push(ejectedIdx);
+  imposterCaught=ejectedIdx===imposterIdx;
+  if(imposterCaught)score+=500;
+  phase='result';
+  renderEjectAnim(ejectedIdx);
+}
+
+function renderEjectAnim(ejectedIdx){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">EJECTING...</div></div>
+    <div style="text-align:center;padding:60px 0">
+      <div class="eject-avatar">${AVATARS[ejectedIdx]}</div>
+      <div style="margin-top:12px;color:#9ca3af;font-size:14px">${NAMES[ejectedIdx]} was ejected...</div>
+    </div>`;
+  setTimeout(()=>renderResult(ejectedIdx),1100);
+}
+
+function getRank(){
+  if(score>=2000)return{label:'🕵️ Master Health Detective',desc:'Elite fact-checking instincts — you barely missed a thing.'};
+  if(score>=1400)return{label:'🔍 Sharp-Eyed Detective',desc:'You caught most of the misinformation out there.'};
+  if(score>=800)return{label:'📋 Rookie Detective',desc:'Good start — review the myths you missed and try again.'};
+  return{label:'🤔 Keep Practicing',desc:'Fact-check every statement next time to sharpen your instincts!'};
+}
+
+function spawnConfetti(){
+  const zone=document.getElementById('confetti-zone');
+  if(!zone)return;
+  const pieces=['🎉','✅','🏆','⭐','🎊'];
+  for(let i=0;i<14;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.textContent=pieces[Math.floor(Math.random()*pieces.length)];
+    el.style.left=(Math.random()*94)+'%';
+    el.style.animationDelay=(Math.random()*0.4)+'s';
+    zone.appendChild(el);
+  }
+  setTimeout(()=>{if(zone)zone.innerHTML='';},2000);
+}
+
+function renderResult(ejectedIdx){
+  const wasImposter=ejectedIdx===imposterIdx;
+  const rank=getRank();
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">MEETING RESULTS</div></div>
+    <div id="confetti-zone" style="position:relative;height:0;overflow:visible"></div>
+    <div class="result-box${wasImposter?' imposter-caught':' imposter-escaped'}">
+      <div style="font-size:40px;margin-bottom:8px">${wasImposter?'🚀':'😱'}</div>
+      <div class="result-title" style="color:${wasImposter?'#10b981':'#ef4444'}">${wasImposter?'IMPOSTER EJECTED!':'WRONG PLAYER!'}</div>
+      <div style="font-size:20px;font-weight:700;color:#fff;margin:8px 0">${NAMES[ejectedIdx]} was ${wasImposter?'THE IMPOSTER!':'innocent!'}</div>
+      ${wasImposter?`<div style="font-size:13px;color:#6ee7b7;margin-top:6px">The real imposter was ${NAMES[imposterIdx]} — spreading health misinformation in statements ${STATEMENTS.filter(s=>s.speaker===imposterIdx&&s.wrong).map(s=>STATEMENTS.indexOf(s)+1).join(', ')}. +500 bonus pts!</div>`:`<div style="font-size:13px;color:#fca5a5;margin-top:6px">The real imposter was ${NAMES[imposterIdx]}! They escaped by spreading misinformation that went undetected.</div>`}
+    </div>
+    <div class="rank-box">
+      <div style="font-size:13px;color:#9ca3af;margin-bottom:4px">Final Score</div>
+      <div style="font-size:26px;font-weight:700;color:#a855f7">${score} pts</div>
+      <div style="font-size:14px;font-weight:700;color:#fbbf24;margin-top:6px">${rank.label}</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:2px">${rank.desc}</div>
+    </div>
+    <div style="background:#111827;border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="font-size:13px;color:#a855f7;font-weight:600;margin-bottom:8px">Misinformation Summary — what the imposter spread:</div>
+      ${STATEMENTS.filter(s=>s.speaker===imposterIdx&&s.wrong).map(s=>`<div style="background:#1c0a0a;border-left:3px solid #ef4444;padding:8px 10px;margin-bottom:6px;font-size:13px;line-height:1.5;border-radius:0 6px 6px 0"><div style="font-style:italic;color:#fca5a5;margin-bottom:4px">"${s.text}"</div><div style="color:#6b7280">${s.fact}</div></div>`).join('')}
+    </div>
+    <div class="btns"><button class="btn btn-reset" onclick="newGame()" style="font-size:15px;padding:12px 28px">Play Again</button></div>`;
+  if(wasImposter){_sndCaught();spawnConfetti();}else{_sndEscaped();}
+}
+
+function newGame(){
+  assignRoles();
+  statIdx=0;phase='game';votes={};ejected=[];imposterCaught=false;tasksDone=[];score=0;voteKey=0;
+  revealed=new Set();
+  NAMES.forEach((_,i)=>suspicion[i]={busted:0,verified:0});
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

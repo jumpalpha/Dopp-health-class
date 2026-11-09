@@ -17,7 +17,6 @@
       } catch (e) { return null; }
     },
     async rpc(name, args) {
-      if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) { const err = new Error('local preview'); err.local = true; throw err; }
       let r;
       try { r = await fetch(NET.URL + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: NET.KEY, Authorization: 'Bearer ' + NET.KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) }); }
       catch (e) { const err = new Error('offline'); err.offline = true; throw err; }
@@ -39,7 +38,7 @@
   NET.queued = () => Object.keys(readQ()).length;
   let flushing = false;
   NET.flush = async function () {
-    if (flushing || !navigator.onLine || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) return; flushing = true;
+    if (flushing || !navigator.onLine) return; flushing = true;
     try {
       for (const k of Object.keys(readQ())) {
         const args = readQ()[k]; if (!args) continue;
@@ -261,8 +260,7 @@
             (r.level ? (r.level_up ? '<br>🎉 <b>LEVEL UP!</b> You\'re now <b>Level ' + r.level + ' ' + r.title + '</b>!' : '<br>⚔ Level ' + r.level + ' ' + r.title + (r.power_gain ? ' · +' + r.power_gain + ' Arcade Power' : '') + ' · ' + Math.max(0, r.next_at - r.power) + ' to next level') : '') +
             '<br><a href="arcade.html#stats">See leaderboards →</a>';
         })
-        .catch(err => { if (err.local) { el.textContent = '🧪 Local preview: scores aren\'t posted to the class leaderboard.'; return; }
-          if (err.offline) { NET.queue({ p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: cfg.storageKey, p_score: A.score, p_won: !!A.won }); el.textContent = '📴 No internet right now. Your score is saved on this device and will post to the leaderboard when you\'re back online.'; return; }
+        .catch(err => { if (err.offline) { NET.queue({ p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: cfg.storageKey, p_score: A.score, p_won: !!A.won }); el.textContent = '📴 No internet right now. Your score is saved on this device and will post to the leaderboard when you\'re back online.'; return; }
           el.textContent = /too fast/.test(err.message) ? '' : /not signed/.test(err.message) ? '🔒 Your login expired. Log in again on the Quest page to post scores.' : '⚠ Couldn\'t post your score right now.'; });
     }
 

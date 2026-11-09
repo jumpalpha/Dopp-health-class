@@ -1,11 +1,252 @@
-<!doctype html>
-<html lang="en"><head>
-<!-- pages-stub: redirect written by scripts/pages-postbuild.mjs -->
-<script src="/local-guard.js"></script>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Opening game…</title>
-<meta http-equiv="refresh" content="0; url=/arcade/play/game07_survivor/">
-<link rel="canonical" href="/arcade/play/game07_survivor/">
-</head><body style="font-family:system-ui,sans-serif;background:#140c2e;color:#fff;padding:24px">
-<p>This page moved. <a style="color:#FFD700" href="/arcade/play/game07_survivor/">Continue →</a></p>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<title>Health Survivor — Legend of Wellness</title>
+<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<link rel="canonical" href="https://doppsclass.com/game07_survivor.html">
+<meta property="og:title" content="Health Survivor — Legend of Wellness">
+<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/game07_survivor.html">
+<meta name="twitter:card" content="summary">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#1a0a00;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#3E2723,#1a0a00);border:1px solid #5D4037;border-radius:12px;padding:14px 20px;text-align:center;margin-bottom:14px}
+.hdr-title{font-size:24px;font-weight:700;color:#FFD54F;letter-spacing:2px}
+.hdr-sub{font-size:12px;color:rgba(255,213,79,0.6);margin-top:3px}
+.tribe{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px}
+.player-card{background:#2C1810;border:2px solid #5D4037;border-radius:10px;padding:10px;text-align:center;position:relative}
+.player-card.immune{border-color:#FFD54F}
+.player-card.voted-out{opacity:.3;border-color:#333;text-decoration:line-through}
+.player-card.has-vote{border-color:#FF5252}
+.player-avatar{font-size:24px;margin-bottom:4px}
+.player-name{font-size:12px;font-weight:600;color:#FFD54F;margin-bottom:2px}
+.player-pts{font-size:18px;font-weight:700;color:#fff}
+.vote-badge{position:absolute;top:4px;right:4px;background:#FF5252;color:#fff;font-size:10px;font-weight:700;padding:2px 5px;border-radius:6px}
+.immune-badge{position:absolute;top:4px;left:4px;font-size:12px}
+.q-card{background:#2C1810;border:1px solid #5D4037;border-radius:10px;padding:16px;margin-bottom:12px}
+.q-round{font-size:11px;color:#8D6E63;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.q-text{font-size:15px;color:#fff;line-height:1.6;margin-bottom:10px}
+.q-debate{background:#1a0a00;border-left:3px solid #FFD54F;padding:8px 12px;font-size:13px;color:#FFD54F;margin-bottom:10px;line-height:1.5}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.opt{background:#1a0a00;border:1.5px solid #5D4037;border-radius:8px;padding:10px 12px;cursor:pointer;color:#fff;font-size:13px;transition:border-color .15s}
+.opt:hover:not(.disabled){border-color:#FFD54F}
+.opt.correct{background:#1B5E20;border-color:#4CAF50}
+.opt.wrong{background:#7f0000;border-color:#FF5252}
+.opt.disabled{cursor:default}
+.answer-reveal{background:#1a0a00;border-left:3px solid #4CAF50;padding:8px 12px;font-size:13px;color:#81C784;margin-bottom:10px;display:none;line-height:1.5}
+.answer-reveal.show{display:block}
+.vote-section{background:#2C1810;border:2px solid #FF5252;border-radius:10px;padding:14px;margin-bottom:12px}
+.vote-title{font-size:14px;font-weight:700;color:#FF5252;margin-bottom:8px;text-align:center;letter-spacing:1px}
+.vote-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.vote-btn{background:#1a0a00;border:1.5px solid #5D4037;border-radius:8px;padding:8px;cursor:pointer;text-align:center;font-size:13px;color:#fff;transition:border-color .15s}
+.vote-btn:hover:not(.disabled){border-color:#FF5252}
+.vote-btn.voted{border-color:#FF5252;background:rgba(255,82,82,0.15)}
+.vote-btn.disabled{opacity:.4;cursor:default}
+.immunity-section{background:#2C1810;border:2px solid #FFD54F;border-radius:10px;padding:14px;margin-bottom:12px}
+.immunity-title{font-size:14px;font-weight:700;color:#FFD54F;margin-bottom:8px;text-align:center}
+.immunity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.imm-btn{background:#1a0a00;border:1.5px solid #5D4037;border-radius:8px;padding:8px;cursor:pointer;text-align:center;font-size:13px;color:#fff;transition:border-color .15s}
+.imm-btn:hover:not(.disabled){border-color:#FFD54F}
+.imm-btn.selected{border-color:#FFD54F;background:rgba(255,213,79,0.15)}
+.imm-btn.disabled{opacity:.4;cursor:default}
+.status{background:#2C1810;border-radius:8px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,0.7);text-align:center;margin-bottom:10px;min-height:38px}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.btn{padding:10px 22px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-main{background:#FFD54F;color:#1a0a00}
+.btn-vote{background:#FF5252;color:#fff}
+.btn-reset{background:#333;color:#fff}
+.tribal{background:#1a0a00;border:2px solid #FF5252;border-radius:12px;padding:20px;text-align:center;margin-bottom:14px}
+.tribal-title{font-size:20px;font-weight:700;color:#FF5252;margin-bottom:8px}
+.snuff{font-size:36px;margin-bottom:8px}
+</style>
+<link rel="stylesheet" href="shared.css">
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div id="app"></div>
+<script>
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+function _shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function _shufOpts(q){const idxs=_shuf([0,1,2,3]);const newOpts=idxs.map(i=>q.opts[i]);const newAns=idxs.indexOf(q.ans);q.opts=newOpts;q.ans=newAns;}
+const QUESTIONS=JSON.parse(_dx("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","doppclass2026"));
+
+const AVATARS=["🧑","👩","🧑‍🦱","👩‍🦰","🧑‍🦲","👩‍🦳","🧑‍🦳","👨"];
+let players=[];let scores=[];let immune=-1;let eliminated=[];let votes={};let qIdx=0;
+let phase='setup';let answered=false;let selectedVote=-1;let immuneSelected=-1;
+
+function setup(){
+  const names=["Alex","Jordan","Sam","Riley","Morgan","Casey","Taylor","Drew"];
+  players=names.slice(0,6);scores=players.map(()=>0);immune=-1;eliminated=[];votes={};qIdx=0;phase='question';answered=false;selectedVote=-1;immuneSelected=-1;
+  _shuf(QUESTIONS);_shufOpts(QUESTIONS[qIdx%QUESTIONS.length]);
+  render();
+}
+
+function activePlayers(){return players.map((_,i)=>i).filter(i=>!eliminated.includes(i));}
+
+function render(){
+  const g=document.getElementById('app');
+  if(phase==='setup'){renderSetup();return;}
+  if(phase==='tribal'){renderTribal();return;}
+  if(phase==='win'){renderWin();return;}
+  const q=QUESTIONS[qIdx%QUESTIONS.length];
+  const active=activePlayers();
+  g.innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH SURVIVOR</div><div class="hdr-sub">Round ${qIdx+1} — ${active.length} players remaining</div></div>
+    <div class="tribe">${players.map((p,i)=>{
+      const voteCount=Object.values(votes).filter(v=>v===i).length;
+      return `<div class="player-card${eliminated.includes(i)?' voted-out':immune===i?' immune':voteCount>0?' has-vote':''}">
+        ${immune===i?`<div class="immune-badge">⭐</div>`:''}
+        ${voteCount>0&&!eliminated.includes(i)?`<div class="vote-badge">${voteCount} vote${voteCount>1?'s':''}</div>`:''}
+        <div class="player-avatar">${AVATARS[i%AVATARS.length]}</div>
+        <div class="player-name">${p}</div>
+        <div class="player-pts">${scores[i]}</div>
+      </div>`;
+    }).join('')}</div>
+    <div class="q-card">
+      <div class="q-round">Round ${qIdx+1} — Health Challenge</div>
+      <div class="q-text">${q.q}</div>
+      ${q.debate?`<div class="q-debate">🗣 Debate prompt: "${q.debate}"</div>`:''}
+      <div class="options">${q.opts.map((o,i)=>`<div class="opt${answered?(i===q.ans?' correct':(i!==q.ans&&answered?' disabled wrong-if-picked':' disabled')):''}" onclick="${answered?'':'pick('+i+')'}">${'ABCD'[i]}: ${o}</div>`).join('')}</div>
+      <div class="answer-reveal${answered?' show':''}" id="ans">The correct answer is: <strong>${'ABCD'[q.ans]}: ${q.opts[q.ans]}</strong></div>
+    </div>
+    <div class="status" id="status">${answered?`Correct answer revealed! Debate if prompted, then conduct tribal council.`:`Each active player answers — teacher scores each one. Worth ${q.pts} pts.`}</div>
+    <div class="btns">
+      ${!answered?`<button class="btn btn-main" onclick="revealAnswer()">Reveal Answer</button>`:''}
+      ${answered?`<button class="btn btn-main" onclick="showImmunity()">Award Immunity ⭐</button>`:''}
+      <button class="btn btn-reset" onclick="setup()">Restart</button>
+    </div>`;
+}
+
+function pick(i){
+  if(answered) return;
+  const q=QUESTIONS[qIdx%QUESTIONS.length];
+  if(i===q.ans){
+    scores[activePlayers()[0]]+=q.pts;
+  }
+  answered=true;render();
+}
+
+function revealAnswer(){answered=true;render();}
+
+function showImmunity(){
+  const active=activePlayers();
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">IMMUNITY CHALLENGE</div><div class="hdr-sub">Who earns protection this round?</div></div>
+    <div class="immunity-section">
+      <div class="immunity-title">⭐ Award Immunity to:</div>
+      <div class="immunity-grid">${active.map(i=>`<div class="imm-btn${immuneSelected===i?' selected':''}" onclick="selectImmune(${i})">${AVATARS[i%AVATARS.length]} ${players[i]}<br><span style="font-size:11px;color:#888">${scores[i]} pts</span></div>`).join('')}</div>
+    </div>
+    <div class="status">The player with immunity CANNOT be voted out this round.</div>
+    <div class="btns"><button class="btn btn-main" onclick="startVoting()" ${immuneSelected<0?'disabled':''}>Proceed to Tribal Council</button></div>`;
+}
+
+function selectImmune(i){immuneSelected=i;immune=i;showImmunity();}
+
+function startVoting(){
+  if(immune<0) return;
+  const active=activePlayers().filter(i=>i!==immune);
+  votes={};selectedVote=-1;
+  renderVoting(active);
+}
+
+function renderVoting(active){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">TRIBAL COUNCIL</div><div class="hdr-sub">Vote someone out — ${immune>=0?players[immune]+' has immunity':''}</div></div>
+    <div class="vote-section">
+      <div class="vote-title">🗳 CAST YOUR VOTE</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;margin-bottom:10px">Teacher tallies class votes. Click to add a vote to each player.</div>
+      <div class="vote-grid">${players.map((p,i)=>{
+        if(eliminated.includes(i)||i===immune) return '';
+        const vc=Object.values(votes).filter(v=>v===i).length;
+        return `<div class="vote-btn${vc>0?' voted':''}" onclick="addVote(${i})">${AVATARS[i%AVATARS.length]} ${p}<br><span style="font-size:12px;color:#FF5252;font-weight:700">${vc} vote${vc!==1?'s':''}</span></div>`;
+      }).join('')}
+      </div>
+    </div>
+    <div class="status">Add votes from the class, then click Snuff the Torch to eliminate the player with the most votes.</div>
+    <div class="btns">
+      <button class="btn btn-vote" onclick="tallyVotes()">Snuff the Torch 🔥</button>
+      <button class="btn btn-reset" onclick="render()">Back</button>
+    </div>`;
+}
+
+function addVote(i){
+  if(!votes[Object.keys(votes).length]) votes[Object.keys(votes).length]=i;
+  else votes[Date.now()]=i;
+  const active=activePlayers().filter(p=>p!==immune);
+  renderVoting(active);
+}
+
+function tallyVotes(){
+  const tally={};
+  Object.values(votes).forEach(i=>{tally[i]=(tally[i]||0)+1;});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){alert('No votes cast!');return;}
+  const loser=parseInt(sorted[0][0]);
+  eliminated.push(loser);
+  votes={};immuneSelected=-1;immune=-1;
+  phase='tribal';
+  renderTribal(loser);
+}
+
+function renderTribal(loser){
+  const active=activePlayers();
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">TRIBAL COUNCIL</div></div>
+    <div class="tribal">
+      <div class="snuff">🔥</div>
+      <div class="tribal-title">${players[loser]}, the tribe has spoken.</div>
+      <div style="color:#aaa;font-size:13px;margin-bottom:14px">${players[loser]} has been voted out. ${active.length} players remain.</div>
+      ${active.length===1?`<div style="color:#FFD54F;font-size:18px;font-weight:700;margin-bottom:8px">SOLE SURVIVOR: ${players[active[0]]}! 🏆</div>`:''}
+    </div>
+    <div class="btns">
+      ${active.length>1?`<button class="btn btn-main" onclick="nextRound()">Continue to Next Round</button>`:''}
+      ${active.length===1?`<button class="btn btn-main" onclick="renderWin(${active[0]})">See Final Results</button>`:''}
+      <button class="btn btn-reset" onclick="setup()">New Game</button>
+    </div>`;
+}
+
+function nextRound(){qIdx++;answered=false;phase='question';_shufOpts(QUESTIONS[qIdx%QUESTIONS.length]);render();}
+
+function renderWin(winner){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH SURVIVOR</div></div>
+    <div style="background:#2C1810;border:2px solid #FFD54F;border-radius:12px;padding:24px;text-align:center;margin-bottom:14px">
+      <div style="font-size:36px;margin-bottom:8px">🏆</div>
+      <div style="font-size:24px;font-weight:700;color:#FFD54F;margin-bottom:6px">SOLE SURVIVOR</div>
+      <div style="font-size:20px;color:#fff;margin-bottom:8px">${players[winner!==undefined?winner:activePlayers()[0]]}</div>
+      <div style="font-size:14px;color:#8D6E63">Final score: ${scores[winner!==undefined?winner:activePlayers()[0]]} pts</div>
+      <div style="margin-top:14px">
+        <div style="font-size:13px;color:#FFD54F;margin-bottom:6px">All Scores:</div>
+        ${players.map((p,i)=>`<div style="font-size:13px;color:${eliminated.indexOf(i)>=0?'#555':'#fff'};margin:3px 0">${p}: ${scores[i]} pts ${eliminated.indexOf(i)>=0?'(voted out round '+(eliminated.indexOf(i)+1)+')':' WINNER'}</div>`).join('')}
+      </div>
+    </div>
+    <div class="btns"><button class="btn btn-main" onclick="setup()">Play Again</button></div>`;
+}
+
+function renderSetup(){
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">HEALTH SURVIVOR</div><div class="hdr-sub">Legend of Wellness Edition</div></div>
+    <div style="background:#2C1810;border-radius:10px;padding:16px;margin-bottom:14px">
+      <div style="font-size:14px;color:#FFD54F;font-weight:600;margin-bottom:8px">How to Play</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8">
+        1. Each round, all active players answer a health question (teacher scores).<br>
+        2. The teacher optionally opens a class debate on the prompt.<br>
+        3. Award immunity to the top scorer.<br>
+        4. The class votes someone out at Tribal Council.<br>
+        5. Last player standing is the Sole Survivor!
+      </div>
+    </div>
+    <div class="btns"><button class="btn btn-main" onclick="setup()" style="font-size:16px;padding:14px 36px">Start the Game</button></div>`;
+}
+
+renderSetup();
+</script>
+</body>
+</html>

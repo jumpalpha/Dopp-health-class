@@ -4,24 +4,15 @@
 // button should go; without one, game pages get a small bar under the game.
 // Site visit counter: counts every page opened on any page (per tab session until 2026-10-20; started 2026-10-13).
 // window.doppVisits is a promise of the all-time total; the home page shows it.
-// Local Next.js rebuild: restyle game pages, and never touch the live site's visit counter or offline cache.
-var DOPP_LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
 (function () {
-  var s = document.createElement('script'); s.src = 'next_skin.js'; document.head.appendChild(s);
-  if (DOPP_LOCAL && navigator.serviceWorker) {
-    navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }).catch(function () {});
-  }
-})();
-
-(function () {
-  if (location.protocol === 'file:' || DOPP_LOCAL) return;
+  if (location.protocol === 'file:') return;
   var URL = 'https://gmeyamrlqfrabtslsweu.supabase.co/rest/v1/rpc/', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
   window.doppVisits = fetch(URL + 'site_visit_hit', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: '{}' })
     .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
 })();
 
 (function () {
-  if (!('serviceWorker' in navigator) || location.protocol === 'file:' || DOPP_LOCAL) return;
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
   window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 
   var standalone = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;

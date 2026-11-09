@@ -1,11 +1,169 @@
-<!doctype html>
-<html lang="en"><head>
-<!-- pages-stub: redirect written by scripts/pages-postbuild.mjs -->
-<script src="/local-guard.js"></script>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Opening game…</title>
-<meta http-equiv="refresh" content="0; url=/arcade/play/game15_myth_busters/">
-<link rel="canonical" href="/arcade/play/game15_myth_busters/">
-</head><body style="font-family:system-ui,sans-serif;background:#140c2e;color:#fff;padding:24px">
-<p>This page moved. <a style="color:#FFD700" href="/arcade/play/game15_myth_busters/">Continue →</a></p>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<title>Myth Busters — Health Edition</title>
+<meta name="description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<link rel="canonical" href="https://doppsclass.com/game15_myth_busters.html">
+<meta property="og:title" content="Myth Busters — Health Edition">
+<meta property="og:description" content="Play classroom health games and review activities from the Legend of Wellness health curriculum.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/game15_myth_busters.html">
+<meta name="twitter:card" content="summary">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f1a0f;color:#fff;padding:16px;min-height:100vh}
+.hdr{background:#1a2e1a;border:2px solid #4ade80;border-radius:12px;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.hdr-title{font-size:20px;font-weight:700;color:#4ade80;letter-spacing:1px}
+.hdr-right{display:flex;gap:14px;align-items:center}
+.stat-pill{background:#0f2d0f;border:1px solid #4ade80;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:#4ade80}
+.timer-badge{background:#ef4444;border-radius:8px;padding:4px 12px;font-size:18px;font-weight:700;min-width:44px;text-align:center}
+.timer-badge.safe{background:#4ade80;color:#0f1a0f}
+.myth-card{background:#1a2e1a;border:3px solid #4ade80;border-radius:14px;padding:22px;margin-bottom:14px;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:border-color .3s}
+.myth-card.busted{border-color:#ef4444;background:#2d0f0f}
+.myth-card.confirmed{border-color:#4ade80;background:#0f2d0f}
+.myth-num{font-size:11px;color:#6b7280;letter-spacing:1px;margin-bottom:8px}
+.myth-category{display:inline-block;background:#0f2d0f;border:1px solid #4ade80;color:#4ade80;font-size:11px;font-weight:600;padding:3px 10px;border-radius:10px;margin-bottom:10px}
+.myth-text{font-size:17px;color:#f0fdf4;line-height:1.6;font-weight:500}
+.verdict-banner{border-radius:10px;padding:12px 20px;margin-bottom:12px;text-align:center}
+.verdict-banner.busted{background:#7f1d1d;border:2px solid #ef4444}
+.verdict-banner.confirmed{background:#14532d;border:2px solid #4ade80}
+.verdict-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.verdict-title.busted{color:#fca5a5}
+.verdict-title.confirmed{color:#86efac}
+.verdict-explanation{font-size:13px;line-height:1.5;color:#d1fae5}
+.answer-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.btn-true{background:#14532d;border:3px solid #4ade80;border-radius:10px;padding:16px;cursor:pointer;text-align:center;font-size:18px;font-weight:700;color:#4ade80;font-family:inherit;transition:background .15s}
+.btn-true:hover:not(:disabled){background:#166534}
+.btn-true:disabled{opacity:.4;cursor:default}
+.btn-false{background:#7f1d1d;border:3px solid #ef4444;border-radius:10px;padding:16px;cursor:pointer;text-align:center;font-size:18px;font-weight:700;color:#fca5a5;font-family:inherit;transition:background .15s}
+.btn-false:hover:not(:disabled){background:#991b1b}
+.btn-false:disabled{opacity:.4;cursor:default}
+.score-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.score-card{flex:1;min-width:80px;background:#1a2e1a;border:1.5px solid #333;border-radius:10px;padding:10px;text-align:center}
+.score-card.active{border-color:#4ade80}
+.score-in{background:transparent;border:none;border-bottom:1.5px solid #4ade80;color:#4ade80;font-size:12px;font-weight:600;width:100%;text-align:center;font-family:inherit;padding:3px 0;margin-bottom:3px}
+.score-val{font-size:20px;font-weight:700;color:#4ade80}
+.streak-badge{font-size:10px;color:#f59e0b;margin-top:2px}
+.progress{height:6px;background:#1a2e1a;border-radius:3px;margin-bottom:10px;overflow:hidden}
+.progress-fill{height:100%;background:#4ade80;border-radius:3px;transition:width .4s}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-next{background:#4ade80;color:#0f1a0f;font-size:15px;padding:12px 28px}
+.btn-reset{background:#374151;color:#fff}
+.btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.results-card{background:#1a2e1a;border:2px solid #4ade80;border-radius:12px;padding:20px;margin-bottom:14px}
+.myth-log{font-size:12px;padding:6px 0;border-bottom:1px solid #1f2937;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.myth-log:last-child{border-bottom:none}
+.log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.log-dot.correct{background:#4ade80}
+.log-dot.wrong{background:#ef4444}
+</style>
+<link rel="stylesheet" href="shared.css">
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div id="app"></div>
+<script>
+function _dx(s,k){const b=atob(s);const y=new Uint8Array(b.length);for(let i=0;i<b.length;i++)y[i]=b.charCodeAt(i);const kb=new TextEncoder().encode(k);for(let i=0;i<y.length;i++)y[i]^=kb[i%kb.length];return new TextDecoder().decode(y);}
+const MYTHS=JSON.parse(_dx("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","doppclass2026"));
+
+let teams=['Team 1','Team 2'];let scores=[0,0];let currentTeam=0;let streaks=[0,0];
+let qIdx=0;let shuffled=[];let answered=false;let log=[];let running=false;let timer=0;let timerInt=null;
+let mode='class';
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5);}
+function init(){shuffled=shuffle(MYTHS);qIdx=0;scores=[0,0];streaks=[0,0];currentTeam=0;answered=false;log=[];running=false;timer=20;clearInterval(timerInt);mode='class';render();}
+
+function render(){
+  if(qIdx>=shuffled.length){renderResults();return;}
+  const m=shuffled[qIdx];
+  const pct=Math.round(qIdx/shuffled.length*100);
+  document.getElementById('app').innerHTML=`
+    <div class="hdr">
+      <div class="hdr-title">MYTH BUSTERS</div>
+      <div class="hdr-right">
+        <div class="stat-pill">${qIdx+1}/${shuffled.length}</div>
+        ${running?`<div class="timer-badge${timer>10?' safe':''}" id="timer">${timer}</div>`:''}
+      </div>
+    </div>
+    <div class="score-row">${teams.map((t,i)=>`<div class="score-card${i===currentTeam?' active':''}"><input class="score-in" value="${t}" onchange="teams[${i}]=this.value"><div class="score-val">${scores[i]}</div><div class="streak-badge">${streaks[i]>=2?'🔥 Streak x'+streaks[i]:''}</div></div>`).join('')}
+    </div>
+    <div class="progress"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="myth-card${answered?(m.answer?'':' busted'):''}" id="myth-card">
+      <div class="myth-num">Myth ${qIdx+1} of ${shuffled.length}</div>
+      <span class="myth-category">${m.cat}</span>
+      <div class="myth-text">${m.myth}</div>
+    </div>
+    ${answered?`<div class="verdict-banner ${m.answer?'confirmed':'busted'}">
+      <div class="verdict-title ${m.answer?'confirmed':'busted'}">${m.answer?'✅ CONFIRMED — TRUE!':'🚫 BUSTED — FALSE!'}</div>
+      <div class="verdict-explanation">${m.explanation}</div>
+    </div>`:''}
+    <div class="answer-btns">
+      <button class="btn-true" onclick="answer(true)" ${answered?'disabled':''}>TRUE ✓</button>
+      <button class="btn-false" onclick="answer(false)" ${answered?'disabled':''}>FALSE ✗</button>
+    </div>
+    ${answered?`<div class="btns"><button class="btn btn-next" onclick="nextQ()">Next Myth →</button></div>`:`<div class="btns">${!running?`<button class="btn btn-next" style="background:#1a2e1a;border:1.5px solid #4ade80;color:#4ade80;font-size:13px;padding:10px 18px" onclick="startTimer()">Timed Mode (20s)</button>`:''}</div>`}
+    <div class="btns"><button class="btn btn-reset" onclick="init()">Restart</button></div>`;
+  if(running&&!answered) startTimerDisplay();
+}
+
+function startTimer(){
+  running=true;timer=20;
+  startTimerDisplay();
+  render();
+}
+
+function startTimerDisplay(){
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    timer=Math.max(0,timer-1);
+    const el=document.getElementById('timer');
+    if(el){el.textContent=timer;el.className='timer-badge'+(timer>10?' safe':'');}
+    if(timer<=0){clearInterval(timerInt);autoAnswer();}
+  },1000);
+}
+
+function autoAnswer(){answered=true;clearInterval(timerInt);render();}
+
+function answer(bool){
+  clearInterval(timerInt);
+  if(answered) return;
+  answered=true;
+  const m=shuffled[qIdx];
+  const correct=bool===m.answer;
+  const pts=correct?(100+(streaks[currentTeam]>=2?50:0)):0;
+  if(correct){scores[currentTeam]+=pts;streaks[currentTeam]++;}else{streaks[currentTeam]=0;}
+  log.push({myth:m.myth,answer:bool,correct,cat:m.cat});
+  render();
+}
+
+function nextQ(){
+  clearInterval(timerInt);answered=false;qIdx++;
+  currentTeam=(currentTeam+1)%teams.length;
+  render();
+}
+
+function renderResults(){
+  const total=log.length;const correct=log.filter(l=>l.correct).length;const pct=Math.round(correct/total*100);
+  document.getElementById('app').innerHTML=`
+    <div class="hdr"><div class="hdr-title">MYTH BUSTERS — FINAL</div></div>
+    <div class="results-card">
+      <div style="font-size:22px;font-weight:700;color:#4ade80;text-align:center;margin-bottom:6px">Results</div>
+      <div style="text-align:center;font-size:14px;color:#9ca3af;margin-bottom:14px">${correct} of ${total} myths correctly identified (${pct}%)</div>
+      ${teams.map((t,i)=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1f2937"><span style="color:#d1d5db">${t}</span><span style="font-weight:700;color:#4ade80">${scores[i]} pts</span></div>`).join('')}
+    </div>
+    <div class="results-card">
+      <div style="font-size:14px;font-weight:600;color:#4ade80;margin-bottom:10px">Your Answers:</div>
+      ${log.map(l=>`<div class="myth-log"><div class="log-dot ${l.correct?'correct':'wrong'}"></div><div style="flex:1;color:#d1d5db;font-size:12px">${l.myth.substring(0,80)}${l.myth.length>80?'...':''}</div><span style="font-size:11px;font-weight:600;color:${l.correct?'#4ade80':'#ef4444'};flex-shrink:0">${l.correct?'✓':'✗'} ${l.answer?'TRUE':'FALSE'}</span></div>`).join('')}
+    </div>
+    <div class="btns"><button class="btn btn-next" onclick="init()">Play Again</button></div>`;
+}
+
+init();
+</script>
+</body>
+</html>
