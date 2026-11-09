@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Farcade\u002Fplay\u002F[game]","\u002Fchapters\u002F[n]","\u002Frealms\u002F[n]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
