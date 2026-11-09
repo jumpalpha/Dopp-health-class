@@ -75,7 +75,8 @@
     ['dopp_spin', 'Dopp Spin', 'Daily'], ['game15_myth_busters', 'Myth Busters', 'Daily']];
   const SIDE_QUESTS = [['wcq', 'Weight Control Quest', 'weight-control-quest.html'], ['reflection', 'Reflection Paper Coach', 'side_quests.html'],
     ['whatif', 'The "What If" Game', 'side_quests.html'],
-    ['finance', 'The Cost of Your Future', 'finance.html']];
+    ['finance', 'The Cost of Your Future', 'finance.html'],
+    ['cpr', 'CPR & AED Side Quest', 'cpr_aed_quest.html']];
 
   // Verified XP rules (checked in the database, Oct 15 2026). Quest XP is separate and self-reported.
   const XP_RULES = {
@@ -273,6 +274,9 @@
       finish({ id: 'live:games', kind: 'auto', label: 'Take part in ' + cfg.live_min + ' live class games',
         status: liveIn.length >= cfg.live_min ? 'complete' : liveIn.length ? 'in_progress' : 'not_started',
         detail: liveIn.length + ' of ' + cfg.live_min + ' · sign in first, then join and answer when we play in class' }),
+      finish({ id: 'cpr:handson', kind: 'teacher', label: 'CPR/AED hands-on ✓ (teacher-verified)', status: 'needs_teacher',
+        detail: 'Hands-only CPR and AED practice in class (Chapter 27). Mr. Dopp checks this off · get ready with the CPR & AED Side Quest',
+        href: 'cpr_aed_quest.html' }),
       finish({ id: 'review:weak', kind: 'auto', label: 'Go back over your weak spots (' + cfg.review_min + ' times)',
         status: reviews >= cfg.review_min ? 'complete' : reviews ? 'in_progress' : 'not_started',
         detail: reviews + ' of ' + cfg.review_min + ' · replay a vocab game you scored under 80% on, or retake a Mastery check you missed' })
@@ -319,6 +323,9 @@
       // finance.html: the database writes these markers (supabase/finance_quest.sql)
       if (k === 'finance' && projects.has('finance_quest_done')) { st = 'complete'; detail = 'submitted'; }
       else if (k === 'finance' && projects.has('finance_quest')) { st = 'in_progress'; detail = 'saved, not submitted yet'; }
+      // cpr_aed_quest.html saves these through StudentSave (student_project_data): progress, then 'done' on a 5/5 quick check
+      if (k === 'cpr' && projects.has('cpr_aed_quest_done')) { st = 'complete'; detail = 'quick check passed'; }
+      else if (k === 'cpr' && projects.has('cpr_aed_quest')) { st = 'in_progress'; detail = 'started · pass the 5-question check'; }
       if (k === 'reflection' || k === 'whatif') detail = 'Optional AI-guided activity';
       return { key: k, title: t, href, status: st, detail, label_status: LABEL[st] };
     });

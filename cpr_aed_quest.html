@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPR &amp; AED Side Quest — Legend of Wellness</title>
+<meta name="description" content="Learn Hands-Only CPR and how to use an AED: find the hand spot, keep the 100–120 per minute beat, place the AED pads, and pass the quick check.">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<link rel="canonical" href="https://doppsclass.com/cpr_aed_quest.html">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00b37e; --emerald-text:#00704D; --sky:#38BFFF; --crimson:#d62846; --amber:#b86e00;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,.04); }
+.wrap { max-width:760px; margin:0 auto; padding:22px 16px 70px; }
+.hero { border-radius:20px; padding:22px 20px; color:#fff; background:radial-gradient(circle at 20% 0%, #7a1f35 0%, #1C1A2E 62%), #1C1A2E; }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(22px,6vw,30px); color:var(--gold); text-shadow:0 2px 0 #000; }
+.hero p { font-size:14px; color:rgba(255,255,255,.85); margin-top:6px; line-height:1.55; }
+.hero .inclass { margin-top:10px; font-size:13px; font-weight:800; color:#ffe9a8; }
+.toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin:14px 0 2px; }
+.prog { display:flex; gap:6px; flex:1 1 240px; min-width:0; }
+.pdot { flex:1 1 0; min-width:0; text-align:center; font:800 12px 'Nunito',sans-serif; padding:8px 4px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--dim); text-decoration:none; }
+.pdot.ok { border-color:var(--emerald); color:var(--emerald-text); background:#ecfbf4; }
+.mute { margin-left:auto; font:800 13px 'Nunito',sans-serif; padding:8px 12px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--text); cursor:pointer; min-height:40px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px; margin-top:14px; scroll-margin-top:70px; }
+.card h2 { font-family:'Cinzel',serif; font-size:18px; color:var(--gold-text); margin-bottom:6px; }
+.card .lead { font-size:14.5px; line-height:1.55; margin-bottom:10px; }
+.done-tag { display:none; margin-left:6px; font:800 12px 'Nunito',sans-serif; color:var(--emerald-text); background:#ecfbf4; border:1px solid var(--emerald); border-radius:999px; padding:2px 8px; vertical-align:middle; }
+.card.ok .done-tag { display:inline-block; }
+.steps4 { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; }
+.s4 { border:1px solid var(--border); border-radius:12px; padding:12px; background:#fffdf6; }
+.s4 b { display:block; font-size:22px; margin-bottom:4px; }
+.s4 strong { display:block; font-size:14px; margin-bottom:2px; }
+.s4 span { font-size:13px; color:var(--dim); line-height:1.45; }
+.btn { font:900 15px 'Nunito',sans-serif; padding:12px 18px; border-radius:12px; border:none; cursor:pointer; background:#1C1A2E; color:var(--gold); min-height:46px; }
+.btn.alt { background:#fff; color:var(--text); border:1px solid var(--border); }
+.btn:disabled { opacity:.45; cursor:default; }
+.row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; }
+.fb { font-size:14px; font-weight:800; min-height:22px; margin-top:8px; line-height:1.45; }
+.fb.good { color:var(--emerald-text); } .fb.bad { color:var(--crimson); }
+.figure { display:block; width:100%; max-width:340px; margin:4px auto 0; height:auto; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+#handSvg { cursor:crosshair; }
+#aedSvg { touch-action:none; }
+.side-lbl { font:800 11px 'Nunito',sans-serif; fill:#6a6880; letter-spacing:.06em; }
+/* compression trainer */
+.trainer { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center; }
+.rate { text-align:center; }
+.rate .num { font:900 clamp(46px,14vw,64px)/1 'Nunito',sans-serif; color:var(--dim); font-variant-numeric:tabular-nums; }
+.rate .unit { font-size:13px; font-weight:800; color:var(--dim); }
+.rate .zone { margin-top:6px; font-size:14px; font-weight:900; min-height:20px; }
+.rate.green .num, .rate.green .zone { color:var(--emerald-text); }
+.rate.amber .num, .rate.amber .zone { color:var(--amber); }
+.rate.red .num, .rate.red .zone { color:var(--crimson); }
+.meter { position:relative; height:12px; border-radius:999px; background:linear-gradient(90deg,#f6c7cf 0 33%,#ffe2a8 33% 40%,#bff0db 40% 60%,#ffe2a8 60% 67%,#f6c7cf 67%); margin:10px 0 4px; }
+.meter i { position:absolute; top:-4px; width:4px; height:20px; border-radius:2px; background:#1C1A2E; left:0; transition:left .15s; }
+.meter-lbl { display:flex; justify-content:space-between; font-size:11px; color:var(--dim); font-weight:700; }
+.push { width:100%; aspect-ratio:1; max-width:220px; justify-self:center; border-radius:50%; border:none; cursor:pointer;
+  background:radial-gradient(circle at 35% 30%, #ff6b81, #d62846 60%, #8f1530); color:#fff; font:900 26px 'Nunito',sans-serif;
+  box-shadow:0 10px 0 #6b0f24, 0 14px 24px rgba(0,0,0,.25); transition:transform .06s, box-shadow .06s; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+.push.down { transform:translateY(8px) scale(.97); box-shadow:0 2px 0 #6b0f24, 0 4px 10px rgba(0,0,0,.25); }
+.push small { display:block; font-size:12px; font-weight:800; opacity:.9; }
+.streak { font-size:13.5px; font-weight:800; color:var(--dim); margin-top:10px; }
+.streak b { color:var(--text); }
+.tips { margin:12px 0 0 18px; font-size:14px; line-height:1.6; }
+.beat { display:inline-block; width:14px; height:14px; border-radius:50%; background:#ddd; vertical-align:middle; margin-left:8px; transition:background .05s; }
+.beat.on { background:var(--crimson); }
+/* AED */
+.aed { margin-top:14px; border-radius:16px; background:#ffcf33; padding:12px; border:3px solid #1C1A2E; }
+.aed-screen { background:#0e1a14; color:#7dffb3; font:800 15px/1.4 'Nunito',monospace; border-radius:10px; padding:12px; min-height:62px; }
+.aed-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; }
+.aed-btns .btn { flex:1 1 140px; }
+.shock { background:#ff7a00; color:#1a0d00; border:3px solid #1C1A2E; border-radius:50%; width:72px; height:72px; flex:0 0 72px !important; padding:0; font-size:26px; }
+.shock.flash { animation:flash .7s infinite; }
+@keyframes flash { 50% { background:#ffd166; box-shadow:0 0 0 6px rgba(255,122,0,.35); } }
+.spots { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.spots button { font:800 13px 'Nunito',sans-serif; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--text); cursor:pointer; min-height:40px; }
+.kbd-note { font-size:12.5px; color:var(--dim); margin-top:10px; }
+/* quiz */
+.q { border-top:1px solid var(--border); padding:12px 0; }
+.q:first-of-type { border-top:0; }
+.q p { font-weight:800; font-size:15px; margin-bottom:8px; }
+.opt { display:block; width:100%; text-align:left; font:700 14.5px 'Nunito',sans-serif; padding:11px 12px; margin-bottom:6px; border-radius:10px;
+  border:1.5px solid var(--border); background:#fff; color:var(--text); cursor:pointer; min-height:44px; }
+.opt.sel { border-color:#1C1A2E; background:#fff8e1; }
+.opt.right { border-color:var(--emerald); background:#ecfbf4; }
+.opt.wrong { border-color:var(--crimson); background:#fdecef; }
+.why { display:none; font-size:13.5px; line-height:1.5; color:var(--dim); margin-top:4px; padding-left:10px; border-left:3px solid var(--sky); }
+.q.checked .why { display:block; }
+.win { display:none; margin-top:14px; border-radius:14px; padding:14px; background:#ecfbf4; border:1.5px solid var(--emerald); font-weight:800; line-height:1.5; }
+.win.show { display:block; }
+.coach { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+.coach a { font:900 14.5px 'Nunito',sans-serif; text-decoration:none; padding:11px 14px; border-radius:12px; background:#1C1A2E; color:var(--gold); }
+.coach a.alt { background:#fff; color:var(--text); border:1px solid var(--border); }
+.note { font-size:13px; color:var(--dim); margin-top:8px; line-height:1.5; }
+.sources { font-size:12px; color:var(--dim); margin-top:14px; line-height:1.5; }
+.sources a, .foot a { color:var(--gold-text); font-weight:800; }
+.foot { font-size:13px; color:var(--dim); margin-top:16px; line-height:1.55; }
+a.s4.kit { text-decoration:none; color:inherit; transition:border-color .15s, transform .15s; }
+a.s4.kit:hover { border-color:#1C1A2E; transform:translateY(-2px); }
+.coach .btn.alt { padding:11px 14px; font-size:14.5px; min-height:0; }
+/* class practice station (projector) */
+.station { position:fixed; inset:0; z-index:1000; background:radial-gradient(circle at 30% 20%, #3a1322, #0b0a14 70%); color:#fff;
+  display:flex; flex-direction:column; padding:clamp(12px,3vw,32px); font-family:'Nunito',sans-serif; }
+.station[hidden] { display:none; }
+body:has(.station:not([hidden])) #dopp-theme-btn { display:none; }
+.st-top { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+.st-title { font:900 clamp(18px,3vw,30px) 'Nunito',sans-serif; color:#ffd166; }
+.st-tools { display:flex; gap:8px; flex-wrap:wrap; }
+.station button { font:900 clamp(14px,1.8vw,20px) 'Nunito',sans-serif; padding:10px 16px; border-radius:12px; border:2px solid rgba(255,255,255,.35); background:rgba(255,255,255,.08); color:#fff; cursor:pointer; min-height:46px; }
+.st-main { flex:1; display:flex; align-items:center; justify-content:center; gap:clamp(20px,6vw,80px); flex-wrap:wrap; }
+.st-pulse { width:clamp(180px,34vmin,440px); aspect-ratio:1; border-radius:50%; display:grid; place-items:center;
+  background:radial-gradient(circle at 35% 30%, #ff6b81, #d62846 60%, #8f1530); box-shadow:0 0 0 0 rgba(255,59,92,.6); transform:scale(.92); transition:transform .09s ease-out; }
+.st-pulse span { font:900 clamp(30px,7vmin,84px) 'Nunito',sans-serif; letter-spacing:.04em; }
+.st-pulse.on { transform:scale(1.04); box-shadow:0 0 0 18px rgba(255,59,92,.25); }
+.st-info { text-align:center; }
+.st-rate { font:900 clamp(28px,5vmin,60px) 'Nunito',sans-serif; color:#7dffb3; }
+.st-rate small { font-size:.5em; color:#bdf5d6; margin-left:4px; }
+.st-time { font:900 clamp(80px,22vmin,260px)/1 'Nunito',sans-serif; font-variant-numeric:tabular-nums; }
+.st-sub { font:800 clamp(18px,3vmin,34px) 'Nunito',sans-serif; color:#ffd166; margin-top:6px; }
+.st-cues { font:700 clamp(14px,2.2vmin,24px) 'Nunito',sans-serif; color:rgba(255,255,255,.8); margin-top:10px; max-width:24ch; margin-inline:auto; }
+.st-switch { position:absolute; inset:0; display:grid; place-content:center; text-align:center; gap:16px; background:rgba(255,209,102,.96); color:#1a0d00;
+  font:900 clamp(40px,10vmin,130px)/1.05 'Nunito',sans-serif; animation:stflash .8s 3; }
+.st-switch[hidden] { display:none; }
+.st-switch small { font-size:clamp(16px,3vmin,34px); font-weight:800; }
+@keyframes stflash { 50% { background:rgba(255,122,0,.96); } }
+.st-bottom { display:flex; justify-content:center; gap:12px; }
+.station .st-go { background:#ffd166; color:#1a0d00; border-color:#ffd166; min-width:180px; font-size:clamp(18px,2.6vw,28px); }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+@media (max-width:560px) { .trainer { grid-template-columns:1fr; } .pdot .dt { display:none; } .pdot { font-size:14px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="side_quests.html">🧭 Side Quests</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="pet.html">🌱 My Sprite</a>
+    <a class="nav-link nav-cl" href="checklist.html" style="background:#FFD700;color:#1A1030;font-weight:900;border-radius:999px">📋 Checklist</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>❤️ CPR &amp; AED Side Quest</h1>
+    <p>When someone's heart suddenly stops, every minute without CPR lowers their chance of surviving. Hands-Only CPR is two steps: <b>call 911</b> and <b>push hard and fast in the center of the chest</b>. Learn it here, practice the beat, and walk through an AED.</p>
+    <p class="inclass">🤝 This gets you ready for hands-on practice in class (Chapter 27). It doesn't replace it: you'll practice compressions and the AED steps in person, and Mr. Dopp checks it off.</p>
+  </section>
+
+  <div class="toolbar">
+    <div class="prog" id="prog" aria-label="Your progress"></div>
+    <button class="mute" id="mute" type="button" aria-pressed="false">🔊 Sound on</button>
+  </div>
+
+  <!-- 1. CHECK & CALL -->
+  <section class="card" id="s-call" data-step="call">
+    <h2>1 · Check &amp; call <span class="done-tag">✓ Done</span></h2>
+    <p class="lead">Someone collapses and won't wake up. Before you touch them:</p>
+    <div class="steps4">
+      <div class="s4"><b>⚠️</b><strong>Is it safe?</strong><span>Look for traffic, fire, water or wires. Don't become a second patient.</span></div>
+      <div class="s4"><b>👋</b><strong>Tap &amp; shout</strong><span>Tap their shoulders: "Are you OK?" No response and not breathing, or only gasping? Start.</span></div>
+      <div class="s4"><b>📱</b><strong>Call 911 on speaker</strong><span>Put the phone next to you on speaker so you can push while the dispatcher coaches you.</span></div>
+      <div class="s4"><b>🏃</b><strong>Send for the AED</strong><span>Point at one person: "You! Get the AED and come back." If you're alone, call and start pushing.</span></div>
+    </div>
+    <div class="row"><span class="note" style="margin:0">Then push hard and fast in the center of the chest until help takes over.</span>
+      <button class="btn" type="button" data-mark="call">I know these 4 steps ✓</button></div>
+  </section>
+
+  <!-- 2. HAND PLACEMENT -->
+  <section class="card" id="s-hands" data-step="hands">
+    <h2>2 · Where do your hands go? <span class="done-tag">✓ Done</span></h2>
+    <p class="lead">Tap the chest where you'd put the heel of your hand. Stack your other hand on top and lock your elbows.</p>
+    <svg id="handSvg" class="figure" viewBox="0 0 300 340" role="img" aria-labelledby="handT">
+      <title id="handT">A person lying on their back, chest showing. Tap where your hands go.</title>
+      <g id="body1"></g>
+      <g id="handMark"></g>
+    </svg>
+    <div class="fb" id="handFb" role="status" aria-live="polite"></div>
+    <div class="spots" aria-label="Or choose a spot">
+      <span class="kbd-note" style="margin:0;align-self:center">No touch screen? Pick a spot:</span>
+      <button type="button" data-hand="neck">Top of chest, near the neck</button>
+      <button type="button" data-hand="heart">Left side, over the heart</button>
+      <button type="button" data-hand="center">Center, lower half of the breastbone</button>
+      <button type="button" data-hand="belly">Upper stomach</button>
+    </div>
+  </section>
+
+  <!-- 3. COMPRESSION TRAINER -->
+  <section class="card" id="s-rate" data-step="rate">
+    <h2>3 · Push to the beat <span class="done-tag">✓ Done</span></h2>
+    <p class="lead">Tap the button (or press <b>Space</b>) once for every compression. Aim for <b>100–120 a minute</b>. Get <b>30 in a row</b> in the green zone.</p>
+    <div class="row" style="margin:0 0 10px">
+      <button class="btn alt" type="button" id="metro" aria-pressed="false">▶ Start the beat (110/min)<span class="beat" id="beat" aria-hidden="true"></span></button>
+      <span class="note" style="margin:0">Same tempo as "Stayin' Alive".</span>
+    </div>
+    <div class="trainer">
+      <button class="push" type="button" id="push" aria-describedby="rateNum">PUSH<small>tap or Space</small></button>
+      <div>
+        <div class="rate" id="rateBox">
+          <div class="num" id="rateNum" aria-live="off">--</div>
+          <div class="unit">compressions per minute</div>
+          <div class="zone" id="rateZone" role="status" aria-live="polite">Start tapping</div>
+        </div>
+        <div class="meter" aria-hidden="true"><i id="needle"></i></div>
+        <div class="meter-lbl" aria-hidden="true"><span>60</span><span>100</span><span>120</span><span>160</span></div>
+        <div class="streak">In the green: <b id="streak">0</b> / 30 · Total: <b id="count">0</b></div>
+      </div>
+    </div>
+    <ul class="tips">
+      <li><b>Push hard:</b> at least <b>2 inches (5 cm)</b> deep on a teen or adult.</li>
+      <li><b>Let it come back up:</b> let the chest rise all the way between pushes (full recoil). Don't lean on it.</li>
+      <li><b>Don't stop:</b> keep pauses short. Switch with another person about every 2 minutes if you can.</li>
+    </ul>
+  </section>
+
+  <!-- 4. AED DRILL -->
+  <section class="card" id="s-aed" data-step="aed">
+    <h2>4 · Use the AED <span class="done-tag">✓ Done</span></h2>
+    <p class="lead">An AED (automated external defibrillator) talks you through every step. First, <b>drag the two pads</b> onto the bare chest where they belong. The pictures on real pads show you too.</p>
+    <svg id="aedSvg" class="figure" viewBox="0 0 300 420" role="img" aria-labelledby="aedT">
+      <title id="aedT">A chest with two AED pads waiting below it. Drag each pad onto the chest.</title>
+      <g id="body2"></g>
+      <g id="zones"></g>
+      <text x="150" y="358" text-anchor="middle" class="side-lbl">DRAG THE PADS ONTO THE CHEST</text>
+      <g id="pads"></g>
+    </svg>
+    <div class="fb" id="padFb" role="status" aria-live="polite"></div>
+    <div class="spots" id="padSpots" aria-label="Or choose a spot for the next pad">
+      <span class="kbd-note" style="margin:0;align-self:center">No mouse? Put the next pad on:</span>
+      <button type="button" data-pad="ur">Upper right chest, below the collarbone</button>
+      <button type="button" data-pad="ul">Upper left chest</button>
+      <button type="button" data-pad="ll">Lower left side, below the armpit</button>
+      <button type="button" data-pad="belly">Stomach</button>
+    </div>
+    <div class="aed" data-keep-colors>
+      <div class="aed-screen" id="aedScreen" role="status" aria-live="polite">AED is off. Press POWER to start.</div>
+      <div class="aed-btns" id="aedBtns"></div>
+    </div>
+    <div class="fb" id="aedFb" role="status" aria-live="polite"></div>
+  </section>
+
+  <!-- 5. WATCH IT + CLASS PRACTICE KIT -->
+  <section class="card" id="s-coach">
+    <h2>5 · Watch it, then practice for real</h2>
+    <p class="lead">See real people do Hands-Only CPR in about a minute on the American Heart Association's site. In class you'll build a practice trainer and do it hands-on.</p>
+    <div class="coach">
+      <a href="https://cpr.heart.org/en/cpr-courses-and-kits/hands-only-cpr" target="_blank" rel="noopener noreferrer">▶ AHA Hands-Only CPR video ↗</a>
+      <button class="btn alt" type="button" id="classBtn">⏱ Class practice timer</button>
+    </div>
+    <p class="note">The video opens the American Heart Association's website, an outside site not run by Dopps Class.</p>
+    <h2 style="margin-top:16px;font-size:15px">Class practice kit (printables)</h2>
+    <div class="steps4">
+      <a class="s4 kit" href="cpr_trainer_build.html"><b>🛠️</b><strong>Build a CPR trainer</strong><span>Towel or bottle "chest" with a 2-inch depth marker. 1 page.</span></a>
+      <a class="s4 kit" href="cpr_paper_aed.html"><b>🟨</b><strong>Paper AED trainer</strong><span>Cut-out AED, pads and the voice prompts for partner practice. 1 page.</span></a>
+      <a class="s4 kit" href="cpr_checkoff.html"><b>📋</b><strong>Teacher check-off sheet</strong><span>Skills record for in-class practice. Blank lines only. 1 page.</span></a>
+    </div>
+  </section>
+
+  <!-- 6. QUICK CHECK -->
+  <section class="card" id="s-quiz" data-step="quiz">
+    <h2>6 · Quick check <span class="done-tag">✓ Passed</span></h2>
+    <p class="lead">Get all 5 right to finish the side quest. You can try as many times as you need.</p>
+    <div id="quiz"></div>
+    <div class="row"><span class="fb" id="quizFb" role="status" aria-live="polite" style="margin:0"></span>
+      <button class="btn" type="button" id="check">Check my answers</button></div>
+    <div class="win" id="win" role="status"></div>
+  </section>
+
+  <p class="sources">Sources: American Heart Association, <a href="https://cpr.heart.org/en/cpr-courses-and-kits/hands-only-cpr" target="_blank" rel="noopener noreferrer">Hands-Only CPR</a> and the 2025 AHA Guidelines for CPR and Emergency Cardiovascular Care (rate 100–120/min; depth at least 2 in / 5 cm for teens and adults; full chest recoil; AED as soon as one arrives). Hands-Only CPR is for teens and adults who suddenly collapse.</p>
+  <p class="foot">Optional side quest. Pass the quick check to mark it complete on your <a href="checklist.html">Checklist</a>. Signed in on the <a href="quest.html">Quest page</a>? Your progress follows you to any device; otherwise it stays on this one. The in-class hands-on practice is checked off separately by Mr. Dopp.</p>
+</main>
+
+<!-- CLASS PRACTICE STATION (projector): ?class=1 or the "Class practice timer" button -->
+<div class="station" id="station" role="dialog" aria-modal="true" aria-labelledby="stTitle" hidden data-keep-colors>
+  <div class="st-top">
+    <span class="st-title" id="stTitle">❤️ Hands-Only CPR practice</span>
+    <span class="st-tools">
+      <button type="button" id="stMute"></button>
+      <button type="button" id="stFull">⛶ Full screen</button>
+      <button type="button" id="stExit">✕ Exit</button>
+    </span>
+  </div>
+  <div class="st-main">
+    <div class="st-pulse" id="stPulse" aria-hidden="true"><span>PUSH</span></div>
+    <div class="st-info">
+      <div class="st-rate">110<small>/min</small></div>
+      <div class="st-time" id="stTime" aria-live="off">0:00</div>
+      <div class="st-sub" id="stSub">Rescuer 1 · switch at 2:00</div>
+      <div class="st-cues">Center of chest · arms straight · 2 in deep · let it come all the way up</div>
+    </div>
+  </div>
+  <div class="st-switch" id="stSwitch" role="alert" hidden>🔄 SWITCH RESCUERS!<small>Next person, start pushing. Keep the pause under 10 seconds.</small></div>
+  <div class="st-bottom">
+    <button type="button" class="st-go" id="stGo">▶ Start</button>
+    <button type="button" id="stReset">↺ Reset</button>
+  </div>
+</div>
+
+<script src="student-save.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const NS = 'http://www.w3.org/2000/svg';
+  const KEY = 'cpr_aed_quest', DONE_KEY = 'cpr_aed_quest_done';
+  const STEPS = [['call', '📞', 'Call'], ['hands', '✋', 'Hands'], ['rate', '💓', 'Beat'], ['aed', '⚡', 'AED'], ['quiz', '✅', 'Check']];
+  let S = { call: false, hands: false, rate: false, aed: false, quiz: false };
+
+  // ---------- progress + saving ----------
+  function paint() {
+    $('prog').innerHTML = STEPS.map(([k, ic, t]) =>
+      `<a class="pdot${S[k] ? ' ok' : ''}" href="#s-${k}" aria-label="${t}${S[k] ? ' — done' : ''}">${S[k] ? '✓' : ic} <span class="dt">${t}</span></a>`).join('');
+    document.querySelectorAll('[data-step]').forEach(sec => sec.classList.toggle('ok', !!S[sec.dataset.step]));
+  }
+  let saveT = null;
+  function save() {
+    paint();
+    clearTimeout(saveT);
+    saveT = setTimeout(() => {
+      if (window.StudentSave) StudentSave.save(KEY, S).catch(() => {});
+    }, 400);
+  }
+  function mark(k) { if (!S[k]) { S[k] = true; save(); } }
+  document.querySelectorAll('[data-mark]').forEach(b => b.addEventListener('click', () => { mark(b.dataset.mark); b.textContent = 'Got it ✓'; }));
+  if (window.StudentSave) StudentSave.load(KEY).then(r => { if (r && r.data && typeof r.data === 'object') S = Object.assign(S, r.data); paint(); if (S.quiz) showWin(r.source === 'cloud'); }).catch(paint);
+  paint();
+
+  // ---------- sound (WebAudio, no files) ----------
+  let muted = false;
+  try { muted = localStorage.getItem('dopp_cpr_muted') === '1'; } catch (e) {}
+  let ac = null;
+  function audio() {
+    if (!ac) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A(); }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+  function tone(freq, when, dur, vol) {
+    const a = audio(); if (!a || muted) return;
+    const o = a.createOscillator(), g = a.createGain();
+    o.frequency.value = freq; o.type = 'square';
+    g.gain.setValueAtTime(vol, when); g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    o.connect(g).connect(a.destination); o.start(when); o.stop(when + dur + 0.02);
+  }
+  const blip = (ok) => { const a = audio(); if (a) tone(ok ? 880 : 220, a.currentTime, ok ? 0.12 : 0.2, 0.05); };
+  function paintMute() { $('mute').textContent = muted ? '🔇 Sound off' : '🔊 Sound on'; $('mute').setAttribute('aria-pressed', String(muted)); }
+  $('mute').addEventListener('click', () => { muted = !muted; try { localStorage.setItem('dopp_cpr_muted', muted ? '1' : '0'); } catch (e) {} paintMute(); });
+  paintMute();
+
+  // metronome: 110 bpm with a look-ahead scheduler; a light flashes on every beat (works with sound off too)
+  const BPM = 110, GAP = 60 / BPM;
+  let metroOn = false, nextBeat = 0, timer = null;
+  function schedule() {
+    const a = audio(); if (!a) return;
+    while (nextBeat < a.currentTime + 0.12) {
+      tone(1000, nextBeat, 0.04, 0.08);
+      const delay = Math.max(0, (nextBeat - a.currentTime) * 1000);
+      setTimeout(() => { $('beat').classList.add('on'); setTimeout(() => $('beat').classList.remove('on'), 90); }, delay);
+      nextBeat += GAP;
+    }
+  }
+  $('metro').addEventListener('click', () => {
+    const a = audio();
+    metroOn = !metroOn;
+    if (metroOn && a) { nextBeat = a.currentTime + 0.05; schedule(); timer = setInterval(schedule, 25); }
+    else { clearInterval(timer); timer = null; }
+    $('metro').setAttribute('aria-pressed', String(metroOn));
+    $('metro').firstChild.textContent = metroOn ? '⏸ Stop the beat ' : '▶ Start the beat (110/min)';
+  });
+
+  // ---------- drawing the person ----------
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function drawBody(g) {
+    el('rect', { x: 0, y: 0, width: 300, height: 340, rx: 18, fill: '#e9f3fb' }, g);
+    el('circle', { cx: 150, cy: 34, r: 26, fill: '#c98f6a' }, g);
+    el('rect', { x: 136, y: 54, width: 28, height: 22, fill: '#c98f6a' }, g);
+    el('path', { d: 'M52 96 Q60 78 118 74 L182 74 Q240 78 248 96 L256 196 Q258 268 234 330 L66 330 Q42 268 44 196 Z', fill: '#e2ab86', stroke: '#b9805d', 'stroke-width': 2 }, g);
+    el('path', { d: 'M44 104 Q30 170 34 236 M256 104 Q270 170 266 236', stroke: '#b9805d', 'stroke-width': 2, fill: 'none' }, g);
+    el('path', { d: 'M78 90 Q114 82 146 92 M154 92 Q186 82 222 90', stroke: '#a86f4e', 'stroke-width': 3, fill: 'none', 'stroke-linecap': 'round' }, g);   // collarbones
+    el('line', { x1: 150, y1: 96, x2: 150, y2: 206, stroke: '#a86f4e', 'stroke-width': 3, 'stroke-linecap': 'round', opacity: .7 }, g);  // breastbone
+    for (let i = 0; i < 4; i++) {
+      const y = 118 + i * 22;
+      el('path', { d: `M144 ${y} Q110 ${y + 6} 72 ${y + 22}`, stroke: '#c48c68', 'stroke-width': 1.5, fill: 'none', opacity: .55 }, g);
+      el('path', { d: `M156 ${y} Q190 ${y + 6} 228 ${y + 22}`, stroke: '#c48c68', 'stroke-width': 1.5, fill: 'none', opacity: .55 }, g);
+    }
+    el('circle', { cx: 108, cy: 162, r: 4, fill: '#a86f4e' }, g); el('circle', { cx: 192, cy: 162, r: 4, fill: '#a86f4e' }, g);
+    el('circle', { cx: 150, cy: 262, r: 3, fill: '#a86f4e' }, g);   // belly button
+    el('text', { x: 14, y: 24, class: 'side-lbl' }, g).textContent = "THEIR RIGHT";
+    el('text', { x: 286, y: 24, class: 'side-lbl', 'text-anchor': 'end' }, g).textContent = "THEIR LEFT";
+  }
+  drawBody($('body1'));
+  drawBody($('body2'));
+
+  function svgPoint(svg, evt) {
+    const p = svg.createSVGPoint(); p.x = evt.clientX; p.y = evt.clientY;
+    return p.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  // ---------- 2. hand placement ----------
+  const HAND_SPOTS = { neck: [150, 100], heart: [196, 150], center: [150, 182], belly: [150, 240] };
+  function judgeHand(x, y) {
+    const mk = $('handMark'); mk.innerHTML = '';
+    const ok = Math.abs(x - 150) <= 22 && y >= 148 && y <= 212;
+    el('ellipse', { cx: x, cy: y, rx: 22, ry: 15, fill: ok ? 'rgba(0,179,126,.55)' : 'rgba(214,40,70,.5)', stroke: ok ? '#00704D' : '#d62846', 'stroke-width': 3 }, mk);
+    const fb = $('handFb');
+    if (ok) {
+      fb.className = 'fb good';
+      fb.textContent = '✓ Right spot: the center of the chest, on the lower half of the breastbone. Heel of one hand there, other hand on top, arms straight.';
+      mark('hands'); blip(true);
+    } else {
+      fb.className = 'fb bad';
+      fb.textContent = y < 148 ? '✗ Too high. Move down to the lower half of the breastbone, between the nipples and a little below.'
+        : y > 212 ? '✗ Too low. That\'s the stomach, and pushing there can hurt the person without moving blood. Move up onto the breastbone.'
+        : '✗ Off to the side. Your hands go in the middle of the chest, right on the breastbone, not over the heart on the left.';
+      blip(false);
+    }
+  }
+  $('handSvg').addEventListener('pointerdown', e => { const p = svgPoint($('handSvg'), e); judgeHand(p.x, p.y); });
+  document.querySelectorAll('[data-hand]').forEach(b => b.addEventListener('click', () => { const [x, y] = HAND_SPOTS[b.dataset.hand]; judgeHand(x, y); }));
+
+  // ---------- 3. compression trainer ----------
+  let taps = [], streak = 0, count = 0, lastTap = 0;
+  function press() {
+    const now = performance.now();
+    if (now - lastTap > 2000) taps = [];        // a long pause starts a new set
+    lastTap = now; taps.push(now); if (taps.length > 6) taps.shift();
+    count++;
+    $('push').classList.add('down'); setTimeout(() => $('push').classList.remove('down'), 110);
+    $('count').textContent = count;
+    if (taps.length < 3) { $('rateZone').textContent = 'Keep going…'; return; }
+    const avg = (taps[taps.length - 1] - taps[0]) / (taps.length - 1);
+    const rate = Math.round(60000 / avg);
+    const box = $('rateBox');
+    $('rateNum').textContent = rate;
+    $('needle').style.left = Math.max(0, Math.min(100, (rate - 60) / 100 * 100)) + '%';
+    let cls, msg;
+    if (rate >= 100 && rate <= 120) { cls = 'green'; msg = 'Perfect pace!'; }
+    else if (rate >= 90 && rate < 100) { cls = 'amber'; msg = 'A little slow. Speed up.'; }
+    else if (rate > 120 && rate <= 130) { cls = 'amber'; msg = 'A little fast. Slow down.'; }
+    else { cls = 'red'; msg = rate < 100 ? 'Too slow! Push faster.' : 'Too fast! The heart can\'t refill.'; }
+    box.className = 'rate ' + cls; $('rateZone').textContent = msg;
+    streak = cls === 'green' ? streak + 1 : 0;
+    $('streak').textContent = Math.min(streak, 30);
+    if (streak === 30) { $('rateZone').textContent = '🎉 30 in a row in the green zone!'; mark('rate'); blip(true); }
+  }
+  $('push').addEventListener('pointerdown', e => { e.preventDefault(); press(); });
+  $('push').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (!e.repeat) press(); } });
+  document.addEventListener('keydown', e => {
+    if (e.code !== 'Space' || e.repeat) return;
+    if (!$('station').hidden) return;   // the projector station is covering the page
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || (t.tagName === 'BUTTON' && t.id !== 'push') || t.tagName === 'A')) return;
+    const r = $('s-rate').getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight) return;  // only while the trainer is on screen
+    e.preventDefault(); press();
+  });
+
+  // ---------- 4. AED pads ----------
+  const ZONES = { ur: { x: 106, y: 124, ok: true, name: 'upper right chest' }, ll: { x: 214, y: 214, ok: true, name: 'lower left side' },
+                  ul: { x: 194, y: 124, ok: false }, belly: { x: 150, y: 256, ok: false } };
+  const aedSvg = $('aedSvg'), padsG = $('pads'), zonesG = $('zones');
+  const filled = { ur: false, ll: false };
+  ['ur', 'll'].forEach(k => {
+    const z = ZONES[k];
+    el('rect', { id: 'zone-' + k, x: z.x - 30, y: z.y - 22, width: 60, height: 44, rx: 10, fill: 'none', stroke: '#1C1A2E', 'stroke-width': 2, 'stroke-dasharray': '5 5', opacity: 0 }, zonesG);
+  });
+  const PAD_HOME = [[100, 388], [200, 388]];
+  const pads = PAD_HOME.map(([x, y], i) => {
+    const g = el('g', { class: 'pad', tabindex: '-1', style: 'cursor:grab' }, padsG);
+    el('rect', { x: -30, y: -22, width: 60, height: 44, rx: 10, fill: '#ffffff', stroke: '#1C1A2E', 'stroke-width': 2.5 }, g);
+    el('path', { d: 'M-6 -12 L4 -2 L-2 -2 L6 12 L-6 0 L0 0 Z', fill: '#ff7a00' }, g);
+    el('text', { x: 0, y: 19, 'text-anchor': 'middle', style: 'font:800 9px Nunito,sans-serif', fill: '#1C1A2E' }, g).textContent = 'PAD ' + (i + 1);
+    const pad = { g, x, y, home: [x, y], placed: null };
+    move(pad, x, y);
+    return pad;
+  });
+  function move(p, x, y) { p.x = x; p.y = y; p.g.setAttribute('transform', `translate(${x} ${y})`); }
+  function zoneAt(x, y) {
+    let best = null, bd = 1e9;
+    for (const k in ZONES) { const z = ZONES[k], d = Math.hypot(z.x - x, z.y - y); if (d < bd) { bd = d; best = k; } }
+    return bd < 48 ? best : null;
+  }
+  function placePad(p, k) {
+    const fb = $('padFb');
+    if (!k) { move(p, ...p.home); return; }
+    const z = ZONES[k];
+    if (!z.ok) {
+      move(p, ...p.home);
+      fb.className = 'fb bad';
+      fb.textContent = k === 'ul' ? '✗ Not the upper LEFT. The top pad goes on their upper RIGHT chest (your left when you face them), just below the collarbone.'
+        : '✗ Not on the stomach. One pad goes on the upper right chest, the other on the lower left side below the armpit, so the shock passes through the heart.';
+      blip(false); return;
+    }
+    if (filled[k]) { move(p, ...p.home); fb.className = 'fb bad'; fb.textContent = 'That spot already has a pad. Put this one in the other spot.'; return; }
+    filled[k] = true; p.placed = k; move(p, z.x, z.y); p.g.style.cursor = 'default';
+    fb.className = 'fb good';
+    fb.textContent = filled.ur && filled.ll ? '✓ Both pads are on. Now follow the AED.' : `✓ Good: ${z.name}. Now place the other pad.`;
+    blip(true); aedStep();
+  }
+  let drag = null, sel = null;
+  pads.forEach(p => {
+    p.g.addEventListener('pointerdown', e => {
+      if (p.placed) return;
+      e.preventDefault();
+      drag = { p, moved: false, sx: e.clientX, sy: e.clientY };
+      aedSvg.setPointerCapture(e.pointerId);
+    });
+  });
+  aedSvg.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 4) drag.moved = true;
+    const pt = svgPoint(aedSvg, e); move(drag.p, pt.x, pt.y);
+  });
+  aedSvg.addEventListener('pointerup', e => {
+    if (drag) {
+      const p = drag.p;
+      if (drag.moved) { placePad(p, zoneAt(p.x, p.y)); sel = null; }
+      else { sel = p; pads.forEach(q => q.g.querySelector('rect').setAttribute('stroke-width', q === p ? 5 : 2.5)); $('padFb').className = 'fb'; $('padFb').textContent = 'Pad selected. Now tap where it goes on the chest.'; }
+      drag = null; return;
+    }
+    if (sel) { const pt = svgPoint(aedSvg, e); const s = sel; sel = null; s.g.querySelector('rect').setAttribute('stroke-width', 2.5); placePad(s, zoneAt(pt.x, pt.y)); }
+  });
+  aedSvg.addEventListener('pointercancel', () => { if (drag) { move(drag.p, ...drag.p.home); drag = null; } });
+  document.querySelectorAll('[data-pad]').forEach(b => b.addEventListener('click', () => {
+    const p = pads.find(q => !q.placed); if (!p) return;
+    placePad(p, b.dataset.pad);
+  }));
+
+  // AED prompts: power on → attach pads → stand clear (analyzing) → shock → resume CPR
+  const FLOW = [
+    { say: 'AED is off. Press POWER to start.', btn: 'POWER ON', next: 1 },
+    { say: '"Apply pads to the patient\'s bare chest." Keep doing compressions while someone else puts on the pads.', btn: 'Pads are attached', need: 'pads', next: 2 },
+    { say: '"Analyzing heart rhythm. Do not touch the patient."', btn: '🙌 Stand clear: "Everyone back!"', next: 3 },
+    { say: '"Shock advised. Stand clear. Press the flashing orange button now."', shock: true, next: 4 },
+    { say: '"Shock delivered. Begin CPR now." Start pushing right away and follow the next prompt in 2 minutes.', btn: '🫀 Resume compressions', next: 5 },
+    { say: '✓ You did it. Keep going until EMS takes over or the person starts to move or breathe normally.' }
+  ];
+  let at = 0;
+  const WRONG = { 0: 'Turn the AED on first: open the lid or press POWER. It tells you what to do.', 2: 'Wait. Don\'t touch the person while it analyzes. Say "Stand clear!" first.', 3: 'Stand clear first, then press the flashing shock button.' };
+  function aedStep() {
+    const f = FLOW[at];
+    $('aedScreen').textContent = f.say;
+    const box = $('aedBtns'); box.innerHTML = '';
+    if (f.btn) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = f.btn;
+      if (f.need === 'pads' && !(filled.ur && filled.ll)) { b.disabled = true; b.title = 'Drag both pads onto the chest first'; }
+      b.addEventListener('click', () => go()); box.appendChild(b);
+    }
+    if (at < FLOW.length - 1) {
+      const sh = document.createElement('button'); sh.type = 'button'; sh.className = 'btn shock' + (f.shock ? ' flash' : ''); sh.textContent = '⚡';
+      sh.setAttribute('aria-label', 'Shock button');
+      sh.addEventListener('click', () => f.shock ? go() : wrong()); box.appendChild(sh);
+    }
+    if (at === FLOW.length - 1) { mark('aed'); blip(true); }
+  }
+  function go() { $('aedFb').textContent = ''; at = FLOW[at].next; if (at === 4) blip(true); aedStep(); }
+  function wrong() { $('aedFb').className = 'fb bad'; $('aedFb').textContent = '✗ ' + (WRONG[at] || 'Not yet. Follow the AED\'s voice prompt.'); blip(false); }
+  aedStep();
+
+  // ---------- class practice station (projector): big beat, 2-minute timer, "switch rescuers" ----------
+  const ROUND = 120;   // seconds per rescuer
+  let stOn = false, stTimer = null, stTick = null, stNext = 0, stStart = 0, stElapsed = 0, stRescuer = 1, stSwitchShown = false;
+  function stPaintMute() { $('stMute').textContent = muted ? '🔇 Sound off' : '🔊 Sound on'; }
+  function stPulse() { const p = $('stPulse'); p.classList.add('on'); setTimeout(() => p.classList.remove('on'), 120); }
+  function stSchedule() {
+    const a = audio(); if (!a) return;
+    while (stNext < a.currentTime + 0.12) {
+      tone(1000, stNext, 0.04, 0.09);
+      setTimeout(stPulse, Math.max(0, (stNext - a.currentTime) * 1000));
+      stNext += GAP;
+    }
+  }
+  function fmt(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  function stUpdate() {
+    const t = stElapsed + (stOn ? (performance.now() - stStart) / 1000 : 0);
+    $('stTime').textContent = fmt(t);
+    if (t >= ROUND && !stSwitchShown) {
+      stSwitchShown = true;
+      const a = audio(); if (a) { [0, 0.25, 0.5].forEach(d => tone(660, a.currentTime + d, 0.18, 0.12)); }
+      $('stSwitch').hidden = false;
+      setTimeout(() => {   // next rescuer: the clock starts again
+        $('stSwitch').hidden = true;
+        stRescuer++; stElapsed = 0; stStart = performance.now(); stSwitchShown = false;
+        $('stSub').textContent = 'Rescuer ' + stRescuer + ' · switch at 2:00';
+      }, 5000);
+    }
+  }
+  function stStartStop() {
+    const a = audio();
+    stOn = !stOn;
+    if (stOn) {
+      if (metroOn) $('metro').click();             // only one beat at a time
+      stStart = performance.now();
+      if (a) { stNext = a.currentTime + 0.05; stSchedule(); stTimer = setInterval(stSchedule, 25); }
+      stTick = setInterval(stUpdate, 200);
+    } else {
+      stElapsed += (performance.now() - stStart) / 1000;
+      clearInterval(stTimer); clearInterval(stTick);
+    }
+    $('stGo').textContent = stOn ? '⏸ Pause' : '▶ Start';
+  }
+  function stReset() {
+    if (stOn) stStartStop();
+    stElapsed = 0; stRescuer = 1; stSwitchShown = false; $('stSwitch').hidden = true;
+    $('stTime').textContent = '0:00'; $('stSub').textContent = 'Rescuer 1 · switch at 2:00';
+  }
+  function stOpen() { stPaintMute(); $('station').hidden = false; document.body.style.overflow = 'hidden'; $('stGo').focus(); }
+  function stClose() {
+    stReset(); $('station').hidden = true; document.body.style.overflow = '';
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  }
+  $('classBtn').addEventListener('click', stOpen);
+  $('stGo').addEventListener('click', stStartStop);
+  $('stReset').addEventListener('click', stReset);
+  $('stExit').addEventListener('click', stClose);
+  $('stMute').addEventListener('click', () => { muted = !muted; try { localStorage.setItem('dopp_cpr_muted', muted ? '1' : '0'); } catch (e) {} stPaintMute(); paintMute(); });
+  $('stFull').addEventListener('click', () => {
+    const s = $('station');
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else if (s.requestFullscreen) s.requestFullscreen().catch(() => {});
+  });
+  document.addEventListener('keydown', e => {
+    if ($('station').hidden) return;
+    if (e.key === 'Escape' && !document.fullscreenElement) stClose();
+  });
+  if (/[?&]class=1\b/.test(location.search)) stOpen();
+
+  // ---------- 6. quick check ----------
+  const QS = [
+    { q: 'How fast should you push during CPR?', a: ['60–80 times a minute', '100–120 times a minute', '140–160 times a minute', 'As fast as you possibly can'], c: 1,
+      why: '100–120 a minute, about the beat of "Stayin\' Alive". Faster than 120 doesn\'t give the heart time to refill with blood.' },
+    { q: 'How deep should you push on a teen or adult?', a: ['About 1 inch', 'At least 2 inches (5 cm)', 'About 4 inches', 'Just a light press'], c: 1,
+      why: 'At least 2 inches (5 cm), then let the chest come all the way back up before the next push.' },
+    { q: 'Where do your hands go?', a: ['Over the stomach', 'On the left side, over the heart', 'Center of the chest, on the lower half of the breastbone', 'At the top of the chest near the neck'], c: 2,
+      why: 'Center of the chest on the lower half of the breastbone. Pushing there squeezes the heart between the breastbone and spine.' },
+    { q: 'When can you stop doing CPR?', a: ['After 2 minutes', 'As soon as 911 answers the phone', 'When the person moves or breathes normally, a trained responder takes over, an AED says "stand clear", or it becomes unsafe', 'The first time your arms get tired'], c: 2,
+      why: 'Keep going until the person shows signs of life, help takes over, the AED tells you to stand clear, or the scene becomes unsafe. If someone else is there, switch about every 2 minutes.' },
+    { q: 'The AED arrives. What do you do first?', a: ['Press the shock button', 'Turn it on and follow its voice prompts', 'Stop CPR and wait for the ambulance', 'Put both pads on the person\'s back'], c: 1,
+      why: 'Power it on first (open the lid or press POWER). It talks you through the pads, tells everyone to stand clear, and says if a shock is needed.' }
+  ];
+  const pick = new Array(QS.length).fill(null);
+  function drawQuiz(checked) {
+    $('quiz').innerHTML = QS.map((q, i) =>
+      `<div class="q${checked ? ' checked' : ''}"><p>${i + 1}. ${q.q}</p>` +
+      q.a.map((t, j) => {
+        let c = 'opt';
+        if (pick[i] === j) c += ' sel';
+        if (checked && pick[i] === j) c += j === q.c ? ' right' : ' wrong';
+        return `<button type="button" class="${c}" data-q="${i}" data-a="${j}" aria-pressed="${pick[i] === j}">${t}</button>`;
+      }).join('') +
+      `<div class="why">${checked && pick[i] === q.c ? '✓ ' : checked ? '✗ ' : ''}${q.why}</div></div>`).join('');
+  }
+  $('quiz').addEventListener('click', e => {
+    const b = e.target.closest('[data-q]'); if (!b) return;
+    pick[+b.dataset.q] = +b.dataset.a; drawQuiz(false); $('quizFb').textContent = '';
+    const nb = $('quiz').querySelector(`[data-q="${b.dataset.q}"][data-a="${b.dataset.a}"]`); if (nb) nb.focus();
+  });
+  $('check').addEventListener('click', () => {
+    if (pick.some(p => p === null)) { $('quizFb').className = 'fb bad'; $('quizFb').textContent = 'Answer all 5 first.'; return; }
+    drawQuiz(true);
+    const right = QS.filter((q, i) => pick[i] === q.c).length;
+    if (right === QS.length) {
+      $('quizFb').className = 'fb good'; $('quizFb').textContent = '5 / 5! 🎉';
+      mark('quiz'); blip(true);
+      try { localStorage.setItem('dopp_cpr_quest_done', new Date().toISOString()); } catch (e) {}
+      if (window.StudentSave) {
+        StudentSave.save(DONE_KEY, { passed: true, at: new Date().toISOString(), drills: S }).then(r => showWin(r && r.source === 'cloud')).catch(() => showWin(false));
+      } else showWin(false);
+    } else {
+      $('quizFb').className = 'fb bad'; $('quizFb').textContent = right + ' / 5. Read the why-lines, change your answers and check again.';
+      blip(false);
+    }
+  });
+  function showWin(cloud) {
+    const w = $('win'); w.classList.add('show');
+    w.innerHTML = '🏅 Side quest complete! ' + (cloud
+      ? 'It\'s saved to your account and shows on your <a href="checklist.html">Checklist</a>.'
+      : 'It\'s saved on this device. <a href="quest.html">Sign in on the Quest page</a> and pass the check again to get credit on your Checklist.') +
+      '<br>Next: hands-on practice in class, where Mr. Dopp checks you off.';
+  }
+  drawQuiz(false);
+})();
+</script>
+</body>
+</html>
