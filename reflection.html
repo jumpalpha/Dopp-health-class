@@ -7,10 +7,10 @@
 <script src="term.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reflection Coach — Legend of Wellness</title>
-<meta name="description" content="A step-by-step coach for writing a personal health reflection paper. Saves as you type. No account needed.">
+<meta name="description" content="A conversational coach for your personal reflection paper on the 8 dimensions of health. One question at a time, saves after every answer, and organizes your own words into a paper. No account needed.">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root { --gold:#FFD700; --gold-text:#7a5c00; --emerald-text:#00704D; --sky:#38BFFF; --bg:#FDFAF2; --card:#fff;
+:root { --gold:#FFD700; --gold-text:#7a5c00; --emerald-text:#00704D; --sky:#38BFFF; --crimson:#c0233f; --bg:#FDFAF2; --card:#fff;
   --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66); }
 * { box-sizing:border-box; margin:0; padding:0; }
 body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
@@ -23,37 +23,85 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
 .wrap { max-width:760px; margin:0 auto; padding:22px 16px 70px; }
 .hero { border-radius:20px; padding:22px 20px; color:#fff; background:radial-gradient(circle at 20% 0%, #1f4f7a 0%, #1C1A2E 62%), #1C1A2E; }
 .hero h1 { font-family:'Cinzel',serif; font-size:clamp(22px,6vw,30px); color:var(--gold); text-shadow:0 2px 0 #000; }
-.hero p { font-size:14px; color:rgba(255,255,255,.8); margin-top:6px; line-height:1.55; }
+.hero p { font-size:14px; color:rgba(255,255,255,.85); margin-top:6px; line-height:1.55; }
 .steps { display:flex; gap:6px; margin:16px 0 4px; flex-wrap:wrap; }
-.dot { flex:1 1 0; min-width:44px; text-align:center; font:800 12px 'Nunito',sans-serif; padding:8px 4px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--dim); cursor:pointer; }
+.dot { flex:1 1 0; min-width:0; text-align:center; font:800 12px 'Nunito',sans-serif; padding:8px 4px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--dim); cursor:pointer; }
 .dot.on { background:#1C1A2E; color:var(--gold); border-color:#1C1A2E; }
 .dot.ok { border-color:#00b37e; color:var(--emerald-text); }
 .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px; margin-top:14px; }
 .card h2 { font-family:'Cinzel',serif; font-size:18px; color:var(--gold-text); margin-bottom:6px; }
-.card .lead { font-size:14.5px; line-height:1.55; margin-bottom:10px; }
-.qs { font-size:14px; line-height:1.55; color:var(--dim); margin:0 0 10px 18px; }
-.starters { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.lead { font-size:14.5px; line-height:1.55; margin-bottom:10px; }
+/* chat */
+.chat { display:flex; flex-direction:column; gap:10px; }
+.sec-head { align-self:center; font:800 12px 'Nunito',sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-text);
+  background:#fff8e1; border:1px solid rgba(122,92,0,.25); border-radius:999px; padding:5px 12px; margin:8px 0 2px; scroll-margin-top:90px; }
+.msg { max-width:88%; padding:11px 14px; border-radius:16px; font-size:15px; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
+.coach { align-self:flex-start; background:#eef6fc; border:1px solid rgba(56,191,255,.35); border-bottom-left-radius:4px; }
+.coach .who { display:block; font:900 11px 'Nunito',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#1f4f7a; margin-bottom:2px; }
+.coach.fu { background:#fff8e1; border-color:rgba(122,92,0,.3); }
+.coach.fu .who { color:var(--gold-text); }
+.me { align-self:flex-end; background:#1C1A2E; color:#fff; border-bottom-right-radius:4px; scroll-margin-top:90px; }
+.me.skip { background:#f1f0f5; color:var(--dim); font-style:italic; }
+.me .edit { display:block; margin-top:6px; text-align:right; }
+.me .edit button { font:800 12px 'Nunito',sans-serif; background:none; border:none; color:var(--gold); cursor:pointer; padding:2px 0 0 10px; }
+.me.skip .edit button { color:var(--gold-text); }
+.me.legacy { background:#2b2f4a; }
+.coach ul.hints { margin:6px 0 0 18px; font-size:13.5px; color:#2c4a63; white-space:normal; }
+.coach ul.hints li { margin:1px 0; }
+.choices { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:8px; margin-top:8px; white-space:normal; }
+.choice { text-align:left; font:800 14px/1.35 'Nunito',sans-serif; padding:10px 12px; border-radius:12px; border:2px solid var(--border); background:#fff; cursor:pointer; color:var(--text); }
+.choice.on { border-color:var(--gold-text); background:#fff8e1; }
+.choice.done { border-color:#00b37e; }
+.choice small { display:block; font-weight:700; font-size:12px; color:var(--dim); }
+.dimrow { display:flex; gap:6px; align-items:stretch; }
+.dimrow .choice { flex:1; }
+.fast { font:800 12px 'Nunito',sans-serif; border-radius:12px; border:1.5px dashed rgba(122,92,0,.45); background:#fff; color:var(--gold-text); cursor:pointer; padding:6px 8px; min-width:74px; }
+.fast[aria-pressed="true"] { background:#fff1c2; border-style:solid; }
+.fast:disabled { opacity:.4; cursor:default; }
+.starters { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
 .starter { font:700 12.5px 'Nunito',sans-serif; padding:6px 10px; border-radius:999px; border:1px dashed rgba(28,26,46,.3); background:#fffbea; color:var(--text); cursor:pointer; }
 .starter:hover { border-color:var(--gold-text); }
-textarea, input[type=text] { width:100%; font:600 16px/1.55 'Nunito',sans-serif; padding:12px; border-radius:12px; border:1.5px solid var(--border); background:#fff; color:var(--text); }
-textarea { min-height:180px; resize:vertical; }
+.prog { margin:16px 0 4px; }
+.pbar { height:10px; border-radius:999px; background:rgba(28,26,46,.08); overflow:hidden; }
+.pbar i { display:block; height:100%; background:linear-gradient(90deg,#38BFFF,#00b37e); border-radius:999px; transition:width .3s; }
+.ptxt { display:flex; justify-content:space-between; font:800 12.5px 'Nunito',sans-serif; color:var(--dim); margin-bottom:5px; }
+.chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.chip { font:800 12.5px 'Nunito',sans-serif; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; color:var(--dim); cursor:pointer; }
+.chip.on { background:#1C1A2E; color:var(--gold); border-color:#1C1A2E; }
+.chip.ok { border-color:#00b37e; color:var(--emerald-text); }
+.chip:disabled { opacity:.45; cursor:default; }
+.earlier { margin-top:14px; }
+.earlier summary { cursor:pointer; font-weight:900; color:var(--gold-text); }
+.earlier pre { white-space:pre-wrap; font:500 14px/1.55 'Nunito',sans-serif; margin-top:8px; }
+.note { font-size:13.5px; background:#fff8e1; border-left:4px solid var(--gold-text); border-radius:10px; padding:10px 12px; margin:10px 0; line-height:1.5; }
+.paper h4 { font:700 17px Georgia,serif; margin:18px 0 8px; }
+.compose { margin-top:14px; scroll-margin-bottom:12px; }
+textarea, input[type=text] { width:100%; font:600 16px/1.5 'Nunito',sans-serif; padding:12px; border-radius:12px; border:1.5px solid var(--border); background:#fff; color:var(--text); }
+textarea { min-height:96px; resize:vertical; }
 textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:0 0 0 3px rgba(56,191,255,.2); }
-.topics { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; margin-bottom:12px; }
-.topic { text-align:left; font:700 14px/1.35 'Nunito',sans-serif; padding:11px 12px; border-radius:12px; border:2px solid var(--border); background:#fff; cursor:pointer; color:var(--text); }
-.topic.on { border-color:var(--gold-text); background:#fff8e1; }
-.row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; }
-.wc { font-size:12.5px; font-weight:800; color:var(--dim); }
-.wc.ok { color:var(--emerald-text); }
-.btn { font:900 15px 'Nunito',sans-serif; padding:12px 18px; border-radius:12px; border:none; cursor:pointer; background:#1C1A2E; color:var(--gold); min-height:46px; }
+.row { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.hint { font-size:12.5px; color:var(--dim); }
+.btn { font:900 15px 'Nunito',sans-serif; padding:11px 16px; border-radius:12px; border:none; cursor:pointer; background:#1C1A2E; color:var(--gold); min-height:44px; }
 .btn.alt { background:#fff; color:var(--text); border:1px solid var(--border); }
+.btn:disabled { opacity:.45; cursor:default; }
 .saved { font-size:12px; color:var(--dim); }
-.paper { font:500 16px/1.75 Georgia,'Times New Roman',serif; white-space:pre-wrap; }
-.paper h3 { font:700 20px Georgia,serif; text-align:center; margin-bottom:12px; white-space:normal; }
+/* draft check + paper */
+.checks { list-style:none; display:grid; gap:6px; }
+.checks li { display:flex; gap:10px; align-items:flex-start; font-size:14.5px; line-height:1.45; padding:9px 10px; border-radius:10px; border:1px solid var(--border); }
+.checks li.ok { background:#ecfbf4; border-color:rgba(0,179,126,.45); }
+.checks li.no { background:#fff4f6; border-color:rgba(192,35,63,.35); }
+.checks .mk { font-weight:900; font-size:16px; width:18px; flex:0 0 18px; }
+.checks li.ok .mk { color:var(--emerald-text); } .checks li.no .mk { color:var(--crimson); }
+.checks a { color:var(--gold-text); font-weight:900; margin-left:4px; }
+.paper { font:500 16px/1.75 Georgia,'Times New Roman',serif; }
+.paper h3 { font:700 20px Georgia,serif; text-align:center; margin-bottom:12px; }
+.paper p { margin-bottom:12px; text-indent:2em; }
 .tip { font-size:13px; background:#eef9ff; border-left:4px solid var(--sky); border-radius:10px; padding:10px 12px; margin-top:12px; line-height:1.5; }
 .foot { font-size:13px; color:var(--dim); margin-top:16px; line-height:1.55; }
 .foot a { color:var(--gold-text); font-weight:800; }
-@media (max-width:560px) { .dot .dt { display:none; } .dot { font-size:14px; } }
-@media print { nav, .hero, .steps, .row, .foot, .tip, .no-print { display:none !important; } .card { border:none; padding:0; } body { background:#fff; } }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+@media (max-width:560px) { .dot .dt { display:none; } .dot { font-size:14px; } .msg { max-width:94%; } }
+@media print { nav, .hero, .steps, .row, .foot, .tip, .no-print { display:none !important; } .card { border:none; padding:0; margin:0; } body { background:#fff; } .wrap { padding:0; } }
 </style>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
@@ -71,12 +119,18 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
 </nav>
 
 <div class="wrap">
-  <section class="hero">
+  <section class="hero no-print">
     <h1>📝 Reflection Coach</h1>
-    <p>Write a personal health reflection one step at a time. Answer the guiding questions in your own words, and the coach builds your paper at the end. It saves as you type.</p>
+    <p>Write your personal reflection paper on the <b>8 dimensions of health</b> by talking it through. The coach asks one question at a time (about 36 in all), helps you dig deeper when it counts, and organizes your answers into a paper. It saves after every answer, so you can stop and pick up later.</p>
   </section>
-  <div class="steps" id="steps"></div>
-  <div id="app"></div>
+  <div class="prog no-print" id="prog"></div>
+  <div class="card no-print" id="chatCard">
+    <div class="chat" id="chat"></div>
+    <div class="compose" id="compose"></div>
+    <div class="row"><span class="saved" id="saved" aria-live="polite"></span></div>
+  </div>
+  <div id="after"></div>
+  <div class="sr-only" id="live" aria-live="polite"></div>
   <p class="foot">Optional side quest — nothing to turn in unless Mr. Dopp asks. Signed in on the Quest page? Your draft follows you to any device; otherwise it stays on this one.
     Prefer chatting with an AI coach? <a href="https://chatgpt.com/g/g-6a0a899654688191a26ed95a126a256c-personal-reflection-for-wellness-coach" target="_blank" rel="noopener noreferrer">Open the ChatGPT version</a> (needs a free ChatGPT account). ChatGPT is an outside site not run by Dopps Class, so don’t type your name or other personal information there.</p>
 </div>
@@ -87,114 +141,432 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const KEY = 'reflection_paper';
-  const TOPICS = [
-    ['sleep', '😴 My sleep habits'], ['stress', '🧠 How I handle stress'], ['food', '🥗 What and how I eat'],
-    ['move', '🏃 Staying active'], ['screens', '📱 Screens and social media'], ['friends', '💞 My friendships'],
-    ['family', '🏠 My family relationships'], ['goal', '🎯 A health goal I set'], ['pressure', '🛡 Saying no to pressure'],
-    ['own', '✏️ My own topic']
-  ];
-  const STEPS = [
-    { id: 'topic', title: 'Pick your topic', min: 0 },
-    { id: 'start', title: 'Where I started', min: 60,
-      lead: 'Describe your habits or situation before this class. Be honest — a reflection is about real change, not a perfect story.',
-      qs: ['What did a normal day look like for this part of your health?', 'What did you believe about it back then?', 'How did it affect the other dimensions of your health (physical, mental, emotional, social…)?'],
-      starters: ['Before this class, I usually…', 'If I\'m honest, I didn\'t think much about…', 'This affected me because…'] },
-    { id: 'learned', title: 'What I learned', min: 80,
-      lead: 'Connect your topic to something specific from class: a chapter, a vocab term, a fact or a skill.',
-      qs: ['Which chapter or lesson connects to your topic?', 'What is one fact or idea that surprised you?', 'Use at least one vocab term correctly in a sentence.'],
-      starters: ['In Chapter … I learned that…', 'One thing that surprised me was…', 'The term … helped me understand…'] },
-    { id: 'change', title: 'What I changed', min: 80,
-      lead: 'Explain what you did (or will do) differently. Write it as a S.M.A.R.T. goal: Specific, Measurable, Achievable, Relevant, Time-bound.',
-      qs: ['What exactly did you change or try?', 'How did you track it? What were the results?', 'What got in the way, and how did you handle it?'],
-      starters: ['My S.M.A.R.T. goal was to…', 'To track it, I…', 'The hardest part was… so I…'] },
-    { id: 'matters', title: 'Why it matters', min: 60,
-      lead: 'Wrap it up. Look ahead: how will this matter for you in a year, or in ten?',
-      qs: ['What did you learn about yourself?', 'What will you keep doing after this class ends?', 'What advice would you give a friend in your old situation?'],
-      starters: ['Looking back, I realize…', 'From now on, I plan to…', 'If a friend asked me, I would say…'] },
-    { id: 'paper', title: 'My paper', min: 0 }
-  ];
-  let D = { step: 0, topic: '', own: '', title: '', start: '', learned: '', change: '', matters: '' };
-  let saveT = null;
+  const NOTE = 'This coach doesn\'t write for you: your paper is your own words, organized. Want it polished? Edit it in Docs, or try the ChatGPT version below.';
 
+  // ───────────── questions ─────────────
+  const INTRO = [
+    { k: 'me', q: 'What should I call you, and tell me about your life right now.',
+      hints: ['A first name or nickname is fine (or skip it)', 'Your age or grade', 'Your family: who you live with', 'What a normal week looks like'],
+      starters: ['You can call me…', 'I\'m in … grade, and', 'A normal week for me looks like…'] },
+    { k: 'into', q: 'What are you into?',
+      hints: ['Interests and hobbies', 'Things you like', 'Things you dislike'],
+      starters: ['I\'m really into…', 'Something I love is…', 'I can\'t stand…'] },
+    { k: 'ahead', q: 'What matters to you, and where are you headed?',
+      hints: ['Your values (what matters most)', 'Goals you\'re working on', 'Big dreams', 'A challenge you\'re facing right now', 'Your hopes for the future'],
+      starters: ['What matters most to me is…', 'One goal I\'m working toward is…', 'Right now my biggest challenge is…'] }
+  ];
+  const DIMS = [
+    ['physical', 'Physical', '💪', 'your body: sleep, food, activity, health habits'],
+    ['emotional', 'Emotional', '💛', 'your feelings: stress, moods, coping'],
+    ['social', 'Social', '🤝', 'your relationships: friends, family, teammates'],
+    ['mental', 'Mental', '🧠', 'your mind: learning, thinking, school, curiosity'],
+    ['spiritual', 'Spiritual', '🕊', 'meaning and purpose: values, beliefs, faith, peace'],
+    ['environmental', 'Environmental', '🌎', 'your surroundings: home, room, neighborhood, nature'],
+    ['cultural', 'Cultural', '🎎', 'your background: traditions, identity, respecting others'],
+    ['financial', 'Financial', '💵', 'money: spending, saving, jobs, goals']
+  ];
+  const DIM = Object.fromEntries(DIMS.map(d => [d[0], { key: d[0], name: d[1], icon: d[2], about: d[3] }]));
+  // main question per dimension and part
+  const DQ = {
+    physical: { past: 'Think back to before this class. What were your physical habits like?', story: 'Tell me about a real moment that changed how you take care of your body.', present: 'What are your physical habits like now?', future: 'Who do you want to be physically in the future?' },
+    emotional: { past: 'Before, how did you usually handle big feelings like stress, anger or sadness?', story: 'Tell me about a real moment when your feelings changed you.', present: 'How do you handle your emotions now?', future: 'What kind of emotional strength do you want in the future?' },
+    social: { past: 'What were your friendships and relationships like before?', story: 'Tell me about a real moment with someone that changed how you see relationships.', present: 'What are your relationships like now?', future: 'What kind of relationships do you want in your future?' },
+    mental: { past: 'How did you think about learning and school before?', story: 'Tell me about a real moment when you learned something that changed how you think.', present: 'How do you learn and solve problems now?', future: 'What kind of thinker and learner do you want to become?' },
+    spiritual: { past: 'What gave your life meaning or purpose before? (Faith, values, nature, music, anything that gives you peace counts.)', story: 'Tell me about a real moment that made you think about what really matters.', present: 'What gives your life meaning now?', future: 'What do you want your life to stand for?' },
+    environmental: { past: 'What were your surroundings like before, and how did they affect you?', story: 'Tell me about a real moment when a place or your surroundings changed how you felt or acted.', present: 'How do you take care of your space and the world around you now?', future: 'What kind of environment do you want to create for yourself?' },
+    cultural: { past: 'What traditions, background or community shaped you growing up?', story: 'Tell me about a real moment when your culture, or someone else\'s, taught you something important.', present: 'How does your culture or identity show up in your life now?', future: 'What traditions do you want to carry forward, and how do you want to grow?' },
+    financial: { past: 'How did you handle money before, like allowance, a job, spending or saving?', story: 'Tell me about a real moment that taught you something about money.', present: 'How do you handle money now?', future: 'What do you want your financial life to look like?' }
+  };
+  const HINTS = {
+    past: ['Your habits back then', 'What you believed', 'Struggles and strengths', 'How you thought and acted'],
+    story: ['Who was there', 'What happened', 'Why it mattered', 'What changed after'],
+    present: ['How you\'ve changed', 'What you\'ve learned', 'Your strengths now', 'What you\'re still working on'],
+    future: ['Who you want to become', 'Habits you want to build', 'The kind of person you hope to be'],
+    thennow: ['What you were like before', 'What you\'re like now', 'What changed and why']
+  };
+  const STARTERS = {
+    past: ['Before this class, I…', 'I used to believe…', 'Back then, I struggled with…'],
+    story: ['One moment I\'ll never forget was when…', 'It happened when…', 'After that, I…'],
+    present: ['Now I…', 'The biggest change is…', 'I\'m still working on…'],
+    future: ['In five years, I want to…', 'One habit I want to build is…', 'I hope to become someone who…'],
+    thennow: ['I used to… but now I…', 'The biggest change is…', 'What helped me change was…']
+  };
+  const SHORT_Q = d => ({ thennow: `Then and now: what was your ${d.name.toLowerCase()} health like before, and what is it like now?`, future: DQ[d.key].future });
+  const partsOf = dk => (D.short.includes(dk) ? ['thennow', 'future'] : ['past', 'story', 'present', 'future']);
+  const TONES = [
+    ['formal', 'Formal academic'], ['heartfelt', 'Personal and heartfelt'], ['inspirational', 'Inspirational'],
+    ['reflective', 'Reflective'], ['professional', 'Professional'], ['story', 'Story-driven'], ['conversational', 'Conversational but polished']
+  ];
+
+  // ───────────── follow-ups: at most one per answer, only when needed ─────────────
   const words = t => (String(t || '').trim().match(/\S+/g) || []).length;
-  const topicLabel = () => D.topic === 'own' ? (D.own || 'My own topic') : ((TOPICS.find(t => t[0] === D.topic) || [, ''])[1].replace(/^\S+\s/, ''));
-  function stepOk(i) {
-    const s = STEPS[i];
-    if (s.id === 'topic') return !!D.topic && (D.topic !== 'own' || D.own.trim().length > 2);
-    if (s.id === 'paper') return STEPS.slice(1, 5).every((_, k) => stepOk(k + 1));
-    return words(D[s.id]) >= s.min;
+  // A story needs someone besides "me" and a real moment ("one night", "when I…", "last spring"…).
+  const PERSON = /\b(mom|dad|mother|father|parents?|stepmom|stepdad|brothers?|sisters?|siblings?|friends?|coach|teachers?|grandma|grandpa|grandmother|grandfather|aunt|uncle|cousins?|team|teammates?|he|she|him|her|they|them|we|us|someone|somebody|everyone|doctor|nurse|boss|manager|neighbor|pastor|counselor|classmates?|family|baby|kid|kids|people|guy|girl|boyfriend|girlfriend|dog|cat)\b/i;
+  const NAMED = /\b[A-Z][a-z]+ (said|told|asked|was|and I|helped|showed)\b/;
+  const EVENT = /\b(when|one (day|night|time|morning|afternoon|weekend)|last (week|night|month|year|spring|summer|fall|winter|season|weekend)|that (day|night|time|moment|year|summer|game)|happened|moment|once|game|match|trip|practice|tournament|party|funeral|wedding|birthday|holiday|yesterday|in \d|grade|freshman|sophomore)\b/i;
+  const SHORT_SAY = ['Can you tell me a little more? Add a detail or an example.', 'Keep going. What else would help someone picture it?', 'Say a bit more: what did that actually look like?'];
+  const STORY_SAY = ['Who was there, and what exactly happened?', 'Walk me through it: who was involved, and what happened first?'];
+  const hash = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); };
+  function followUp(part, key, text) {
+    if (words(text) < 15) return { kind: 'short', q: SHORT_SAY[hash(part + key) % SHORT_SAY.length] };
+    if (key === 'story' && !((PERSON.test(text) || NAMED.test(text)) && EVENT.test(text))) return { kind: 'story', q: STORY_SAY[hash(part) % STORY_SAY.length] };
+    return null;
   }
 
-  function save() {
-    clearTimeout(saveT);
-    $('saved') && ($('saved').textContent = 'Saving…');
-    saveT = setTimeout(() => {
-      StudentSave.save(KEY, D).then(r => { if ($('saved')) $('saved').textContent = r.ok ? (r.source === 'cloud' ? '✓ Saved to your account' : '✓ Saved on this device') : '⚠ ' + (r.error || 'Not saved'); });
-    }, 600);
-  }
+  // ───────────── state ─────────────
+  // D.ans[part][key] = { a, skip, fu: { kind, q, a, skip }, legacy }
+  let D = { v: 3, focus: 'intro', short: [], tone: '', title: '', ans: {} };
+  let editing = null, saveT = null;
+  const ans = (p, k) => (D.ans[p] || {})[k];
+  function setAns(p, k, v) { (D.ans[p] = D.ans[p] || {})[k] = v; }
+  const answered = it => !!it && (it.skip || !!String(it.a || '').trim());
+  const fuPending = it => !!(it && it.fu && it.fu.a == null && !it.fu.skip);
 
-  function drawSteps() {
-    $('steps').innerHTML = STEPS.map((s, i) => `<button class="dot${i === D.step ? ' on' : ''}${i !== D.step && stepOk(i) ? ' ok' : ''}" data-step="${i}">${stepOk(i) && i !== D.step ? '✓ ' : ''}${i + 1}<span class="dt">. ${esc(s.title)}</span></button>`).join('');
-  }
-
-  function draw() {
-    drawSteps();
-    const s = STEPS[D.step];
-    let h = '';
-    if (s.id === 'topic') {
-      h = `<div class="card"><h2>1. Pick your topic</h2><p class="lead">Choose one part of your health you thought about or worked on during this class.</p>
-        <div class="topics">${TOPICS.map(t => `<button class="topic${D.topic === t[0] ? ' on' : ''}" data-topic="${t[0]}">${esc(t[1])}</button>`).join('')}</div>
-        ${D.topic === 'own' ? `<input type="text" id="own" maxlength="80" placeholder="Name your topic" value="${esc(D.own)}">` : ''}
-        <div class="row"><span class="saved" id="saved"></span><button class="btn" id="next"${stepOk(0) ? '' : ' disabled'}>Next ▶</button></div></div>`;
-    } else if (s.id === 'paper') {
-      const ready = stepOk(D.step);
-      const title = D.title || 'My Journey: ' + topicLabel();
-      h = `<div class="card no-print"><h2>6. Your paper</h2><p class="lead">${ready ? 'Here it is! Give it a title, read it out loud once, and fix anything that doesn\'t sound like you.' : 'A few steps still need more writing. Finish the steps without a ✓ and your paper will be ready.'}</p>
-        <input type="text" id="title" maxlength="100" value="${esc(title)}" aria-label="Paper title">
-        <div class="row"><span class="saved" id="saved"></span><span><button class="btn alt" id="copy">📋 Copy</button> <button class="btn" id="print">🖨 Print / PDF</button></span></div></div>
-        <div class="card"><div class="paper"><h3>${esc(title)}</h3>${[D.start, D.learned, D.change, D.matters].filter(x => x.trim()).map(p => esc(p.trim())).join('\n\n')}</div></div>
-        <div class="tip no-print">✍ Total: <b>${words(D.start) + words(D.learned) + words(D.change) + words(D.matters)} words</b>. Strong reflections are specific: real examples, real numbers, a real vocab term, and an honest look at what was hard.</div>`;
-    } else {
-      const n = words(D[s.id]);
-      h = `<div class="card"><h2>${D.step + 1}. ${esc(s.title)}</h2><p class="lead">${esc(s.lead)}</p>
-        <ul class="qs">${s.qs.map(q => `<li>${esc(q)}</li>`).join('')}</ul>
-        <div class="starters">${s.starters.map(t => `<button class="starter" data-start="${esc(t)}">${esc(t)}</button>`).join('')}</div>
-        <textarea id="txt" placeholder="Write here… (topic: ${esc(topicLabel() || 'pick one in step 1')})">${esc(D[s.id])}</textarea>
-        <div class="row"><span><span class="wc${n >= s.min ? ' ok' : ''}" id="wc">${n} / ${s.min}+ words</span> · <span class="saved" id="saved"></span></span>
-          <span><button class="btn alt" id="prev">◀ Back</button> <button class="btn" id="next">Next ▶</button></span></div></div>`;
+  function migrate(old) {
+    if (!old || typeof old !== 'object') return;
+    if (old.v === 3) { D = Object.assign(D, old); D.short = D.short || []; D.ans = D.ans || {}; return; }
+    // Earlier versions are kept untouched in D.earlier and shown in a box, so nothing is lost.
+    if (old.v === 2) { D.earlier = { from: 'v2', data: old }; return; }
+    const v1 = { start: old.start || '', learned: old.learned || '', change: old.change || '', matters: old.matters || '' };
+    if (!Object.values(v1).some(t => String(t).trim())) return;
+    D.earlier = { from: 'v1', topic: old.topic || '', own: old.own || '', title: old.title || '', data: v1 };
+    // and seed the matching dimension so the old writing lands in the new paper
+    const map = { sleep: 'physical', food: 'physical', move: 'physical', stress: 'emotional', screens: 'mental', friends: 'social', family: 'social', pressure: 'social' };
+    const dk = map[old.topic];
+    if (dk) {
+      if (v1.start.trim()) setAns(dk, 'past', { a: v1.start.trim(), legacy: true });
+      const now = [v1.learned, v1.change].map(s => String(s).trim()).filter(Boolean).join(' ');
+      if (now) setAns(dk, 'present', { a: now, legacy: true });
+      if (v1.matters.trim()) setAns(dk, 'future', { a: v1.matters.trim(), legacy: true });
     }
-    $('app').innerHTML = h;
+    if (old.title) D.title = old.title;
+  }
+  function saveNow() {
+    clearTimeout(saveT);
+    $('saved').textContent = 'Saving…';
+    StudentSave.save(KEY, D).then(r => { $('saved').textContent = r.ok ? (r.source === 'cloud' ? '✓ Saved to your account' : '✓ Saved on this device') : '⚠ ' + (r.error || 'Not saved') + ' (it\'s still saved on this device)'; });
+  }
+  function saveSoon() { clearTimeout(saveT); saveT = setTimeout(saveNow, 600); }
+
+  // ───────────── progress ─────────────
+  function questionList() {
+    const L = INTRO.map(x => ['intro', x.k]);
+    DIMS.forEach(([dk]) => partsOf(dk).forEach(k => L.push([dk, k])));
+    L.push(['tone', 'tone']);
+    return L;
+  }
+  const isDone = ([p, k]) => p === 'tone' ? !!D.tone : answered(ans(p, k));
+  const partDone = p => p === 'intro' ? INTRO.every(x => answered(ans('intro', x.k)) && !fuPending(ans('intro', x.k)))
+    : p === 'tone' ? !!D.tone : partsOf(p).every(k => answered(ans(p, k)) && !fuPending(ans(p, k)));
+  const partStarted = p => !!D.ans[p] && Object.values(D.ans[p]).some(answered);
+  const allDims = () => DIMS.every(([dk]) => partDone(dk));
+  const allDone = () => partDone('intro') && allDims() && !!D.tone;
+
+  function drawProgress(P) {
+    const L = questionList(), done = L.filter(isDone).length, n = L.length;
+    // the number of the question on screen; otherwise the next unanswered one
+    const at = P && (P.type === 'q' || P.type === 'fu') ? L.findIndex(([p, k]) => p === P.part && k === P.key) : -1;
+    const curN = at >= 0 ? at + 1 : Math.min(n, (L.findIndex(q => !isDone(q)) + 1) || n);
+    const chips = [['intro', 'Intro', partDone('intro')]].concat(DIMS.map(([dk, nm, ic]) => [dk, ic + ' ' + nm + (D.short.includes(dk) ? ' ⚡' : ''), partDone(dk)]))
+      .concat([['tone', 'Tone', !!D.tone], ['paper', '📄 Paper', false]]);
+    $('prog').innerHTML = `<div class="ptxt"><span>${allDone() ? 'All questions answered 🎉' : `Question ${curN} of ${n}`}</span><span>${Math.round(done * 100 / n)}%</span></div>
+      <div class="pbar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}"><i style="width:${done * 100 / n}%"></i></div>
+      <div class="chips">${chips.map(([k, t, ok]) => `<button type="button" class="chip${D.focus === k ? ' on' : ''}${ok && D.focus !== k ? ' ok' : ''}" data-go="${k}"${k === 'paper' && !allDone() ? ' title="Answer everything first"' : ''}>${ok ? '✓ ' : ''}${esc(t)}</button>`).join('')}</div>`;
   }
 
+  // ───────────── what to ask next (inside the focused part) ─────────────
+  function pending() {
+    const f = D.focus;
+    if (f === 'pick' || f === 'paper') return { type: f };
+    if (f === 'tone') return D.tone ? { type: 'paper' } : { type: 'tone' };
+    const keys = f === 'intro' ? INTRO.map(x => x.k) : partsOf(f);
+    for (const k of keys) {
+      const it = ans(f, k);
+      if (!answered(it)) return { type: 'q', part: f, key: k };
+      if (fuPending(it)) return { type: 'fu', part: f, key: k };
+    }
+    return { type: 'partDone', part: f };
+  }
+  function qInfo(part, key) {
+    if (part === 'intro') { const x = INTRO.find(i => i.k === key); return { q: x.q, hints: x.hints, starters: x.starters }; }
+    const d = DIM[part], q = key === 'thennow' ? SHORT_Q(d).thennow : DQ[part][key];
+    return { q, hints: HINTS[key], starters: STARTERS[key] };
+  }
+  function nextFocus() {
+    if (!partDone('intro')) return 'intro';
+    if (!allDims()) return 'pick';
+    if (!D.tone) return 'tone';
+    return 'paper';
+  }
+
+  // ───────────── render ─────────────
+  const bubbleCoach = (html, fu) => `<div class="msg coach${fu ? ' fu' : ''}"><span class="who">${fu ? 'Coach · one more thing' : 'Coach'}</span>${html}</div>`;
+  function bubbleMe(text, part, key, which, skipped, legacy) {
+    const id = `m-${part}-${key}-${which}`;
+    if (editing && editing.part === part && editing.key === key && editing.which === which) {
+      return `<div class="msg me" id="${id}"><textarea id="editBox" aria-label="Edit your answer">${esc(text)}</textarea>
+        <span class="edit"><button type="button" data-cancel>Cancel</button><button type="button" data-saveedit>Save</button></span></div>`;
+    }
+    return `<div class="msg me${skipped ? ' skip' : ''}${legacy ? ' legacy' : ''}" id="${id}">${skipped ? 'Skipped' : esc(text)}<span class="edit"><button type="button" data-edit="${part}|${key}|${which}" aria-label="Edit this answer">✏️ Edit</button></span></div>`;
+  }
+  function questionBubble(part, key) {
+    const { q, hints } = qInfo(part, key);
+    return bubbleCoach(`${esc(q)}${hints ? `<ul class="hints">${hints.map(h => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}`);
+  }
+  function transcript(part, keys) {
+    const h = [];
+    keys.forEach(k => {
+      const it = ans(part, k);
+      if (!it) return;
+      if (it.legacy) h.push(bubbleCoach(esc('From your earlier draft (edit it any time):')));
+      else h.push(questionBubble(part, k));
+      h.push(bubbleMe(it.a, part, k, 'a', it.skip && !it.a, it.legacy));
+      if (it.fu) {
+        h.push(bubbleCoach(esc(it.fu.q), true));
+        if (it.fu.a != null || it.fu.skip) h.push(bubbleMe(it.fu.a || '', part, k, 'fu', it.fu.skip && it.fu.a == null));
+      }
+    });
+    return h;
+  }
+  function pickerHTML() {
+    const shortN = D.short.length;
+    const nextInOrder = DIMS.find(([dk]) => !partDone(dk));
+    return `<div class="choices" style="grid-template-columns:1fr">${DIMS.map(([dk, nm, ic, about]) => {
+      const done = partDone(dk), started = partStarted(dk), isShort = D.short.includes(dk);
+      const canToggle = !started && (isShort || shortN < 2);
+      return `<div class="dimrow"><button type="button" class="choice${done ? ' done' : ''}" data-dim="${dk}">${done ? '✓ ' : ''}${ic} ${esc(nm)}<small>${esc(about)}${started && !done ? ' · in progress' : ''}</small></button>
+        <button type="button" class="fast" data-fast="${dk}" aria-pressed="${isShort}"${canToggle ? '' : ' disabled'} title="Short answer: 2 questions instead of 4 (up to 2 dimensions)">⚡ Short${isShort ? ' ✓' : ''}</button></div>`;
+    }).join('')}</div>
+    ${nextInOrder ? `<div class="row"><span class="hint">⚡ Short = 2 questions instead of 4, for up to 2 dimensions (${shortN}/2 used).</span><button type="button" class="btn" data-dim="${nextInOrder[0]}">Go in order: ${esc(nextInOrder[1])} ▶</button></div>` : ''}`;
+  }
+
+  function render() {
+    const P = pending(), f = D.focus, h = [];
+    if (f === 'intro') {
+      h.push(bubbleCoach(esc('Hi! I\'m your Reflection Coach. Together we\'ll build your personal reflection paper on the 8 dimensions of health, one question at a time. First, a little about you. Use the hints so you know what to include, and tap a sentence starter if you\'re stuck.')));
+      h.push(...transcript('intro', INTRO.map(x => x.k)));
+    } else if (DIM[f]) {
+      const d = DIM[f];
+      h.push(`<div class="sec-head">${d.icon} ${esc(d.name)} health${D.short.includes(f) ? ' · ⚡ short' : ''}</div>`);
+      h.push(bubbleCoach(esc(`Let's talk about your ${d.name.toLowerCase()} health: ${d.about}. ${D.short.includes(f) ? 'This one is short: just two questions.' : 'Four questions: past, a story, present and future.'}`)));
+      h.push(...transcript(f, partsOf(f)));
+    } else if (f === 'pick') {
+      h.push(bubbleCoach(esc(partDone('intro') ? (DIMS.some(([dk]) => partDone(dk)) ? 'Nice work! Which dimension next? Go in order, or pick any one.' : 'Great, I know a little about you now. Next: the 8 dimensions of health. Pick one to start, or go in order. You can mark up to 2 as ⚡ Short (2 questions instead of 4).') : 'Pick a dimension, or finish the intro first.') + pickerHTML()));
+    } else if (f === 'tone') {
+      h.push(bubbleCoach(esc('Last question! What tone would you like your final paper to have? Tap one. It only changes the sentences that connect your answers; your words stay your words.') +
+        `<div class="choices">${TONES.map(([k, t]) => `<button type="button" class="choice${D.tone === k ? ' on' : ''}" data-tone="${k}">${esc(t)}</button>`).join('')}</div>`));
+    }
+    if (P.type === 'q') h.push(questionBubble(P.part, P.key));
+    if (P.type === 'partDone') {
+      const nf = nextFocus();
+      h.push(bubbleCoach(esc(f === 'intro' ? 'Thanks for sharing! Now let\'s go through the 8 dimensions of health.' : `That's ${DIM[f].name} done! ✓`) +
+        `<div class="row"><span></span><button type="button" class="btn" data-go="${nf}">${nf === 'pick' ? 'Choose the next dimension ▶' : nf === 'tone' ? 'Pick your tone ▶' : nf === 'paper' ? 'See my paper ▶' : 'Continue ▶'}</button></div>`));
+    }
+    $('chat').innerHTML = h.join('');
+    // composer
+    const c = $('compose');
+    if (P.type === 'q' || P.type === 'fu') {
+      const starters = P.type === 'q' ? qInfo(P.part, P.key).starters : [];
+      c.innerHTML = `${starters.length ? `<div class="starters" aria-label="Sentence starters">${starters.map(s => `<button type="button" class="starter" data-start="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
+        <label class="sr-only" for="box">Your answer</label><textarea id="box" placeholder="Type your answer…"></textarea>
+        <div class="row"><span class="hint">Enter sends · Shift+Enter for a new line</span>
+        <span><button class="btn alt" type="button" id="skip">${P.type === 'fu' ? 'Skip this one' : 'Skip'}</button> <button class="btn" type="button" id="send">Send ➤</button></span></div>`;
+    } else c.innerHTML = '';
+    drawProgress(P);
+    drawAfter();
+    const coaches = $('chat').querySelectorAll('.coach'), last = coaches[coaches.length - 1];
+    if (last) { const t = last.textContent.replace(/^Coach( · one more thing)?/, ''); if ($('live').dataset.last !== t) { $('live').textContent = t; $('live').dataset.last = t; } }
+  }
+
+  // ───────────── paper (student's own words, organized; tone changes only the framing) ─────────────
+  const T = {
+    formal: { title: 'A Reflection on the Eight Dimensions of Health', introHead: 'Introduction', intro: 'This paper reflects on my growth across the eight dimensions of health.', into: 'Outside of school, my interests shape who I am.',
+      past: d => `In the area of ${d} health, my starting point was as follows.`, story: d => `One experience significantly shaped my ${d} health.`, present: d => `My ${d} health today reflects that change.`, future: d => `Looking forward, I have clear intentions for my ${d} health.`, thennow: d => `My ${d} health has changed over time.`,
+      conclHead: 'Conclusion', concl: 'In conclusion, this reflection has clarified my values and my direction.', close: 'These eight dimensions together describe the person I am becoming.' },
+    heartfelt: { title: 'My Story, in Eight Parts', introHead: 'About Me', intro: 'This is my story, told honestly.', into: 'Here is what fills my days and my heart.',
+      past: d => `When I think about my ${d} health, I remember where I started.`, story: d => `There is one moment I keep coming back to.`, present: d => `Today, things look different.`, future: d => `Here is what I hope for.`, thennow: d => `My ${d} health has been a journey.`,
+      conclHead: 'What I Carry Forward', concl: 'Writing this helped me see what truly matters to me.', close: 'I am still growing, and I am proud of how far I have come.' },
+    inspirational: { title: 'Becoming My Best Self', introHead: 'Where My Journey Begins', intro: 'Every journey starts somewhere. This is mine.', into: 'The things I love give me energy.',
+      past: d => `Every story of growth has a beginning, and my ${d} health is no different.`, story: d => `Then came a turning point.`, present: d => `That moment helped make me who I am today.`, future: d => `And I am not done growing.`, thennow: d => `My ${d} health shows how far I can come.`,
+      conclHead: 'Looking Ahead', concl: 'This is where my next chapter begins.', close: 'I know I can keep growing in every part of my health.' },
+    reflective: { title: 'Looking Back, Looking Forward', introHead: 'Who I Am', intro: 'Before looking at each part of my health, it helps to describe who I am.', into: 'My interests say a lot about me.',
+      past: d => `Thinking back on my ${d} health, I can see where I began.`, story: d => `One experience made me reflect on it.`, present: d => `When I look at myself now, I notice how I have changed.`, future: d => `As I think about the future, I want to keep growing.`, thennow: d => `Reflecting on my ${d} health, I can see both then and now.`,
+      conclHead: 'Final Thoughts', concl: 'Reflecting on all of this, I understand myself better.', close: 'Looking back has helped me decide how to move forward.' },
+    professional: { title: 'Personal Wellness Review: Eight Dimensions', introHead: 'Background', intro: 'This review summarizes my personal wellness across eight dimensions.', into: 'My interests and preferences are summarized here.',
+      past: d => `Starting point (${d} health):`, story: d => `Key experience:`, present: d => `Current status:`, future: d => `Goals going forward:`, thennow: d => `Change over time (${d} health):`,
+      conclHead: 'Summary', concl: 'To summarize my priorities and direction:', close: 'This review will guide my next steps in each dimension.' },
+    story: { title: 'The Story of Me', introHead: 'Meet the Main Character', intro: 'Every story needs a main character. In this one, it\'s me.', into: 'Every main character has things they love.',
+      past: d => `The story of my ${d} health starts here.`, story: d => `Then something happened.`, present: d => `That changed the next chapter.`, future: d => `The next chapter is still being written.`, thennow: d => `My ${d} health has its own short story.`,
+      conclHead: 'To Be Continued', concl: 'Every story needs an ending, but mine is still being written.', close: 'And that is where the story continues.' },
+    conversational: { title: 'Me, in Eight Dimensions', introHead: 'A Little About Me', intro: 'Let me start by telling you a bit about myself.', into: 'Here\'s what I\'m into.',
+      past: d => `Let's start with my ${d} health and where I began.`, story: d => `Something happened that changed things.`, present: d => `So where am I now?`, future: d => `Here's where I'm headed.`, thennow: d => `My ${d} health has changed quite a bit.`,
+      conclHead: 'Wrapping Up', concl: 'So, what does all of this add up to?', close: 'That\'s me, at least for now.' }
+  };
+  function clean(t) {
+    t = String(t || '').replace(/\s+/g, ' ').trim();
+    if (!t) return '';
+    t = t.replace(/\bi\b/g, 'I').replace(/^([a-z])/, c => c.toUpperCase())
+      .replace(/(\S*)([.!?])(\s+)([a-z])/g, (m, w, p, sp, c) => /^(a\.m|p\.m|e\.g|i\.e|etc|vs|mr|mrs|ms|dr|st|approx|min|hrs?)$/i.test((w + (p === '.' ? '' : p)).replace(/\.$/, '')) ? m : w + p + sp + c.toUpperCase());
+    if (!/[.!?"')]$/.test(t)) t += '.';
+    return t;
+  }
+  const words_of = (p, k) => { const it = ans(p, k); if (!it) return ''; return [it.skip && !it.a ? '' : clean(it.a), it.fu && it.fu.a ? clean(it.fu.a) : ''].filter(Boolean).join(' '); };
+  function buildPaper() {
+    const t = T[D.tone] || T.reflective;
+    const out = { title: D.title || t.title, sections: [] };
+    const intro = [];
+    const me = words_of('intro', 'me'), into = words_of('intro', 'into');
+    if (me) intro.push(t.intro + ' ' + me);
+    if (into) intro.push(t.into + ' ' + into);
+    out.sections.push({ head: t.introHead, paras: intro });
+    DIMS.forEach(([dk, nm]) => {
+      const d = nm.toLowerCase();
+      const paras = partsOf(dk).map(k => { const w = words_of(dk, k); return w ? t[k](d) + ' ' + w : ''; }).filter(Boolean);
+      out.sections.push({ head: nm + ' Health', paras });
+    });
+    const ahead = words_of('intro', 'ahead');
+    out.sections.push({ head: t.conclHead, paras: [t.concl + (ahead ? ' ' + ahead : ''), t.close] });
+    return out;
+  }
+  const paperText = p => p.title + '\n\n' + p.sections.map(s => s.head + '\n\n' + s.paras.join('\n\n')).join('\n\n');
+  const countWords = p => p.sections.reduce((n, s) => n + s.paras.reduce((m, x) => m + words(x), 0), 0);
+
+  const EXAMPLE = /\b(for example|for instance|one time|once|one day|one night|last (week|night|month|year|weekend|summer)|yesterday|when i|the time|like when|remember|that day|that night)\b|\d/i;
+  function dimText(dk) { return partsOf(dk).map(k => words_of(dk, k)).join(' '); }
+  function checks() {
+    return DIMS.map(([dk, nm, ic]) => {
+      const short = D.short.includes(dk), txt = dimText(dk), n = words(txt);
+      const story = short ? null : words(words_of(dk, 'story')) >= 15;
+      const example = EXAMPLE.test(txt);
+      const thick = n >= (short ? 50 : 100);
+      const fixKey = !short && !story ? 'story' : !thick ? (short ? 'thennow' : 'present') : (short ? 'thennow' : 'past');
+      return { dk, nm, ic, short, story, example, thick, n, ok: (short || story) && example && thick, fixKey };
+    });
+  }
+  function drawAfter() {
+    if (D.focus !== 'paper') { $('after').innerHTML = ''; return; }
+    if (!allDone()) {
+      const missing = [];
+      if (!partDone('intro')) missing.push(['intro', 'Intro']);
+      DIMS.forEach(([dk, nm]) => { if (!partDone(dk)) missing.push([dk, nm]); });
+      if (!D.tone) missing.push(['tone', 'Tone']);
+      $('after').innerHTML = `<div class="card no-print"><h2>Your paper</h2><p class="lead">Your paper is built once every part is answered. Still to do:</p>
+        <div class="chips">${missing.map(([k, t]) => `<button type="button" class="chip" data-go="${k}">${esc(t)} ▶</button>`).join('')}</div></div>`;
+      return;
+    }
+    const cs = checks(), okN = cs.filter(c => c.ok).length;
+    const p = buildPaper(), n = countWords(p), pages = (n / 300).toFixed(1);
+    $('after').innerHTML = `
+      <div class="card no-print" id="draftCheck"><h2>Draft check</h2>
+        <p class="lead">${okN === cs.length ? 'Every dimension has a story, a specific example, and enough detail. 🎉' : `${okN} of 8 dimensions are complete. Tap "fix it" to add to the right answer.`}</p>
+        <ul class="checks">${cs.map(c => `<li class="${c.ok ? 'ok' : 'no'}"><span class="mk" aria-hidden="true">${c.ok ? '✓' : '✗'}</span><span><b>${c.ic} ${esc(c.nm)}</b>${c.short ? ' (⚡ short)' : ''}:
+          ${c.short ? '' : (c.story ? 'story ✓' : 'story missing ✗') + ' · '}${c.example ? 'specific example ✓' : 'specific example ✗'} · ${c.thick ? `${c.n} words ✓` : `${c.n} words, still thin ✗`}
+          ${c.ok ? '' : `<a href="#" data-fix="${c.dk}|${c.fixKey}">fix it →</a>`}</span></li>`).join('')}</ul>
+      </div>
+      <div class="card no-print"><h2>Your paper</h2>
+        <p class="note">${esc(NOTE)}</p>
+        <label class="hint" for="title">Title</label>
+        <input type="text" id="title" maxlength="120" value="${esc(p.title)}">
+        <div class="row"><span class="hint">${n} words · about ${pages} page${pages === '1.0' ? '' : 's'} (≈300 words a page) · tone: ${esc((TONES.find(x => x[0] === D.tone) || [, ''])[1])} <a href="#" data-go="tone">change</a></span>
+          <span><button class="btn alt" type="button" id="copy">📋 Copy</button> <button class="btn" type="button" id="print">🖨 Print / PDF</button></span></div></div>
+      <div class="card"><div class="paper" id="paper"><h3>${esc(p.title)}</h3>${p.sections.map(s => s.paras.length ? `<h4>${esc(s.head)}</h4>${s.paras.map(x => `<p>${esc(x)}</p>`).join('')}` : '').join('')}</div></div>
+      ${D.earlier ? earlierHTML() : ''}`;
+  }
+  function earlierHTML() {
+    const e = D.earlier, txt = e.from === 'v1' ? [e.title, e.data.start, e.data.learned, e.data.change, e.data.matters].filter(x => String(x || '').trim()).join('\n\n') : JSON.stringify(e.data, null, 1);
+    return `<details class="card earlier no-print"><summary>Your earlier draft (from the old coach)</summary><pre>${esc(txt)}</pre></details>`;
+  }
+
+  // ───────────── actions ─────────────
+  function go(f) { editing = null; D.focus = f; saveNow(); render(); window.scrollTo({ top: $('prog').offsetTop - 70, behavior: 'smooth' }); }
+  function send(raw) {
+    const P = pending(), text = String(raw || '').trim();
+    if (!text) return;
+    if (P.type === 'q') {
+      const it = { a: text }, fu = followUp(P.part, P.key, text);
+      if (fu) it.fu = fu;
+      setAns(P.part, P.key, it);
+    } else if (P.type === 'fu') ans(P.part, P.key).fu.a = text;
+    else return;
+    saveNow(); render(); scrollToNew();
+  }
+  function skip() {
+    const P = pending();
+    if (P.type === 'q') setAns(P.part, P.key, { a: '', skip: true });
+    else if (P.type === 'fu') ans(P.part, P.key).fu.skip = true;
+    saveNow(); render(); scrollToNew();
+  }
+  function scrollToNew() {
+    const msgs = $('chat').querySelectorAll('.msg'), last = msgs[msgs.length - 1], box = $('box');
+    if (box) box.focus({ preventScroll: true });
+    // show the coach's newest message with the answer box right under it
+    const target = box ? $('compose') : last;
+    if (target) {
+      const r = target.getBoundingClientRect();
+      window.scrollBy({ top: r.bottom - window.innerHeight + 16, behavior: 'smooth' });
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.target.id === 'box' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(e.target.value); }
+    if (e.target.id === 'editBox' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); document.querySelector('[data-saveedit]').click(); }
+    if (e.target.id === 'editBox' && e.key === 'Escape') { editing = null; render(); }
+  });
   document.addEventListener('input', e => {
-    const s = STEPS[D.step];
-    if (e.target.id === 'txt') {
-      D[s.id] = e.target.value;
-      const n = words(D[s.id]), wc = $('wc');
-      wc.textContent = n + ' / ' + s.min + '+ words'; wc.classList.toggle('ok', n >= s.min);
-      drawSteps(); save();
-    } else if (e.target.id === 'own') { D.own = e.target.value; $('next').disabled = !stepOk(0); drawSteps(); save(); }
-    else if (e.target.id === 'title') { D.title = e.target.value; document.querySelector('.paper h3').textContent = D.title; save(); }
+    if (e.target.id === 'title') { D.title = e.target.value; const h = document.querySelector('#paper h3'); if (h) h.textContent = D.title || buildPaper().title; saveSoon(); }
   });
   document.addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.step != null) { D.step = +b.dataset.step; draw(); save(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    else if (b.dataset.topic) { D.topic = b.dataset.topic; draw(); save(); if (D.topic === 'own') $('own').focus(); }
-    else if (b.dataset.start != null) {
-      const t = $('txt'), add = b.dataset.start.replace(/…$/, '');
-      t.value = (t.value.trim() ? t.value.replace(/\s*$/, '') + (/[.!?]$/.test(t.value.trim()) ? ' ' : ' ') : '') + add + ' ';
-      t.dispatchEvent(new Event('input', { bubbles: true })); t.focus(); t.setSelectionRange(t.value.length, t.value.length);
+    const b = e.target.closest('button, a[data-go], a[data-fix]'); if (!b) return;
+    if (b.dataset.go) { e.preventDefault(); return go(b.dataset.go === 'pick' && !partDone('intro') ? 'intro' : b.dataset.go); }
+    if (b.dataset.dim) return go(b.dataset.dim);
+    if (b.dataset.fast) {
+      const dk = b.dataset.fast;
+      if (D.short.includes(dk)) D.short = D.short.filter(x => x !== dk);
+      else if (D.short.length < 2 && !partStarted(dk)) D.short.push(dk);
+      saveNow(); render(); return;
     }
-    else if (b.id === 'next') { D.step = Math.min(STEPS.length - 1, D.step + 1); draw(); save(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    else if (b.id === 'prev') { D.step = Math.max(0, D.step - 1); draw(); save(); }
-    else if (b.id === 'print') window.print();
-    else if (b.id === 'copy') {
-      const txt = (D.title || 'My Journey: ' + topicLabel()) + '\n\n' + [D.start, D.learned, D.change, D.matters].filter(x => x.trim()).map(x => x.trim()).join('\n\n');
-      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { b.textContent = '✓ Copied'; }).catch(() => { b.textContent = 'Select & copy the text below'; });
+    if (b.dataset.tone) { D.tone = b.dataset.tone; saveNow(); return go('paper'); }
+    if (b.id === 'send') return send($('box').value);
+    if (b.id === 'skip') return skip();
+    if (b.dataset.start != null) {
+      const t = $('box'); if (!t) return;
+      const add = b.dataset.start.replace(/…$/, '');
+      t.value = (t.value.trim() ? t.value.replace(/\s*$/, ' ') : '') + add + ' ';
+      t.focus(); t.setSelectionRange(t.value.length, t.value.length); return;
+    }
+    if (b.dataset.edit) { const [part, key, which] = b.dataset.edit.split('|'); editing = { part, key, which }; render(); const t = $('editBox'); if (t) { t.focus(); t.setSelectionRange(t.value.length, t.value.length); } return; }
+    if (b.dataset.cancel != null) { editing = null; render(); return; }
+    if (b.dataset.saveedit != null && editing) {
+      const v = $('editBox').value.trim(), it = ans(editing.part, editing.key);
+      if (editing.which === 'a') { it.a = v; it.skip = !v; } else { it.fu.a = v || null; it.fu.skip = !v; }
+      const where = `m-${editing.part}-${editing.key}-${editing.which}`;
+      editing = null; saveNow(); render();
+      const el = $(where); if (el) el.scrollIntoView({ block: 'center' });
+      return;
+    }
+    if (b.dataset.fix) {
+      e.preventDefault();
+      const [dk, key] = b.dataset.fix.split('|');
+      D.focus = dk;
+      editing = answered(ans(dk, key)) ? { part: dk, key, which: 'a' } : null;
+      saveNow(); render();
+      const el = $(`m-${dk}-${key}-a`) || $('compose');
+      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      const t = $('editBox') || $('box'); if (t) { t.focus({ preventScroll: true }); t.setSelectionRange(t.value.length, t.value.length); }
+      return;
+    }
+    if (b.id === 'print') return window.print();
+    if (b.id === 'copy') {
+      const txt = paperText(Object.assign(buildPaper(), { title: D.title || buildPaper().title }));
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { b.textContent = '✓ Copied'; }).catch(() => { b.textContent = 'Select & copy the paper below'; });
     }
   });
 
-  StudentSave.load(KEY).then(r => { if (r && r.data && typeof r.data === 'object') D = Object.assign(D, r.data); draw(); }).catch(draw);
+  StudentSave.load(KEY).then(r => {
+    if (r && r.data) migrate(r.data);
+    if (D.focus !== 'paper' && D.focus !== 'tone' && D.focus !== 'pick' && D.focus !== 'intro' && !DIM[D.focus]) D.focus = 'intro';
+    render();
+  }).catch(render);
 })();
 </script>
 </body>
