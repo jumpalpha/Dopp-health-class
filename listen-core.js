@@ -19,7 +19,9 @@
     3: { src: '/podcasts/ch03.mp3', title: 'How Sleep Deprivation Sabotages Teen Resilience' },
     4: { src: '/podcasts/ch04.mp3', title: 'How Stress Hormones Affect Your Body' },
     5: { src: '/podcasts/ch05.mp3', title: 'Recognizing Mental Disorders and Crisis Signs' },
-    6: { src: '/podcasts/ch06.mp3', title: 'Setting Boundaries with Assertive Communication' }
+    6: { src: '/podcasts/ch06.mp3', title: 'Setting Boundaries with Assertive Communication' },
+    7: { src: '/podcasts/ch07.mp3', title: 'Why Blended Families Take Seven Years' },
+    8: { src: '/podcasts/ch08.mp3', title: 'Peer Pressure Refusal Steps and Dating Limits' }
   };
 
   var CHAPTERS = [null,
