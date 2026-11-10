@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<title>Listen — Legend of Wellness</title>
+<meta name="description" content="Every Legend of Wellness chapter podcast in one place. Pick up where you left off, binge a whole realm, and earn listener badges.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --emerald-text:#00704D; --sky:#38BFFF; --crimson:#FF3B5C;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); background:rgba(28,26,46,.04); }
+.wrap { max-width:760px; margin:0 auto; padding:22px 16px 60px; }
+.hero { position:relative; overflow:hidden; border-radius:20px; padding:26px 22px 22px; color:#fff; text-align:center;
+  background:radial-gradient(circle at 20% 0%, #3b2a7a 0%, #1C1A2E 60%), #1C1A2E; box-shadow:0 10px 30px rgba(28,26,46,.18); }
+.hero::after { content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(rgba(255,215,0,.5) 1px, transparent 1.5px); background-size:34px 34px; opacity:.18; }
+.hero > * { position:relative; z-index:1; }
+.hero .ic { font-size:40px; }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(26px,6vw,36px); color:var(--gold); text-shadow:0 2px 0 #000, 0 0 18px rgba(255,215,0,.35); line-height:1.15; margin-top:4px; }
+.hero p { font-size:15px; color:rgba(255,255,255,.82); margin-top:8px; line-height:1.55; }
+.stats { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:14px; }
+.stat { font-weight:800; font-size:13.5px; color:#1C1A2E; background:var(--emerald); border-radius:999px; padding:7px 14px; }
+.stat.gold { background:var(--gold); }
+.cont { display:flex; gap:12px; align-items:center; width:100%; margin-top:16px; padding:14px 16px; border-radius:16px; text-align:left; cursor:pointer;
+  font:inherit; color:var(--text); background:var(--card); border:2px solid var(--gold); box-shadow:0 4px 0 rgba(163,125,0,.3); }
+.cont:hover { background:#fffbea; }
+.cont:active { transform:translateY(2px); box-shadow:0 2px 0 rgba(163,125,0,.3); }
+.cont-ic { flex:0 0 46px; height:46px; border-radius:50%; display:grid; place-items:center; font-size:20px; background:#fff3b0; }
+.cont b { display:block; font-size:16px; }
+.cont small { display:block; font-size:12.5px; color:var(--dim); margin-top:2px; }
+#player { margin-top:16px; scroll-margin-top:70px; }
+.sec { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px 12px; margin-top:16px; }
+.sec h2 { font-family:'Cinzel',serif; font-size:17px; color:var(--gold-text); margin-bottom:4px; }
+.sec .sub { font-size:13px; color:var(--dim); margin-bottom:10px; }
+.badges { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+.badge { display:flex; gap:10px; align-items:center; padding:10px; border-radius:12px; border:1px dashed var(--border); background:rgba(28,26,46,.03); }
+.badge .bi { flex:0 0 38px; height:38px; border-radius:50%; display:grid; place-items:center; font-size:19px; background:rgba(28,26,46,.07); filter:grayscale(1); opacity:.6; }
+.badge b { display:block; font-size:12.5px; line-height:1.25; }
+.badge small { display:block; font-size:11.5px; color:var(--dim); }
+.badge.earned { border:1.5px solid var(--gold); background:#fffbea; }
+.badge.earned .bi { filter:none; opacity:1; background:linear-gradient(180deg,#FFE34D,#FFC400); box-shadow:0 2px 0 #a37d00; }
+.realm-h { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.realm-h .count { margin-left:auto; font-size:12px; font-weight:800; color:var(--dim); }
+.realm-h .count.full { color:var(--emerald-text); }
+.ep { display:flex; align-items:center; gap:12px; padding:10px 4px; border-top:1px solid var(--border); }
+.ep:first-of-type { border-top:none; }
+.ep .num { flex:0 0 34px; height:34px; border-radius:10px; display:grid; place-items:center; font:800 13px 'Nunito',sans-serif; background:rgba(28,26,46,.06); }
+.ep .txt { flex:1 1 auto; min-width:0; }
+.ep .t { font-weight:800; font-size:14.5px; line-height:1.3; }
+.ep .s { font-size:12px; color:var(--dim); margin-top:2px; }
+.ep .s a { color:inherit; }
+.ep .st { font-size:11.5px; font-weight:800; padding:2px 8px; border-radius:999px; white-space:nowrap; }
+.st.heard { background:#dcfcef; color:var(--emerald-text); }
+.st.part { background:#e6f6ff; color:#0a5f96; }
+.st.soon { background:rgba(28,26,46,.06); color:var(--dim); }
+.ep .pl { flex:0 0 40px; height:40px; border-radius:50%; border:none; cursor:pointer; font-size:15px; color:#1C1A2E;
+  background:linear-gradient(180deg,#FFE34D,#FFC400); box-shadow:0 2px 0 #a37d00; }
+.ep .pl:active { transform:translateY(2px); box-shadow:none; }
+.ep.soon { opacity:.6; }
+.ep.soon .num { background:transparent; border:1px dashed var(--border); }
+.ep.now { background:#fffbea; border-radius:12px; }
+.ep.now .num { background:#1C1A2E; color:var(--gold); }
+.foot { font-size:12.5px; color:var(--dim); line-height:1.55; margin-top:18px; text-align:center; }
+@media (max-width:480px) { nav { padding:10px 14px; } .ep .st { display:none; } }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="welcome.html">🏠 Today</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+  </div>
+</nav>
+<main class="wrap">
+  <section class="hero">
+    <div class="ic" aria-hidden="true">📻</div>
+    <h1>Listen</h1>
+    <p>Every chapter podcast in one place. Short recaps you can play on the bus, at practice, or while you do chores. Finish a whole realm to earn its listener badge.</p>
+    <div class="stats" id="stats"></div>
+  </section>
+  <div id="cont"></div>
+  <section id="player" aria-label="Podcast player"></section>
+  <section class="sec">
+    <h2>🏅 Listener badges</h2>
+    <p class="sub">Finish every episode in a realm to earn its badge. An episode counts once you've actually heard most of it (skipping ahead doesn't count).</p>
+    <div class="badges" id="badges"></div>
+  </section>
+  <div id="realms"></div>
+  <p class="foot">Episodes are AI-generated recaps of each chapter, reviewed by Mr. Dopp. They don't replace the reading — your Quick Checks come from the text.<br>
+    Signed in on the <a href="quest.html">Quest page</a>? Your progress follows you to any device. Badges are just for you; they don't add XP.</p>
+</main>
+<script src="student-save.js"></script>
+<script src="listen-core.js"></script>
+<script>
+(function () {
+  var L = window.DoppListen, $ = function (id) { return document.getElementById(id); }, esc = L.esc;
+  var pl = L.player($('player'), null, { chapterLink: true, onEpisode: function () { draw(); } });
+  $('player').hidden = true;
+
+  function playEp(n) {
+    $('player').hidden = false;
+    pl.load(n, true);
+    $('player').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function status(n) {
+    if (!L.has(n)) return '<span class="st soon">Coming soon</span>';
+    if (L.isDone(n)) return '<span class="st heard">✓ Heard</span>';
+    var p = L.position(n);
+    if (p > 5) return '<span class="st part">◐ ' + L.fmt(p) + ' in</span>';
+    return '';
+  }
+
+  function draw() {
+    var all = L.allEpisodes(), done = all.filter(L.isDone).length, now = pl.current();
+    var earned = L.REALMS.filter(function (r) { return L.realmStatus(r).earned; }).length;
+    $('stats').innerHTML = '<span class="stat">🎧 ' + done + ' of ' + all.length + ' episodes heard</span>' +
+      '<span class="stat gold">🏅 ' + earned + ' of 9 badges</span>';
+
+    var c = L.continueTarget();
+    $('cont').innerHTML = c && !now ?
+      '<button class="cont" id="go" type="button"><span class="cont-ic" aria-hidden="true">▶</span><span><b>' +
+        (c.resume ? 'Continue listening' : (done ? 'Play the next episode' : 'Start listening')) + '</b><small>Chapter ' + c.n + ' · ' +
+        esc(L.EPISODES[c.n].title) + (c.resume ? ' — pick up at ' + L.fmt(L.position(c.n)) : '') + '</small></span></button>' : '';
+    if ($('go')) $('go').onclick = function () { playEp(c.n); };
+
+    $('badges').innerHTML = L.REALMS.map(function (r) {
+      var s = L.realmStatus(r);
+      var note = s.earned ? 'Earned!' : s.eps ? s.done + ' of ' + r.chapters.length + ' heard' + (s.soon ? ' · ' + s.soon + ' coming soon' : '') : 'Episodes coming soon';
+      return '<div class="badge' + (s.earned ? ' earned' : '') + '"><span class="bi" aria-hidden="true">' + r.icon + '</span><span><b>' +
+        esc(r.name) + ' Listener</b><small>' + note + '</small></span></div>';
+    }).join('');
+
+    $('realms').innerHTML = L.REALMS.map(function (r) {
+      var s = L.realmStatus(r);
+      return '<section class="sec"><div class="realm-h"><h2>' + r.icon + ' Realm ' + r.num + ' · ' + esc(r.name) + '</h2>' +
+        '<span class="count' + (s.earned ? ' full' : '') + '">' + (s.eps ? s.done + '/' + s.eps + ' heard' + (s.earned ? ' · 🏅' : '') : 'coming soon') + '</span></div>' +
+        r.chapters.map(function (n) {
+          var ep = L.EPISODES[n];
+          return '<div class="ep' + (ep ? '' : ' soon') + (n === now ? ' now' : '') + '">' +
+            '<span class="num">' + n + '</span>' +
+            '<div class="txt"><div class="t">' + esc(ep ? ep.title : L.CHAPTERS[n]) + '</div>' +
+              '<div class="s">Chapter ' + n + (ep ? ' · ' + esc(L.CHAPTERS[n]) : '') + ' · <a href="' + L.chapterUrl(n) + '">read it</a></div></div>' +
+            status(n) +
+            (ep ? '<button class="pl" type="button" data-n="' + n + '" aria-label="Play chapter ' + n + ' episode">' + (n === now ? '♪' : '▶') + '</button>' : '') +
+          '</div>';
+        }).join('') + '</section>';
+    }).join('');
+  }
+
+  $('realms').addEventListener('click', function (e) {
+    var b = e.target.closest('.pl'); if (b) playEp(parseInt(b.getAttribute('data-n'), 10));
+  });
+  L.onChange(draw);
+  draw();
+  L.sync();
+  var h = location.hash.match(/^#ch(\d{1,2})$/);          // listen.html#ch3 opens that episode, ready to play
+  if (h && L.has(+h[1])) { $('player').hidden = false; pl.load(+h[1], false); }
+})();
+</script>
+</body>
+</html>
