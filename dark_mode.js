@@ -9,6 +9,7 @@
 (function () {
   if (window.DoppTheme) return;
   var KEY = 'dopp_theme';
+  var PRINTABLE = /\/(print_quest|sub_guide)(\.html)?$/.test(location.pathname);   // paper handouts keep light mode + toggle
   var root = document.documentElement;
   var PROPS = ['background-color', 'background-image', 'color', 'border-top-color', 'border-right-color',
                'border-bottom-color', 'border-left-color', 'outline-color', 'fill', 'stroke'];
@@ -18,6 +19,7 @@
   function saved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function save(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
   function wantsDark() {
+    if (!PRINTABLE) return true;   // 2026-11: the site uses the dark "aurora" look; light mode is only kept for printables.
     var s = saved();
     if (s === 'dark') return true;
     if (s === 'light') return false;
@@ -57,7 +59,7 @@
   // A light surface -> a dark one. Near-whites/creams become the site's deep navy.
   function darkSurface(c) {
     var x = toHsl(c);
-    if (x.l > 0.88 || x.s < 0.5) return hsla(245, 0.24, 0.07 + (1 - x.l) * 0.35, c.a);
+    if (x.l > 0.88 || x.s < 0.5) return hsla(240, 0.42, Math.max(0.075, 0.115 - (1 - x.l) * 0.3), c.a);   // white card -> #10102b-ish, cream -> a bit darker
     return hsla(x.h, 0.45, 0.06 + (1 - x.l) * 0.6, c.a);
   }
   // Dark text/tint -> light.
@@ -196,8 +198,8 @@
   var st = document.createElement('style');
   st.id = 'dopp-dark-style';
   st.textContent = [
-    'html.dopp-dark{color-scheme:dark;background:#12111d}',
-    'html.dopp-dark body{background-color:#12111d}',
+    'html.dopp-dark{color-scheme:dark;background:#07071a}',
+    'html.dopp-dark body{background-color:#07071a}',
     'html.dopp-pending body{visibility:hidden}',
     'html.dopp-noanim *,html.dopp-noanim *::before,html.dopp-noanim *::after{transition:none!important}',
     '#dopp-theme-btn{position:fixed;right:14px;bottom:14px;z-index:2147483000;width:46px;height:46px;border-radius:50%;',
@@ -276,6 +278,7 @@
     if (!lightPage) { root.classList.remove('dopp-pending'); return; }
     if (wantsDark()) turnOn();
     root.classList.remove('dopp-pending');
+    if (!PRINTABLE) return;   // no light/dark toggle any more (see wantsDark)
     if (root.hasAttribute('data-no-theme-btn')) return;
     btn = document.createElement('button');
     btn.id = 'dopp-theme-btn';

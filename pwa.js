@@ -4,7 +4,7 @@
 // button should go; without one, game pages get a small bar under the game.
 // Site visit counter: counts every page opened on any page (per tab session until 2026-10-20; started 2026-10-13).
 // window.doppVisits is a promise of the all-time total; the home page shows it.
-// Local Next.js rebuild: restyle game pages, and never touch the live site's visit counter or offline cache.
+// Local Next.js rebuild: restyle the classic pages (next_skin.js), and never touch the live site's visit counter or offline cache.
 var DOPP_LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
 (function () {
   var s = document.createElement('script'); s.src = 'next_skin.js'; document.head.appendChild(s);
