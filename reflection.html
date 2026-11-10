@@ -40,6 +40,8 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
 .coach .who { display:block; font:900 11px 'Nunito',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#1f4f7a; margin-bottom:2px; }
 .coach.fu { background:#fff8e1; border-color:rgba(122,92,0,.3); }
 .coach.fu .who { color:var(--gold-text); }
+.pace { font:800 12.5px 'Nunito',sans-serif; color:#2e7d32; margin-top:6px; }
+.pace.low { color:#9a5b00; }
 .me { align-self:flex-end; background:#1C1A2E; color:#fff; border-bottom-right-radius:4px; scroll-margin-top:90px; }
 .me.skip { background:#f1f0f5; color:var(--dim); font-style:italic; }
 .me .edit { display:block; margin-top:6px; text-align:right; }
@@ -222,6 +224,43 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
   const answered = it => !!it && (it.skip || !!String(it.a || '').trim());
   const fuPending = it => !!(it && it.fu && it.fu.a == null && !it.fu.skip);
 
+  // ───────────── length feedback along the way ─────────────
+  // The GPT version aims for a 6–7 page paper (~300 words a page). With ~34–36 answers that's about 50 words an answer.
+  const GOAL_PAGES = '6–7', GOAL_WORDS = 1800, TIP_UNDER = 40;
+  const itemWords = it => !it || (it.skip && !it.a) ? 0 : words(it.a) + (it.fu && it.fu.a ? words(it.fu.a) : 0);
+  function pace() {
+    const L = questionList().filter(([p]) => p !== 'tone');
+    const done = L.map(([p, k]) => ans(p, k)).filter(it => answered(it) && !(it.skip && !it.a));
+    if (done.length < 3) return null;
+    const avg = done.reduce((n, it) => n + itemWords(it), 0) / done.length;
+    const projected = Math.round((avg + 6) * L.length); // + about 6 words of tone lead-in per answer (matched to two test runs)
+    return { avg: Math.round(avg), pages: projected / 300, low: projected < GOAL_WORDS * 0.85 };
+  }
+  const PONDER = {
+    me: ['Who is in your family, and what are they like?', 'What does a normal school day look like, start to finish?', 'What is something people might not know about you?'],
+    into: ['Why do you love that? When did you start?', 'What does it feel like when you are doing it?', 'What is one thing you really dislike, and why?'],
+    ahead: ['Why does that matter so much to you?', 'What is one step you are taking toward that goal right now?', 'What makes your challenge hard, and who helps you with it?'],
+    past: ['What did a normal day look like back then?', 'Why do you think you did things that way?', 'How did it make you feel, and did anyone notice?'],
+    story: ['Where were you, and who was there?', 'What did someone say? Use their words if you remember them.', 'How did you feel right then, and what did you do differently afterward?'],
+    present: ['Give one example from this past week.', 'What do you do now that you did not do before?', 'What is still hard, and what are you doing about it?'],
+    future: ['What will a normal day look like for you then?', 'What is one small step you can take this month?', 'Why does this goal matter to you, or to the people you love?'],
+    thennow: ['What did a normal day look like before, and what does it look like now?', 'What caused the change?', 'What is one example from this past week?']
+  };
+  function lengthTip(part, key, it) {
+    const n = itemWords(it);
+    if (it.skip && !it.a) return '';
+    const pc = pace();
+    if (n >= TIP_UNDER && !(pc && pc.low)) return '';
+    const head = n < TIP_UNDER
+      ? `That answer is short (${n} word${n === 1 ? '' : 's'}).${pc && pc.low ? ` With answers this short, your paper will likely come out around ${Math.max(1, Math.round(pc.pages))} page${Math.round(pc.pages) === 1 ? '' : 's'}; the goal is ${GOAL_PAGES}.` : ` Short answers make a short paper; the goal is ${GOAL_PAGES} pages.`}`
+      : `Good detail! Your answers so far average ${pc.avg} words, so your paper is on pace for about ${Math.max(1, Math.round(pc.pages))} pages; the goal is ${GOAL_PAGES}. Keep adding detail like this.`;
+    const story = key === 'story'
+      ? 'Slow the moment down: tell it like a scene in a movie, one step at a time.'
+      : 'Or add a quick story: "One time when…" A real moment is the easiest way to explain what you mean, and it makes your paper longer.';
+    return `<div class="msg coach fu len"><span class="who">Coach · length check</span>${esc(head)}${n < TIP_UNDER ? ` To say more, think about:<ul class="hints">${(PONDER[key] || PONDER.present).map(x => `<li>${esc(x)}</li>`).join('')}</ul>${esc(story)}
+      <span class="edit" style="display:block;margin-top:6px"><button type="button" data-edit="${part}|${key}|a">✏️ Add more to this answer</button></span>` : ''}</div>`;
+  }
+
   function migrate(old) {
     if (!old || typeof old !== 'object') return;
     if (old.v === 3) { D = Object.assign(D, old); D.short = D.short || []; D.ans = D.ans || {}; return; }
@@ -262,6 +301,12 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
   const allDims = () => DIMS.every(([dk]) => partDone(dk));
   const allDone = () => partDone('intro') && allDims() && !!D.tone;
 
+  function paceLine() {
+    const pc = pace();
+    if (!pc) return '';
+    const pg = Math.max(1, Math.round(pc.pages));
+    return `<div class="pace${pc.low ? ' low' : ''}">📏 Paper length: on pace for about ${pg} page${pg === 1 ? '' : 's'} (goal: ${GOAL_PAGES}). ${pc.low ? `Your answers average ${pc.avg} words; aim for about 50.` : 'Nice, keep it up!'}</div>`;
+  }
   function drawProgress(P) {
     const L = questionList(), done = L.filter(isDone).length, n = L.length;
     // the number of the question on screen; otherwise the next unanswered one
@@ -270,7 +315,7 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
     const chips = [['intro', 'Intro', partDone('intro')]].concat(DIMS.map(([dk, nm, ic]) => [dk, ic + ' ' + nm + (D.short.includes(dk) ? ' ⚡' : ''), partDone(dk)]))
       .concat([['tone', 'Tone', !!D.tone], ['paper', '📄 Paper', false]]);
     $('prog').innerHTML = `<div class="ptxt"><span>${allDone() ? 'All questions answered 🎉' : `Question ${curN} of ${n}`}</span><span>${Math.round(done * 100 / n)}%</span></div>
-      <div class="pbar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}"><i style="width:${done * 100 / n}%"></i></div>
+      <div class="pbar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}"><i style="width:${done * 100 / n}%"></i></div>${paceLine()}
       <div class="chips">${chips.map(([k, t, ok]) => `<button type="button" class="chip${D.focus === k ? ' on' : ''}${ok && D.focus !== k ? ' ok' : ''}" data-go="${k}"${k === 'paper' && !allDone() ? ' title="Answer everything first"' : ''}>${ok ? '✓ ' : ''}${esc(t)}</button>`).join('')}</div>`;
   }
 
@@ -325,6 +370,8 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
         h.push(bubbleCoach(esc(it.fu.q), true));
         if (it.fu.a != null || it.fu.skip) h.push(bubbleMe(it.fu.a || '', part, k, 'fu', it.fu.skip && it.fu.a == null));
       }
+      // length feedback, only under the answer the student just sent
+      if (D.last && D.last[0] === part && D.last[1] === k && !fuPending(it) && !editing) h.push(lengthTip(part, k, it));
     });
     return h;
   }
@@ -508,6 +555,8 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
     $('after').innerHTML = `
       <div class="card no-print" id="draftCheck"><h2>Draft check</h2>
         <p class="lead">${okN === cs.length ? 'Every dimension has a story, a specific example, and enough detail. 🎉' : `${okN} of 8 dimensions are complete. Tap "fix it" to add to the right answer.`}</p>
+        ${n < GOAL_WORDS ? `<p class="lead pace low">📏 Your paper is about ${pages} pages; the goal is ${GOAL_PAGES}. To make it longer, add a story ("One time when…") or more detail to your shortest sections:
+          ${cs.slice().sort((a, b) => a.n - b.n).slice(0, 3).map(c => `<a href="#" data-fix="${c.dk}|${c.short ? 'thennow' : 'present'}">${c.ic} ${esc(c.nm)} (${c.n} words)</a>`).join(' · ')}</p>` : `<p class="lead pace">📏 About ${pages} pages: right on target. 🎉</p>`}
         <ul class="checks">${cs.map(c => `<li class="${c.ok ? 'ok' : 'no'}"><span class="mk" aria-hidden="true">${c.ok ? '✓' : '✗'}</span><span><b>${c.ic} ${esc(c.nm)}</b>${c.short ? ' (⚡ short)' : ''}:
           ${c.short ? '' : (c.story ? 'story ✓' : 'story missing ✗') + ' · '}${c.example ? 'specific example ✓' : 'specific example ✗'} · ${c.thick ? `${c.n} words ✓` : `${c.n} words, still thin ✗`}
           ${c.ok ? '' : `<a href="#" data-fix="${c.dk}|${c.fixKey}">fix it →</a>`}</span></li>`).join('')}</ul>
@@ -537,11 +586,12 @@ textarea:focus, input:focus { outline:none; border-color:var(--sky); box-shadow:
       setAns(P.part, P.key, it);
     } else if (P.type === 'fu') ans(P.part, P.key).fu.a = text;
     else return;
+    D.last = [P.part, P.key];
     saveNow(); render(); scrollToNew();
   }
   function skip() {
     const P = pending();
-    if (P.type === 'q') setAns(P.part, P.key, { a: '', skip: true });
+    if (P.type === 'q') { setAns(P.part, P.key, { a: '', skip: true }); D.last = null; }
     else if (P.type === 'fu') ans(P.part, P.key).fu.skip = true;
     saveNow(); render(); scrollToNew();
   }
