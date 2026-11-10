@@ -292,7 +292,7 @@ function render(pop){
     '<span class="chip">🔥 ' + p.streak + ' day streak</span>' +
     (p.deaths ? '<span class="chip">👻 revived ' + p.deaths + '×</span>' : '') +
     '<span class="chip" style="color:var(--gold)">💡 ' + (p.knowledge || 0) + ' Knowledge</span>';
-  const bars = [['❤️ Health', p.health], ['🍎 Food', p.food], ['⚡ Energy', p.energy], ['😊 Mood', p.mood], ['🫧 Clean', p.clean]];
+  const bars = [['❤️ Health', p.health], ['🍎 Food', p.food], ['⚡ Energy', p.energy], ['😊 Mood', p.mood], ['🚿 Clean', p.clean]];
   $('bars').innerHTML = bars.map(([l, v]) =>
     '<div class="bar"><span>' + l + '</span><div class="track"><div class="fill" style="width:' + v + '%;background:' + barColor(v) + '"></div></div><span>' + v + '</span></div>').join('');
   $('status').textContent = p.stage === 'egg' && p.alive ? 'Your egg is waiting. Log a habit or answer a question to hatch it!' : (MOOD_TEXT[mood] || MOOD_TEXT.happy)(p.name);

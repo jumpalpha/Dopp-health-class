@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <script src="dark_mode.js"></script>
 <script src="term.js"></script>
+<script src="hero_art.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Welcome Back — Legend of Wellness</title>
@@ -31,7 +32,7 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
 .hero::after { content:''; position:absolute; inset:0; pointer-events:none;
   background-image:radial-gradient(rgba(255,215,0,.5) 1px, transparent 1.5px); background-size:34px 34px; opacity:.18; }
 .hero > * { position:relative; z-index:1; }
-.avatar { width:68px; height:68px; margin:0 auto 10px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:34px;
+.avatar { width:88px; height:88px; margin:0 auto 10px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:34px;
   background:rgba(255,215,0,.14); border:2px solid rgba(255,215,0,.6); box-shadow:0 0 18px rgba(255,215,0,.25); }
 .hero h1 { font-family:'Cinzel',serif; font-size:clamp(24px,6vw,34px); color:var(--gold); text-shadow:0 2px 0 #000, 0 0 18px rgba(255,215,0,.35); line-height:1.15; }
 .hero .sub { font-size:14px; color:rgba(255,255,255,.75); margin-top:6px; }
@@ -171,7 +172,7 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
     const name = (student && student.display_name) || ses.name || 'Hero';
     $('app').innerHTML = `
       <section class="hero">
-        <div class="avatar" aria-hidden="true">${esc((student && student.avatar) || ses.avatar || '⚔')}</div>
+        <div class="avatar" aria-hidden="true">${window.DoppHero ? DoppHero.html((student && student.avatar) || ses.avatar || '⚔') : esc((student && student.avatar) || ses.avatar || '⚔')}</div>
         <h1>Welcome back, ${esc(name)}!</h1>
         <div class="sub">${esc(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }))} · ${esc(TERM.label || TRIMESTER)}</div>
         <div style="position:relative">

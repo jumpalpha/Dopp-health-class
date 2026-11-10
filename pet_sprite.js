@@ -9,22 +9,34 @@
     violet:  { base: '#B49BFF', dark: '#6545C9', light: '#E9E1FF' }
   };
   const INK = '#1A1030';
+  // mix a hex color toward the ink color (f = 0..1) for deep shading
+  function deep(hex, f) {
+    const a = parseInt(hex.slice(1), 16), b = parseInt(INK.slice(1), 16);
+    const m = (sh) => Math.round(((a >> sh) & 255) * (1 - f) + ((b >> sh) & 255) * f);
+    return '#' + ((1 << 24) + (m(16) << 16) + (m(8) << 8) + m(0)).toString(16).slice(1);
+  }
   const LEAF = '#3FCB6B', LEAF_D = '#1F7F40';
 
   function egg(p) {
     return '<g class="sp-egg">' +
-      '<ellipse cx="100" cy="182" rx="38" ry="7" fill="rgba(0,0,0,.25)"/>' +
-      '<path d="M100 62 C 132 62 146 112 146 138 C 146 166 126 182 100 182 C 74 182 54 166 54 138 C 54 112 68 62 100 62 Z" fill="#FFF8EC" stroke="' + INK + '" stroke-width="4"/>' +
+      '<defs><radialGradient id="eg' + p.base.slice(1) + '" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#FFF4DE"/><stop offset="1" stop-color="#E8D6B4"/></radialGradient>' +
+      '<radialGradient id="esh"><stop offset="0" stop-color="#000" stop-opacity=".38"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>' +
+      '<ellipse cx="100" cy="182" rx="44" ry="9" fill="url(#esh)"/>' +
+      '<path d="M100 62 C 132 62 146 112 146 138 C 146 166 126 182 100 182 C 74 182 54 166 54 138 C 54 112 68 62 100 62 Z" fill="url(#eg' + p.base.slice(1) + ')" stroke="' + INK + '" stroke-width="4"/>' +
       '<circle cx="82" cy="112" r="9" fill="' + p.base + '"/><circle cx="118" cy="98" r="7" fill="' + p.base + '"/>' +
       '<circle cx="112" cy="140" r="11" fill="' + p.base + '"/><circle cx="78" cy="152" r="6" fill="' + p.base + '"/>' +
       '<path d="M86 76 q6 -6 12 0" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".8"/>' +
       '</g>';
   }
 
-  function eyes(mood, cx, cy, gap) {
+  function eyes(mood, cx, cy, gap, uid) {
     const L = cx - gap, R = cx + gap;
-    const open = (x) => '<ellipse cx="' + x + '" cy="' + cy + '" rx="9" ry="11" fill="#fff" stroke="' + INK + '" stroke-width="3"/>' +
-      '<circle cx="' + (x + 2) + '" cy="' + (cy + 2) + '" r="5" fill="' + INK + '"/><circle cx="' + (x + 4) + '" cy="' + (cy - 1) + '" r="1.8" fill="#fff"/>';
+    const iris = uid ? 'url(#ir' + uid + ')' : INK;
+    const open = (x) => '<g class="sp-eye"><ellipse cx="' + x + '" cy="' + cy + '" rx="12" ry="14" fill="#fff" stroke="' + INK + '" stroke-width="3"/>' +
+      '<circle cx="' + (x + 1.5) + '" cy="' + (cy + 1.8) + '" r="9" fill="' + iris + '"/>' +
+      '<circle cx="' + (x + 1.5) + '" cy="' + (cy + 2.4) + '" r="4.3" fill="' + INK + '"/>' +
+      '<circle cx="' + (x + 5) + '" cy="' + (cy - 3) + '" r="3.6" fill="#fff"/><circle cx="' + (x - 2.4) + '" cy="' + (cy + 6) + '" r="1.8" fill="#fff" opacity=".9"/>' +
+      '<path d="M' + (x - 9) + ' ' + (cy - 7) + ' q9 -9 18 0" stroke="#fff" stroke-width="1.6" fill="none" opacity=".55"/></g>';
     switch (mood) {
       case 'tired': case 'sick':
         return [L, R].map(x => '<path d="M' + (x - 9) + ' ' + cy + ' q9 6 18 0" stroke="' + INK + '" stroke-width="4" fill="none" stroke-linecap="round"/>').join('');
@@ -176,17 +188,29 @@
       const fat = form === 'sugar' ? 1.14 : 1;
       const rx = 52 * fat, ry = (stage === 'teen' || stage === 'adult' ? 50 : 46);
       const cy = 122, cx = 100;
-      const sk = G.skinFill(gear.skin, uid, mood === 'sick' ? '#B9D98C' : p.base);
+      const sick = mood === 'sick';
+      const bLight = sick ? '#E4F2C6' : p.light, bBase = sick ? '#B9D98C' : p.base, bDark = sick ? '#7E9A52' : p.dark;
+      // 3D shading, lit from the top-left (ids are per drawing, so many sprites can share a page)
+      const shade = '<radialGradient id="bg' + uid + '" cx=".36" cy=".28" r=".85"><stop offset="0" stop-color="' + bLight + '"/><stop offset=".38" stop-color="' + bBase + '"/><stop offset=".82" stop-color="' + bDark + '"/><stop offset="1" stop-color="' + deep(bDark, .35) + '"/></radialGradient>' +
+        '<radialGradient id="ha' + uid + '"><stop offset="0" stop-color="' + p.base + '" stop-opacity=".5"/><stop offset=".55" stop-color="' + p.base + '" stop-opacity=".16"/><stop offset="1" stop-color="' + p.base + '" stop-opacity="0"/></radialGradient>' +
+        '<radialGradient id="ir' + uid + '" cx=".4" cy=".35"><stop offset="0" stop-color="' + p.base + '"/><stop offset=".7" stop-color="' + p.dark + '"/><stop offset="1" stop-color="' + INK + '"/></radialGradient>' +
+        '<radialGradient id="hl' + uid + '"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+        '<radialGradient id="sh' + uid + '"><stop offset="0" stop-color="#000" stop-opacity=".42"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
+        '<radialGradient id="bl' + uid + '"><stop offset="0" stop-color="#FF7E9B" stop-opacity=".75"/><stop offset="1" stop-color="#FF7E9B" stop-opacity="0"/></radialGradient>' +
+        '<linearGradient id="wg' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="' + p.light + '"/></linearGradient>' +
+        '<linearGradient id="be' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="' + bLight + '" stop-opacity=".55"/></linearGradient>';
+      const sk = G.skinFill(gear.skin, uid, 'url(#bg' + uid + ')');
       const body = sk.fill, top = cy - ry, ax = gear.arms === 'buff' ? 1.6 : gear.arms === 'toned' ? 1.25 : 1;
-      let g = sk.defs ? '<defs>' + sk.defs + '<clipPath id="bd' + uid + '"><ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '"/></clipPath></defs>' : '<defs><clipPath id="bd' + uid + '"><ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '"/></clipPath></defs>';
+      let g = sk.defs ? '<defs>' + shade + sk.defs + '<clipPath id="bd' + uid + '"><ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '"/></clipPath></defs>' : '<defs>' + shade + '<clipPath id="bd' + uid + '"><ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '"/></clipPath></defs>';
+      if (alive) g += '<circle cx="100" cy="' + (cy - 4) + '" r="' + (rx + 40) + '" fill="url(#ha' + uid + ')"/>';
       g += G.aura(gear.aura);
       // shadow
-      g += '<ellipse cx="100" cy="182" rx="' + (44 * fat) + '" ry="7" fill="rgba(0,0,0,.25)"/>';
+      g += '<ellipse cx="100" cy="182" rx="' + (50 * fat) + '" ry="9" fill="url(#sh' + uid + ')"/>';
       // wings
       if (stage === 'teen' || stage === 'adult') {
         const w = stage === 'adult' ? 1 : 0.75;
-        g += '<path d="M' + (cx - rx + 8) + ' ' + (cy - 10) + ' q' + (-40 * w) + ' ' + (-30 * w) + ' ' + (-46 * w) + ' ' + (6 * w) + ' q' + (20 * w) + ' ' + (4 * w) + ' ' + (40 * w) + ' ' + (20 * w) + ' z" fill="' + p.light + '" stroke="' + INK + '" stroke-width="3" opacity=".95"/>';
-        g += '<path d="M' + (cx + rx - 8) + ' ' + (cy - 10) + ' q' + (40 * w) + ' ' + (-30 * w) + ' ' + (46 * w) + ' ' + (6 * w) + ' q' + (-20 * w) + ' ' + (4 * w) + ' ' + (-40 * w) + ' ' + (20 * w) + ' z" fill="' + p.light + '" stroke="' + INK + '" stroke-width="3" opacity=".95"/>';
+        g += '<path d="M' + (cx - rx + 8) + ' ' + (cy - 10) + ' q' + (-40 * w) + ' ' + (-30 * w) + ' ' + (-46 * w) + ' ' + (6 * w) + ' q' + (20 * w) + ' ' + (4 * w) + ' ' + (40 * w) + ' ' + (20 * w) + ' z" fill="url(#wg' + uid + ')" stroke="' + INK + '" stroke-width="3" opacity=".97"/>';
+        g += '<path d="M' + (cx + rx - 8) + ' ' + (cy - 10) + ' q' + (40 * w) + ' ' + (-30 * w) + ' ' + (46 * w) + ' ' + (6 * w) + ' q' + (-20 * w) + ' ' + (4 * w) + ' ' + (-40 * w) + ' ' + (20 * w) + ' z" fill="url(#wg' + uid + ')" stroke="' + INK + '" stroke-width="3" opacity=".97"/>';
       }
       if (gear.back === 'cape') g += G.cape(cx, cy, rx, ry);
       // feet
@@ -196,8 +220,11 @@
       }
       // body
       g += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="' + body + '" stroke="' + INK + '" stroke-width="4"/>';
-      g += '<ellipse cx="' + cx + '" cy="' + (cy + 16) + '" rx="' + (rx * 0.58) + '" ry="' + (ry * 0.5) + '" fill="' + p.light + '" opacity=".85"/>';
-      g += '<ellipse cx="' + (cx - rx * 0.45) + '" cy="' + (cy - ry * 0.5) + '" rx="10" ry="6" fill="#fff" opacity=".55" transform="rotate(-30 ' + (cx - rx * 0.45) + ' ' + (cy - ry * 0.5) + ')"/>';
+      g += '<ellipse cx="' + cx + '" cy="' + (cy + 16) + '" rx="' + (rx * 0.58) + '" ry="' + (ry * 0.5) + '" fill="url(#be' + uid + ')"/>';
+      // gloss: a soft big highlight, a sharp little shine, and a rim of light along the lower right
+      g += '<ellipse cx="' + (cx - rx * 0.36) + '" cy="' + (cy - ry * 0.46) + '" rx="' + (rx * 0.42) + '" ry="' + (ry * 0.26) + '" fill="url(#hl' + uid + ')" opacity=".75" transform="rotate(-28 ' + (cx - rx * 0.36) + ' ' + (cy - ry * 0.46) + ')"/>';
+      g += '<ellipse cx="' + (cx - rx * 0.48) + '" cy="' + (cy - ry * 0.52) + '" rx="7" ry="4" fill="#fff" opacity=".9" transform="rotate(-32 ' + (cx - rx * 0.48) + ' ' + (cy - ry * 0.52) + ')"/>';
+      g += '<path d="M' + (cx + rx * 0.2) + ' ' + (cy + ry * 0.93) + ' A' + rx + ' ' + ry + ' 0 0 0 ' + (cx + rx * 0.93) + ' ' + (cy + ry * 0.2) + '" stroke="#fff" stroke-width="3" fill="none" opacity=".35" stroke-linecap="round"/>';
       g += '<g clip-path="url(#bd' + uid + ')">' + G.skinPattern(gear.skin, cx, cy, rx, ry, p) + (gear.arms === 'buff' ? G.abs(cx, cy) : '') + (gear.shirt ? G.shirt(gear.shirt, cx, cy, rx, ry) : '') + '</g>';
       g += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="none" stroke="' + INK + '" stroke-width="4"/>';
       if (gear.shoes) g += G.shoe(gear.shoes, cx - 24, cy + ry + 2) + G.shoe(gear.shoes, cx + 24, cy + ry + 2);
@@ -212,8 +239,8 @@
       g += sprout(stage, form, cx, cy - ry + 4);
       if (gear.hat === 'crown') g += G.crown(cx, top);
       // face
-      g += eyes(mood, cx, cy - 6, 18);
-      if (mood !== 'ghost') g += '<circle cx="' + (cx - 32) + '" cy="' + (cy + 8) + '" r="7" fill="#FF8FA8" opacity=".6"/><circle cx="' + (cx + 32) + '" cy="' + (cy + 8) + '" r="7" fill="#FF8FA8" opacity=".6"/>';
+      g += eyes(mood, cx, cy - 6, 18, uid);
+      if (mood !== 'ghost') g += '<ellipse cx="' + (cx - 32) + '" cy="' + (cy + 9) + '" rx="10" ry="7" fill="url(#bl' + uid + ')"/><ellipse cx="' + (cx + 32) + '" cy="' + (cy + 9) + '" rx="10" ry="7" fill="url(#bl' + uid + ')"/>';
       g += mouth(mood, cx, cy + 14);
       if (gear.face) g += G.face(gear.face, cx, cy - 6, 18);
       if (gear.neck === 'medal') g += G.medal(cx, cy);
@@ -236,9 +263,12 @@
         const st = (x, y, s) => '<path d="M' + x + ' ' + (y - s) + ' L' + (x + s * 0.3) + ' ' + (y - s * 0.3) + ' L' + (x + s) + ' ' + y + ' L' + (x + s * 0.3) + ' ' + (y + s * 0.3) + ' L' + x + ' ' + (y + s) + ' L' + (x - s * 0.3) + ' ' + (y + s * 0.3) + ' L' + (x - s) + ' ' + y + ' L' + (x - s * 0.3) + ' ' + (y - s * 0.3) + 'Z" fill="#FFF6A8" stroke="' + INK + '" stroke-width="1.5"/>';
         g = '<circle cx="100" cy="118" r="78" fill="url(#glow)"/>' + g + st(36, 60, 9) + st(168, 92, 7) + st(44, 150, 6);
       }
+      if (alive && (mood === 'happy') && (stage === 'teen' || stage === 'adult') && form !== 'radiant') {
+        [[30, 74, 6, 0], [170, 96, 5, 1], [160, 44, 4, 2]].forEach(a => g += '<g class="sp-tw sp-tw' + a[3] + '">' + G.star(a[0], a[1], a[2], '#FFF6A8') + '</g>');
+      }
       if (!alive) g += '<ellipse cx="100" cy="' + (cy - ry - 34) + '" rx="22" ry="6" fill="none" stroke="#FFE066" stroke-width="4"/>';
       const wrapCls = alive ? 'sp-alive sp-' + mood : 'sp-ghost';
-      inner = '<g class="' + wrapCls + '" ' + (alive ? '' : 'opacity=".55"') + ' transform="translate(' + (100 - 100 * scale) + ' ' + (182 - 182 * scale) + ') scale(' + scale + ')">' + g + '</g>';
+      inner = '<g class="' + wrapCls + '" ' + (alive ? '' : 'opacity=".55"') + ' transform="translate(' + (100 - 100 * scale) + ' ' + (182 - 182 * scale) + ') scale(' + scale + ')"><g class="sp-bob">' + g + '</g></g>';
     }
     // tight crop for small thumbnails
     let vb = '0 0 200 200';
@@ -266,6 +296,15 @@
       '#sprite-zoom .spz-x{position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(0,0,0,.4);color:#fff;font:800 24px/1 Nunito,sans-serif;cursor:pointer}' +
       '#sprite-zoom .spz-hint{margin-top:6px;color:rgba(255,255,255,.7);font:600 13px Nunito,sans-serif}' +
       '@keyframes spz{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}';
+    css.textContent +=
+      '.pet-sprite .sp-alive .sp-bob{animation:spBob 3.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}' +
+      '.pet-sprite .sp-eye{animation:spBlink 5.2s infinite;transform-box:fill-box;transform-origin:center}' +
+      '.pet-sprite .sp-tired .sp-bob,.pet-sprite .sp-sick .sp-bob{animation-duration:5.5s}' +
+      '@keyframes spBob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-3px) scale(1.012,.988)}}' +
+      '.pet-sprite .sp-tw{animation:spTw 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}.pet-sprite .sp-tw1{animation-delay:-.9s}.pet-sprite .sp-tw2{animation-delay:-1.7s}' +
+      '@keyframes spTw{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1.1)}}' +
+      '@keyframes spBlink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}' +
+      '@media (prefers-reduced-motion:reduce){.pet-sprite .sp-bob,.pet-sprite .sp-eye,.pet-sprite .sp-tw{animation:none}}';
     (document.head || document.documentElement).appendChild(css);
 
     function close() { var o = document.getElementById('sprite-zoom'); if (o) o.remove(); document.removeEventListener('keydown', onKey, true); }

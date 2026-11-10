@@ -172,7 +172,8 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
   font-size:13px; vertical-align:middle; }
 .lb-table tr:last-child td { border:none; }
 .lb-table tr:hover td { background:rgba(255,255,255,0.02); }
-.lb-avatar { font-size:18px; line-height:1; }
+.lb-avatar { font-size:18px; line-height:1; width:40px; }
+.lb-avatar .hero-art { width:32px; height:32px; }
 .lb-filter { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
 .lb-filter-btn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700;
   border:1px solid var(--border); background:var(--card); color:var(--dim);
@@ -254,6 +255,7 @@ input, select, textarea { color: var(--text); }
 <link rel="stylesheet" href="shared.css">
 <script src="vendor/supabase.js"></script>
 <script src="pet_sprite.js"></script>
+<script src="hero_art.js"></script>
 <script src="checklist.js"></script>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
@@ -1851,7 +1853,7 @@ function renderLeaderboard() {
       <span style="font-size:11px;color:var(--dim)">${s.tasks}/${TOTAL_TASKS}</span></div>`;
     return `<tr>
       <td style="text-align:center">${rankLabel(i)}</td>
-      <td class="lb-avatar">${escapeHtml(s.avatar || '⚔')}</td>
+      <td class="lb-avatar">${window.DoppHero ? DoppHero.html(s.avatar || '⚔') : escapeHtml(s.avatar || '⚔')}</td>
       <td style="font-weight:700;color:var(--text)">${escapeHtml(s.display_name)}</td>
       <td style="font-size:12px;color:var(--dim)">${escapeHtml(periodLabel(s.class_code))}</td>
       <td style="font-family:'Cinzel',serif;font-weight:700;color:#0a7a55">${s.vxp.toLocaleString()}${s.mastered ? ' <span style="font-family:Nunito,sans-serif;font-size:11px;color:var(--dim)">🎓' + s.mastered + '</span>' : ''}</td>

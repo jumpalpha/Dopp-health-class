@@ -126,8 +126,12 @@ main { position:relative; z-index:10; }
 @media (min-width:960px) { .hero { grid-template-columns:1.55fr 1fr; } }
 .hero-main { padding:clamp(22px,3.5vw,36px); border-radius:28px; position:relative; overflow:hidden; }
 .hero-id { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
-.hero-avatar { width:72px; height:72px; flex:0 0 72px; border-radius:22px; display:grid; place-items:center; font-size:38px; cursor:pointer; border:1px solid rgba(255,209,102,.35);
-  background:linear-gradient(135deg,rgba(255,209,102,.22),rgba(255,59,92,.12)); box-shadow:0 0 40px -12px rgba(255,159,28,.8); transition:transform .2s; }
+.hero-avatar { width:96px; height:96px; flex:0 0 96px; border-radius:26px; display:grid; place-items:center; font-size:46px; cursor:pointer; border:1px solid rgba(255,209,102,.45); padding:0; overflow:visible; position:relative;
+  background:radial-gradient(circle at 50% 35%,rgba(255,209,102,.35),rgba(255,159,28,.12) 55%,rgba(255,59,92,.10)); box-shadow:0 0 50px -10px rgba(255,159,28,.85),inset 0 1px 0 rgba(255,255,255,.12); transition:transform .2s; }
+.hero-avatar::after { content:""; position:absolute; inset:-1px; border-radius:inherit; pointer-events:none; background:conic-gradient(from 0deg,transparent 0 70%,rgba(255,209,102,.9) 80%,transparent 90%); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; padding:2px; animation:heroSpin 4s linear infinite; }
+@keyframes heroSpin { to { transform:rotate(360deg); } }
+.hero-avatar .hero-art { border-radius:25px; }
+@media (prefers-reduced-motion:reduce) { .hero-avatar::after { animation:none; } }
 .hero-avatar:hover { transform:rotate(-6deg) scale(1.04); }
 .hero-who { flex:1; min-width:200px; }
 .hero-name { font-family:var(--display); font-size:clamp(30px,4.6vw,46px); font-weight:800; letter-spacing:-.03em; line-height:1.02; overflow-wrap:anywhere; }
@@ -236,10 +240,14 @@ main { position:relative; z-index:10; }
 .modal-input { width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14); border-radius:14px; color:var(--fg); font:700 16px var(--sans); padding:13px 16px; margin-bottom:12px; transition:border-color .2s,box-shadow .2s; }
 .modal-input::placeholder { color:rgba(238,240,255,.45); }
 .modal-input:focus { outline:none; border-color:rgba(255,209,102,.6); box-shadow:0 0 0 3px rgba(255,209,102,.18); }
-.modal-avatars { display:grid; grid-template-columns:repeat(8,1fr); gap:6px; margin-bottom:14px; }
-.av-opt { font-size:22px; cursor:pointer; padding:6px 0; text-align:center; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.03); transition:all .15s; }
-.av-opt:hover, .av-opt.sel { border-color:var(--gold); background:rgba(255,209,102,.12); }
-@media (max-width:420px) { .modal-avatars { grid-template-columns:repeat(4,1fr); } }
+.modal-avatars { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; }
+.av-opt .av-name { display:block; font-size:11px; font-weight:800; color:var(--muted); margin-top:4px; text-align:center; }
+.av-opt.sel .av-name { color:var(--gold); }
+.av-wrap { display:flex; flex-direction:column; }
+.av-opt { font-size:22px; cursor:pointer; aspect-ratio:1; padding:2px; overflow:hidden; display:grid; place-items:center; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.03); transition:all .15s; }
+.av-opt:hover { border-color:rgba(255,209,102,.5); transform:translateY(-2px); }
+.av-opt.sel { border-color:var(--gold); background:radial-gradient(circle at 50% 35%,rgba(255,209,102,.3),rgba(255,209,102,.06)); box-shadow:0 0 18px -4px rgba(255,209,102,.8); }
+
 .modal-btn { width:100%; padding:14px; border-radius:14px; border:0; cursor:pointer; font:800 16px var(--sans); color:#1a0d00;
   background:linear-gradient(90deg,var(--gold),var(--amber),#ff6b3d); box-shadow:0 12px 30px -12px rgba(255,159,28,.85); }
 .modal-btn:hover { filter:brightness(1.06); }
@@ -251,7 +259,7 @@ main { position:relative; z-index:10; }
 .roster-btn { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:inherit;
   font:700 15px var(--sans); cursor:pointer; text-align:left; min-height:48px; }
 .roster-btn:hover, .roster-btn:focus { border-color:var(--gold); background:rgba(255,209,102,.1); outline:none; }
-.roster-btn .av { font-size:20px; }
+.roster-btn .av { font-size:20px; width:34px; height:34px; flex:0 0 34px; display:grid; place-items:center; border-radius:10px; overflow:hidden; }
 .roster-empty { grid-column:1/-1; font-size:13px; color:var(--muted); padding:8px; }
 .modal-btn.new-btn { background:rgba(255,209,102,.06); color:var(--gold); border:1px dashed rgba(255,209,102,.55); box-shadow:none; }
 .match-box { background:rgba(255,209,102,.08); border:1px solid rgba(255,209,102,.45); border-radius:14px; padding:12px 14px; margin-bottom:12px; font-size:14px; }
@@ -363,6 +371,7 @@ main { position:relative; z-index:10; }
 <script src="vendor/supabase.js"></script>
 <script src="badges.js"></script>
 <script src="pet_sprite.js"></script>
+<script src="hero_art.js"></script>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
 <body class="signed-out">
@@ -641,6 +650,16 @@ let badgeExtra  = {};          // arcade/trail/shop/mastery/survey/finance count
 let doneKeys    = new Set();  // completed task_keys
 let doneDays    = new Set();  // active day strings YYYY-MM-DD
 let selectedAv  = '⚔';
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.DoppHero) return;
+  document.querySelectorAll('#avatar-opts .av-opt').forEach(o => {
+    const e = o.textContent.trim(); DoppHero.fill(o, e);
+    const img = o.querySelector('img'); if (img) o.setAttribute('aria-label', img.alt);
+    const w = document.createElement('div'); w.className = 'av-wrap'; o.replaceWith(w); w.appendChild(o);
+    const n = document.createElement('span'); n.className = 'av-name'; n.textContent = img ? img.alt : ''; w.appendChild(n);
+    n.addEventListener('click', () => o.click());
+  });
+});
 let foundStudent = null;      // temp holder during login
 let studentPinHash = null;    // session-only proof for progress changes
 
@@ -712,7 +731,7 @@ function renderRoster() {
   const q = document.getElementById('m-find').value.trim().toLowerCase();
   const list = roster.filter(r => !q || (r.display_name || '').toLowerCase().includes(q));
   document.getElementById('m-roster').innerHTML = list.length
-    ? list.map(r => `<button class="roster-btn" onclick="pickStudent('${r.id}')"><span class="av">${escH(r.avatar)}</span><span>${escH(r.display_name)} ${escH(r.initial)}.</span></button>`).join('')
+    ? list.map(r => `<button class="roster-btn" onclick="pickStudent('${r.id}')"><span class="av">${window.DoppHero ? DoppHero.html(r.avatar) : escH(r.avatar)}</span><span>${escH(r.display_name)} ${escH(r.initial)}.</span></button>`).join('')
     : `<div class="roster-empty">No one named "${escH(q)}" yet. If you've never signed in, tap "I'm new".</div>`;
 }
 function pickStudent(id) {
@@ -895,7 +914,7 @@ function render() {
     return;
   }
   const st = calcStats();
-  document.getElementById('hero-avatar').textContent   = student.avatar || '⚔';
+  if (window.DoppHero) DoppHero.fill(document.getElementById('hero-avatar'), student.avatar || '⚔'); else document.getElementById('hero-avatar').textContent = student.avatar || '⚔';
   document.getElementById('hero-name').textContent     = student.display_name || 'Health Hero';
   document.getElementById('hero-title-tag').textContent = st.badges.length > 0 ? st.badges[st.badges.length-1] : 'Novice Adventurer';
   document.getElementById('stat-badges').textContent   = st.badges.length;
@@ -939,7 +958,7 @@ async function spriteCard() {
         : stage + ' · ' + p.age_days + ' day' + (p.age_days === 1 ? '' : 's') + ' old · 🔥 ' + (p.streak || 0) + ' day streak';
       if (p.alive) {
         const c = v => v >= 60 ? 'var(--emerald)' : v >= 30 ? '#b8860b' : 'var(--crimson)';
-        document.getElementById('sc-bars').innerHTML = [['❤️', p.health], ['🍎', p.food], ['⚡', p.energy], ['😊', p.mood], ['🫧', p.clean]]
+        document.getElementById('sc-bars').innerHTML = [['❤️', p.health], ['🍎', p.food], ['⚡', p.energy], ['😊', p.mood], ['🚿', p.clean]]
           .map(([i, v]) => '<span style="color:' + c(v) + '">' + i + ' ' + v + '</span>').join('');
       }
       document.getElementById('sc-cta').textContent = p.alive ? '🌱 Care for it →' : '👻 Revive it →';
