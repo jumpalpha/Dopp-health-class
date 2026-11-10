@@ -5,12 +5,17 @@
    - Only LIGHT backgrounds get darkened and only DARK text gets lightened, so parts of a page
      that are already dark (nav bar, hero, pop-ups, arcade games) are left exactly as designed.
    - Pages that are dark by design don't show the toggle.
+   - 2026-11-10: light mode is back site-wide. The sun/moon button lives in the top nav (theme.js);
+     default is still dark, arcade games always stay dark. Printables keep their own corner button.
 */
 (function () {
   if (window.DoppTheme) return;
   var KEY = 'dopp_theme';
   var PRINTABLE = /\/(print_quest|sub_guide)(\.html)?$/.test(location.pathname);   // paper handouts keep light mode + toggle
   var root = document.documentElement;
+  var FILE = (location.pathname.split('/').pop() || '').replace(/\.html$/, '');
+  // Games (and projector tools) always stay dark; theme.js handles the light/dark switch everywhere else.
+  var GAME = root.hasAttribute('data-app-name') || /^(dopp_spin|germ_snipes|team_hangman|partner|trail|live|live_host|timer)$/.test(FILE);
   var PROPS = ['background-color', 'background-image', 'color', 'border-top-color', 'border-right-color',
                'border-bottom-color', 'border-left-color', 'outline-color', 'fill', 'stroke'];
   var touched = [];         // elements we changed, so light mode can put them back
@@ -19,10 +24,11 @@
   function saved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function save(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
   function wantsDark() {
-    if (!PRINTABLE) return true;   // 2026-11: the site uses the dark "aurora" look; light mode is only kept for printables.
+    if (GAME) return true;
     var s = saved();
     if (s === 'dark') return true;
     if (s === 'light') return false;
+    if (!PRINTABLE) return true;   // the site defaults to the dark "aurora" look; printables follow the device
     try { return window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) { return false; }
   }
 
@@ -213,6 +219,13 @@
   ].join('');
   (document.head || root).appendChild(st);
 
+  // Site-wide light/dark switch (nav button). Light mode class goes on now so there's no dark flash.
+  if (!PRINTABLE) {
+    if (!GAME && saved() === 'light') root.classList.add('dl');
+    var ts = document.createElement('script'); ts.src = '/theme.js';
+    (document.head || root).appendChild(ts);
+  }
+
   if (wantsDark()) {
     root.classList.add('dopp-dark', 'dopp-pending');
     setTimeout(function () { root.classList.remove('dopp-pending'); }, 2500);   // safety net
@@ -265,7 +278,9 @@
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
   }
   function setDark(on) {
+    if (GAME) return;
     save(on ? 'dark' : 'light');
+    if (!lightPage) return;   // already-dark pages (quest) are switched by theme.js alone
     if (on) turnOn(); else turnOff();
     paintBtn();
   }
@@ -295,7 +310,7 @@
 
   // Keep other open tabs in sync.
   window.addEventListener('storage', function (e) {
-    if (e.key !== KEY || !lightPage) return;
+    if (e.key !== KEY || !lightPage || GAME) return;
     if (e.newValue === 'dark') turnOn(); else turnOff();
     paintBtn();
   });

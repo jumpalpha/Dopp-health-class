@@ -115,7 +115,7 @@
     var css = [
       face('Geist', GEIST), face('Nunito', GEIST), face('Bricolage Grotesque', BRIC), face('Cinzel', BRIC), face('Cinzel Decorative', BRIC),
       // colors: same tokens as src/app/globals.css
-      'html.nxp{--gold:#ffd166;--gold-dim:rgba(255,209,102,.16);--text:#eef0ff;--dim:#a3a6c8;--border:rgba(255,255,255,.1);--line:rgba(255,255,255,.1);',
+      'html.nxp{--gold:#ffd166;--gold-dim:#d9b45a;--text:#eef0ff;--dim:#a3a6c8;--border:rgba(255,255,255,.1);--line:rgba(255,255,255,.1);',
       '  color-scheme:dark;background:radial-gradient(60% 50% at 10% 0%,rgba(56,191,255,.16),transparent 70%),radial-gradient(50% 45% at 95% 12%,rgba(168,85,247,.16),transparent 70%),',
       '  radial-gradient(60% 50% at 50% 110%,rgba(255,159,28,.09),transparent 70%),#07071a fixed !important}',
       'html.nxp body{background:transparent !important;color:#eef0ff;-webkit-font-smoothing:antialiased}',
