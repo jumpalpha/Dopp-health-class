@@ -21,7 +21,9 @@
     5: { src: '/podcasts/ch05.mp3', title: 'Recognizing Mental Disorders and Crisis Signs' },
     6: { src: '/podcasts/ch06.mp3', title: 'Setting Boundaries with Assertive Communication' },
     7: { src: '/podcasts/ch07.mp3', title: 'Why Blended Families Take Seven Years' },
-    8: { src: '/podcasts/ch08.mp3', title: 'Peer Pressure Refusal Steps and Dating Limits' }
+    8: { src: '/podcasts/ch08.mp3', title: 'Peer Pressure Refusal Steps and Dating Limits' },
+    9: { src: '/podcasts/ch09.mp3', title: 'Stopping Teen Conflict Before It Escalates' },
+    10: { src: '/podcasts/ch10.mp3', title: 'How Engineered Snacks Trick Your Brain' }
   };
 
   var CHAPTERS = [null,
