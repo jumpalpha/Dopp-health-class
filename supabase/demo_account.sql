@@ -1,5 +1,5 @@
 -- ============================================================
--- Demo account ("Jason", class TEST) — 2026-11-10
+-- Demo account ("Pilot", class TEST) — 2026-11-10
 --
 -- A read-only showcase account. Safety is enforced HERE, in the
 -- database, not in the page code (the site's code is public):
@@ -18,11 +18,11 @@
 --     "Student 12 #12". PIN/pass hashes are blanked.
 --  5. Backstop triggers silently drop any write to a demo
 --     student's rows, even if someone calls the normal functions
---     directly with Jason's PIN.
---  6. Jason is hidden from the Sprite Gallery, Fallen Sprites and
+--     directly with Pilot's PIN.
+--  6. Pilot is hidden from the Sprite Gallery, Fallen Sprites and
 --     Hall of Heroes data (arcade/trail boards already hide TEST).
 --
--- Maintenance: to change Jason's data on purpose, run
+-- Maintenance: to change Pilot's data on purpose, run
 --   set local app.demo_admin = 'on';
 -- in the same transaction first.
 -- ============================================================
@@ -169,17 +169,16 @@ declare
   v_call text; v_sql text; v_res jsonb; v_teacher boolean := false; v_tok text;
   v_found boolean := false; v_err boolean := false; v_msg text; v_state text; v_det text; v_hint text;
   tbl_cols text[];
-  -- read-only + "pretend" teacher tools the demo may open
+  -- The ONLY teacher tools the demo may open (2026-11-10 lock-down). Each returns numbers, dates and
+  -- names (masked) only: no student writing, images, health answers, visitor lists or notes.
+  -- Ask Mr. Dopp, Cost of Your Future, Weight Control Quest, name requests, sprite admin, duplicates,
+  -- visitors and every roster-changing tool are refused. The two *_set tools are "pretend saves"
+  -- (rolled back like everything else) so the Save buttons show the demo note.
   teacher_ok constant text[] := array[
-    'verify_teacher_pass', 'teacher_class_list', 'cl_teacher_config_get', 'cl_teacher_roster', 'cl_teacher_evidence',
-    'cl_teacher_config_set', 'cl_teacher_verify', 'cl_teacher_manual_test',
-    'briefing_teacher_get', 'briefing_teacher_set', 'ask_teacher_list', 'ask_teacher_set', 'ask_teacher_delete',
-    'fin_teacher_list', 'fin_teacher_image', 'fin_teacher_return', 'fin_teacher_score',
-    'get_weight_control_quest_teacher_summary', 'name_requests_list', 'name_request_decide',
-    'pet_teacher_summary', 'sprite_admin_list', 'sprite_admin_rename', 'sprite_admin_delete',
-    'teacher_dup_candidates', 'teacher_merge_students', 'teacher_move_student', 'teacher_rename_student',
-    'teacher_delete_student', 'term_preview', 'trail_teacher_teams', 'trail_teacher_remove',
-    'visitor_list', 'visitor_remove'];
+    'verify_teacher_pass', 'teacher_class_list', 'term_preview',
+    'cl_teacher_config_get', 'cl_teacher_roster', 'cl_teacher_evidence', 'cl_teacher_config_set',
+    'briefing_teacher_get', 'briefing_teacher_set',
+    'pet_teacher_summary', 'trail_teacher_teams'];
 begin
   if not exists (select 1 from public.students s where s.id = p_sid and s.pin_hash = p_pin and s.is_demo) then
     raise exception 'Demo session expired. Sign in again as the demo account.';

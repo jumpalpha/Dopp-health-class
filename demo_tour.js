@@ -7,7 +7,7 @@
 
   var STEPS = [
     { page: 'quest', title: 'Welcome to the demo!',
-      text: "You're signed in as Jason, a sample student who is about 65% of the way through the trimester. Click, play and explore as much as you like. Nothing you do here is saved, and classmates' names are hidden." },
+      text: "You're signed in as Pilot, a sample student who is about 65% of the way through the trimester. Click, play and explore as much as you like. Nothing you do here is saved, and classmates' names are hidden." },
     { page: 'quest', sel: '.hero', title: 'Your hero',
       text: "Each student has a hero with XP, a level, chapters finished and a login streak. XP comes from real work: reading, mastery quizzes, vocab games and class activities." },
     { page: 'quest', sel: '#next-up', title: 'Next up',
@@ -19,7 +19,7 @@
     { page: 'quest', sel: '#ach-grid', title: 'Achievements',
       text: "Badges are earned automatically as students play, read and master chapters." },
     { page: 'checklist', sel: '.cl-pct', title: 'Trimester checklist',
-      text: "This is the whole trimester on one page. Chapters 1–16 are required and 17–28 are bonus. Almost everything is checked off automatically as the student works. Jason is about 65% done." },
+      text: "This is the whole trimester on one page. Chapters 1–16 are required and 17–28 are bonus. Almost everything is checked off automatically as the student works. Pilot is about 65% done." },
     { page: 'chapter01', title: 'Chapter reader',
       text: "Chapters are short on purpose. A section counts as read once the student scrolls to the end, with a 60-second minimum. Quick Checks are for practice, and each chapter has a podcast." },
     { page: 'mastery', title: 'Mastery quizzes',

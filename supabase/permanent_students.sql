@@ -7,13 +7,13 @@
 --   * The TEST class code moves to the new trimester too.
 --   * On their devices, the saved login never expires (term.js).
 -- Marked permanent: Mr. Dopp's own test account (TEST / Alsmypal)
--- and the demo account (Jason).
+-- and the demo account (Pilot).
 -- ============================================================
 
 alter table public.students add column if not exists permanent boolean not null default false;
 
 update public.students set permanent = true
- where class_code = 'TEST' and display_name = 'Alsmypal';   -- Jason is marked in demo_seed.sql
+ where class_code = 'TEST' and display_name = 'Alsmypal';   -- Pilot is marked in demo_seed.sql
 
 -- carry permanent students (and their records) into a new trimester
 create or replace function public._carry_permanent(p_old text, p_new text)

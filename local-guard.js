@@ -51,7 +51,7 @@
   document.documentElement.classList.add('dopp-demo');
 
   // teacher tools that would change something — the page gets a friendly "not saved" note
-  var WRITES = /^(cl_teacher_config_set|cl_teacher_verify|cl_teacher_manual_test|briefing_teacher_set|ask_teacher_set|ask_teacher_delete|fin_teacher_return|fin_teacher_score|name_request_decide|sprite_admin_rename|sprite_admin_delete|teacher_merge_students|teacher_move_student|teacher_rename_student|teacher_delete_student|trail_teacher_remove|visitor_remove)$/;
+  var WRITES = /^(cl_teacher_config_set|briefing_teacher_set)$/;
   function note(msg) { try { window.dispatchEvent(new CustomEvent('dopp-demo-note', { detail: msg })); } catch (e) {} }
   function json(body, status) {
     return new Response(JSON.stringify(body), { status: status || 200, headers: { 'Content-Type': 'application/json' } });
@@ -96,7 +96,11 @@
       method: 'POST', headers: h, signal: init.signal,
       body: JSON.stringify({ p_sid: d.sid, p_pin: d.pin, p_fn: fn, p_args: args })
     }).then(function (r) {
-      if (!r.ok || !wantOne) return r;
+      if (!r.ok) {   // tools the demo refuses: tell the visitor why instead of a bare error
+        r.clone().json().then(function (e) { if (/turned off in the demo|not available in the demo/.test(e && e.message || '')) note('Demo mode — ' + e.message); }).catch(function () {});
+        return r;
+      }
+      if (!wantOne) return r;
       return r.json().then(function (v) {
         if (Array.isArray(v)) {
           if (v.length !== 1) return json({ code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned', details: 'The result contains ' + v.length + ' rows', hint: null }, 406);

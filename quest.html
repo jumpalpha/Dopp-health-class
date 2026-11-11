@@ -431,7 +431,7 @@ main { position:relative; z-index:10; }
     <div id="mstep2a" style="display:none">
       <div class="modal-title">Welcome Back!</div>
       <div class="modal-sub" id="m-return-sub">Enter your PIN to continue.</div>
-      <input class="modal-input" id="m-pin-return" type="password" maxlength="4" placeholder="4-digit PIN" inputmode="numeric" onkeydown="if(event.key==='Enter')loginReturning()">
+      <input class="modal-input" id="m-pin-return" type="password" maxlength="8" placeholder="4-digit PIN" inputmode="numeric" onkeydown="if(event.key==='Enter')loginReturning()">
       <div class="modal-error" id="m-err2a"></div>
       <button class="modal-btn" onclick="loginReturning()">Login →</button>
       <div class="modal-hint">Forgot your PIN? Ask Mr. Dopp to reset it. Don't make a new account.</div>
@@ -753,9 +753,14 @@ function pickStudent(id) {
   const r = roster.find(x => x.id === id); if (!r) return;
   foundStudent = { id: r.id, display_name: r.display_name, avatar: r.avatar, class_code: loginCode };
   document.getElementById('m-return-sub').textContent = `Welcome back, ${r.display_name} ${r.initial}.! Enter your PIN.`;
-  document.getElementById('m-pin-return').value = ''; document.getElementById('m-err2a').textContent = '';
+  const pinEl = document.getElementById('m-pin-return');
+  pinEl.value = ''; document.getElementById('m-err2a').textContent = '';
+  // TEST class (teacher test + demo accounts): allow a password of 4 digits + a 4-letter word, with a full keyboard
+  const testClass = /^TEST$/i.test(loginCode || '');
+  pinEl.setAttribute('inputmode', testClass ? 'text' : 'numeric');
+  pinEl.placeholder = testClass ? 'PIN or password' : '4-digit PIN';
   showStep(2);
-  setTimeout(() => document.getElementById('m-pin-return').focus(), 100);
+  setTimeout(() => pinEl.focus(), 100);
 }
 function startNew() {
   foundStudent = { class_code: loginCode };
@@ -801,9 +806,11 @@ async function checkStudent() {
   }
 }
 async function loginReturning() {
-  const pin = document.getElementById('m-pin-return').value.trim();
+  let pin = document.getElementById('m-pin-return').value.trim();
   const err = document.getElementById('m-err2a');
-  if (!/^\d{4}$/.test(pin)) { err.textContent = 'PIN must be exactly 4 digits.'; return; }
+  // Students: 4 digits. The demo account uses a longer password (4 digits + a 4-letter word, any case).
+  if (/^[0-9A-Za-z]{8}$/.test(pin) && /\d/.test(pin) && /[A-Za-z]/.test(pin)) pin = pin.toLowerCase();
+  else if (!/^\d{4}$/.test(pin)) { err.textContent = 'PIN must be exactly 4 digits.'; return; }
   err.textContent = 'Verifying...';
 
   const hash = await hashPin(pin);
