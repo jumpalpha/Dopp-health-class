@@ -287,6 +287,7 @@ td.n,th.n{text-align:right}
     <div class="step-head"><span class="step-num">Step 5</span><h2>Energy In vs. Energy Out</h2></div>
     <div class="story">The researchers want to know: <b>if you ate like this every day for life, what would happen to your body?</b> Energy in is your food. Energy out is what your body burns just staying alive (BMR) plus what you burn moving around.</div>
     <div class="note">Your numbers are only seen by you and Mr. Dopp. This is a science estimate, not a grade on your body.</div>
+    <div class="note">⚖️ <b>Balance check:</b> before you can take the test, your 3-day menu has to land between <b>losing 10 lb and gaining 10 lb in one year</b>. If it doesn't, go back to Step 3 and adjust your meals.</div>
     <div class="grid">
       <label class="f">Age<input id="age" type="number" min="10" max="99" inputmode="numeric"></label>
       <label class="f">Body formula<select id="sex"><option value="">Choose</option><option value="m">Male formula</option><option value="f">Female formula</option></select></label>
@@ -438,7 +439,14 @@ function bodyCalc() {
   ].map(([n, k]) => [n, k * KG]);
   return { bmr, maint: bmr * act, move: bmr * act - bmr, act, age, lb, inches, bmi: 703 * lb / (inches * inches), ideal, useBf, lbm: useBf ? lb * (1 - bf / 100) : null };
 }
-const step5ok = () => step3ok() && !!bodyCalc();
+// Balance check: the 3-day menu must land within ±10 lb a year of maintenance (≈ ±96 calories a day).
+const LIMIT_LB = 10, MAXGAP = LIMIT_LB * 3500 / 365;
+function balance() {
+  const c = bodyCalc(); if (!c) return null;
+  const t = totals(), gap = t.avg.cal - c.maint, yr = gap * 365 / 3500;
+  return { c, t, gap, yr, ok: Math.abs(yr) <= LIMIT_LB, lo: c.maint - MAXGAP, hi: c.maint + MAXGAP };
+}
+const step5ok = () => step3ok() && !!bodyCalc() && balance().ok;
 function doneList() {
   return [!!(D.group || '').trim(), step1ok().ok, step2ok(), step3ok(), step3ok() && D.seen4, step5ok() && D.seen4, D.quiz.passed, D.submitted];
 }
@@ -597,6 +605,8 @@ function render3() {
     return `<div class="meal ${s.dup ? 'dup' : ''}"><div class="mhead"><b>${s.ok ? '✅' : '🍽'} Day ${day + 1} · ${name}</b><span class="mtot">${fmt(mt.cal)} cal · ${r0(mt.pro)}g protein · ${r0(mt.fib)}g fiber</span></div>
       ${rows}<div class="mmsg">${msg}</div><button type="button" class="btn btn-ghost btn-sm" data-madd="${k}" style="margin-top:8px">+ Add a dish or food</button></div>`;
   }).join('') + `<div class="daytot">Day ${day + 1} total: ${fmt(t.days[day].cal)} calories · ${r0(t.days[day].pro)}g protein · ${r0(t.days[day].carb)}g carbs · ${r0(t.days[day].fat)}g fat · ${r0(t.days[day].fib)}g fiber</div>`;
+  const bb = balance();
+  if (bb) $('meals').insertAdjacentHTML('beforeend', `<div class="${bb.ok ? 'okbox' : 'warn'}" style="font-size:14px">⚖️ <b>Balance target:</b> ${fmt(bb.lo)}–${fmt(bb.hi)} calories a day (3-day average). You're at <b>${fmt(bb.t.avg.cal)}</b> → about ${bb.yr >= 0 ? '+' : '−'}${Math.abs(r1(bb.yr))} lb a year. ${bb.ok ? 'Inside the ±' + LIMIT_LB + ' lb limit ✓' : 'Must be within ±' + LIMIT_LB + ' lb a year to pass Step 5.'}</div>`);
   $('mcount').textContent = st.filter(s => s.ok).length + ' / 12 meals';
   $('mcount').className = 'cnt' + (st.every(s => s.ok) ? ' ok' : '');
 }
@@ -692,6 +702,35 @@ function render5() {
 const LEVELS = [['Basal Metabolic Rate (BMR)', 1], ['Sedentary', 1.2], ['Light exercise', 1.375], ['Moderate exercise', 1.55], ['Heavy exercise', 1.725], ['Athlete', 1.9]];
 const SPLITS = [['Moderate carb', 30, 35, 35, 'protein 30 · fat 35 · carbs 35'], ['Lower carb', 40, 40, 20, 'protein 40 · fat 40 · carbs 20'], ['Higher carb', 30, 20, 50, 'protein 30 · fat 20 · carbs 50']];
 function bmiCat(b) { return b < 18.5 ? 'Underweight' : b < 25 ? 'Normal weight' : b < 30 ? 'Overweight' : 'Obese'; }
+function balanceBox() {
+  const b = balance(); if (!b) return '';
+  const need = Math.ceil(Math.abs(b.gap) - MAXGAP), need3 = need * 3;
+  const top = b.t.rank.filter(p => p.cal > 0).slice(0, 3).map(p => esc(D.foods[p.i].name));
+  const range = `${fmt(b.lo)}–${fmt(b.hi)} calories a day`;
+  if (b.ok) return `<div class="okbox"><div class="big">✅ Balance check passed</div>
+    Your island menu averages <b>${fmt(b.t.avg.cal)}</b> calories a day. Your target range is <b>${range}</b>, so in one year you would change about <b>${b.yr >= 0 ? '+' : '−'}${Math.abs(r1(b.yr))} lb</b> — inside the ±${LIMIT_LB} lb limit. You can take the island test.</div>`;
+  const gain = b.yr > 0;
+  return `<div class="badbox"><div class="big">⚠️ Balance check: ${gain ? 'too much gain' : 'too much loss'}</div>
+    Your island menu would make you ${gain ? 'gain' : 'lose'} about <b>${fmt(Math.abs(b.yr))} lb in one year</b>. To move on, it has to stay between <b>losing ${LIMIT_LB} lb and gaining ${LIMIT_LB} lb</b> in a year.
+    <p style="margin:10px 0 4px"><b>Your target:</b> ${range} (3-day average). You're at <b>${fmt(b.t.avg.cal)}</b>, so you need to ${gain ? 'cut' : 'add'} about <b>${fmt(need)} calories a day</b> — about <b>${fmt(need3)} calories</b> spread over your 3 days.</p>
+    <p style="margin:10px 0 4px"><b>How to fix it:</b></p>
+    <ul style="margin:0 0 8px 18px;padding:0">${gain ? `
+      <li>Use fewer servings of your biggest calorie foods${top.length ? ': <b>' + top.join(', ') + '</b>' : ''}.</li>
+      <li>Swap a high-calorie dish for a lighter one (look at the calories on each dish in the Island Kitchen).</li>
+      <li>Drop or shrink a dessert or snack, or cut back on oil, butter and sugar.</li>
+      <li>Fill up with fruits and vegetables — lots of food, not many calories.</li>` : `
+      <li>Add servings to your meals, or add a snack.</li>
+      <li>Add protein foods (meat, fish, eggs, beans, milk) so your body can grow and repair muscle.</li>
+      <li>Add healthy higher-calorie foods like nuts, peanut butter, cheese, avocado or whole grains.</li>
+      <li>Swap a light dish for a heartier one in the Island Kitchen.</li>`}
+      <li>Only change your <b>activity level</b> if it was wrong — be honest. Pick the one that matches your real week.</li>
+    </ul>
+    <button type="button" class="btn btn-ink btn-sm" data-go="3">← Fix my meals (Step 3)</button>
+    <p style="margin:12px 0 4px"><b>Why it matters:</b></p>
+    ${gain ? `<p style="margin:0">Gaining weight too fast means your body is storing extra energy as fat. Over time that raises the risk of <b>type 2 diabetes, high blood pressure, heart disease and fatty liver</b>, puts extra stress on <b>knees, hips and back</b>, can cause <b>sleep apnea</b> (breathing that stops during sleep), and makes sports and everyday activity harder. Eating habits you build as a teen tend to follow you into adulthood.</p>`
+      : `<p style="margin:0">Losing weight too fast — especially while you're still growing — means your body isn't getting enough energy. That can cause <b>tiredness, dizziness and trouble concentrating</b>, <b>muscle loss</b>, <b>weaker bones</b>, <b>slower growth</b>, hair loss, a weaker immune system, and for girls, missed periods. Your body also slows its metabolism to save energy, which makes weight harder to manage later. Undereating can also turn into unhealthy eating patterns. Teens shouldn't try to lose weight without talking to a doctor.</p>`}
+  </div>`;
+}
 function out5() {
   const c = bodyCalc(), t = totals();
   if (!c) { $('energyout').innerHTML = '<p class="lead" style="margin-top:14px">Fill in every box (body fat % is optional) to see your results.</p>'; refreshNext(); return; }
@@ -715,6 +754,8 @@ function out5() {
       <div class="tile"><div class="k">= Energy out (TDEE)</div><div class="v">${fmt(c.maint)}</div><div class="s">maintenance calories per day</div></div>
       <div class="tile"><div class="k">BMI</div><div class="v">${r1(c.bmi)}</div><div class="s">${cat}</div></div>
     </div>
+
+    ${balanceBox()}
 
     <h3>Your island diet vs. your body</h3>
     <div class="tiles">
