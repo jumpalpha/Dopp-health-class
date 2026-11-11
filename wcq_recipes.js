@@ -457,15 +457,62 @@ function matchFood(name, type) {
   return null;
 }
 
-/* kitchen(foods, nut, extraRecipes) -> { map: {ingKey: foodIndex}, can: [...], almost: [...], byId: {} }
- * can[i] = { id, name, tag, parts: [{k, i, a, srv, est, nut:[5]}], nut: {cal,pro,carb,fat,fib}, est: bool } */
-function kitchen(foods, nut, extra) {
-  const map = {};
-  foods.forEach((f, i) => { if (!f || !String(f.name || '').trim()) return; const k = matchFood(f.name, f.type); if (k && map[k] == null) map[k] = i; });
-  const all = RECIPES.map(r => ({ id: r[0], name: r[1], tag: r[2], ings: r[3] }))
-    .concat((extra || []).map(r => ({ id: r.id, name: r.name, tag: 'U', ings: r.ings, custom: true })));
+// ───────── learning: foods the book doesn't know ─────────
+const norm = n => String(n || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+const normKey = n => norm(n).replace(/(es|s)$/, '');
+const isPlain = n => { const x = ' ' + norm(n) + ' '; return DISH_WORDS.test(x) && !/\bchicken wings?\b/.test(x); };
+const CATS = { meat: 'Meat, fish or eggs', grain: 'Grain, bread or starch', fruit: 'Fruit', veg: 'Vegetable', dairy: 'Dairy', fat: 'Nuts, seeds or oil', sweet: 'Sweet or treat' };
+const FRUIT = ['berries', 0.5, 'banana', 1, 'apple', 1, 'orange', 1, 'grapes', 0.5, 'melon', 1, 'mango', 0.5, 'pineapple', 0.5, 'kiwi', 1, 'peach', 1, 'cherries', 0.5, 'pear', 1];
+const VEG = ['broccoli', 1, 'carrot', 1, 'veg', 1, 'pepper', 1, 'spinach', 1, 'squash', 1, 'greenbeans', 1, 'corn', 1];
+const PROT = ['chicken', 3, 'beef', 3, 'pork', 3, 'fish', 3, 'egg', 2, 'beans', 0.5, 'turkey', 3];
+const SIDES = ['potato', 1, 'beans', 0.5, 'rice', 0.5, 'pasta', 0.5, 'chicken', 2];
+// Dish templates for a food the class taught the book. X = the new food, amounts for X are in the group's own servings.
+const TEMPLATES = {
+  meat:  [['Grilled {X}', [['X', 1], FAT_H]], ['{X} & Rice', [['X', 1], ['rice', 1]]], ['{X} Tacos', [['X', 0.75], TORT2]],
+          ['{X} Sandwich', [['X', 0.75], BREAD]], ['{X} Stir-Fry', [['X', 1], VEG, OIL1]], ['{X} & Potatoes', [['X', 1], ['potato', 1]]],
+          ['{X} Salad', [['X', 0.75], ['lettuce', 2, 'spinach', 1.5]]]],
+  grain: [['Buttered {X}', [['X', 1], FAT1]], ['{X} Power Bowl', [['X', 1], PROT]], ['Sweet {X} & Milk', [['X', 1], ['milk', 0.5], ['sugar', 1, 'honey', 1]]],
+          ['{X} & Veggies', [['X', 1], VEG]]],
+  fruit: [['{X} Smoothie', [['X', 1], ['milk', 0.75, 'yogurt', 0.5]]], ['{X} & Yogurt', [['X', 1], ['yogurt', 1, 'cottage', 0.75]]],
+          ['{X} Fruit Salad', [['X', 1], FRUIT]], ['{X} Crisp', [['X', 1], ['oats', 0.5, 'flour', 0.15], ['sugar', 2, 'honey', 2], ['butter', 1, 'oil', 1]]],
+          ['{X} Oatmeal', [['X', 0.5], ['oats', 1]]]],
+  veg:   [['Roasted {X}', [['X', 1], OIL1]], ['{X} Salad', [['X', 1], ['lettuce', 1, 'spinach', 1, 'tomato', 0.5, 'cucumber', 0.5]]],
+          ['{X} Soup', [['X', 1.5], SIDES]], ['{X} Omelet', [['X', 0.5], ['egg', 3]]], ['{X} Fried Rice', [['X', 1], ['rice', 1], OIL1]]],
+  dairy: [['{X} & Fruit', [['X', 1], FRUIT]], ['{X} Toast', [['X', 1], BREAD]], ['{X} Scrambled Eggs', [['X', 0.5], ['egg', 3]]]],
+  fat:   [['{X} Trail Mix', [['X', 1], ['grapes', 0.25, 'chocolate', 0.5, 'cherries', 0.25, 'peanuts', 1, 'nuts', 1]]], ['{X} Toast', [['X', 0.5], BREAD]],
+          ['{X} Oatmeal', [['X', 0.5], ['oats', 1]]], ['{X} Fruit Bites', [['X', 0.5], FRUIT]]],
+  sweet: [['{X} Milkshake', [['X', 1], ['milk', 1]]], ['{X} Cookies', [['X', 0.5], ['flour', 0.25], ['butter', 2, 'oil', 2], ['?sugar', 1]]],
+          ['{X} Yogurt Bowl', [['X', 0.5], ['yogurt', 1]]], ['{X} & Fruit', [['X', 0.5], FRUIT]]]
+};
+const title = n => String(n).trim().replace(/\s+/g, ' ').replace(/\b[a-z]/g, c => c.toUpperCase());
+
+/* kitchen(foods, nut, extra, learned) -> { map, can, almost, byId, unknown }
+ * extra: [{id, name, ings, srv?, tag?}] — srv:true means every amount is "servings of that pallet food"
+ * learned: { normKey: category } — what the class (and this group) taught the book
+ * Keys starting with "x:" are pallet foods the book doesn't know; their amounts are always servings. */
+function kitchen(foods, nut, extra, learned) {
+  const map = {}, customs = [], unknown = [];
+  learned = learned || {};
+  foods.forEach((f, i) => {
+    if (!f || !String(f.name || '').trim()) return;
+    const k = matchFood(f.name, f.type);
+    if (k) { if (map[k] == null) map[k] = i; return; }
+    const lk = normKey(f.name); if (!lk) return;
+    if (map['x:' + lk] == null) map['x:' + lk] = i;
+    if (isPlain(f.name) || f.type === 'C') return;
+    if (learned[lk] && TEMPLATES[learned[lk]]) customs.push({ i, lk, cat: learned[lk], name: title(f.name) });
+    else unknown.push({ i, lk, name: f.name });
+  });
+  const tpl = [];
+  customs.forEach(c => TEMPLATES[c.cat].forEach(([nm, ings], n) => tpl.push({ id: 't-' + c.lk.replace(/ /g, '-') + '-' + n, name: nm.replace('{X}', c.name), tag: 'T',
+    ings: ings.map(e => e[0] === 'X' ? ['x:' + c.lk, e[1]] : e) })));
+  const all = (extra || []).filter(r => r.tag === 'M').map(r => ({ id: r.id, name: r.name, tag: 'M', ings: r.ings, srv: !!r.srv, custom: true }))
+    .concat(RECIPES.map(r => ({ id: r[0], name: r[1], tag: r[2], ings: r[3] })))
+    .concat(tpl)
+    .concat((extra || []).filter(r => r.tag !== 'M').map(r => ({ id: r.id, name: r.name, tag: r.tag || 'U', ings: r.ings, srv: !!r.srv, custom: true })));
   const can = [], almost = [], byId = {};
   const seen = new Set();
+  const label = k => k.startsWith('x:') ? title(k.slice(2)) : (ING[k] ? ING[k][0] : k);
   all.forEach(r => {
     if (seen.has(r.id)) return; seen.add(r.id);
     const parts = [], missing = [];
@@ -474,29 +521,31 @@ function kitchen(foods, nut, extra) {
       let k = String(e[0]); const opt = k.startsWith('?'); if (opt) k = k.slice(1);
       const choices = [[k, +e[1]]]; for (let j = 2; j + 1 < e.length; j += 2) choices.push([String(e[j]), +e[j + 1]]);
       const use = choices.find(c => map[c[0]] != null) || null;
-      if (!use) { if (!opt) missing.push(choices.filter(c => ING[c[0]]).map(c => ING[c[0]][0]).join(' or ')); return; }
+      if (!use) { if (!opt) missing.push(choices.map(c => label(c[0])).join(' or ')); return; }
       if (parts.some(p => p.k === use[0])) return;
-      parts.push({ k: use[0], i: map[use[0]], a: use[1] });
+      parts.push({ k: use[0], i: map[use[0]], a: use[1], inSrv: r.srv || use[0].startsWith('x:') });
     });
     if (!missing.length && parts.length) {
       const t = { cal: 0, pro: 0, carb: 0, fat: 0, fib: 0 }; let est = false;
       parts.forEach(p => {
-        const n = nut[p.i] || {}, s = toServings(p.k, p.a, n.serving);
+        const n = nut[p.i] || {};
+        const s = p.inSrv ? p.a : toServings(p.k, p.a, n.serving);
         const labelOk = s != null && isFinite(s) && s > 0 && ['cal', 'pro', 'carb', 'fat', 'fib'].every(x => n[x] !== '' && n[x] != null && isFinite(n[x]));
         if (labelOk) { p.srv = s; p.nut = ['cal', 'pro', 'carb', 'fat', 'fib'].map(x => +n[x] * s); }
-        else { p.srv = null; p.est = est = true; p.nut = ING[p.k][4].map(v => v * p.a); }
+        else { p.srv = null; p.est = est = true; p.nut = ING[p.k] ? ING[p.k][4].map(v => v * p.a) : [0, 0, 0, 0, 0]; }
         ['cal', 'pro', 'carb', 'fat', 'fib'].forEach((x, j) => { t[x] += p.nut[j]; });
       });
       const d = { id: r.id, name: r.name, tag: r.tag, custom: !!r.custom, parts, nut: t, est };
       can.push(d); byId[r.id] = d;
-    } else if (missing.length === 1 && parts.length) {
+    } else if (missing.length === 1 && parts.length && r.tag !== 'M') {
       almost.push({ id: r.id, name: r.name, missing: missing[0] });
     }
   });
   can.sort((a, b) => a.name.localeCompare(b.name)); almost.sort((a, b) => a.name.localeCompare(b.name));
-  return { map, can, almost, byId };
+  return { map, can, almost, byId, unknown };
 }
+function partAmount(p) { return p.inSrv ? frac(p.a) + (p.a > 1 ? ' servings' : ' serving') : amountText(p.k, p.a); }
 
-window.WCQ_BOOK = { ING, RECIPES, kitchen, matchFood, parseServing, toServings, amountText, frac,
+window.WCQ_BOOK = { ING, RECIPES, kitchen, matchFood, parseServing, toServings, amountText, frac, partAmount, norm, normKey, isPlain, CATS, title,
   ingList: () => Object.keys(ING).map(k => ({ k, name: ING[k][0], unit: ING[k][1] })) };
 })();

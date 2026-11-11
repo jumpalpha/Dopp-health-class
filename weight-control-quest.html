@@ -355,17 +355,22 @@ const pub = db || (window.supabase ? window.supabase.createClient(SUPABASE_URL, 
 const BOOK = window.WCQ_BOOK;
 const NK = ['cal', 'pro', 'carb', 'fat', 'fib'];
 let EXTRA = [];          // teacher-approved dishes from the database
+let LEARN = {}, PUB = [];  // foods the class taught the book, and dishes 2+ students made
 let kq = '', kAll = false, sugOpen = false, sugMsg = '', mtab = 0;
 let kCache = null, kCacheKey = '';
 function KIT() {
-  const key = JSON.stringify([D.foods, D.nut, EXTRA.length]);
-  if (key !== kCacheKey) { kCacheKey = key; kCache = BOOK ? BOOK.kitchen(D.foods, D.nut, EXTRA) : { can: [], almost: [], byId: {}, map: {} }; }
+  const key = JSON.stringify([D.foods, D.nut, EXTRA.length, PUB.length, Object.keys(LEARN).length, D.cats, D.myDishes]);
+  if (key !== kCacheKey) {
+    kCacheKey = key;
+    const extra = (D.myDishes || []).map(d => Object.assign({ tag: 'M', srv: true }, d)).concat(PUB.map(d => Object.assign({ tag: 'U', srv: true }, d)), EXTRA);
+    kCache = BOOK ? BOOK.kitchen(D.foods, D.nut, extra, Object.assign({}, LEARN, D.cats || {})) : { can: [], almost: [], byId: {}, map: {}, unknown: [] };
+  }
   return kCache;
 }
 const dishOf = f => (typeof f === 'string' && f.startsWith('d:')) ? f.slice(2) : null;
 function bookName(id) {
   const r = BOOK && BOOK.RECIPES.find(x => x[0] === id); if (r) return r[1];
-  const e = EXTRA.find(x => x.id === id); return e ? e.name : id;
+  const e = EXTRA.concat(PUB, D.myDishes || []).find(x => x.id === id); return e ? e.name : id;
 }
 function itemName(it) {
   const id = dishOf(it.f); if (id) { const d = KIT().byId[id]; return d ? d.name : bookName(id); }
@@ -380,7 +385,7 @@ function blank() {
   return { v: 2, group: '', bringing: '', foods: Array.from({ length: N }, () => ({ name: '', type: '' })),
     nut: Array.from({ length: N }, () => ({ serving: '', cal: '', pro: '', carb: '', fat: '', fib: '' })),
     meals, body: { age: '', sex: '', ft: '', inch: '', lb: '', act: '', bf: '' },
-    seen4: false, quiz: { tries: 0, best: 0, passed: false }, tryCount: 0, submitted: false, lastStep: 0 };
+    cats: {}, myDishes: [], seen4: false, quiz: { tries: 0, best: 0, passed: false }, tryCount: 0, submitted: false, lastStep: 0 };
 }
 
 // ───────── checks ─────────
@@ -611,22 +616,23 @@ function render3() {
   $('mcount').className = 'cnt' + (st.every(s => s.ok) ? ' ok' : '');
 }
 // ───────── step 3 kitchen ─────────
-const TAGS = { B: 'Breakfast', L: 'Lunch', D: 'Dinner', S: 'Snack / dessert', U: 'Class recipe' };
+const TAGS = { B: 'Breakfast', L: 'Lunch', D: 'Dinner', S: 'Snack / dessert', U: 'Class-made dish', M: 'My dish', T: 'New-food dish' };
 function dishCard(d) {
   const ing = d.parts.map(p => {
-    const f = D.foods[p.i], amt = BOOK.amountText(p.k, p.a);
-    return `${esc(f.name)} ${amt}${p.srv != null ? ` <i>(${BOOK.frac(p.srv)} of your servings)</i>` : ' <i>(book estimate)</i>'}`;
+    const f = D.foods[p.i], amt = BOOK.partAmount(p);
+    return `${esc(f.name)} ${amt}${p.inSrv ? '' : p.srv != null ? ` <i>(${BOOK.frac(p.srv)} of your servings)</i>` : ' <i>(book estimate)</i>'}`;
   }).join(' · ');
   return `<div class="dcard"><div class="dt">${TAGS[d.tag] || ''}</div><div class="dn">🍳 ${esc(d.name)}</div>
     <div class="dnut">${fmt(d.nut.cal)} cal · ${r1(d.nut.pro)}g protein · ${r1(d.nut.carb)}g carbs · ${r1(d.nut.fat)}g fat · ${r1(d.nut.fib)}g fiber</div>
-    <div class="ding">${ing}</div></div>`;
+    <div class="ding">${ing}</div>${d.tag === 'M' ? `<button type="button" class="btn btn-ghost btn-sm" data-rmdish="${esc(d.id)}" style="margin-top:6px">Remove my dish</button>` : ''}</div>`;
 }
 function renderKitchen() {
   const box = $('kitchen'); if (!box) return;
   if (!BOOK) { box.innerHTML = ''; return; }
   if (!$('kres')) {
     box.innerHTML = `<div class="kitchen"><div class="khead"><b>🍳 Island Kitchen</b><span class="cnt ok" id="kcount"></span></div>
-      <p class="ksmall">The island cook checked your 15 foods against the recipe book. These are the dishes you can make. Spices, salt, water, yeast and baking powder are free. Bread, tortillas and noodles can be made from flour. Each dish shows one plate, using the numbers from <b>your</b> labels.</p>
+      <p class="ksmall">The island cook checked your 15 foods against the recipe book. These are the dishes you can make. Spices, salt, water, yeast and baking powder are free. Bread, tortillas and noodles can be made from flour. Each dish shows one plate, using the numbers from <b>your</b> labels. The book keeps growing as students teach it new foods and make new dishes.</p>
+      <div id="kunknown"></div>
       <input id="ksearch" type="search" placeholder="Look up a dish (pancakes, tacos, chili…)" aria-label="Look up a dish" autocomplete="off">
       <div id="kres"></div></div>`;
   }
@@ -644,30 +650,53 @@ function renderKitchen() {
   html += `<div class="kgrid">${shown.map(dishCard).join('')}</div>`;
   if (!q && can.length > 6) html += `<button type="button" class="btn btn-ghost btn-sm" id="kall">${kAll ? 'Show fewer' : 'Show all ' + can.length + ' dishes'}</button>`;
   if (!q && almost.length) html += `<details class="kalmost" style="margin-top:10px"><summary>Almost! ${almost.length} more dishes are missing just 1 food</summary><div class="ksmall" style="margin-top:6px">${almost.map(a => `${esc(a.name)} <i>(needs ${esc(a.missing)})</i>`).join(' · ')}</div></details>`;
-  html += `<div class="ksug">Know a dish you could make from your pallet that isn’t here? <button type="button" class="btn btn-ink btn-sm" id="sugopen">${sugOpen ? 'Close' : 'Suggest a dish'}</button>
+  html += `<div class="ksug">Want a dish that isn’t here? <b>Make your own</b> from your pallet foods. <button type="button" class="btn btn-ink btn-sm" id="sugopen">${sugOpen ? 'Close' : '🍳 Make a dish'}</button>
     ${sugMsg ? `<div class="kmsg">${sugMsg}</div>` : ''}
-    ${sugOpen ? `<form id="sugform"><label class="f">Dish name<input id="sugname" maxlength="60" value="${esc(q && !can.length ? kq : '')}" placeholder="Example: Corn chowder"></label>
-      <div><b style="font-size:14px">Which of your foods would it use?</b><div class="kfoods">${named().map(f => `<label><input type="checkbox" value="${esc(f.name)}"> ${esc(f.name)}</label>`).join('')}</div></div>
-      <label class="f">How do you make it? <small>optional</small><textarea id="sugnote" rows="2" maxlength="300" placeholder="Example: boil corn and milk, add potatoes"></textarea></label>
-      <div><button class="btn btn-gold btn-sm" type="submit">Send to Mr. Dopp</button></div></form>` : ''}</div>`;
+    ${sugOpen ? `<form id="sugform"><label class="f">Dish name<input id="sugname" maxlength="50" value="${esc(q && !can.length ? kq : '')}" placeholder="Example: Corn chowder"></label>
+      <div><b style="font-size:14px">How many servings of each food go in one plate?</b> <span class="ksmall">(leave 0 for foods it doesn’t use)</span>
+      <div class="kfoods">${named().map(f => `<label>${esc(f.name)} <input type="number" min="0" max="5" step="0.25" value="0" data-mkf="${f.i}" style="width:64px;padding:4px 6px" aria-label="Servings of ${esc(f.name)}"></label>`).join('')}</div></div>
+      <div><button class="btn btn-gold btn-sm" type="submit">Add to my kitchen</button></div>
+      <div class="ksmall">You can use your dish right away. When 2 students make a dish with the same name, it goes in everyone’s recipe book.</div></form>` : ''}</div>`;
   $('kres').innerHTML = html;
+  const unk = K.unknown || [];
+  $('kunknown').innerHTML = unk.map(u => `<div class="warn" style="margin:8px 0">🤔 The island cook doesn’t know <b>${esc(u.name)}</b> yet. What kind of food is it?
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${Object.keys(BOOK.CATS).map(c => `<button type="button" class="btn btn-ghost btn-sm" data-cat="${c}" data-fk="${esc(u.lk)}" data-fn="${esc(u.name)}">${BOOK.CATS[c]}</button>`).join('')}</div></div>`).join('');
 }
-async function sendSuggestion() {
-  const name = $('sugname').value.trim();
-  const foods = [...document.querySelectorAll('#sugform .kfoods input:checked')].map(x => x.value);
-  const note = $('sugnote').value.trim();
-  if (name.length < 2) { sugMsg = '<span class="s-bad">Type the name of the dish.</span>'; renderKitchen(); return; }
-  if (MODE !== 'cloud' || !pub) { sugMsg = '<span class="s-bad">Sign in on the Quest page to send suggestions.</span>'; renderKitchen(); return; }
-  const { error } = await pub.rpc('wcq_suggest_dish', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI, p_name: name, p_foods: foods, p_note: note });
-  if (error) sugMsg = '<span class="s-bad">' + esc(/function|schema/i.test(error.message) ? 'Suggestions aren’t turned on yet. Tell Mr. Dopp!' : error.message) + '</span>';
-  else { sugMsg = '<span class="s-ok">Sent! If Mr. Dopp approves “' + esc(name) + '”, it goes in everyone’s recipe book.</span>'; sugOpen = false; }
-  renderKitchen();
+async function makeDish() {
+  const name = $('sugname').value.trim().replace(/\s+/g, ' ');
+  const picks = [...document.querySelectorAll('#sugform [data-mkf]')].map(x => [+x.dataset.mkf, +x.value]).filter(x => x[1] > 0);
+  if (name.length < 3) { sugMsg = '<span class="s-bad">Give your dish a name.</span>'; renderKitchen(); return; }
+  if (!picks.length) { sugMsg = '<span class="s-bad">Put at least one food in your dish.</span>'; renderKitchen(); return; }
+  const ings = picks.map(([i, n]) => [BOOK.matchFood(D.foods[i].name, D.foods[i].type) || 'x:' + BOOK.normKey(D.foods[i].name), n]);
+  const id = 's-' + BOOK.norm(name).replace(/ /g, '-');
+  if (BOOK.RECIPES.some(r => BOOK.norm(r[1]) === BOOK.norm(name))) { sugMsg = `<span class="s-bad">“${esc(name)}” is already in the recipe book — look it up above.</span>`; renderKitchen(); return; }
+  D.myDishes = (D.myDishes || []).filter(d => d.id !== id).concat([{ id, name: BOOK.title(name), ings }]);
+  queueSave(); sugOpen = false;
+  sugMsg = `<span class="s-ok">“${esc(BOOK.title(name))}” is in your kitchen. Add it to a meal below!</span>`;
+  if (MODE === 'cloud' && pub) {
+    const { data, error } = await pub.rpc('wcq_make_dish', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI, p_name: name, p_ings: ings });
+    if (error && !/function|schema/i.test(error.message)) { D.myDishes = D.myDishes.filter(d => d.id !== id); queueSave(); sugMsg = '<span class="s-bad">' + esc(error.message) + '</span>'; }
+    else if (error) { /* sharing isn't switched on yet — the dish still works in this student's kitchen */ }
+    else if (data && data.shared) sugMsg += ' <b>2 students have made it — it’s now in everyone’s recipe book.</b>';
+    else sugMsg += ' If one more student makes a dish with this name, everyone gets it.';
+  }
+  render3();
+}
+async function teachFood(lk, name, cat) {
+  D.cats = Object.assign({}, D.cats || {}, { [lk]: cat }); queueSave(); render3();
+  if (MODE === 'cloud' && pub) { try { await pub.rpc('wcq_learn_food', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI, p_name: name, p_category: cat }); } catch (e) {} }
 }
 async function loadExtra() {
   if (!pub) return;
   try {
     const { data, error } = await pub.rpc('wcq_recipes_list');
-    if (!error && Array.isArray(data)) { EXTRA = data; if (cur === 3) render3(); }
+    if (!error && Array.isArray(data)) EXTRA = data;
+    const L = await pub.rpc('wcq_learned');
+    if (!L.error && L.data) {
+      LEARN = {}; (L.data.foods || []).forEach(f => { LEARN[BOOK.normKey(f.n)] = f.cat; });
+      PUB = L.data.dishes || [];
+    }
+    if (cur === 3) render3();
   } catch (e) {}
 }
 // ───────── step 4 ─────────
@@ -896,7 +925,7 @@ function render7() {
     <p><b>Know-Your-Food test:</b> best ${D.quiz.best} / ${QN} (${D.quiz.tries} ${D.quiz.tries === 1 ? 'try' : 'tries'}).</p>
     ${Object.keys(t.dishSrv).length ? `<h3>Our Island Dishes</h3>
     <div class="tbl-wrap"><table><thead><tr><th>Dish (1 plate)</th><th>Made from</th><th class="n">Cal</th><th class="n">Protein</th><th class="n">Carbs</th><th class="n">Fat</th><th class="n">Fiber</th><th class="n">Plates eaten</th></tr></thead><tbody>
-    ${Object.keys(t.dishSrv).map(id => { const d = KIT().byId[id]; if (!d) return ''; return `<tr><td>${esc(d.name)}</td><td>${d.parts.map(p => esc(D.foods[p.i].name) + ' ' + BOOK.amountText(p.k, p.a)).join(', ')}</td><td class="n">${fmt(d.nut.cal)}</td><td class="n">${r1(d.nut.pro)}g</td><td class="n">${r1(d.nut.carb)}g</td><td class="n">${r1(d.nut.fat)}g</td><td class="n">${r1(d.nut.fib)}g</td><td class="n">${r1(t.dishSrv[id])}</td></tr>`; }).join('')}
+    ${Object.keys(t.dishSrv).map(id => { const d = KIT().byId[id]; if (!d) return ''; return `<tr><td>${esc(d.name)}</td><td>${d.parts.map(p => esc(D.foods[p.i].name) + ' ' + BOOK.partAmount(p)).join(', ')}</td><td class="n">${fmt(d.nut.cal)}</td><td class="n">${r1(d.nut.pro)}g</td><td class="n">${r1(d.nut.carb)}g</td><td class="n">${r1(d.nut.fat)}g</td><td class="n">${r1(d.nut.fib)}g</td><td class="n">${r1(t.dishSrv[id])}</td></tr>`; }).join('')}
     </tbody></table></div>` : ''}
     <h3>3-Day Island Menu</h3>
     <div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Meal</th><th>Foods</th><th class="n">Cal</th></tr></thead><tbody>
@@ -928,6 +957,8 @@ document.addEventListener('click', e => {
   else if (t.dataset.mtab != null) { mtab = +t.dataset.mtab; out5(); }
   else if (t.id === 'kall') { kAll = !kAll; renderKitchen(); }
   else if (t.id === 'sugopen') { sugOpen = !sugOpen; sugMsg = ''; renderKitchen(); }
+  else if (t.dataset.cat) teachFood(t.dataset.fk, t.dataset.fn, t.dataset.cat);
+  else if (t.dataset.rmdish) { D.myDishes = (D.myDishes || []).filter(d => d.id !== t.dataset.rmdish); queueSave(); render3(); }
 });
 document.addEventListener('input', e => {
   const el = e.target;
@@ -938,7 +969,7 @@ document.addEventListener('input', e => {
   else if (['age', 'ft', 'inch', 'lb', 'bf'].includes(el.id)) { D.body[el.id] = el.value; out5(); queueSave(); }
   else if (el.id === 'ksearch') { kq = el.value; renderKitchen(); }
 });
-document.addEventListener('submit', e => { if (e.target.id === 'sugform') { e.preventDefault(); sendSuggestion(); } });
+document.addEventListener('submit', e => { if (e.target.id === 'sugform') { e.preventDefault(); makeDish(); } });
 document.addEventListener('change', e => {
   const el = e.target;
   if (el.dataset.ftype != null) { D.foods[+el.dataset.ftype].type = el.value; counts1(); refreshNext(); queueSave(); }
