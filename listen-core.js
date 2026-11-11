@@ -23,7 +23,9 @@
     7: { src: '/podcasts/ch07.mp3', title: 'Why Blended Families Take Seven Years' },
     8: { src: '/podcasts/ch08.mp3', title: 'Peer Pressure Refusal Steps and Dating Limits' },
     9: { src: '/podcasts/ch09.mp3', title: 'Stopping Teen Conflict Before It Escalates' },
-    10: { src: '/podcasts/ch10.mp3', title: 'How Engineered Snacks Trick Your Brain' }
+    10: { src: '/podcasts/ch10.mp3', title: 'How Engineered Snacks Trick Your Brain' },
+    11: { src: '/podcasts/ch11.mp3', title: 'From Fad Diets to Intuitive Eating' },
+    12: { src: '/podcasts/ch12.mp3', title: 'The 60 Minute Daily Brain Reset' }
   };
 
   var CHAPTERS = [null,
