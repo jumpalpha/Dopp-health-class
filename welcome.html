@@ -295,7 +295,7 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
     }
     if (who.data && who.data[0]) {
       student = who.data[0];
-      if (window.DoppRemember) DoppRemember.save(ses.id, ses.pin, student.display_name, student.avatar);
+      if (window.DoppRemember) DoppRemember.save(ses.id, ses.pin, student.display_name, student.avatar, student.class_code);
     }
     checkedIn = !days.error && (days.data || []).some(d => d.day_date === TODAY);
     render();

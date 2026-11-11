@@ -679,6 +679,20 @@ async function loadProgress() {
   doneDays = new Set((days || []).map(d => d.day_date));
   badgeExtra = await DoppBadges.loadExtra(db, TRIMESTER, student.id);
 }
+// Demo account: switch this browser into read-only demo mode (and start the guided tour on a fresh sign-in).
+async function demoCheck(isNewLogin) {
+  if (!window.DoppDemo || !student) return false;
+  if (DoppDemo.on) {
+    if (isNewLogin) { try { localStorage.setItem('dopp_tour', JSON.stringify({ i: 0 })); } catch (e) {} location.reload(); return true; }
+    return false;
+  }
+  const { data } = await db.rpc('demo_is', { p_sid: student.id, p_pin: studentPinHash });
+  if (data !== true) return false;
+  DoppDemo.set(student.id, studentPinHash, TRIMESTER);
+  if (isNewLogin) { try { localStorage.setItem('dopp_tour', JSON.stringify({ i: 0 })); } catch (e) {} }
+  location.reload();
+  return true;
+}
 async function init() {
   const sid = localStorage.getItem('qSID_' + TRIMESTER);
   const savedHash = sessionStorage.getItem('qPIN_' + TRIMESTER);
@@ -691,7 +705,8 @@ async function init() {
     if (data && data.length) {
       student = data[0];
       studentPinHash = savedHash;
-      if (window.DoppRemember) DoppRemember.save(student.id, savedHash, student.display_name, student.avatar);   // keep this device remembered
+      if (window.DoppRemember) DoppRemember.save(student.id, savedHash, student.display_name, student.avatar, student.class_code);   // keep this device remembered
+      if (await demoCheck(false)) return;
       await loadProgress();
       render();
       return;
@@ -804,8 +819,9 @@ async function loginReturning() {
   studentPinHash = hash;
   localStorage.setItem('qSID_' + TRIMESTER, student.id);
   sessionStorage.setItem('qPIN_' + TRIMESTER, hash);
-  if (window.DoppRemember) DoppRemember.save(student.id, hash, student.display_name, student.avatar);
+  if (window.DoppRemember) DoppRemember.save(student.id, hash, student.display_name, student.avatar, student.class_code);
   document.getElementById('modal').classList.remove('show');
+  if (await demoCheck(true)) return;
   await loadProgress();
   render();
   showToast(`Welcome back, ${student.display_name}! ⚔`);
@@ -860,7 +876,7 @@ async function registerNew() {
   studentPinHash = hash;
   localStorage.setItem('qSID_' + TRIMESTER, student.id);
   sessionStorage.setItem('qPIN_' + TRIMESTER, hash);
-  if (window.DoppRemember) DoppRemember.save(student.id, hash, student.display_name, student.avatar);
+  if (window.DoppRemember) DoppRemember.save(student.id, hash, student.display_name, student.avatar, student.class_code);
   document.getElementById('modal').classList.remove('show');
   await loadProgress();
   render();
@@ -1270,6 +1286,7 @@ function showModal() {
       localStorage.removeItem('qSID_' + TRIMESTER);
       sessionStorage.removeItem('qPIN_' + TRIMESTER);
       if (window.DoppRemember) DoppRemember.clear();
+      if (window.DoppDemo) DoppDemo.clear();
       student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set(); badgeExtra = {};
       clChecked = false; document.getElementById('cl-link').style.display = 'none';
       nmShown = false; document.getElementById('nm-box').style.display = 'none';

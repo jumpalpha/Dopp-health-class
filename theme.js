@@ -7,6 +7,13 @@
    - Natively dark pages (home, chapter list, realms, arcade menu, quest) get light tokens below plus
      a sweep that turns their faint white overlays into faint dark ones.
    Loaded synchronously in <head> (directly on the Next.js pages, via dark_mode.js on classic pages). */
+// Next.js pages don't load local-guard.js; bring it in so the demo account's badge + tour show there too.
+(function () {
+  if (window.DoppDemo) return;
+  try { if (!localStorage.getItem('dopp_demo')) return; } catch (e) { return; }
+  var s = document.createElement('script'); s.src = '/local-guard.js';
+  (document.head || document.documentElement).appendChild(s);
+})();
 (function () {
   if (window.DoppThemeUI) return;
   var KEY = 'dopp_theme';

@@ -914,6 +914,12 @@ input, select, textarea { color: var(--text); }
 // (same one used for live games). Kept in sessionStorage so it is
 // forgotten when the tab closes or the dashboard is locked.
 function teacherPass() { try { return sessionStorage.getItem('teacher_pass') || ''; } catch(e) { return ''; } }
+// Demo account: open the dashboard read-only. The server swaps in a throwaway key and rolls back
+// every change, so 'demo' is not a real passphrase and unlocks nothing outside demo mode.
+try {
+  if (window.DoppDemo && DoppDemo.on) sessionStorage.setItem('teacher_pass', 'demo');
+  else if (sessionStorage.getItem('teacher_pass') === 'demo') sessionStorage.removeItem('teacher_pass');
+} catch(e) {}
 
 async function checkPin() {
   const input = document.getElementById('pin-input').value;
@@ -936,6 +942,7 @@ async function checkPin() {
 }
 
 function lockDashboard() {
+  if (window.DoppDemo && DoppDemo.on) { location.href = 'quest.html'; return; }
   try { sessionStorage.removeItem('teacher_pass'); sessionStorage.removeItem('teacher_unlocked'); } catch(e) {}
   document.getElementById('pin-input').value = '';
   document.getElementById('pin-error').textContent = '';

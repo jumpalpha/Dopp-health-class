@@ -26,13 +26,19 @@
       try {
         var r = JSON.parse(localStorage.getItem(REM) || 'null');
         if (!r || !r.sid || !r.pin) return null;
+        if (r.perm) {   // permanent TEST accounts (teacher test + demo): never expire, follow the site into each new trimester
+          if (r.tri !== window.TERM.id) { r.tri = window.TERM.id; localStorage.setItem(REM, JSON.stringify(r)); }
+          return r;
+        }
         if (r.tri !== window.TERM.id || Date.now() > r.exp) { localStorage.removeItem(REM); return null; }
         return r;
       } catch (e) { return null; }
     },
-    save: function (sid, pin, name, avatar) {
+    save: function (sid, pin, name, avatar, classCode) {
       try {
-        localStorage.setItem(REM, JSON.stringify({ sid: sid, pin: pin, name: name || '', avatar: avatar || '', tri: window.TERM.id, exp: remExpiry(window.TERM.id) }));
+        var perm = /^TEST$/i.test(classCode || '');
+        localStorage.setItem(REM, JSON.stringify({ sid: sid, pin: pin, name: name || '', avatar: avatar || '', tri: window.TERM.id,
+          exp: perm ? Date.now() + 3650 * 86400000 : remExpiry(window.TERM.id), perm: perm }));
       } catch (e) {}
     },
     clear: function () {   // "Not you? Switch student" and Log out
