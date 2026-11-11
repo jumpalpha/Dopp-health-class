@@ -1,5 +1,5 @@
 # ⚔ The Legend of Wellness
-### Dopp Health Class · #OnedayIwokeup · #Doppitup
+### Dopp Health Class
 
 **A fully modernized, gamified health class website for Alan Dopp's high school health course.**
 
@@ -126,7 +126,6 @@ Every chapter has been modernized with:
 - ✅ Critical new content (fentanyl/counterfeit pill crisis, U=U HIV, mRNA vaccines, GLP-1 diabetes treatment)
 - ✅ Removed outdated content (replaced with current equivalents)
 - ✅ Student-friendly second-person writing style
-- ✅ #OnedayIwokeup · #Doppitup branding throughout
 
 ---
 
