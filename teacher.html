@@ -901,6 +901,18 @@ input, select, textarea { color: var(--text); }
         </table>
       </div>
     </div>
+
+    <div class="card" style="margin-top:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div class="card-title" style="margin-bottom:2px">🍳 Island Recipe Book</div>
+          <div style="font-size:12px;color:var(--dim)">Dishes students suggest for the Weight Control Quest. Approve one and every student can cook it.</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="wrLoad()">Refresh</button>
+      </div>
+      <div id="wr-msg" style="font-size:13px;font-weight:700;margin-top:8px"></div>
+      <div id="wr-list"></div>
+    </div>
   </div>
 
 </div><!-- /main -->
@@ -933,7 +945,7 @@ async function checkPin() {
     err.textContent = '';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-gate').style.display = 'none';
-    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); nrLoad(); spLoad(); mgLoad(); if (window.askBadge) askBadge(); }, 0);
+    setTimeout(() => { subInit(); subLoad(); termLoad(); visLoad(); trailLoad(); pinInit(); nrLoad(); spLoad(); mgLoad(); if (window.askBadge) askBadge(); if (window.wrLoad) wrLoad(); }, 0);
   } else {
     err.textContent = 'Incorrect passphrase. Try again.';
     document.getElementById('pin-input').value = '';
@@ -2047,6 +2059,8 @@ renderOverview();
 <script src="checklist_teacher.js"></script>
 <script src="briefing_teacher.js"></script>
 <script src="ask_teacher.js"></script>
+<script src="wcq_recipes.js"></script>
+<script src="recipes_teacher.js"></script>
 <script src="finance_calc.js"></script>
 <script src="finance_teacher.js"></script>
 </body>

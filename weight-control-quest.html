@@ -125,6 +125,30 @@ input.flag{border-color:var(--bad);background:#fff6f7}
 .item .x{font:inherit;font-weight:900;border:0;background:#f1ebdc;border-radius:8px;height:40px;cursor:pointer}
 .item label{font-size:12px;font-weight:800;color:var(--dim)}
 .mmsg{font-size:13px;font-weight:800;color:var(--bad);margin-top:6px}
+.kitchen{border:2px solid var(--gold-line);border-radius:14px;background:#fffaf0;padding:14px 16px;margin:6px 0 18px}
+.khead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.khead b{font-family:'Cinzel',serif;font-size:19px;color:var(--indigo)}
+.ksmall{font-size:14px;color:var(--dim);margin:6px 0 10px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:10px 0}
+.dcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.dcard .dn{font-weight:900}
+.dcard .dt{font-size:11px;font-weight:900;color:var(--sea);text-transform:uppercase;letter-spacing:.5px}
+.dcard .dnut{font-size:13px;font-weight:800;margin:3px 0}
+.dcard .ding{font-size:12px;color:var(--dim);line-height:1.4}
+.dcard.miss{background:#f6f2e8;opacity:.85}
+.kmsg{font-size:14px;margin:8px 0}
+.ksug{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+.ksug form{display:grid;gap:8px;margin-top:8px}
+.kfoods{display:flex;flex-wrap:wrap;gap:6px}
+.kfoods label{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff;cursor:pointer}
+.kfoods input{width:auto;margin:0}
+details.kalmost summary{cursor:pointer;font-weight:900;color:var(--mid)}
+.etabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.etabs button{font:inherit;font-weight:900;font-size:14px;padding:7px 14px;border-radius:999px;border:2px solid var(--indigo);background:#fff;color:var(--indigo);cursor:pointer}
+.etabs button[aria-pressed="true"]{background:var(--indigo);color:#fff}
+tr.me td{background:#fff6cc;font-weight:900}
+.mac{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:10px 0}
+.mac .tile .v{font-size:18px}
 .daytot{font-weight:900;background:var(--parch-2);border-radius:10px;padding:10px 14px;margin-top:10px}
 
 /* tiles, bars */
@@ -242,7 +266,8 @@ td.n,th.n{text-align:right}
   <section class="step" id="s3">
     <div class="step-head"><span class="step-num">Step 3</span><h2>Your First 3 Days</h2></div>
     <div class="story">You've unpacked the pallet. Now you have to actually <b>live on it</b>. Plan your first 3 days on the island: <b>breakfast, lunch, dinner and a snack</b> every day — made only from your 15 foods.<br>One rule from the island cook: <b>no repeats.</b> You're going to be here for life, so you'd better learn to mix it up. All 12 meals must be different.</div>
-    <div class="note">Add foods to each meal and choose how many servings (½ = 0.5). The totals add up for you. A meal counts as a repeat if it uses the exact same foods as another meal.</div>
+    <div id="kitchen"></div>
+    <div class="note">Build each meal from <b>dishes you can cook</b> 🍳 and/or <b>plain foods</b>, and choose how many servings (½ = 0.5). The totals add up for you. A meal counts as a repeat if it uses the exact same dishes and foods as another meal.</div>
     <div class="daytabs" id="daytabs"></div>
     <div id="meals"></div>
     <div class="counts"><span class="cnt" id="mcount">0 / 12 meals</span></div>
@@ -263,19 +288,20 @@ td.n,th.n{text-align:right}
     <div class="story">The researchers want to know: <b>if you ate like this every day for life, what would happen to your body?</b> Energy in is your food. Energy out is what your body burns just staying alive (BMR) plus what you burn moving around.</div>
     <div class="note">Your numbers are only seen by you and Mr. Dopp. This is a science estimate, not a grade on your body.</div>
     <div class="grid">
-      <label class="f">Age<input id="age" type="number" min="10" max="25" inputmode="numeric"></label>
+      <label class="f">Age<input id="age" type="number" min="10" max="99" inputmode="numeric"></label>
       <label class="f">Body formula<select id="sex"><option value="">Choose</option><option value="m">Male formula</option><option value="f">Female formula</option></select></label>
       <label class="f">Height (feet)<input id="ft" type="number" min="3" max="7" inputmode="numeric"></label>
       <label class="f">Height (inches)<input id="inch" type="number" min="0" max="11" inputmode="numeric"></label>
       <label class="f">Weight (pounds)<input id="lb" type="number" min="60" max="450" inputmode="numeric"></label>
       <label class="f">Activity level<select id="act">
         <option value="">Choose</option>
-        <option value="1.2">Very low — mostly sitting</option>
-        <option value="1.375">Light — some walking, PE</option>
-        <option value="1.55">Moderate — a sport or workout 3–5 days/week</option>
-        <option value="1.725">High — hard practice almost every day</option>
-        <option value="1.9">Very high — two-a-days, heavy physical work</option>
+        <option value="1.2">Sedentary — mostly sitting</option>
+        <option value="1.375">Light exercise — 1–2 days/week</option>
+        <option value="1.55">Moderate exercise — 3–5 days/week</option>
+        <option value="1.725">Heavy exercise — 6–7 days/week</option>
+        <option value="1.9">Athlete — 2 practices a day</option>
       </select></label>
+      <label class="f">Body fat % <small>optional — leave blank if you don't know</small><input id="bf" type="number" min="3" max="60" step="0.1" inputmode="decimal"></label>
     </div>
     <div id="energyout"></div>
     <div class="nav-btns"><button class="btn btn-ghost" type="button" data-back>← Back</button><button class="btn btn-gold" type="button" data-next>Take the island test →</button></div>
@@ -299,6 +325,7 @@ td.n,th.n{text-align:right}
 </main>
 
 <script src="vendor/supabase.js"></script>
+<script src="wcq_recipes.js"></script>
 <script>
 (function () {
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
@@ -323,6 +350,26 @@ const S = session();
 const MODE = S ? 'cloud' : 'practice';
 const db = (MODE === 'cloud' && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const LOCAL_KEY = S ? 'wcq2_' + TRI + '_' + S.sid : 'wcq2_practice_' + TRI;
+const pub = db || (window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null);
+const BOOK = window.WCQ_BOOK;
+const NK = ['cal', 'pro', 'carb', 'fat', 'fib'];
+let EXTRA = [];          // teacher-approved dishes from the database
+let kq = '', kAll = false, sugOpen = false, sugMsg = '', mtab = 0;
+let kCache = null, kCacheKey = '';
+function KIT() {
+  const key = JSON.stringify([D.foods, D.nut, EXTRA.length]);
+  if (key !== kCacheKey) { kCacheKey = key; kCache = BOOK ? BOOK.kitchen(D.foods, D.nut, EXTRA) : { can: [], almost: [], byId: {}, map: {} }; }
+  return kCache;
+}
+const dishOf = f => (typeof f === 'string' && f.startsWith('d:')) ? f.slice(2) : null;
+function bookName(id) {
+  const r = BOOK && BOOK.RECIPES.find(x => x[0] === id); if (r) return r[1];
+  const e = EXTRA.find(x => x.id === id); return e ? e.name : id;
+}
+function itemName(it) {
+  const id = dishOf(it.f); if (id) { const d = KIT().byId[id]; return d ? d.name : bookName(id); }
+  const f = D.foods[+it.f]; return f ? f.name : '';
+}
 
 let D = blank();
 let cur = 0, day = 0, quizLive = null;
@@ -331,7 +378,7 @@ function blank() {
   for (let d = 0; d < 3; d++) { meals.push(MEALS.map(() => [])); }
   return { v: 2, group: '', bringing: '', foods: Array.from({ length: N }, () => ({ name: '', type: '' })),
     nut: Array.from({ length: N }, () => ({ serving: '', cal: '', pro: '', carb: '', fat: '', fib: '' })),
-    meals, body: { age: '', sex: '', ft: '', inch: '', lb: '', act: '' },
+    meals, body: { age: '', sex: '', ft: '', inch: '', lb: '', act: '', bf: '' },
     seen4: false, quiz: { tries: 0, best: 0, passed: false }, tryCount: 0, submitted: false, lastStep: 0 };
 }
 
@@ -360,26 +407,36 @@ function nutCheck(i) {
 }
 const step2count = () => D.foods.reduce((a, f, i) => a + (f.name.trim() && nutCheck(i).ok ? 1 : 0), 0);
 const step2ok = () => step1ok().ok && step2count() === N;
-function mealKey(m) { return m.filter(it => it.f !== '' && it.f != null).map(it => +it.f).sort((a, b) => a - b).filter((v, i, a) => a.indexOf(v) === i).join(','); }
+function mealKey(m) { return m.filter(it => it.f !== '' && it.f != null).map(it => String(it.f)).sort().filter((v, i, a) => a.indexOf(v) === i).join(','); }
 function mealStatus() {
-  const keys = [], st = [];
+  const keys = [], st = [], K = KIT();
   D.meals.forEach((dm, d) => dm.forEach((m, k) => { keys.push(mealKey(m)); }));
   keys.forEach((key, idx) => {
     const m = D.meals[Math.floor(idx / 4)][idx % 4];
-    const bad = m.some(it => it.f !== '' && !(+it.s > 0));
+    const gone = m.some(it => dishOf(it.f) && !K.byId[dishOf(it.f)]);
+    const bad = gone || m.some(it => it.f !== '' && !(+it.s > 0));
     const filled = key !== '' && !bad;
     const dup = filled && keys.some((k2, j) => j !== idx && k2 === key);
-    st.push({ filled, dup, bad, ok: filled && !dup });
+    st.push({ filled, dup, bad, gone, ok: filled && !dup });
   });
   return st;
 }
 const step3ok = () => step2ok() && mealStatus().every(s => s.ok);
 function bodyCalc() {
-  const b = D.body, age = +b.age, ft = +b.ft, inch = +(b.inch || 0), lb = +b.lb, act = +b.act;
-  if (!(age >= 10 && age <= 25) || !b.sex || !(ft >= 3 && ft <= 7) || !(inch >= 0 && inch < 12) || !(lb >= 60 && lb <= 450) || !act) return null;
-  const cm = (ft * 12 + inch) * 2.54, kg = lb / 2.20462;
-  const bmr = 10 * kg + 6.25 * cm - 5 * age + (b.sex === 'm' ? 5 : -161);
-  return { bmr, maint: bmr * act, move: bmr * act - bmr };
+  const b = D.body, age = +b.age, ft = +b.ft, inch = +(b.inch || 0), lb = +b.lb, act = +b.act, bf = +(b.bf || 0);
+  if (!(age >= 10 && age <= 99) || !b.sex || !(ft >= 3 && ft <= 7) || !(inch >= 0 && inch < 12) || !(lb >= 60 && lb <= 450) || !act) return null;
+  const inches = ft * 12 + inch, cm = inches * 2.54, kg = lb / 2.20462, m = b.sex === 'm';
+  const useBf = bf >= 3 && bf <= 60;
+  // Mifflin-St Jeor, or Katch-McArdle when body fat % is known (same as tdeecalculator.net)
+  const bmr = useBf ? 370 + 21.6 * kg * (1 - bf / 100) : 10 * kg + 6.25 * cm - 5 * age + (m ? 5 : -161);
+  const over = inches - 60, KG = 2.20462;
+  const ideal = [
+    ['G.J. Hamwi (1964)', m ? 48 + 2.7 * over : 45.5 + 2.2 * over],
+    ['B.J. Devine (1974)', m ? 50 + 2.3 * over : 45.5 + 2.3 * over],
+    ['J.D. Robinson (1983)', m ? 52 + 1.9 * over : 49 + 1.7 * over],
+    ['D.R. Miller (1983)', m ? 56.2 + 1.41 * over : 53.1 + 1.36 * over]
+  ].map(([n, k]) => [n, k * KG]);
+  return { bmr, maint: bmr * act, move: bmr * act - bmr, act, age, lb, inches, bmi: 703 * lb / (inches * inches), ideal, useBf, lbm: useBf ? lb * (1 - bf / 100) : null };
 }
 const step5ok = () => step3ok() && !!bodyCalc();
 function doneList() {
@@ -392,12 +449,22 @@ const stageCompleted = () => doneList().slice(1, 7).filter(Boolean).length;   //
 function totals() {
   const per = Array.from({ length: N }, () => ({ cal: 0, pro: 0, carb: 0, fat: 0, fib: 0, srv: 0 }));
   const days = [0, 1, 2].map(() => ({ cal: 0, pro: 0, carb: 0, fat: 0, fib: 0 }));
-  const mealT = [];
+  const mealT = [], K = KIT(), dishSrv = {};
   D.meals.forEach((dm, d) => dm.forEach((m, k) => {
     const t = { cal: 0, pro: 0, carb: 0, fat: 0, fib: 0 };
     m.forEach(it => {
       if (it.f === '' || it.f == null) return;
-      const s = +it.s || 0, n = D.nut[+it.f];
+      const s = +it.s || 0, did = dishOf(it.f);
+      if (did) {
+        const dd = K.byId[did]; if (!dd) return;
+        dishSrv[did] = (dishSrv[did] || 0) + s;
+        dd.parts.forEach(p => {
+          NK.forEach((key, j) => { const v = p.nut[j] * s; t[key] += v; per[p.i][key] += v; days[d][key] += v; });
+          per[p.i].srv += s * (p.srv || 1);
+        });
+        return;
+      }
+      const n = D.nut[+it.f];
       ['cal', 'pro', 'carb', 'fat', 'fib'].forEach(key => { const v = (+n[key] || 0) * s; t[key] += v; per[+it.f][key] += v; days[d][key] += v; });
       per[+it.f].srv += s;
     });
@@ -407,7 +474,7 @@ function totals() {
   const avg = {}; for (const k in all) avg[k] = all[k] / 3;
   const rank = per.map((p, i) => ({ i, ...p })).filter(p => D.foods[p.i].name.trim()).sort((a, b) => b.cal - a.cal);
   const top5 = rank.slice(0, 5).reduce((a, p) => a + p.cal, 0);
-  return { per, days, mealT, all, avg, rank, top5share: all.cal ? top5 / all.cal * 100 : 0, used: rank.filter(p => p.srv > 0).length };
+  return { per, days, mealT, all, avg, rank, dishSrv, top5share: all.cal ? top5 / all.cal * 100 : 0, used: rank.filter(p => p.srv > 0).length };
 }
 
 // ───────── saving ─────────
@@ -509,21 +576,89 @@ function mark2(i) {
 }
 // ───────── step 3 ─────────
 function render3() {
-  const st = mealStatus();
+  renderKitchen();
+  const st = mealStatus(), K = KIT();
   $('daytabs').innerHTML = [0, 1, 2].map(d => `<button type="button" data-day="${d}" aria-pressed="${d === day}" class="${st.slice(d * 4, d * 4 + 4).every(s => s.ok) ? 'ok' : ''}">Day ${d + 1}</button>`).join('');
-  const opts = named().map(f => `<option value="${f.i}">${esc(f.name)} (${esc(D.nut[f.i].serving)})</option>`).join('');
+  const dishOpts = K.can.map(d => `<option value="d:${esc(d.id)}">🍳 ${esc(d.name)} — ${fmt(d.nut.cal)} cal</option>`).join('');
+  const foodOpts = named().map(f => `<option value="${f.i}">${esc(f.name)} (${esc(D.nut[f.i].serving)})</option>`).join('');
+  const opts = (dishOpts ? `<optgroup label="🍳 Dishes you can make">${dishOpts}</optgroup>` : '') + `<optgroup label="Plain foods">${foodOpts}</optgroup>`;
   const t = totals();
   $('meals').innerHTML = MEALS.map((name, k) => {
     const idx = day * 4 + k, m = D.meals[day][k], s = st[idx], mt = t.mealT[idx];
-    const rows = m.map((it, j) => `<div class="item"><select data-mf="${k}" data-j="${j}" aria-label="${name} food"><option value="">Choose a food</option>${opts.replace(`value="${it.f}"`, `value="${it.f}" selected`)}</select>
+    const rows = m.map((it, j) => {
+      const did = dishOf(it.f), gone = did && !K.byId[did];
+      const o = gone ? `<option value="${esc(it.f)}" selected>⚠ ${esc(bookName(did))} — can't make it now</option>` + opts
+        : opts.replace(`value="${esc(it.f)}"`, `value="${esc(it.f)}" selected`);
+      return `<div class="item"><select data-mf="${k}" data-j="${j}" aria-label="${name} dish or food"><option value="">Choose a dish or food</option>${o}</select>
       <label>Servings<input data-ms="${k}" data-j="${j}" type="number" min="0.25" max="10" step="0.25" inputmode="decimal" value="${esc(it.s)}"></label>
-      <button type="button" class="x" data-mx="${k}" data-j="${j}" aria-label="Remove">✕</button></div>`).join('');
-    const msg = s.dup ? 'This meal is a repeat of another meal. Change it up!' : s.bad ? 'Every food needs a number of servings.' : '';
+      <button type="button" class="x" data-mx="${k}" data-j="${j}" aria-label="Remove">✕</button></div>`;
+    }).join('');
+    const msg = s.dup ? 'This meal is a repeat of another meal. Change it up!' : s.gone ? 'One dish can’t be made from your pallet anymore. Pick something else.' : s.bad ? 'Every item needs a number of servings.' : '';
     return `<div class="meal ${s.dup ? 'dup' : ''}"><div class="mhead"><b>${s.ok ? '✅' : '🍽'} Day ${day + 1} · ${name}</b><span class="mtot">${fmt(mt.cal)} cal · ${r0(mt.pro)}g protein · ${r0(mt.fib)}g fiber</span></div>
-      ${rows}<div class="mmsg">${msg}</div><button type="button" class="btn btn-ghost btn-sm" data-madd="${k}" style="margin-top:8px">+ Add a food</button></div>`;
+      ${rows}<div class="mmsg">${msg}</div><button type="button" class="btn btn-ghost btn-sm" data-madd="${k}" style="margin-top:8px">+ Add a dish or food</button></div>`;
   }).join('') + `<div class="daytot">Day ${day + 1} total: ${fmt(t.days[day].cal)} calories · ${r0(t.days[day].pro)}g protein · ${r0(t.days[day].carb)}g carbs · ${r0(t.days[day].fat)}g fat · ${r0(t.days[day].fib)}g fiber</div>`;
   $('mcount').textContent = st.filter(s => s.ok).length + ' / 12 meals';
   $('mcount').className = 'cnt' + (st.every(s => s.ok) ? ' ok' : '');
+}
+// ───────── step 3 kitchen ─────────
+const TAGS = { B: 'Breakfast', L: 'Lunch', D: 'Dinner', S: 'Snack / dessert', U: 'Class recipe' };
+function dishCard(d) {
+  const ing = d.parts.map(p => {
+    const f = D.foods[p.i], amt = BOOK.amountText(p.k, p.a);
+    return `${esc(f.name)} ${amt}${p.srv != null ? ` <i>(${BOOK.frac(p.srv)} of your servings)</i>` : ' <i>(book estimate)</i>'}`;
+  }).join(' · ');
+  return `<div class="dcard"><div class="dt">${TAGS[d.tag] || ''}</div><div class="dn">🍳 ${esc(d.name)}</div>
+    <div class="dnut">${fmt(d.nut.cal)} cal · ${r1(d.nut.pro)}g protein · ${r1(d.nut.carb)}g carbs · ${r1(d.nut.fat)}g fat · ${r1(d.nut.fib)}g fiber</div>
+    <div class="ding">${ing}</div></div>`;
+}
+function renderKitchen() {
+  const box = $('kitchen'); if (!box) return;
+  if (!BOOK) { box.innerHTML = ''; return; }
+  if (!$('kres')) {
+    box.innerHTML = `<div class="kitchen"><div class="khead"><b>🍳 Island Kitchen</b><span class="cnt ok" id="kcount"></span></div>
+      <p class="ksmall">The island cook checked your 15 foods against the recipe book. These are the dishes you can make. Spices, salt, water, yeast and baking powder are free. Bread, tortillas and noodles can be made from flour. Each dish shows one plate, using the numbers from <b>your</b> labels.</p>
+      <input id="ksearch" type="search" placeholder="Look up a dish (pancakes, tacos, chili…)" aria-label="Look up a dish" autocomplete="off">
+      <div id="kres"></div></div>`;
+  }
+  $('ksearch').value = kq;
+  const K = KIT(), q = kq.trim().toLowerCase();
+  $('kcount').textContent = 'You can make ' + K.can.length + ' dishes';
+  const can = q ? K.can.filter(d => d.name.toLowerCase().includes(q)) : K.can;
+  const almost = q ? K.almost.filter(d => d.name.toLowerCase().includes(q)) : K.almost;
+  const shown = (q || kAll) ? can : can.slice(0, 6);
+  let html = '';
+  if (q && !can.length) {
+    html += almost.length ? `<div class="warn kmsg">You can’t make <b>${esc(kq)}</b> yet — ${almost.map(a => `<b>${esc(a.name)}</b> needs ${esc(a.missing)}`).join('; ')}.</div>`
+      : `<div class="warn kmsg"><b>${esc(kq)}</b> isn’t in the recipe book yet. If you could make it from your pallet, suggest it below!</div>`;
+  }
+  html += `<div class="kgrid">${shown.map(dishCard).join('')}</div>`;
+  if (!q && can.length > 6) html += `<button type="button" class="btn btn-ghost btn-sm" id="kall">${kAll ? 'Show fewer' : 'Show all ' + can.length + ' dishes'}</button>`;
+  if (!q && almost.length) html += `<details class="kalmost" style="margin-top:10px"><summary>Almost! ${almost.length} more dishes are missing just 1 food</summary><div class="ksmall" style="margin-top:6px">${almost.map(a => `${esc(a.name)} <i>(needs ${esc(a.missing)})</i>`).join(' · ')}</div></details>`;
+  html += `<div class="ksug">Know a dish you could make from your pallet that isn’t here? <button type="button" class="btn btn-ink btn-sm" id="sugopen">${sugOpen ? 'Close' : 'Suggest a dish'}</button>
+    ${sugMsg ? `<div class="kmsg">${sugMsg}</div>` : ''}
+    ${sugOpen ? `<form id="sugform"><label class="f">Dish name<input id="sugname" maxlength="60" value="${esc(q && !can.length ? kq : '')}" placeholder="Example: Corn chowder"></label>
+      <div><b style="font-size:14px">Which of your foods would it use?</b><div class="kfoods">${named().map(f => `<label><input type="checkbox" value="${esc(f.name)}"> ${esc(f.name)}</label>`).join('')}</div></div>
+      <label class="f">How do you make it? <small>optional</small><textarea id="sugnote" rows="2" maxlength="300" placeholder="Example: boil corn and milk, add potatoes"></textarea></label>
+      <div><button class="btn btn-gold btn-sm" type="submit">Send to Mr. Dopp</button></div></form>` : ''}</div>`;
+  $('kres').innerHTML = html;
+}
+async function sendSuggestion() {
+  const name = $('sugname').value.trim();
+  const foods = [...document.querySelectorAll('#sugform .kfoods input:checked')].map(x => x.value);
+  const note = $('sugnote').value.trim();
+  if (name.length < 2) { sugMsg = '<span class="s-bad">Type the name of the dish.</span>'; renderKitchen(); return; }
+  if (MODE !== 'cloud' || !pub) { sugMsg = '<span class="s-bad">Sign in on the Quest page to send suggestions.</span>'; renderKitchen(); return; }
+  const { error } = await pub.rpc('wcq_suggest_dish', { p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI, p_name: name, p_foods: foods, p_note: note });
+  if (error) sugMsg = '<span class="s-bad">' + esc(/function|schema/i.test(error.message) ? 'Suggestions aren’t turned on yet. Tell Mr. Dopp!' : error.message) + '</span>';
+  else { sugMsg = '<span class="s-ok">Sent! If Mr. Dopp approves “' + esc(name) + '”, it goes in everyone’s recipe book.</span>'; sugOpen = false; }
+  renderKitchen();
+}
+async function loadExtra() {
+  if (!pub) return;
+  try {
+    const { data, error } = await pub.rpc('wcq_recipes_list');
+    if (!error && Array.isArray(data)) { EXTRA = data; if (cur === 3) render3(); }
+  } catch (e) {}
 }
 // ───────── step 4 ─────────
 function render4() {
@@ -551,30 +686,71 @@ function render4() {
 }
 // ───────── step 5 ─────────
 function render5() {
-  ['age', 'sex', 'ft', 'inch', 'lb', 'act'].forEach(k => { $(k).value = D.body[k]; });
+  ['age', 'sex', 'ft', 'inch', 'lb', 'act', 'bf'].forEach(k => { $(k).value = D.body[k] == null ? '' : D.body[k]; });
   out5();
 }
+const LEVELS = [['Basal Metabolic Rate (BMR)', 1], ['Sedentary', 1.2], ['Light exercise', 1.375], ['Moderate exercise', 1.55], ['Heavy exercise', 1.725], ['Athlete', 1.9]];
+const SPLITS = [['Moderate carb', 30, 35, 35, 'protein 30 · fat 35 · carbs 35'], ['Lower carb', 40, 40, 20, 'protein 40 · fat 40 · carbs 20'], ['Higher carb', 30, 20, 50, 'protein 30 · fat 20 · carbs 50']];
+function bmiCat(b) { return b < 18.5 ? 'Underweight' : b < 25 ? 'Normal weight' : b < 30 ? 'Overweight' : 'Obese'; }
 function out5() {
   const c = bodyCalc(), t = totals();
-  if (!c) { $('energyout').innerHTML = '<p class="lead" style="margin-top:14px">Fill in every box to see your energy balance.</p>'; refreshNext(); return; }
+  if (!c) { $('energyout').innerHTML = '<p class="lead" style="margin-top:14px">Fill in every box (body fat % is optional) to see your results.</p>'; refreshNext(); return; }
   const gap = t.avg.cal - c.maint, lbs = gap * 30 / 3500, yr = gap * 365 / 3500;
   const word = Math.abs(gap) < 100 ? 'balanced' : gap > 0 ? 'surplus' : 'deficit';
   const verdict = word === 'balanced' ? 'About balanced — your weight would stay about the same.'
     : word === 'surplus' ? 'Energy surplus — more in than out. You would slowly gain weight.'
     : 'Energy deficit — more out than in. You would slowly lose weight.';
+  const cat = bmiCat(c.bmi);
+  const iw = c.ideal.map(x => x[1]), lo = Math.min(...iw), hi = Math.max(...iw);
+  const goals = [['Maintain', c.maint, 'Keep your weight the same'], ['Lose', c.maint - 500, '−500 cal/day ≈ −1 lb a week'], ['Gain', c.maint + 500, '+500 cal/day ≈ +1 lb a week']];
+  const g = goals[mtab];
+  const islandPct = k => t.avg.cal ? r0(t.avg[k] * (k === 'fat' ? 9 : 4) / t.avg.cal * 100) : 0;
   $('energyout').innerHTML = `
+    <h3>Your maintenance calories</h3>
+    <div class="okbox"><div class="big">${fmt(c.maint)} calories per day</div>
+      ${fmt(c.maint * 7)} calories per week. This is your <b>TDEE</b> (Total Daily Energy Expenditure): what your body burns in a day at your activity level. ${c.useBf ? 'Figured with the <b>Katch-McArdle</b> formula because you entered body fat %.' : 'Figured with the <b>Mifflin-St Jeor</b> formula.'}</div>
     <div class="tiles">
       <div class="tile"><div class="k">BMR</div><div class="v">${fmt(c.bmr)}</div><div class="s">calories to stay alive doing nothing</div></div>
       <div class="tile"><div class="k">+ Movement</div><div class="v">${fmt(c.move)}</div><div class="s">calories from your activity</div></div>
-      <div class="tile"><div class="k">= Energy out</div><div class="v">${fmt(c.maint)}</div><div class="s">maintenance calories per day</div></div>
-      <div class="tile"><div class="k">Energy in</div><div class="v">${fmt(t.avg.cal)}</div><div class="s">your 3-day average</div></div>
+      <div class="tile"><div class="k">= Energy out (TDEE)</div><div class="v">${fmt(c.maint)}</div><div class="s">maintenance calories per day</div></div>
+      <div class="tile"><div class="k">BMI</div><div class="v">${r1(c.bmi)}</div><div class="s">${cat}</div></div>
+    </div>
+
+    <h3>Your island diet vs. your body</h3>
+    <div class="tiles">
+      <div class="tile"><div class="k">Energy in</div><div class="v">${fmt(t.avg.cal)}</div><div class="s">your 3-day island average</div></div>
+      <div class="tile"><div class="k">Energy out</div><div class="v">${fmt(c.maint)}</div><div class="s">your maintenance (TDEE)</div></div>
     </div>
     <div class="${word === 'balanced' ? 'okbox' : 'warn'}"><div class="big">${gap >= 0 ? '+' : '−'}${fmt(Math.abs(gap))} calories a day</div>${verdict}</div>
     <div class="tiles">
       <div class="tile"><div class="k">In 30 days</div><div class="v">≈ ${lbs >= 0 ? '+' : '−'}${Math.abs(r1(lbs))} lb</div><div class="s">estimate</div></div>
       <div class="tile"><div class="k">In 1 year</div><div class="v">≈ ${yr >= 0 ? '+' : '−'}${Math.abs(r0(yr))} lb</div><div class="s">estimate if nothing changed</div></div>
     </div>
-    <div class="note">How the estimate works: about <b>3,500 extra calories ≈ 1 pound</b> of body weight. Real bodies adjust over time, and teens are still growing, so treat this as a direction, not an exact prediction. Remember the pallet holds the exact amount you need — the question is whether <i>the meals you planned</i> match it.</div>`;
+    <div class="note">How the estimate works: about <b>3,500 extra calories ≈ 1 pound</b> of body weight. Real bodies adjust over time, and teens are still growing, so treat this as a direction, not an exact prediction. Remember the pallet holds the exact amount you need — the question is whether <i>the meals you planned</i> match it.</div>
+
+    <h3>Calories by activity level</h3>
+    <div class="tbl-wrap"><table><thead><tr><th>Activity level</th><th class="n">Calories / day</th></tr></thead><tbody>
+      ${LEVELS.map(([n, m]) => `<tr class="${m === c.act ? 'me' : ''}"><td>${n}${m === c.act ? ' ← you' : ''}</td><td class="n">${fmt(c.bmr * m)}</td></tr>`).join('')}
+    </tbody></table></div>
+
+    <h3>BMI score: ${r1(c.bmi)} — ${cat}</h3>
+    <div class="tbl-wrap"><table><thead><tr><th>BMI</th><th>Category</th></tr></thead><tbody>
+      ${[['18.5 or less', 'Underweight'], ['18.5 – 24.99', 'Normal weight'], ['25 – 29.99', 'Overweight'], ['30+', 'Obese']].map(([r, n]) => `<tr class="${n === cat ? 'me' : ''}"><td>${r}</td><td>${n}${n === cat ? ' ← you' : ''}</td></tr>`).join('')}
+    </tbody></table></div>
+    ${c.age < 20 ? '<div class="note">For teens, doctors compare BMI to other kids your <b>age and sex</b> (BMI-for-age percentile), so these adult categories are only a rough guide. BMI also can’t tell muscle from fat — a strong athlete can show as “overweight.”</div>' : '<div class="note">BMI can’t tell muscle from fat, so muscular people can show as “overweight.”</div>'}
+
+    <h3>Ideal weight: ${fmt(lo)}–${fmt(hi)} lb</h3>
+    <div class="tbl-wrap"><table><thead><tr><th>Formula</th><th class="n">Ideal weight</th></tr></thead><tbody>
+      ${c.ideal.map(([n, w]) => `<tr><td>${n}</td><td class="n">${fmt(w)} lb</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="note">These four formulas use only height and sex, and were made for adults. They disagree with each other — that’s the point: there is no single “perfect” weight.</div>
+
+    <h3>Macronutrients</h3>
+    <div class="etabs">${goals.map((x, i) => `<button type="button" data-mtab="${i}" aria-pressed="${i === mtab}">${x[0]}</button>`).join('')}</div>
+    <p class="lead" style="margin:4px 0"><b>${g[0]}: ${fmt(g[1])} calories a day</b> — ${g[2]}.${mtab === 1 && c.age < 20 ? ' Teens are still growing, so don’t try to lose weight without talking to a doctor.' : ''}</p>
+    <div class="mac">${SPLITS.map(([n, p, f, cb, d]) => `<div class="tile"><div class="k">${n}</div><div class="s">${d} (%)</div>
+      <div class="v">${fmt(g[1] * p / 100 / 4)}g protein</div><div class="v">${fmt(g[1] * f / 100 / 9)}g fat</div><div class="v">${fmt(g[1] * cb / 100 / 4)}g carbs</div></div>`).join('')}</div>
+    <div class="note"><b>Your island diet:</b> ${r0(t.avg.pro)}g protein (${islandPct('pro')}%) · ${r0(t.avg.fat)}g fat (${islandPct('fat')}%) · ${r0(t.avg.carb)}g carbs (${islandPct('carb')}%). Which split is it closest to?</div>`;
   refreshNext();
 }
 // ───────── step 6 quiz ─────────
@@ -675,11 +851,15 @@ function render7() {
     </tbody></table></div>
     <h3>What We Learned</h3>
     <p><b>Top 5 foods = ${r0(t.top5share)}% of calories.</b> Daily average: ${fmt(t.avg.cal)} calories · ${r0(t.avg.pro)}g protein · ${r0(t.avg.carb)}g carbs · ${r0(t.avg.fat)}g fat · ${r0(t.avg.fib)}g fiber.</p>
-    ${c ? `<p><b>Energy:</b> BMR ${fmt(c.bmr)} + movement ${fmt(c.move)} = ${fmt(c.maint)} out vs. ${fmt(t.avg.cal)} in → ${gap >= 0 ? '+' : '−'}${fmt(Math.abs(gap))} cal/day ≈ ${gap >= 0 ? '+' : '−'}${Math.abs(r1(gap * 30 / 3500))} lb in 30 days.</p>` : ''}
+    ${c ? `<p><b>Energy:</b> BMI ${r1(c.bmi)} · BMR ${fmt(c.bmr)} + movement ${fmt(c.move)} = ${fmt(c.maint)} out vs. ${fmt(t.avg.cal)} in → ${gap >= 0 ? '+' : '−'}${fmt(Math.abs(gap))} cal/day ≈ ${gap >= 0 ? '+' : '−'}${Math.abs(r1(gap * 30 / 3500))} lb in 30 days.</p>` : ''}
     <p><b>Know-Your-Food test:</b> best ${D.quiz.best} / ${QN} (${D.quiz.tries} ${D.quiz.tries === 1 ? 'try' : 'tries'}).</p>
+    ${Object.keys(t.dishSrv).length ? `<h3>Our Island Dishes</h3>
+    <div class="tbl-wrap"><table><thead><tr><th>Dish (1 plate)</th><th>Made from</th><th class="n">Cal</th><th class="n">Protein</th><th class="n">Carbs</th><th class="n">Fat</th><th class="n">Fiber</th><th class="n">Plates eaten</th></tr></thead><tbody>
+    ${Object.keys(t.dishSrv).map(id => { const d = KIT().byId[id]; if (!d) return ''; return `<tr><td>${esc(d.name)}</td><td>${d.parts.map(p => esc(D.foods[p.i].name) + ' ' + BOOK.amountText(p.k, p.a)).join(', ')}</td><td class="n">${fmt(d.nut.cal)}</td><td class="n">${r1(d.nut.pro)}g</td><td class="n">${r1(d.nut.carb)}g</td><td class="n">${r1(d.nut.fat)}g</td><td class="n">${r1(d.nut.fib)}g</td><td class="n">${r1(t.dishSrv[id])}</td></tr>`; }).join('')}
+    </tbody></table></div>` : ''}
     <h3>3-Day Island Menu</h3>
     <div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Meal</th><th>Foods</th><th class="n">Cal</th></tr></thead><tbody>
-    ${D.meals.map((dm, d) => dm.map((m, k) => `<tr><td>${d + 1}</td><td>${MEALS[k]}</td><td>${m.filter(it => it.f !== '').map(it => esc(D.foods[+it.f].name) + ' ×' + it.s).join(', ')}</td><td class="n">${fmt(t.mealT[d * 4 + k].cal)}</td></tr>`).join('')).join('')}
+    ${D.meals.map((dm, d) => dm.map((m, k) => `<tr><td>${d + 1}</td><td>${MEALS[k]}</td><td>${m.filter(it => it.f !== '').map(it => (dishOf(it.f) ? '🍳 ' : '') + esc(itemName(it)) + ' ×' + it.s).join(', ')}</td><td class="n">${fmt(t.mealT[d * 4 + k].cal)}</td></tr>`).join('')).join('')}
     </tbody></table></div>`;
   $('turnin').innerHTML = D.submitted ? '<div class="okbox"><b>Turned in ✓</b> Mr. Dopp can see your work. If you change anything it still saves.</div>'
     : MODE !== 'cloud' ? '<div class="warn">You are in practice mode, so this can\'t be turned in. <a href="quest.html">Sign in on the Quest page</a>, then come back.</div>'
@@ -704,6 +884,9 @@ document.addEventListener('click', e => {
   else if (t.id === 'submitbtn') { D.submitted = true; queueSave(); render7(); renderPath(); }
   else if (t.id === 'printbtn') { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's7')); render7(); window.print(); }
   else if (t.id === 'samplebtn') fillSample();
+  else if (t.dataset.mtab != null) { mtab = +t.dataset.mtab; out5(); }
+  else if (t.id === 'kall') { kAll = !kAll; renderKitchen(); }
+  else if (t.id === 'sugopen') { sugOpen = !sugOpen; sugMsg = ''; renderKitchen(); }
 });
 document.addEventListener('input', e => {
   const el = e.target;
@@ -711,8 +894,10 @@ document.addEventListener('input', e => {
   else if (el.dataset.food != null) { D.foods[+el.dataset.food].name = el.value; counts1(); refreshNext(); queueSave(); }
   else if (el.dataset.nut != null) { D.nut[+el.dataset.nut][el.dataset.k] = el.value; mark2(+el.dataset.nut); $('ncount').textContent = step2count() + ' / 15 checked'; refreshNext(); queueSave(); }
   else if (el.dataset.ms != null) { D.meals[day][+el.dataset.ms][+el.dataset.j].s = el.value; queueSave(); }
-  else if (['age', 'ft', 'inch', 'lb'].includes(el.id)) { D.body[el.id] = el.value; out5(); queueSave(); }
+  else if (['age', 'ft', 'inch', 'lb', 'bf'].includes(el.id)) { D.body[el.id] = el.value; out5(); queueSave(); }
+  else if (el.id === 'ksearch') { kq = el.value; renderKitchen(); }
 });
+document.addEventListener('submit', e => { if (e.target.id === 'sugform') { e.preventDefault(); sendSuggestion(); } });
 document.addEventListener('change', e => {
   const el = e.target;
   if (el.dataset.ftype != null) { D.foods[+el.dataset.ftype].type = el.value; counts1(); refreshNext(); queueSave(); }
@@ -762,6 +947,7 @@ async function start() {
   renderPath(); renderStep(cur);
 }
 start();
+loadExtra();
 })();
 </script>
 </body>
