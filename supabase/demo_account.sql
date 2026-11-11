@@ -194,7 +194,7 @@ begin
   -- pick the overload whose inputs match the arguments sent
   for f in
     select p.oid, p.proname, p.proretset, p.prorettype, p.pronargs, p.pronargdefaults,
-           p.proargnames, p.proargmodes, p.proallargtypes, p.proargtypes::oid[] intypes
+           p.proargnames, p.proargmodes, p.proallargtypes, string_to_array(p.proargtypes::text, ' ')::oid[] intypes   -- 1-based (oidvector casts are 0-based)
       from pg_proc p join pg_namespace n on n.oid = p.pronamespace
      where n.nspname = 'public' and p.proname = p_fn and p.prokind = 'f'
        and has_function_privilege('anon', p.oid, 'EXECUTE')

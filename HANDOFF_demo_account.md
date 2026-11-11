@@ -1,5 +1,19 @@
 # Handoff: Demo account "Pilot" + never-expiring accounts
 
+## UPDATE 2026-11-10 (evening): applied and locked down
+- Renamed Jason -> **Pilot**. Password = 4 digits + a 4-letter word (Alan has it; never commit it). quest.html accepts
+  that format for any 8-char digits+letters entry (lower-cased); real students still use 4-digit PINs.
+- Teacher view in the demo is limited to roster / checklist / briefing / sprite / trail / term screens (numbers, dates,
+  masked names). Ask Mr. Dopp, Cost of Your Future, Weight Control Quest, name requests, sprite admin, duplicates,
+  visitors and roster-changing tools are refused.
+- Pilot's progress is **made up** (demo_seed.sql); nothing is copied from a real student.
+- Fixed a bug in demo_call: proargtypes::oid[] is 0-based, so every argument type was off by one.
+- All three SQL files are APPLIED on the live database. SQL checks passed: writes as Pilot dropped, roster masked,
+  live_teacher_key unchanged, refused tools refused, wrong password refused, briefing "save" rolled back.
+
+---
+
+
 Branch: `demo-account` (NOT merged to `main`, nothing is live yet).
 Supabase project: `dopp-health-class` (ref `gmeyamrlqfrabtslsweu`).
 
