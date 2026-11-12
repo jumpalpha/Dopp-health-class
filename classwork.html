@@ -240,13 +240,14 @@ async function start() {
     return;
   }
   const testBanner = st.live ? '' : `<div class="banner b-test">🔒 Hidden preview: only the TEST class can see Unit Classwork until Mr. Dopp turns it on.</div>`;
-  if (!U) return hub(st, testBanner);
+  const newBanner = TRI === '2026-T1' ? `<div class="banner b-good">✨ New! Unit Classwork is optional this trimester and already counts as done on your checklist. Try it and tell Mr. Dopp (Ask Mr. Dopp) what works and what doesn't.</div>` : '';
+  if (!U) return hub(st, testBanner + newBanner);
   $('kicker').textContent = `Unit ${U.unit} · Chapters ${U.chapters.join(', ')}`;
   $('title').textContent = `Unit ${U.unit} Classwork`;
   $('sub').textContent = U.title;
   document.title = `Unit ${U.unit} Classwork — Dopp Health Class`;
   try { W = await rpc('cw_get', { p_unit: U.unit }); } catch (e) { app.innerHTML = `<div class="card">${esc(e.message)}</div>`; return; }
-  app.dataset.banner = testBanner;
+  app.dataset.banner = testBanner + newBanner;
   if (W.status === 'submitted') tab = 'done';
   else if (W.mastery_best >= R.unlock) tab = 'stories';
   draw();

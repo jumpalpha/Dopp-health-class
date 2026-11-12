@@ -131,7 +131,8 @@
       off: [],                               // items turned off for the whole class (e.g. 'partner:battleship_duel')
       minutes: Object.assign({}, MINUTE_DEFAULTS),   // default minutes per task type
       min_override: {},                      // item id → minutes (teacher override for one item)
-      excuse_before: tri === '2026-T1' || !TERM_DATES[tri] ? 5 : 1   // class-wide: everything for chapters below this is excused (T1 started before tracking)
+      excuse_before: tri === '2026-T1' || !TERM_DATES[tri] ? 5 : 1,   // class-wide: everything for chapters below this is excused (T1 started before tracking)
+      cw_required: tri !== '2026-T1'        // Unit Classwork: optional + counted as done in T1 (new, gathering feedback); required from T2
     };
   }
   function config(saved, tri) {
@@ -178,6 +179,7 @@
     const mastery = {}; (ev.mastery || []).forEach(m => { mastery[m.c] = m; });
     const arcade = {}; (ev.arcade || []).forEach(a => { arcade[a.g] = a; });
     const quest = new Set(ev.quest || []);
+    const projKeys = new Set(((ev.bonus || {}).projects) || []);
 
     const exBefore = Number(cfg.excuse_before) || 1;
     function finish(it, upToCh) {
@@ -237,6 +239,17 @@
         items.push({ id: 'proj:roots', kind: 'manual', label: 'Unit 3 Project: Roots & Branches',
           status: manual[mk] && manual[mk].on ? 'reported' : 'not_started', key: mk, href: 'family_quest.html',
           detail: 'Tick this yourself once your drawing photo and all four parts are turned in on Schoology' });
+      }
+      const unitR = REALMS.find(r => r.chapters[r.chapters.length - 1] === c);
+      if (unitR) {   // Unit Classwork (classwork.html) sits at the end of each unit; the database writes cw_unitN_done
+        const doneCW = projKeys.has('cw_unit' + unitR.n + '_done');
+        const it = { id: 'cw:unit' + unitR.n, kind: 'auto', label: 'Unit ' + unitR.n + ' Classwork: vocab, mastery check & 3 stories',
+          status: doneCW ? 'complete' : 'not_started', href: 'classwork.html?unit=' + unitR.n,
+          detail: doneCW ? 'turned in' : 'pass the mastery check (80%), write 3 stories, then turn it in (70%+)' };
+        if (!doneCW && cfg.cw_required === false) {   // new this trimester: counts as done, not required yet
+          it.status = 'complete'; it.detail = 'New and optional this trimester · counts as done · try it and tell Mr. Dopp what you think';
+        }
+        items.push(it);
       }
       return items.map(it => finish(it, c));
     }
