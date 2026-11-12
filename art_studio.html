@@ -129,7 +129,7 @@ body.drawing #cv{touch-action:none;cursor:crosshair}
           <select id="start"><option value="random">Random lines (the studio draws them)</option><option value="blank">A blank page (I'll draw my own)</option></select></div>
         <div class="row" id="crossRow"><label for="cross">Crossing points</label><input type="range" id="cross" min="6" max="150" step="2" value="40"><input class="num" id="crossN" type="number" min="6" max="150" step="2" value="40"></div>
         <div class="row" id="styleRow"><label for="style">Line style</label>
-          <select id="style"><option value="mix">Mix of blobs and bands</option><option value="blobs">Round blobs</option><option value="bands">Long curvy bands</option></select></div>
+          <select id="style"><option value="one">One continuous line (ends where it starts)</option><option value="mix">Separate shapes: blobs and bands</option><option value="blobs">Separate shapes: round blobs</option><option value="bands">Separate shapes: curvy bands</option></select></div>
         <div class="row"><label for="lw">Line thickness</label><input type="range" id="lw" min="2" max="12" value="5"></div>
         <div class="row"><label for="outline">Outline color</label>
           <select id="outline"><option value="#1c1c1c">Black</option><option value="colorful">Colorful (like crayons)</option><option value="#8a8a8a">Gray</option><option value="#2f4fc4">Blue</option><option value="#7b4bc8">Purple</option></select></div>
@@ -217,7 +217,7 @@ body.drawing #cv{touch-action:none;cursor:crosshair}
   function gray(c) { var a = hex(c), l = .299 * a[0] + .587 * a[1] + .114 * a[2]; return toHex([l, l, l]); }
 
   // ---------- state ----------
-  var S = { shapes: [], colors: [], lines: [], marks: [], gv: 0, lw: 5, outline: '#1c1c1c', deco: {}, bw: false, crayon: true, cross: 40, style: 'mix', start: 'random', mode: 'quick' };
+  var S = { shapes: [], colors: [], lines: [], marks: [], gv: 0, lw: 5, outline: '#1c1c1c', deco: {}, bw: false, crayon: true, cross: 40, style: 'one', start: 'random', mode: 'quick' };
   var BRUSH0 = { p: 1, fill: LIGHT[0], ink: BOLD[0], s: 1, rot: 0, bw: 18, pw: 4, kind: 'c', st: 0, sz: 40, turn: true };
   var brush = Object.assign({}, BRUSH0);
   var tool = 'paint', handTool = 'brush', selected = 0, cat = 'all';
@@ -370,7 +370,79 @@ body.drawing #cv{touch-action:none;cursor:crosshair}
     for (var gx = 1; gx < GX - 1; gx++) for (var gy = 1; gy < GY - 1; gy++) if (!cov[gy * GX + gx]) list.push([gx * GC + GC / 2, gy * GC + GC / 2]);
     return list.length ? list[Math.floor(R() * list.length)] : null;
   }
+  // ONE continuous line: a smooth closed scribble that wanders the page, crosses itself, and ends where it began
+  function selfCrossings(pts) {
+    var CELL = 50, cells = {}, n = pts.length, cnt = 0;
+    function keys(i) {
+      var p = pts[i], q = pts[(i + 1) % n], out = [];
+      for (var a = Math.floor(Math.min(p[0], q[0]) / CELL); a <= Math.floor(Math.max(p[0], q[0]) / CELL); a++)
+        for (var b = Math.floor(Math.min(p[1], q[1]) / CELL); b <= Math.floor(Math.max(p[1], q[1]) / CELL); b++) out.push(a + ',' + b);
+      return out;
+    }
+    function hit(i, j) {
+      var p = pts[i], q = pts[(i + 1) % n], r = pts[j], s2 = pts[(j + 1) % n];
+      var d = (q[0] - p[0]) * (s2[1] - r[1]) - (q[1] - p[1]) * (s2[0] - r[0]); if (!d) return false;
+      var t = ((r[0] - p[0]) * (s2[1] - r[1]) - (r[1] - p[1]) * (s2[0] - r[0])) / d, u = ((r[0] - p[0]) * (q[1] - p[1]) - (r[1] - p[1]) * (q[0] - p[0])) / d;
+      return t > 0 && t < 1 && u > 0 && u < 1;
+    }
+    for (var i = 0; i < n; i++) {
+      var seen = {}, ks = keys(i);
+      ks.forEach(function (k) {
+        (cells[k] || []).forEach(function (j) {
+          if (seen[j]) return; seen[j] = 1;
+          if (Math.abs(i - j) < 2 || (i === n - 1 && j === 0)) return;   // neighbors share an end point
+          if (hit(i, j)) cnt++;
+        });
+      });
+      ks.forEach(function (k) { (cells[k] = cells[k] || []).push(i); });
+    }
+    return cnt;
+  }
+  function turn(a, b, c) {   // how sharply the path bends at b (0 = straight, PI = reverses)
+    var a1 = Math.atan2(b[1] - a[1], b[0] - a[0]), a2 = Math.atan2(c[1] - b[1], c[0] - b[0]), d = Math.abs(a2 - a1) % TAU;
+    return d > Math.PI ? TAU - d : d;
+  }
+  function generateOne(target) {
+    var IN = M + 70, best = null;
+    for (var attempt = 0; attempt < 8; attempt++) {
+      var cov = new Uint8Array(GX * GY), way = [[rr(W * .3, W * .7), rr(H * .3, H * .7)]], dir = R() * TAU, curve = null, c = 0;
+      for (var step = 0; step < 70; step++) {
+        var cand = null, candScore = Infinity, candCurve = null, candC = 0;
+        for (var k = 0; k < 14; k++) {
+          var last = way[way.length - 1], spot = R() < .5 ? emptySpot(cov) : null, a, L;
+          if (spot) { a = Math.atan2(spot[1] - last[1], spot[0] - last[0]); L = Math.min(460, Math.hypot(spot[0] - last[0], spot[1] - last[1])); }
+          else { a = dir + rr(-1.1, 1.1); L = rr(240, 440); }
+          var dd = Math.abs(((a - dir) % TAU + TAU + Math.PI) % TAU - Math.PI);
+          if (way.length > 1 && dd > 1.15) continue;                     // no hairpin turns (they make sharp points)
+          var p = [last[0] + Math.cos(a) * L, last[1] + Math.sin(a) * L];
+          if (p[0] < IN || p[0] > W - IN || p[1] < IN || p[1] > H - IN || L < 160) continue;
+          var w2 = way.concat([p]);
+          if (w2.length < 4) { cand = p; candCurve = null; candScore = 0; break; }
+          // the line must also come home smoothly
+          var closeBend = turn(w2[w2.length - 2], p, w2[0]) + turn(p, w2[0], w2[1]);
+          var cv2 = catmull(w2, true, 16), cc = selfCrossings(cv2);
+          var score = (cc > target ? (cc - target) * 4 : (target - cc) * .5) + closeBend * 6;
+          var gi = Math.floor(p[1] / GC) * GX + Math.floor(p[0] / GC);
+          if (!cov[gi]) score -= 8;                                       // head for empty parts of the page
+          if (score < candScore) { candScore = score; cand = p; candCurve = cv2; candC = cc; }
+        }
+        if (!cand) { dir += Math.PI / 2; continue; }
+        dir = Math.atan2(cand[1] - way[way.length - 1][1], cand[0] - way[way.length - 1][0]);
+        way.push(cand); mark([[cand[0] - 90, cand[1] - 90], [cand[0] + 90, cand[1] - 90], [cand[0] + 90, cand[1] + 90], [cand[0] - 90, cand[1] + 90]], cov);
+        if (candCurve) { curve = candCurve; c = candC; }
+        if (curve && c >= target) break;
+      }
+      if (!curve) curve = catmull(way, true, 16);
+      var bendOK = turn(way[way.length - 2], way[way.length - 1], way[0]) < 1.5 && turn(way[way.length - 1], way[0], way[1]) < 1.5;
+      var score2 = Math.abs(c - target) + (bendOK ? 0 : 1000);
+      if (!best || score2 < best.score) best = { curve: curve, c: c, score: score2 };
+      if (bendOK && Math.abs(c - target) <= Math.max(3, target * .15)) break;
+    }
+    var pts = best.curve.map(function (p) { return [Math.round(Math.max(M, Math.min(W - M, p[0])) * 10) / 10, Math.round(Math.max(M, Math.min(H - M, p[1])) * 10) / 10]; });
+    return { shapes: [pts], colors: [BOLD[Math.floor(R() * 11)]], crossings: selfCrossings(pts) };
+  }
   function generate(target, style) {
+    if (style === 'one') return generateOne(target);
     SZ = Math.max(.75, Math.min(1.35, 1.4 - target / 160));
     var ct = crossTool(), shapes = [], total = 0, guard = 0, cov = new Uint8Array(GX * GY), cells = (GX - 2) * (GY - 2);
     function make(at) {
@@ -415,7 +487,7 @@ body.drawing #cv{touch-action:none;cursor:crosshair}
   }
   function recount() {
     var ct = crossTool(), n = 0;
-    S.shapes.forEach(function (p) { n += ct.count(p); ct.add(p); });
+    S.shapes.forEach(function (p) { n += ct.count(p) + selfCrossings(p); ct.add(p); });
     S.lines.forEach(function (L) { n += ct.count(L.p, !L.c); ct.add(L.p, !L.c); });
     S.crossings = n;
   }
@@ -593,7 +665,7 @@ body.drawing #cv{touch-action:none;cursor:crosshair}
   function save() {
     clearTimeout(saveT);
     saveT = setTimeout(function () {
-      try { localStorage.setItem(KEY, JSON.stringify({ shapes: S.shapes, colors: S.colors, lines: S.lines, marks: S.marks, gv: S.gv, crossings: S.crossings, lw: S.lw, outline: S.outline, deco: S.deco, bw: S.bw, crayon: S.crayon, cross: S.cross, style: S.style, start: S.start, mode: S.mode, brush: brush })); } catch (e) { toast('This drawing is too big to save on this device. Download it so you don\'t lose it.'); }
+      try { localStorage.setItem(KEY, JSON.stringify({ shapes: S.shapes, colors: S.colors, lines: S.lines, marks: S.marks, gv: S.gv, crossings: S.crossings, lw: S.lw, outline: S.outline, deco: S.deco, bw: S.bw, crayon: S.crayon, cross: S.cross, style: S.style, styleV: 2, start: S.start, mode: S.mode, brush: brush })); } catch (e) { toast('This drawing is too big to save on this device. Download it so you don\'t lose it.'); }
     }, 300);
   }
   function load() { try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.shapes ? v : null; } catch (e) { return null; } }
@@ -952,7 +1024,7 @@ body.drawing #cv{touch-action:none;cursor:crosshair}
   var saved = load();
   if (saved) {
     S.shapes = saved.shapes; S.colors = saved.colors || []; S.crossings = saved.crossings || 0; S.lw = saved.lw || 5; S.outline = saved.outline || '#1c1c1c';
-    S.deco = saved.deco || {}; S.bw = !!saved.bw; S.crayon = saved.crayon !== false; S.cross = saved.cross || 40; S.style = saved.style || 'mix';
+    S.deco = saved.deco || {}; S.bw = !!saved.bw; S.crayon = saved.crayon !== false; S.cross = saved.cross || 40; S.style = saved.styleV === 2 ? (saved.style || 'one') : 'one';
     S.lines = saved.lines || []; S.marks = saved.marks || []; S.gv = saved.gv || 0; S.start = saved.start || 'random'; S.mode = saved.mode || 'quick';
     if (saved.brush) brush = Object.assign({}, BRUSH0, saved.brush);
   }
