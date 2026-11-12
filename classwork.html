@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<title>Unit Classwork — Dopp Health Class</title>
+<meta name="description" content="Unit Classwork: learn the unit's vocabulary, pass the mastery check, and tell 3 real stories.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --indigo:#140c2e; --indigo-2:#231650; --gold:#FFD700; --gold-deep:#8a6400;
+  --parch:#fbf5e6; --card:#fffdf7; --ink:#1C1A2E; --dim:#4f4a63; --line:rgba(28,26,46,.16);
+  --good:#0f7a4f; --good-bg:#e3f6ec; --bad:#b0243a; --bad-bg:#fde8eb; --mid:#8a5a00; --mid-bg:#fff2d6;
+  --sky:#2463c9; --sky-bg:#e6f0ff; --radius:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Nunito',system-ui,sans-serif;font-size:16px;line-height:1.55;color:var(--ink);background:var(--parch)}
+a{color:#3b2a8f}
+:focus-visible{outline:3px solid #5b8cff;outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 24px;background:rgba(210,196,168,.98);border-bottom:1px solid var(--line)}
+.nav-logo{font-family:'Cinzel',serif;font-weight:700;color:#7a5c00;text-decoration:none;white-space:nowrap}
+.nav-logo span{color:var(--dim);font-weight:600}
+.nav-links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav-link{padding:6px 12px;border-radius:8px;font-weight:800;font-size:14px;color:var(--dim);text-decoration:none;white-space:nowrap}
+.hero{background:linear-gradient(160deg,var(--indigo),var(--indigo-2));color:#fff;padding:30px 20px 64px;text-align:center;position:relative}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:40px;background:var(--parch);clip-path:polygon(0 100%,100% 100%,100% 30%,50% 100%,0 30%)}
+.kicker{font-family:'Cinzel',serif;letter-spacing:3px;font-size:12px;color:var(--gold);text-transform:uppercase}
+.hero h1{font-family:'Cinzel',serif;font-weight:900;font-size:clamp(26px,5vw,42px);margin:8px 0 6px;color:var(--gold);text-shadow:0 2px 0 #000}
+.hero p{margin:0 auto;max-width:620px;color:#e7e2ff}
+.who{margin-top:10px;font-size:14px;color:#cfc8f5}
+main{max-width:920px;margin:-30px auto 60px;padding:0 16px;position:relative;z-index:2}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 6px 20px rgba(20,12,46,.08);margin-bottom:16px}
+.card h2{font-family:'Cinzel',serif;margin:0 0 6px;font-size:22px}
+.card h3{margin:0 0 6px}
+.muted{color:var(--dim);font-size:14px}
+.banner{border-radius:12px;padding:12px 14px;font-weight:700;margin-bottom:14px}
+.b-test{background:#fff4c2;border:2px dashed #b38600;color:#5a4300}
+.b-info{background:var(--sky-bg);border:1px solid var(--sky);color:#123a7a}
+.b-good{background:var(--good-bg);border:1px solid var(--good);color:#064a2f}
+.b-bad{background:var(--bad-bg);border:1px solid var(--bad);color:#6d1020}
+.b-mid{background:var(--mid-bg);border:1px solid #c58a00;color:#5a3a00}
+.btn{font:inherit;font-weight:900;font-size:15px;border-radius:12px;padding:10px 18px;border:2px solid transparent;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-gold{background:var(--gold);color:var(--indigo);border-color:var(--gold-deep)}
+.btn-ink{background:var(--indigo);color:#fff}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-sm{font-size:13px;padding:6px 12px;border-radius:9px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* hub */
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.unit{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 4px 14px rgba(20,12,46,.07)}
+.unit:hover{border-color:#b38600}
+.unit b{font-family:'Cinzel',serif;font-size:18px;display:block}
+.pill{display:inline-block;font-size:12px;font-weight:800;padding:2px 9px;border-radius:999px;background:rgba(28,26,46,.07);margin:6px 4px 0 0}
+.pill.ok{background:var(--good-bg);color:var(--good)}.pill.go{background:var(--mid-bg);color:var(--mid)}
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.step{font:inherit;font-weight:800;font-size:14px;padding:10px 6px;border-radius:10px;border:2px solid var(--line);background:var(--card);cursor:pointer;color:var(--ink)}
+.step.on{background:var(--indigo);color:var(--gold);border-color:var(--indigo)}
+.step.done::before{content:"✓ ";color:var(--good)}
+.step.on.done::before{color:var(--gold)}
+.step[disabled]{opacity:.45;cursor:not-allowed}
+.step[disabled]::before{content:"🔒 "}
+@media(max-width:560px){.steps{grid-template-columns:repeat(2,1fr)}}
+/* vocab */
+.words{display:grid;grid-template-columns:1fr;gap:6px;margin-top:10px}
+.w{padding:8px 12px;border-radius:10px;background:rgba(28,26,46,.035)}
+.w b{color:#123a7a}.w .x{font-size:11px;font-weight:800;background:#ffe9a6;color:#6a4b00;border-radius:5px;padding:0 5px;margin-left:6px}
+.chap{font-weight:900;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin:14px 0 2px}
+.flash{min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:22px;font-weight:800;padding:24px;border-radius:16px;border:2px solid var(--indigo);background:#fff;cursor:pointer;user-select:none;margin:10px 0}
+.flash.back{font-size:17px;font-weight:600;background:var(--sky-bg)}
+.match{display:grid;grid-template-columns:1fr 1.6fr;gap:8px;margin-top:10px}
+.mi{font:inherit;text-align:left;padding:10px;border-radius:10px;border:2px solid var(--line);background:#fff;cursor:pointer;font-size:14px;color:var(--ink)}
+.mi.sel{border-color:var(--sky);background:var(--sky-bg)}.mi.ok{border-color:var(--good);background:var(--good-bg);opacity:.6;cursor:default}.mi.no{border-color:var(--bad);background:var(--bad-bg)}
+/* quiz */
+.q{padding:12px 0;border-top:1px solid var(--line)}
+.q p{margin:0 0 8px;font-weight:700}
+.opt{display:block;padding:8px 10px;border-radius:9px;border:1px solid var(--line);margin:5px 0;cursor:pointer;background:#fff}
+.opt input{margin-right:8px}
+.opt.right{border-color:var(--good);background:var(--good-bg)}.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+/* stories */
+.story{border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;background:#fff}
+.story.saved{border-color:var(--good)}
+.story h3 small{font-weight:700;color:var(--dim);font-size:13px;margin-left:6px}
+select,textarea,input[type=text]{font:inherit;font-size:15px;padding:8px 10px;border-radius:9px;border:1px solid #9a94ad;background:#fff;color:var(--ink);max-width:100%}
+select{min-width:200px}
+textarea{width:100%;min-height:130px;resize:vertical}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0;font-size:13px}
+.meter div{padding:6px 8px;border-radius:8px;background:rgba(28,26,46,.05);font-weight:700}
+.meter div.full{background:var(--good-bg);color:var(--good)}
+.hl{background:#fff1a8;border-radius:3px;padding:0 2px;font-weight:800}
+.preview{font-size:14px;color:var(--dim);margin-top:6px}
+.swapbox{margin-top:8px;padding:10px;border-radius:10px;background:var(--mid-bg);font-size:14px}
+/* certificate */
+.cert{text-align:center;border:6px double #b38600;border-radius:18px;padding:26px 18px;background:linear-gradient(#fffdf2,#fff6d8)}
+.cert h2{font-size:28px;color:#6a4b00}
+.big{font-size:44px;font-weight:900;font-family:'Cinzel',serif;color:var(--indigo)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.grid3 div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;font-weight:800}
+.grid3 small{display:block;color:var(--dim);font-weight:700}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--indigo);color:#fff;padding:10px 16px;border-radius:12px;font-weight:800;z-index:99;max-width:90vw}
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+
+<nav aria-label="Site">
+  <a class="nav-logo" href="index.html">⚔ <span>Legend of</span> Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="chapters.html">Chapters</a>
+    <a class="nav-link" href="classwork.html">📝 Classwork</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+    <a class="nav-link" href="checklist.html" style="background:#FFD700;color:#1A1030;font-weight:900;border-radius:999px">📋 Checklist</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="kicker" id="kicker">WELL 255 · Classwork</div>
+  <h1 id="title">Unit Classwork</h1>
+  <p id="sub">Learn the words. Pass the mastery check. Tell 3 real stories.</p>
+  <div class="who" id="who" aria-live="polite"></div>
+</header>
+
+<main id="app"><div class="card">Loading…</div></main>
+<div id="toast" hidden role="status"></div>
+
+<script src="vendor/supabase.js"></script>
+<script src="classwork_data.js"></script>
+<script>
+(function () {
+'use strict';
+const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+const TRI = (window.TERM && TERM.id) || '2026-T1';
+const UNITS = window.CLASSWORK_UNITS || [];
+const R = { unlock: 80, minFinal: 70, minWords: 25, stories: 3, swaps: 2, minSeconds: 45, quizN: 20 };   // same as supabase/classwork.sql
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const app = $('app');
+
+function session() {
+  try {
+    const sid = localStorage.getItem('qSID_' + TRI), pin = sessionStorage.getItem('qPIN_' + TRI);
+    return sid && pin ? { sid, pin } : null;
+  } catch (e) { return null; }
+}
+const S = session();
+const db = S && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+async function rpc(name, args) {
+  const { data, error } = await db.rpc(name, Object.assign({ p_student_id: S.sid, p_pin_hash: S.pin, p_trimester: TRI }, args || {}));
+  if (error) throw new Error(error.message || 'Something went wrong');
+  return data;
+}
+let toastT = null;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3500); }
+
+// ── story rubric: same rules as public._cw_story_score in supabase/classwork.sql ──
+function termRx(term) {
+  const abbr = (term.match(/\(([^)]+)\)/) || [])[1];
+  const base = term.replace(/\s*\([^)]*\)/g, '').trim();
+  let alts = [base];
+  if (base.includes('/')) {
+    const sp = base.indexOf(' ');
+    const first = sp < 0 ? base : base.slice(0, sp), rest = sp < 0 ? '' : base.slice(sp + 1);
+    const parts = first.split('/');
+    alts = sp < 0 ? parts : alts.concat(parts.map(p => (p + ' ' + rest).trim()));
+  }
+  if (abbr) alts.push(abbr.replace(/s$/, ''));
+  const pieces = alts.map(v => v.toLowerCase().trim()).filter(Boolean).map(v => {
+    let one = v.replace(/[.^$*+?()[\]{}|\\]/g, '\\$&').replace(/[- ]+/g, '[- ]?');
+    if (/[a-z]$/.test(one)) one = '(' + one + '|' + one.replace(/[ey]$/, '') + '|' + one.replace(/e?s$/, '') + ')(s|es|e|ed|d|ing|ies|ly|ness)?';
+    return one;
+  });
+  return new RegExp('(^|[^a-z0-9])(' + pieces.join('|') + ')(?![a-z0-9])', 'i');
+}
+const CUE = new RegExp([
+  '\\b(my|our) (mom|dad|mother|father|parents?|brothers?|sisters?|siblings?|friends?|best friend|grandma|grandpa|grandmother|grandfather|grandparents?|coach|teacher|cousins?|aunt|uncle|family|team|teammates?|boss|neighbors?|dog|cat|girlfriend|boyfriend|stepmom|stepdad)\\b',
+  '\\b(at|in|on) (the|my|our|a) [a-z]+',
+  '\\b(home|school|practice|church|work|park|store|gym|field|class|game|camp|vacation|hospital|doctor)\\b',
+  '\\b(yesterday|today|tonight|ago|once|weekend|morning|afternoon|evening|night|summer|winter|spring|fall|birthday|christmas|thanksgiving|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b',
+  '\\blast (week|year|month|night|time)\\b', '\\bwhen i was\\b', '\\byears? old\\b', '\\b[0-9]{1,2}(st|nd|rd|th)? grade\\b', '\\b(19|20)[0-9]{2}\\b'].join('|'));
+function scoreStory(text, a, b) {
+  const t = String(text || ''), lo = t.toLowerCase();
+  const words = t.trim().split(/\s+/).filter(x => /[A-Za-z]/.test(x)).length;
+  const sentences = t.split(/[.!?]+/).filter(seg => seg.trim().split(/\s+/).filter(x => /[A-Za-z]/.test(x)).length >= 3).length;
+  const hasA = !!a && termRx(a).test(lo), hasB = !!b && termRx(b).test(lo), cue = CUE.test(lo);
+  const length = Math.min(40, Math.floor(40 * words / R.minWords));
+  const used = (hasA ? 15 : 0) + (hasB ? 15 : 0), detail = (sentences >= 2 ? 15 : 0) + (cue ? 15 : 0);
+  return { words, sentences, has_a: hasA, has_b: hasB, cue, length, used, detail, total: length + used + detail };
+}
+function hints(sc, a, b) {
+  const h = [];
+  if (sc.words < R.minWords) h.push(`Write at least ${R.minWords} words (you have ${sc.words}).`);
+  if (!sc.has_a && a) h.push(`Use the word “${a}” in your story.`);
+  if (!sc.has_b && b) h.push(`Use the word “${b}” in your story.`);
+  if (sc.sentences < 2) h.push('Write at least 2 full sentences.');
+  if (!sc.cue) h.push('Add a real detail: who was there, where it happened, or when (for example “last summer,” “my brother,” “at practice”).');
+  return h;
+}
+function highlight(text, terms) {
+  let html = esc(text);
+  terms.filter(Boolean).forEach(t => {
+    const rx = new RegExp(termRx(t).source, 'gi');
+    html = html.replace(rx, (m, pre, w) => pre + '<span class="hl">' + w + '</span>');
+  });
+  return html;
+}
+
+// ── state ──
+const params = new URLSearchParams(location.search);
+const unitNo = parseInt(params.get('unit') || '0', 10);
+const U = UNITS.find(u => u.unit === unitNo) || null;
+let W = null;              // this unit's saved work from the server
+let tab = 'practice';
+const termByN = n => U.terms[n - 1];
+const finalOf = w => w && w.story_avg != null ? Math.round((w.mastery_best + w.story_avg) / 2) : null;
+
+function who() {
+  let r = null; try { r = JSON.parse(localStorage.getItem('dopp_remember') || 'null'); } catch (e) {}
+  $('who').textContent = r && r.name ? 'Signed in as ' + r.name : '';
+}
+
+async function start() {
+  who();
+  if (!S) {
+    app.innerHTML = `<div class="card"><h2>Sign in first</h2><p>Open the <a href="quest.html">Quest page</a> and sign in with your PIN, then come back here.</p></div>`;
+    return;
+  }
+  let st;
+  try { st = await rpc('cw_status'); } catch (e) { app.innerHTML = `<div class="card">Couldn't load Classwork: ${esc(e.message)}</div>`; return; }
+  if (!st || !st.open) {
+    app.innerHTML = `<div class="card"><h2>Coming soon</h2><p>Unit Classwork isn't open yet. For now, keep using the Classwork assignments in Schoology.</p></div>`;
+    return;
+  }
+  const testBanner = st.live ? '' : `<div class="banner b-test">🔒 Hidden preview: only the TEST class can see Unit Classwork until Mr. Dopp turns it on.</div>`;
+  if (!U) return hub(st, testBanner);
+  $('kicker').textContent = `Unit ${U.unit} · Chapters ${U.chapters.join(', ')}`;
+  $('title').textContent = `Unit ${U.unit} Classwork`;
+  $('sub').textContent = U.title;
+  document.title = `Unit ${U.unit} Classwork — Dopp Health Class`;
+  try { W = await rpc('cw_get', { p_unit: U.unit }); } catch (e) { app.innerHTML = `<div class="card">${esc(e.message)}</div>`; return; }
+  app.dataset.banner = testBanner;
+  if (W.status === 'submitted') tab = 'done';
+  else if (W.mastery_best >= R.unlock) tab = 'stories';
+  draw();
+}
+
+// ── hub: all units ──
+function hub(st, banner) {
+  const by = {}; (st.units || []).forEach(w => { by[w.unit] = w; });
+  app.innerHTML = banner + `<div class="card"><h2>Your Units</h2>
+    <p class="muted">For each unit: learn the words, pass the mastery check (${R.unlock}%), then write 3 short true stories that each use 2 of the words. Only Mr. Dopp reads your stories.</p></div>
+    <div class="units">` + UNITS.map(u => {
+      const w = by[u.unit];
+      const done = (w && w.stories || []).filter(Boolean).length;
+      const pills = !w ? '<span class="pill">Not started</span>'
+        : w.status === 'submitted' ? `<span class="pill ok">✓ Turned in · ${w.final_score}%</span>`
+        : `<span class="pill ${w.mastery_best >= R.unlock ? 'ok' : 'go'}">Mastery best ${w.mastery_best}%</span><span class="pill">Stories ${done}/3</span>`;
+      return `<a class="unit" href="classwork.html?unit=${u.unit}"><b>Unit ${u.unit}</b>${esc(u.title)}<div class="muted">Chapters ${u.chapters.join(', ')} · ${u.terms.length} words</div>${pills}</a>`;
+    }).join('') + '</div>';
+}
+
+// ── unit page ──
+function draw() {
+  const unlocked = W.mastery_best >= R.unlock;
+  const storiesDone = (W.stories || []).filter(Boolean).length;
+  const tabs = [['practice', '1. Practice', true, true], ['mastery', '2. Mastery', true, unlocked],
+    ['stories', '3. My Stories', unlocked, storiesDone === 3], ['done', '4. Turn In', unlocked && storiesDone === 3 || W.status === 'submitted', W.status === 'submitted']];
+  app.innerHTML = (app.dataset.banner || '') +
+    `<p><a href="classwork.html">← All units</a></p>` +
+    `<div class="steps">` + tabs.map(([k, l, ok, done]) =>
+      `<button class="step${tab === k ? ' on' : ''}${done ? ' done' : ''}" data-tab="${k}" ${ok ? '' : 'disabled'}>${l}</button>`).join('') + `</div>` +
+    `<div id="pane"></div>`;
+  app.querySelectorAll('.step').forEach(b => b.onclick = () => { tab = b.dataset.tab; draw(); });
+  ({ practice: paneWords, mastery: paneMastery, stories: paneStories, done: paneDone })[tab]();
+}
+
+// 1. practice
+let practiceMode = 'list';
+function paneWords() {
+  const p = $('pane');
+  p.innerHTML = `<div class="card"><h2>Practice</h2>
+    <p class="muted">No points here. Study until you're ready for the mastery check. Words marked <span class="pill" style="background:#ffe9a6;color:#6a4b00;margin:0">extra</span> come from the old Schoology Classwork.</p>
+    <div class="row"><button class="btn btn-sm ${practiceMode === 'list' ? 'btn-ink' : 'btn-ghost'}" data-m="list">📖 Word list</button>
+    <button class="btn btn-sm ${practiceMode === 'flash' ? 'btn-ink' : 'btn-ghost'}" data-m="flash">🃏 Flashcards</button>
+    <button class="btn btn-sm ${practiceMode === 'match' ? 'btn-ink' : 'btn-ghost'}" data-m="match">🧩 Matching</button>
+    <button class="btn btn-sm btn-gold" id="toMastery">Ready? Take the mastery check →</button></div>
+    <div id="pbody"></div></div>`;
+  p.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { practiceMode = b.dataset.m; paneWords(); });
+  $('toMastery').onclick = () => { tab = 'mastery'; draw(); };
+  ({ list: wordList, flash: flashcards, match: matching })[practiceMode]($('pbody'));
+}
+function wordList(el) {
+  let html = '', ch = 0;
+  U.terms.forEach(w => {
+    if (w.c !== ch) { ch = w.c; html += `<div class="chap">Chapter ${ch}</div>`; }
+    html += `<div class="w"><b>${esc(w.t)}</b>${w.x ? '<span class="x">extra</span>' : ''} — ${esc(w.d)}</div>`;
+  });
+  el.innerHTML = `<div class="words">${html}</div>`;
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+let deck = null, di = 0, flipped = false;
+function flashcards(el) {
+  if (!deck) { deck = shuffle(U.terms); di = 0; flipped = false; }
+  const w = deck[di];
+  el.innerHTML = `<div class="flash${flipped ? ' back' : ''}" id="card" tabindex="0" role="button" aria-label="Flip card">${flipped ? esc(w.d) : esc(w.t)}</div>
+    <div class="row" style="justify-content:space-between"><button class="btn btn-sm btn-ghost" id="prev">← Back</button>
+    <span class="muted">${di + 1} / ${deck.length} · tap the card to flip</span>
+    <button class="btn btn-sm btn-ghost" id="next">Next →</button></div>
+    <p><button class="btn btn-sm btn-ghost" id="shuf">🔀 Shuffle</button></p>`;
+  const flip = () => { flipped = !flipped; flashcards(el); };
+  $('card').onclick = flip; $('card').onkeydown = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } };
+  $('prev').onclick = () => { di = (di - 1 + deck.length) % deck.length; flipped = false; flashcards(el); };
+  $('next').onclick = () => { di = (di + 1) % deck.length; flipped = false; flashcards(el); };
+  $('shuf').onclick = () => { deck = null; flashcards(el); };
+}
+let round = null;
+function matching(el) {
+  if (!round || round.left.every(x => x.done)) {
+    const pick = shuffle(U.terms).slice(0, 6);
+    round = { left: pick.map(w => ({ w, done: false })), right: shuffle(pick).map(w => ({ w, done: false })), sel: null, misses: 0, n: (round ? round.n : 0) + (round ? 1 : 0) };
+  }
+  const left = round.left.map((x, i) => `<button class="mi${x.done ? ' ok' : ''}${round.sel === i ? ' sel' : ''}" data-l="${i}" ${x.done ? 'disabled' : ''}>${esc(x.w.t)}</button>`);
+  const right = round.right.map((x, i) => `<button class="mi${x.done ? ' ok' : ''}" data-r="${i}" ${x.done ? 'disabled' : ''}>${esc(x.w.d)}</button>`);
+  let rows = ''; for (let i = 0; i < 6; i++) rows += (left[i] || '<span></span>') + (right[i] || '<span></span>');
+  el.innerHTML = `<p class="muted">Tap a word, then tap its definition.</p><div class="match">${rows}</div>`;
+  el.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { round.sel = +b.dataset.l; matching(el); });
+  el.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+    if (round.sel == null) { toast('Tap a word first.'); return; }
+    const L = round.left[round.sel], Rr = round.right[+b.dataset.r];
+    if (L.w === Rr.w) { L.done = Rr.done = true; round.sel = null;
+      if (round.left.every(x => x.done)) { toast('Round cleared! New words coming up.'); setTimeout(() => matching(el), 700); }
+      matching(el);
+    } else { b.classList.add('no'); round.misses++; setTimeout(() => b.classList.remove('no'), 500); }
+  });
+}
+
+// 2. mastery
+let quiz = null, quizResult = null;
+function paneMastery() {
+  const p = $('pane');
+  const best = W.mastery_best, unlocked = best >= R.unlock;
+  if (W.status === 'submitted') { p.innerHTML = `<div class="card">This unit is turned in. Best mastery score: <b>${best}%</b>.</div>`; return; }
+  if (!quiz) {
+    p.innerHTML = `<div class="card"><h2>Mastery Check</h2>
+      <p>${R.quizN} random words from this unit. Pick the word that matches each definition. You need <b>${R.unlock}%</b> to unlock My Stories. Retake it as many times as you want: your best score counts.</p>
+      ${quizResult ? `<div class="banner ${quizResult.score >= R.unlock ? 'b-good' : 'b-mid'}">Last try: <b>${quizResult.score}%</b> (${quizResult.right}/${quizResult.total}). ${quizResult.score >= R.unlock ? 'Stories unlocked!' : 'Study the words you missed and try again.'}</div>` : ''}
+      <p>Best score: <b>${best}%</b> · Tries: ${W.mastery_tries}</p>
+      <div class="row"><button class="btn btn-gold" id="qgo">${W.mastery_tries ? 'Take it again' : 'Start the mastery check'}</button>
+      ${unlocked ? '<button class="btn btn-ink" id="toStories">Go to My Stories →</button>' : ''}</div>
+      ${quizResult && quizResult.misses.length ? `<h3 style="margin-top:16px">Words you missed</h3><div class="words">` + quizResult.misses.map(m => {
+        const t = U.terms.find(x => x.t === m.term); return `<div class="w"><b>${esc(m.term)}</b> — ${esc(t ? t.d : '')}</div>`; }).join('') + '</div>' : ''}
+    </div>`;
+    $('qgo').onclick = async () => {
+      $('qgo').disabled = true;
+      try { quiz = (await rpc('cw_quiz_start', { p_unit: U.unit })).questions; quiz.answers = quiz.map(() => -1); quizResult = null; paneMastery(); }
+      catch (e) { toast(e.message); $('qgo').disabled = false; }
+    };
+    if ($('toStories')) $('toStories').onclick = () => { tab = 'stories'; draw(); };
+    return;
+  }
+  p.innerHTML = `<div class="card"><h2>Mastery Check</h2><p class="muted">Answer all ${quiz.length}, then press Check my answers.</p>` +
+    quiz.map((q, i) => `<div class="q"><p>${i + 1}. ${esc(q.def)}</p>` + q.opts.map((o, j) =>
+      `<label class="opt"><input type="radio" name="q${i}" value="${j}" ${quiz.answers[i] === j ? 'checked' : ''}>${esc(o)}</label>`).join('') + `</div>`).join('') +
+    `<div class="row" style="margin-top:12px"><button class="btn btn-gold" id="qsend">Check my answers</button><span class="muted" id="qleft"></span></div></div>`;
+  const left = () => { const n = quiz.answers.filter(a => a < 0).length; $('qleft').textContent = n ? n + ' unanswered' : ''; };
+  p.querySelectorAll('input[type=radio]').forEach(r => r.onchange = () => { quiz.answers[+r.name.slice(1)] = +r.value; left(); });
+  left();
+  $('qsend').onclick = async () => {
+    const n = quiz.answers.filter(a => a < 0).length;
+    if (n && !confirm(n + ' question(s) are blank and will count as wrong. Check anyway?')) return;
+    $('qsend').disabled = true;
+    try {
+      quizResult = await rpc('cw_quiz_submit', { p_unit: U.unit, p_answers: quiz.answers });
+      W = await rpc('cw_get', { p_unit: U.unit }); quiz = null; draw(); window.scrollTo(0, 0);
+    } catch (e) { toast(e.message); $('qsend').disabled = false; }
+  };
+}
+
+// 3. stories
+const openTimes = {};   // slot -> ms when this page opened the writing box (server keeps its own time too)
+function usedNs(exceptSlot) {
+  const s = new Set();
+  (W.stories || []).forEach((st, i) => { if (st && i !== exceptSlot) { s.add(st.a); s.add(st.b); } });
+  return s;
+}
+const swappedNs = () => new Set((W.swapped || []).map(x => x.n));
+function paneStories() {
+  const p = $('pane');
+  if (W.mastery_best < R.unlock) { p.innerHTML = `<div class="card">Pass the mastery check (${R.unlock}%) to unlock your stories.</div>`; return; }
+  const swapsLeft = R.swaps - (W.swapped || []).length;
+  p.innerHTML = `<div class="card"><h2>My Stories</h2>
+    <p>Write <b>3 short stories</b> from your own life. Each story uses <b>2 different words</b> from this unit (6 words total) and needs at least <b>${R.minWords} words</b>.</p>
+    <div class="banner b-info">🔒 Only Mr. Dopp reads these. Your story must be true or based on real life. If you don't have a story for a word, tap “No story for this word” and pick another one (${swapsLeft} of ${R.swaps} left for this unit).</div>
+    <p class="muted">Each story is scored out of 100: length 40 · both words used 30 · real detail (2+ sentences and a who, where or when) 30.</p></div>
+    <div id="slots"></div>`;
+  const box = $('slots');
+  for (let i = 0; i < R.stories; i++) box.appendChild(storySlot(i));
+}
+function storySlot(i) {
+  const st = (W.stories || [])[i];
+  const d = document.createElement('div');
+  d.className = 'story' + (st ? ' saved' : '');
+  const used = usedNs(i), sw = swappedNs();
+  const choices = U.terms.map((w, k) => ({ w, n: k + 1 })).filter(o => o.w.s && !used.has(o.n) && !sw.has(o.n));
+  const opt = sel => '<option value="">Pick a word…</option>' + choices.map(o => `<option value="${o.n}" ${sel === o.n ? 'selected' : ''}>${esc(o.w.t)} (Ch ${o.w.c})</option>`).join('');
+  const a0 = st ? st.a : null, b0 = st ? st.b : null;
+  d.innerHTML = `<h3>Story ${i + 1}${st ? `<small>Saved · ${st.score.total}/100</small>` : ''}</h3>
+    <div class="row"><select id="a${i}" aria-label="First word">${opt(a0)}</select><select id="b${i}" aria-label="Second word">${opt(b0)}</select></div>
+    <div class="row" style="margin-top:6px"><button class="btn btn-sm btn-ghost" id="sw${i}" type="button">No story for this word</button></div>
+    <div id="swb${i}"></div>
+    <p class="preview" id="def${i}"></p>
+    <textarea id="t${i}" placeholder="Tell what really happened. Use both words." spellcheck="true">${esc(st ? st.text : '')}</textarea>
+    <div class="meter" id="m${i}"></div>
+    <div id="h${i}" class="muted"></div>
+    <div class="preview" id="pv${i}"></div>
+    <div class="row" style="margin-top:8px"><button class="btn btn-gold" id="save${i}" type="button">Save story ${i + 1}</button><span class="muted" id="wait${i}"></span></div>`;
+  const ta = d.querySelector('textarea'), sa = d.querySelector('#a' + i), sb = d.querySelector('#b' + i);
+  const term = sel => sel.value ? termByN(+sel.value).t : '';
+  function live() {
+    const a = term(sa), b = term(sb);
+    d.querySelector('#def' + i).innerHTML = [sa, sb].filter(s => s.value).map(s => { const w = termByN(+s.value); return `<b>${esc(w.t)}</b>: ${esc(w.d)}`; }).join('<br>');
+    const sc = scoreStory(ta.value, a, b);
+    d.querySelector('#m' + i).innerHTML = `<div class="${sc.length === 40 ? 'full' : ''}">Length ${sc.length}/40<br><small>${sc.words}/${R.minWords} words</small></div>
+      <div class="${sc.used === 30 ? 'full' : ''}">Words ${sc.used}/30</div><div class="${sc.detail === 30 ? 'full' : ''}">Detail ${sc.detail}/30</div>`;
+    const h = hints(sc, a, b);
+    d.querySelector('#h' + i).innerHTML = h.length ? '💡 ' + h.map(esc).join('<br>💡 ') : '✅ Looks complete. <b>Estimated ' + sc.total + '/100</b>';
+    d.querySelector('#pv' + i).innerHTML = ta.value.trim() ? highlight(ta.value, [a, b]) : '';
+  }
+  // no pasting or dropping text: write it yourself
+  ['paste', 'drop'].forEach(ev => ta.addEventListener(ev, e => { e.preventDefault(); toast('Type your story yourself. Pasting is turned off here.'); }));
+  ta.addEventListener('focus', () => {
+    if (!openTimes[i]) { openTimes[i] = (W.story_open && W.story_open[i]) ? Date.parse(W.story_open[i]) : Date.now(); rpc('cw_story_open', { p_unit: U.unit, p_slot: i }).catch(() => {}); }
+  });
+  ta.addEventListener('input', live); sa.onchange = live; sb.onchange = live;
+  d.querySelector('#sw' + i).onclick = () => swapPrompt(i, sa, sb, d.querySelector('#swb' + i));
+  d.querySelector('#save' + i).onclick = async () => {
+    if (!sa.value || !sb.value) { toast('Pick 2 words first.'); return; }
+    if (sa.value === sb.value) { toast('Pick 2 different words.'); return; }
+    const btn = d.querySelector('#save' + i); btn.disabled = true;
+    try {
+      const r = await rpc('cw_story_save', { p_unit: U.unit, p_slot: i, p_a: +sa.value, p_b: +sb.value, p_text: ta.value });
+      W = r.work; toast(`Story ${i + 1} saved: ${r.score.total}/100`); draw();
+    } catch (e) { toast(e.message); btn.disabled = false; }
+  };
+  setTimeout(live, 0);
+  return d;
+}
+// one ticker for the "you can save in …" messages
+setInterval(() => {
+  for (let i = 0; i < R.stories; i++) {
+    const el = document.getElementById('wait' + i); if (!el) continue;
+    const t0 = openTimes[i] || (W && W.story_open && W.story_open[i] ? Date.parse(W.story_open[i]) : 0);
+    const since = t0 ? (Date.now() - t0) / 1000 : 0;
+    el.textContent = t0 && since < R.minSeconds ? `You can save in ${Math.ceil(R.minSeconds - since)}s. Take your time.` : '';
+  }
+}, 1000);
+function swapPrompt(i, sa, sb, el) {
+  const left = R.swaps - (W.swapped || []).length;
+  const picks = [sa, sb].filter(s => s.value);
+  if (!picks.length) { toast('Pick the word you have no story for first.'); return; }
+  if (left <= 0) { el.innerHTML = `<div class="swapbox">You've used both word swaps for this unit. Pick a word you can write about.</div>`; return; }
+  el.innerHTML = `<div class="swapbox"><b>No story for which word?</b><div class="row" style="margin:6px 0">` +
+    picks.map(s => `<label><input type="radio" name="swn${i}" value="${s.value}"> ${esc(termByN(+s.value).t)}</label>`).join(' ') +
+    `</div><input type="text" id="swr${i}" placeholder="In at least 5 words, why don't you have a story for it?" style="width:100%">
+    <div class="row" style="margin-top:6px"><button class="btn btn-sm btn-ink" id="swgo${i}">Swap it out (${left} left)</button><button class="btn btn-sm btn-ghost" id="swx${i}">Cancel</button></div></div>`;
+  el.querySelector('#swx' + i).onclick = () => { el.innerHTML = ''; };
+  el.querySelector('#swgo' + i).onclick = async () => {
+    const n = (el.querySelector(`input[name=swn${i}]:checked`) || {}).value;
+    if (!n) { toast('Pick which word.'); return; }
+    try { const r = await rpc('cw_swap', { p_unit: U.unit, p_n: +n, p_reason: el.querySelector('#swr' + i).value }); W = r.work; toast('Word swapped out. Pick a different one.'); draw(); }
+    catch (e) { toast(e.message); }
+  };
+}
+
+// 4. turn in + certificate
+function paneDone() {
+  const p = $('pane');
+  const avg = W.story_avg, fin = W.status === 'submitted' ? W.final_score : finalOf(W);
+  if (W.status !== 'submitted') {
+    const ok = fin != null && fin >= R.minFinal;
+    p.innerHTML = `<div class="card"><h2>Turn In</h2>
+      <div class="grid3"><div>${W.mastery_best}%<small>Best mastery</small></div><div>${avg == null ? '—' : avg + '%'}<small>Story average</small></div><div>${fin == null ? '—' : fin + '%'}<small>Your score</small></div></div>
+      <p class="muted">Your score = (best mastery + story average) ÷ 2. You need at least ${R.minFinal}% to turn it in.</p>
+      ${ok ? '' : `<div class="banner b-bad">Your score is under ${R.minFinal}%. Improve a story (check the 💡 hints) or retake the mastery check to raise it.</div>`}
+      <div class="row"><button class="btn btn-gold" id="submit" ${ok ? '' : 'disabled'}>Turn in Unit ${U.unit}</button></div>
+      <p class="muted">Once you turn it in, it's locked. Mr. Dopp's grading run posts your score to the Schoology “Unit ${U.unit} Classwork” assignment.</p></div>`;
+    if ($('submit')) $('submit').onclick = async () => {
+      if (!confirm('Turn in Unit ' + U.unit + ' now? You can\'t change it after this.')) return;
+      $('submit').disabled = true;
+      try { W = (await rpc('cw_submit', { p_unit: U.unit })).work; draw(); } catch (e) { toast(e.message); $('submit').disabled = false; }
+    };
+    return;
+  }
+  let r = null; try { r = JSON.parse(localStorage.getItem('dopp_remember') || 'null'); } catch (e) {}
+  const words = (W.stories || []).filter(Boolean).flatMap(s => [termByN(s.a).t, termByN(s.b).t]);
+  p.innerHTML = `<div class="cert"><div class="kicker" style="color:#8a6400">Certificate of Completion</div>
+    <h2>Unit ${U.unit} Classwork</h2><p>${esc(U.title)} · Chapters ${U.chapters.join(', ')}</p>
+    <p style="font-size:20px;font-weight:800">${esc(r && r.name || '')}</p>
+    <div class="big">${W.final_score}%</div>
+    <div class="grid3"><div>${W.mastery_best}%<small>Best mastery</small></div><div>${W.story_avg}%<small>Story average</small></div><div>${W.mastery_tries}<small>Mastery tries</small></div></div>
+    <p><b>My story words:</b> ${words.map(esc).join(', ')}</p>
+    <p class="muted">Turned in ${new Date(W.submitted_at).toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</p></div>
+    <div class="card" style="margin-top:14px"><b>Done!</b> Your score goes to Schoology automatically. If it ever doesn't show up, take a screenshot of this certificate and attach it to the Schoology “Unit ${U.unit} Classwork” assignment.</div>`;
+}
+
+start();
+})();
+</script>
+</body>
+</html>

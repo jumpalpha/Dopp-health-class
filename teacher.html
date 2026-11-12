@@ -296,6 +296,7 @@ input, select, textarea { color: var(--text); }
     <button class="sb-btn" onclick="showPage('ask',this)"><span class="sb-btn-icon">🙋</span>Ask Mr. Dopp <span id="ak-badge" style="display:none;background:#FF3B5C;color:#fff;border-radius:999px;font-size:11px;font-weight:900;padding:1px 7px;margin-left:4px"></span></button>
     <button class="sb-btn" onclick="showPage('checklist',this)"><span class="sb-btn-icon">✅</span>Student Checklist Draft</button>
     <button class="sb-btn" onclick="showPage('finance',this)"><span class="sb-btn-icon">💰</span>Cost of Your Future</button>
+    <button class="sb-btn" onclick="showPage('classwork',this)"><span class="sb-btn-icon">📝</span>Unit Classwork</button>
   </div>
 
   <hr class="sb-divider">
@@ -529,6 +530,15 @@ input, select, textarea { color: var(--text); }
   </div>
 
   <!-- ── WEEK PLANNER ── -->
+  <!-- ── UNIT CLASSWORK (classwork.html): mastery, stories, scores ── -->
+  <div class="page" id="page-classwork">
+    <div class="page-hdr">
+      <div class="page-title">Unit Classwork</div>
+      <div class="page-sub">Replaces the Schoology Unit Classwork spreadsheets: mastery check, 3 stories, and the score that goes to Schoology.</div>
+    </div>
+    <div id="cwt-root"></div>
+  </div>
+
   <!-- ── FINANCIAL HEALTH: The Cost of Your Future (finance.html) — review + scoring ── -->
   <div class="page" id="page-finance">
     <div class="page-hdr">
@@ -1463,6 +1473,7 @@ function renderPage(id) {
   else if(id==='briefing' && window.renderBriefing) renderBriefing();
   else if(id==='ask' && window.renderAsk) renderAsk();
   else if(id==='finance' && window.renderFinanceTeacher) renderFinanceTeacher();
+  else if(id==='classwork' && window.renderClassworkTeacher) renderClassworkTeacher();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2072,5 +2083,6 @@ renderOverview();
 <script src="recipes_teacher.js"></script>
 <script src="finance_calc.js"></script>
 <script src="finance_teacher.js"></script>
+<script src="classwork_teacher.js"></script>
 </body>
 </html>

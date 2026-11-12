@@ -13,7 +13,7 @@
 // A student's sun/moon tap is remembered for THAT page only: localStorage 'dopp_theme@<page>'.
 (function () {
   if (window.DoppPagePref) return;
-  var LIGHT = /^(chapter\d\d|textreader|checklist|weight-control-quest|finance|reflection|mastery|review|parents|print_quest|sub_guide|wellness-255-signup-guide|family_quest|psa_challenge|cpr_aed_quest|cpr_checkoff|cpr_paper_aed|cpr_trainer_build|legacy-resources|vocab_engine)$/;
+  var LIGHT = /^(chapter\d\d|textreader|checklist|weight-control-quest|finance|classwork|reflection|mastery|review|parents|print_quest|sub_guide|wellness-255-signup-guide|family_quest|psa_challenge|cpr_aed_quest|cpr_checkoff|cpr_paper_aed|cpr_trainer_build|legacy-resources|vocab_engine)$/;
   var p = location.pathname, id;
   if (/\/textreader\//.test(p)) id = 'textreader';
   else { id = (p.split('/').pop() || '').replace(/\.html$/, ''); if (!id) id = p.split('/').filter(Boolean)[0] || 'home'; }
