@@ -472,6 +472,76 @@
     for (var i = 0; i < n; i++) { var x = o.X0 + o.rnd() * (o.X1 - o.X0), y = o.Y0 + o.rnd() * (o.Y1 - o.Y0); ln(c, x, y, x - L * .25, y + L); }
   });
 
+  // ================= STAMPS — single items students place one at a time (hands-on mode) =================
+  // draw(c, s, paper): drawn at (0,0), about s across from the middle; c already moved/turned.
+  // c.fillStyle/strokeStyle are the student's color; paper = a light color for cut-outs (flower centers).
+  var ST = [];
+  function T(name, fn) { ST.push({ name: name, draw: fn }); }
+  T('Star', function (c, s) { star(c, 0, 0, s, s * .42, 5, 1); });
+  T('Heart', function (c, s) { heart(c, 0, 0, s * .85); });
+  T('Flower', function (c, s, paper) {
+    for (var k = 0; k < 5; k++) { var a = -PI / 2 + k * TAU / 5; ci(c, Math.cos(a) * s * .52, Math.sin(a) * s * .52, s * .42, 1); }
+    var f = c.fillStyle; c.fillStyle = paper; ci(c, 0, 0, s * .26, 1); c.fillStyle = f; ci(c, 0, 0, s * .26);
+  });
+  T('Daisy', function (c, s) { for (var k = 0; k < 8; k++) { var a = k * TAU / 8; el(c, Math.cos(a) * s * .55, Math.sin(a) * s * .55, s * .4, s * .16, a); } ci(c, 0, 0, s * .2, 1); });
+  T('Dot', function (c, s) { ci(c, 0, 0, s * .5, 1); });
+  T('Circle', function (c, s) { ci(c, 0, 0, s * .8); });
+  T('Target', function (c, s) { ci(c, 0, 0, s * .9); ci(c, 0, 0, s * .55); ci(c, 0, 0, s * .2, 1); });
+  T('Leaf', function (c, s) {
+    c.beginPath(); c.moveTo(-s, 0); c.quadraticCurveTo(0, -s * .8, s, 0); c.quadraticCurveTo(0, s * .8, -s, 0); c.stroke(); ln(c, -s, 0, s * .75, 0);
+  });
+  T('Sun', function (c, s) { ci(c, 0, 0, s * .42, 1); for (var k = 0; k < 10; k++) { var a = k * TAU / 10; ln(c, Math.cos(a) * s * .6, Math.sin(a) * s * .6, Math.cos(a) * s, Math.sin(a) * s); } });
+  T('Snowflake', function (c, s) {
+    for (var k = 0; k < 6; k++) {
+      var a = k * PI / 3, ca = Math.cos(a), sa = Math.sin(a), bx = ca * s * .6, by = sa * s * .6;
+      ln(c, 0, 0, ca * s, sa * s); ln(c, bx, by, bx + Math.cos(a + .7) * s * .3, by + Math.sin(a + .7) * s * .3); ln(c, bx, by, bx + Math.cos(a - .7) * s * .3, by + Math.sin(a - .7) * s * .3);
+    }
+  });
+  T('Butterfly', function (c, s) {
+    el(c, -s * .45, -s * .3, s * .45, s * .32, -.5, 1); el(c, s * .45, -s * .3, s * .45, s * .32, .5, 1);
+    el(c, -s * .35, s * .32, s * .32, s * .22, .5, 1); el(c, s * .35, s * .32, s * .32, s * .22, -.5, 1);
+    var f = c.fillStyle; c.fillStyle = '#1c1c1c'; el(c, 0, 0, s * .1, s * .6, 0, 1); c.fillStyle = f;
+  });
+  T('Smile', function (c, s) {
+    ci(c, 0, 0, s * .9); ci(c, -s * .32, -s * .2, s * .1, 1); ci(c, s * .32, -s * .2, s * .1, 1);
+    c.beginPath(); c.arc(0, s * .05, s * .5, .2 * PI, .8 * PI); c.stroke();
+  });
+  T('Music note', function (c, s) {
+    el(c, -s * .15, s * .6, s * .38, s * .27, -.4, 1); ln(c, s * .2, s * .55, s * .2, -s * .9);
+    c.beginPath(); c.moveTo(s * .2, -s * .9); c.quadraticCurveTo(s * .8, -s * .55, s * .62, -s * .1); c.stroke();
+  });
+  T('Raindrop', function (c, s) {
+    c.beginPath(); c.moveTo(0, -s); c.bezierCurveTo(s * .2, -s * .55, s * .6, -s * .1, s * .6, s * .3);
+    c.arc(0, s * .3, s * .6, 0, PI); c.bezierCurveTo(-s * .6, -s * .1, -s * .2, -s * .55, 0, -s); c.fill();
+  });
+  T('Moon', function (c, s) {
+    var r = s * .9, d = r * .6, h = Math.sqrt(r * r - d * d / 4), a = Math.atan2(h, d / 2), b = Math.atan2(h, -d / 2);
+    c.beginPath(); c.arc(0, 0, r, a, TAU - a, false); c.arc(d, 0, r, TAU - b, b, true); c.closePath(); c.fill();
+  });
+  T('Triangle', function (c, s) { tri(c, 0, s * .15, s, 1); });
+  T('Square', function (c, s) { c.fillRect(-s * .7, -s * .7, s * 1.4, s * 1.4); });
+  T('Diamond', function (c, s) { poly(c, [0, -s, s * .65, 0, 0, s, -s * .65, 0], 1); });
+  T('Spiral', function (c, s) { c.beginPath(); for (var t = 0; t <= TAU * 3; t += .15) { var r = t / (TAU * 3) * s; c.lineTo(Math.cos(t) * r, Math.sin(t) * r); } c.stroke(); });
+  T('Sparkle', function (c, s) { star(c, 0, 0, s, s * .22, 4, 1); });
+  T('Clover', function (c, s) {
+    [-90, 30, 150].forEach(function (d) { var a = d * PI / 180; ci(c, Math.cos(a) * s * .42, Math.sin(a) * s * .42, s * .38, 1); });
+    c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(s * .1, s * .7, s * .4, s); c.stroke();
+  });
+  T('Fish', function (c, s) {
+    el(c, -s * .15, 0, s * .7, s * .4, 0, 1); poly(c, [s * .45, 0, s, -s * .45, s, s * .45], 1);
+    var f = c.fillStyle; c.fillStyle = '#fff'; ci(c, -s * .5, -s * .08, s * .1, 1); c.fillStyle = f;
+  });
+  T('Tulip', function (c, s) {
+    c.beginPath(); c.moveTo(-s * .5, -s * .7); c.lineTo(-s * .22, -s * .4); c.lineTo(0, -s * .8); c.lineTo(s * .22, -s * .4); c.lineTo(s * .5, -s * .7);
+    c.quadraticCurveTo(s * .55, 0, 0, s * .05); c.quadraticCurveTo(-s * .55, 0, -s * .5, -s * .7); c.fill();
+    ln(c, 0, 0, 0, s); el(c, s * .3, s * .6, s * .3, s * .1, -.6, 1);
+  });
+  T('Pine tree', function (c, s) { poly(c, [0, -s, s * .6, s * .1, s * .25, s * .1, s * .7, s * .65, -s * .7, s * .65, -s * .25, s * .1, -s * .6, s * .1], 1); c.fillRect(-s * .12, s * .65, s * .24, s * .35); });
+  T('Lightning', function (c, s) { poly(c, [s * .2, -s, -s * .5, s * .15, -s * .05, s * .15, -s * .3, s, s * .5, -s * .25, s * .05, -s * .25], 1); });
+  T('Burst', function (c, s) { for (var k = 0; k < 16; k++) { var a = k * TAU / 16, r = k & 1 ? .5 : 1; ln(c, 0, 0, Math.cos(a) * s * r, Math.sin(a) * s * r); } });
+  T('Arrow', function (c, s) { ln(c, -s, 0, s * .8, 0); ln(c, s * .8, 0, s * .25, -s * .5); ln(c, s * .8, 0, s * .25, s * .5); });
+
+  window.ART_STAMPS = ST;
   window.ART_PATTERNS = PATS;
   window.ART_CATS = [['all', 'All 100'], ['lines', 'Lines'], ['waves', 'Waves'], ['dots', 'Dots & circles'], ['shapes', 'Shapes'],
                      ['nature', 'Flowers & nature'], ['center', 'Center designs'], ['texture', 'Textures']];
