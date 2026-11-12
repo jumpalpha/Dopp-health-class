@@ -25,7 +25,6 @@
     9: { src: '/podcasts/ch09.mp3', title: 'Stopping Teen Conflict Before It Escalates' },
     10: { src: '/podcasts/ch10.mp3', title: 'How Engineered Snacks Trick Your Brain' },
     11: { src: '/podcasts/ch11.mp3', title: 'Ditching Fad Diets for Intuitive Eating' },
-    11: { src: '/podcasts/ch11.mp3', title: 'From Fad Diets to Intuitive Eating' },
     12: { src: '/podcasts/ch12.mp3', title: 'The 60 Minute Daily Brain Reset' },
     13: { src: '/podcasts/ch13.mp3', title: "Why Flossing Protects Your Heart" },
     14: { src: '/podcasts/ch14.mp3', title: "How Habits Hack Your Body's Hardware" },
