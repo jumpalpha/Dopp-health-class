@@ -249,6 +249,38 @@
     return { total: parts.length, meaningful, words: s.split(/\s+/).length };
   }
 
+  // ── Step 6: reflection quality ──
+  // Looks for an answer to each of the 5 prompts, at least one of the student's own numbers,
+  // enough length, and real writing (not the same words over and over).
+  const REFL_MIN_WORDS = 80;
+  function reflectionQuality(d) {
+    d = d || {};
+    const raw = String(d.reflection || ''), t = raw.toLowerCase();
+    const s = sentences(raw);
+    const words = t.match(/[a-z0-9']+/g) || [];
+    const uniq = new Set(words).size;
+    const cmp = compare(d.predicted, (d.research || {}).values);
+    const job = String((d.career || {}).job || '').toLowerCase().split(/[^a-z]+/).filter(w => w.length > 3);
+    const underWord = cmp.under ? cmp.under.label.toLowerCase().split(/[^a-z]+/).filter(w => w.length > 3) : [];
+    const has = re => re.test(t);
+    const checks = {
+      surprise: has(/surpris|shock|didn'?t (expect|know|realize|think)|did not (expect|know|realize|think)|unexpected|amaz|crazy|eye.?open|never (knew|thought|realized)|i thought|wow/),
+      under: has(/under.?estimat|guess(ed)? (way |too )?low|more than i (thought|guessed|expected|predicted|estimated)|cost(s|ed)? (way |a lot )?more|higher than (i|my)|way more|low.?ball/) ||
+        (underWord.some(w => t.includes(w)) && has(/guess|estimat|predict|thought|expect/)),
+      career: (has(/career|job|salary|income|paycheck|wage|earn/) || job.some(w => t.includes(w))) &&
+        has(/afford|support|enough|cover|can'?t|cannot|not able|surplus|deficit|shortfall|left ?over|short|pay for|make it/),
+      changes: has(/roommate|budget|cheaper|cut (back|down|out)|spend less|less on|sav(e|ing)|second job|side job|part.?time|raise|promotion|different (job|career|city|state|town|place|area)|move|smaller|used car|cook|instead|chang|degree|certif|college|training|overtime|split|carpool|bus|shop/),
+      learned: has(/learn|realiz|understand|now know|know now|taught|lesson|important|financial(ly)? health|matters|need to|i see/),
+      numbers: /\$\s?\d|\d[\d,.]*\s?(dollars|\/ ?mo|per month|a month|each month|a year|per year|an hour|per hour|\/ ?hr|%)|\b\d{3,}\b/.test(raw.replace(/,(?=\d{3})/g, ''))
+    };
+    const problems = [];
+    if (s.meaningful < 5) problems.push('sentences');
+    if (words.length < REFL_MIN_WORDS) problems.push('length');
+    if (words.length >= 20 && uniq / words.length < 0.4) problems.push('repeat');
+    ['surprise', 'under', 'career', 'changes', 'learned', 'numbers'].forEach(k => { if (!checks[k]) problems.push(k); });
+    return { ok: problems.length === 0, problems, checks, words: words.length, sentences: s.meaningful, minWords: REFL_MIN_WORDS, cmp };
+  }
+
   // ── Submission check (the database repeats the important parts) ──
   function missing(d) {
     const m = [];
@@ -273,6 +305,7 @@
       else if (x.src === 'own' && isBlank(x.note)) m.push('Step 3: say where your ' + CATS.find(c2 => c2.key === k).label + ' number came from');
     });
     if (sentences(d.reflection).meaningful < 5) m.push('Step 6: at least 5 complete sentences');
+    else if (!reflectionQuality(d).ok) m.push('Step 6: reflection needs more — answer every question and use your own numbers');
     return m;
   }
 
@@ -321,7 +354,7 @@
     num, isBlank, round2, checkMoney,
     simpleInterest, compoundInterest, workHours, hourlyFrom,
     totals, compare, federalIncomeTax, taxes, requiredGross, sheetMethodIncome,
-    affordability, meter, sentences, missing, suggestScores
+    affordability, meter, sentences, reflectionQuality, missing, suggestScores
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = FinanceCalc;
   else root.FinanceCalc = FinanceCalc;
