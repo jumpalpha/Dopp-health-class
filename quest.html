@@ -312,6 +312,10 @@ main { position:relative; z-index:10; }
 .task-check.checked.pop { animation:pop .35s ease; }
 .task-label { font-size:14px; color:var(--fg); flex:1; line-height:1.35; }
 .task-label.checked-label { text-decoration:line-through; text-decoration-color:rgba(255,255,255,.3); color:var(--muted); }
+.task-sub { display:block; font-size:11.5px; font-weight:500; opacity:.7; margin-top:2px; }
+.task-check.auto { border-style:dashed; }
+.task-check.excused { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25); }
+.ch-task.locked { opacity:.55; }
 .task-xp { font-family:var(--mono); font-size:11px; font-weight:600; color:var(--gold); white-space:nowrap; }
 .task-boss .task-label { color:var(--gold); font-weight:700; }
 
@@ -370,6 +374,7 @@ main { position:relative; z-index:10; }
 </style>
 <script src="vendor/supabase.js"></script>
 <script src="badges.js"></script>
+<script src="checklist.js"></script>
 <script src="pet_sprite.js"></script>
 <script src="hero_art.js"></script>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
@@ -504,7 +509,7 @@ main { position:relative; z-index:10; }
         </div>
         <div class="ring" aria-label="Quest progress">
           <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="52"/><circle class="fill" id="ring-fill" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg>
-          <div><strong id="ring-pct">0%</strong><span>of tasks</span></div>
+          <div><strong id="ring-pct">0%</strong><span>of checklist</span></div>
         </div>
       </div>
       <div class="xp-section">
@@ -677,6 +682,72 @@ async function loadProgress() {
   doneKeys = new Set((tasks || []).map(t => t.task_key));
   doneDays = new Set((days || []).map(d => d.day_date));
   badgeExtra = await DoppBadges.loadExtra(db, TRIMESTER, student.id);
+  await loadTracking();
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUTOMATIC TRACKING
+// Reading + vocab tasks check themselves from real activity (the same records the Trimester
+// Checklist uses). Students can't tick them. Class-only activities and boss battles stay
+// student-reported, but only unlock once every tracked task above them in the realm is done.
+// The progress ring shows the checklist % so the number is the same everywhere.
+// ═══════════════════════════════════════════════════════════
+let clView = null, clItems = {};
+async function loadTracking() {
+  clView = null; clItems = {};
+  if (!student || !window.Checklist) return;
+  try {
+    const { data, error } = await db.rpc('cl_student', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER });
+    if (error || !data) return;
+    clView = Checklist.build(data.evidence, Checklist.config(data.config, TRIMESTER));
+    clView.realms.forEach(r => r.chapters.forEach(c => c.items.forEach(i => { clItems[i.id] = i; })));
+    clView.bonus.chapters.forEach(c => c.items.forEach(i => { clItems[i.id] = i; }));
+    try { localStorage.setItem('dopp_cl_pct', JSON.stringify({ pct: clView.summary.pct, t: Date.now() })); } catch (e) {}
+    await syncAutoTasks();
+  } catch (e) { clView = null; }
+}
+function autoIds(task) {
+  let m = task.match(/^Read Chapter (\d+)/i);
+  if (m) return ['read:ch' + m[1]];
+  m = task.match(/Ch (\d+) Vocab Games/i);
+  if (m) return Checklist.VOCAB_MODES.map(([k]) => 'vocab:ch' + m[1] + ':' + k);
+  return null;
+}
+const isDone = st => st.state === 'done' || st.state === 'excused';
+// state: done · excused · todo (tracked, not finished) · unknown (tracking didn't load) · open · locked
+function taskState(r, ti) {
+  const task = r.tasks[ti], ids = window.Checklist ? autoIds(task) : null;
+  if (ids) {
+    const its = ids.map(id => clItems[id]).filter(Boolean);
+    if (!clView || its.length !== ids.length) return { auto: true, state: 'unknown', detail: 'Checks itself when you finish it' };
+    if (its.every(i => i.done)) return { auto: true, state: 'done', detail: 'Checked off automatically' };
+    if (its.every(i => i.done || i.status === 'excused')) return { auto: true, state: 'excused', detail: 'Excused for the whole class' };
+    const detail = ids.length === 1
+      ? String(its[0].detail || '').split(' · ')[0] + ' · checks itself when you finish'
+      : its.filter(i => i.done).length + ' of ' + ids.length + ' vocab games done (70%+) · checks itself when you finish';
+    return { auto: true, state: 'todo', detail };
+  }
+  for (let j = 0; j < ti; j++) {
+    if (!autoIds(r.tasks[j])) continue;
+    if (!isDone(taskState(r, j))) return { auto: false, state: 'locked', detail: 'Unlocks after you finish the reading and vocab above it' };
+  }
+  if (doneKeys.has(`${r.id}_${ti}`)) return { auto: false, state: 'done', detail: 'You checked this off' };
+  return { auto: false, state: 'open', detail: 'Done in class · check it off yourself once you\'ve really done it' };
+}
+// Tracked tasks that are finished get saved to the Quest record (this is what awards their XP).
+async function syncAutoTasks() {
+  const adds = [];
+  REALMS.forEach(r => r.tasks.forEach((t, ti) => {
+    const key = `${r.id}_${ti}`;
+    if (!doneKeys.has(key) && autoIds(t) && taskState(r, ti).state === 'done') adds.push(key);
+  }));
+  if (!adds.length) return;
+  const demo = window.DoppDemo && DoppDemo.on;
+  for (const key of adds) {
+    doneKeys.add(key);
+    if (!demo) { try { await db.rpc('complete_task', { p_student_id: student.id, p_pin_hash: studentPinHash, p_task_key: key }); } catch (e) {} }
+  }
+  setTimeout(() => showToast(`+${adds.length * XP_PER_TASK} XP · ${adds.length} task${adds.length === 1 ? '' : 's'} checked off automatically`), 600);
 }
 // Demo account: switch this browser into read-only demo mode (and start the guided tour on a fresh sign-in).
 async function demoCheck(isNewLogin) {
@@ -898,8 +969,9 @@ function calcStats() {
   REALMS.forEach(r => {
     let done = 0;
     r.tasks.forEach((task, ti) => {
-      if (doneKeys.has(`${r.id}_${ti}`)) {
-        done++; xp += XP_PER_TASK; totalTasks++;
+      if (doneKeys.has(`${r.id}_${ti}`)) xp += XP_PER_TASK;   // XP already earned stays earned
+      if (student && isDone(taskState(r, ti))) {
+        done++; totalTasks++;
         if (task.toLowerCase().includes('vocab')) vocabTasks++;
         if (task.toLowerCase().includes('boss'))  bossTasks++;
       }
@@ -921,7 +993,7 @@ function calcCompletedChapters() {
   REALMS.forEach(r => {
     r.tasks.forEach((task, ti) => {
       const match = task.match(/^Read Chapter (\d+) PDF$/i);
-      if (match && doneKeys.has(`${r.id}_${ti}`)) chDone.add(Number(match[1]));
+      if (match && taskState(r, ti).state === 'done') chDone.add(Number(match[1]));
     });
   });
   return chDone.size;
@@ -945,10 +1017,9 @@ function render() {
   document.getElementById('stat-xp').textContent       = st.xp.toLocaleString();
   document.getElementById('xp-label').textContent      = `${st.xp.toLocaleString()} / ${TOTAL_XP.toLocaleString()} XP`;
   document.getElementById('xp-fill').style.width       = Math.min(100, st.xp / TOTAL_XP * 100) + '%';
-  const totalTasks = REALMS.reduce((n, r) => n + r.tasks.length, 0);
-  const pct = Math.round(st.totalTasks / totalTasks * 100);
-  document.getElementById('ring-pct').textContent = pct + '%';
-  document.getElementById('ring-fill').style.strokeDashoffset = String(326.73 * (1 - st.totalTasks / totalTasks));
+  const pct = clView ? clView.summary.pct : null;   // the trimester checklist % — same number on every page
+  document.getElementById('ring-pct').textContent = pct == null ? '—' : pct + '%';
+  document.getElementById('ring-fill').style.strokeDashoffset = String(326.73 * (1 - (pct || 0) / 100));
   renderStreak(); renderRealms(st); renderAchievements(st); renderNextUp();
   checklistLink();
   spriteCard();
@@ -1026,10 +1097,7 @@ let clChecked = false;
 async function checklistLink() {
   if (clChecked || !student || !studentPinHash) return;
   clChecked = true;
-  try {
-    const { error } = await db.rpc('cl_student', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER });
-    if (!error) document.getElementById('cl-link').style.display = 'inline-block';
-  } catch (e) {}
+  if (clView) document.getElementById('cl-link').style.display = 'inline-block';   // tracking loaded = checklist is open
 }
 
 function renderStreak() {
@@ -1141,7 +1209,7 @@ const openRealms = new Set();
 let justChecked = null;
 // The realm you're working on: the first one that isn't finished.
 function currentRealmId() {
-  const r = REALMS.find(r => !r.tasks.every((_, ti) => doneKeys.has(`${r.id}_${ti}`)));
+  const r = REALMS.find(r => !r.tasks.every((_, ti) => isDone(taskState(r, ti))));
   return r ? r.id : null;
 }
 function renderRealms(st) {
@@ -1150,7 +1218,8 @@ function renderRealms(st) {
   if (student && cur && !renderRealms.opened) { openRealms.add(cur); renderRealms.opened = true; }   // open the current realm once
   grid.innerHTML = '';
   REALMS.forEach((r, i) => {
-    const done = r.tasks.filter((_,ti) => doneKeys.has(`${r.id}_${ti}`)).length;
+    const states = r.tasks.map((_, ti) => student ? taskState(r, ti) : { state: 'open', auto: false, detail: '' });
+    const done = states.filter(isDone).length;
     const pct = Math.round(done / r.tasks.length * 100);
     const completed = done === r.tasks.length;
     const badgeEarned = st.badges.includes(r.badge);
@@ -1176,12 +1245,14 @@ function renderRealms(st) {
       <div class="ch-detail${open ? ' open' : ''}" id="detail-${r.id}" role="region" aria-label="${r.name} tasks"><div><ul>
         ${r.tasks.map((task,ti)=>{
           const key = `${r.id}_${ti}`;
-          const checked = doneKeys.has(key);
+          const s = states[ti], ex = s.state === 'excused';
+          const checked = s.state === 'done';
           const isBoss = task.toLowerCase().includes('boss');
-          return `<li><button class="ch-task${isBoss?' task-boss':''}" type="button" data-task="${r.id}" data-ti="${ti}" aria-pressed="${checked}"${student?'':' disabled'}${open?'':' tabindex="-1"'}>
-            <span class="task-check${checked?' checked':''}${checked && justChecked===key?' pop':''}" aria-hidden="true">${checked?'✓':''}</span>
-            <span class="task-label${checked?' checked-label':''}">${isBoss?'👑 ':''}${task}</span>
-            <span class="task-xp">+${XP_PER_TASK} XP</span>
+          const mark = checked ? '✓' : ex ? '–' : s.state === 'locked' ? '🔒' : '';
+          return `<li><button class="ch-task${isBoss?' task-boss':''}${s.state==='locked'?' locked':''}" type="button" data-task="${r.id}" data-ti="${ti}"${s.auto?' data-auto="1"':''} aria-pressed="${checked}"${student?'':' disabled'}${open?'':' tabindex="-1"'}>
+            <span class="task-check${checked?' checked':''}${ex?' excused':''}${s.auto?' auto':''}${checked && justChecked===key?' pop':''}" aria-hidden="true">${mark}</span>
+            <span class="task-label${checked?' checked-label':''}">${isBoss?'👑 ':''}${task}${student && s.detail ? `<small class="task-sub">${s.auto && !checked && !ex ? '⚙ ' : ''}${s.detail}</small>` : ''}</span>
+            <span class="task-xp">${ex ? 'Excused' : '+' + XP_PER_TASK + ' XP'}</span>
           </button></li>`;
         }).join('')}
       </ul></div></div>`;
@@ -1193,7 +1264,12 @@ document.addEventListener('click', e => {
   const head = e.target.closest('.rc-head');
   if (head) { toggleDetail(head.getAttribute('aria-controls').replace('detail-', '')); return; }
   const t = e.target.closest('[data-task]');
-  if (t && !t.disabled) { const key = t.dataset.task + '_' + t.dataset.ti; if (!doneKeys.has(key)) justChecked = key; toggleTask(t.dataset.task, Number(t.dataset.ti)); }
+  if (t && !t.disabled) {
+    const r = REALMS.find(x => x.id === t.dataset.task), ti = Number(t.dataset.ti), s = taskState(r, ti);
+    if (s.auto) { showToast(s.state === 'done' ? '✓ Already checked off automatically' : s.state === 'excused' ? 'Excused for the whole class' : '⚙ This one checks itself when you really do it'); return; }
+    if (s.state === 'locked') { showToast('🔒 Finish the reading and vocab above it first'); return; }
+    const key = t.dataset.task + '_' + ti; if (!doneKeys.has(key)) justChecked = key; toggleTask(t.dataset.task, ti);
+  }
 });
 
 function toggleDetail(id) {
@@ -1219,10 +1295,10 @@ function taskLink(task, realm) {
 function renderNextUp() {
   const box = document.getElementById('next-up');
   for (const r of REALMS) {
-    const ti = r.tasks.findIndex((_, i) => !doneKeys.has(`${r.id}_${i}`));
+    const ti = r.tasks.findIndex((_, i) => !isDone(taskState(r, i)));
     if (ti === -1) continue;
-    const task = r.tasks[ti], link = taskLink(task, r);
-    const left = r.tasks.length - r.tasks.filter((_, i) => doneKeys.has(`${r.id}_${i}`)).length;
+    const task = r.tasks[ti], link = taskLink(task, r), nst = taskState(r, ti);
+    const left = r.tasks.length - r.tasks.filter((_, i) => isDone(taskState(r, i))).length;
     box.classList.remove('done-all');
     box.style.setProperty('--accent', r.color);
     box.innerHTML = `
@@ -1230,11 +1306,11 @@ function renderNextUp() {
       <div class="nu-text">
         <small>Next up · ${r.name}</small>
         <strong>${task}</strong>
-        <span>${left} task${left === 1 ? '' : 's'} left to earn the <b>${r.badge}</b> badge · +${XP_PER_TASK} XP</span>
+        <span>${nst.auto ? '⚙ ' + nst.detail + '<br>' : ''}${left} task${left === 1 ? '' : 's'} left to earn the <b>${r.badge}</b> badge · +${XP_PER_TASK} XP</span>
       </div>
       <div class="nu-actions">
         <a class="btn-primary" href="${link.href}">${link.label} →</a>
-        <button class="btn-ghost" type="button" data-task="${r.id}" data-ti="${ti}">✓ Mark done</button>
+        ${nst.auto ? '' : `<button class="btn-ghost" type="button" data-task="${r.id}" data-ti="${ti}">✓ Mark done</button>`}
       </div>`;
     return;
   }
@@ -1263,6 +1339,9 @@ function renderAchievements(st) {
 // ═══════════════════════════════════════════════════════════
 async function toggleTask(realmId, ti) {
   if (!student) return;
+  const realm0 = REALMS.find(r => r.id === realmId);
+  const st0 = taskState(realm0, ti);
+  if (st0.auto || st0.state === 'locked') return;   // only unlocked, student-reported tasks can be ticked
   const key = `${realmId}_${ti}`;
   if (doneKeys.has(key)) {
     doneKeys.delete(key);
@@ -1271,7 +1350,7 @@ async function toggleTask(realmId, ti) {
     doneKeys.add(key);
     await db.rpc('complete_task', { p_student_id: student.id, p_pin_hash: studentPinHash, p_task_key: key });
     const realm = REALMS.find(r => r.id === realmId);
-    const allDone = realm.tasks.every((_,i) => doneKeys.has(`${realmId}_${i}`));
+    const allDone = realm.tasks.every((_,i) => isDone(taskState(realm, i)));
     if (allDone) showToast(`🏆 Badge Earned: ${realm.badge}!`);
     else         showToast(`+${XP_PER_TASK} XP earned!`);
   }

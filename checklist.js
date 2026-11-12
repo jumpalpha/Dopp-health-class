@@ -85,7 +85,7 @@
     trail: 'Wellness Trail: +5 per day you play',
     live: 'Live games: +5 per correct answer',
     live_bonus: 'Live games: +25 end-of-game bonus when you qualify',
-    quest: 'Quest XP (separate): +25 per Quest task you check, +5 per login day — self-reported, not verified'
+    quest: 'Quest XP (separate): +25 per Quest task (reading & vocab check themselves; class activities are self-reported), +5 per login day'
   };
 
   const TERM_DATES = {

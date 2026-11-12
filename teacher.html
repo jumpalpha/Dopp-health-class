@@ -810,7 +810,7 @@ input, select, textarea { color: var(--text); }
               <th onclick="setLbSort('period',this)">Period</th>
               <th class="sorted" onclick="setLbSort('vxp',this)" title="Mastery Checks + live games">Verified XP ↓</th>
               <th onclick="setLbSort('xp',this)" title="Self-checked Quest tasks">Quest XP</th>
-              <th onclick="setLbSort('tasks',this)">Tasks</th>
+              <th onclick="setLbSort('pct',this)" title="Trimester checklist %">Progress</th>
               <th onclick="setLbSort('days',this)">Active Days</th>
               <th onclick="setLbSort('streak',this)">Streak</th>
               <th onclick="setLbSort('pet',this)">Sprite</th>
@@ -1797,10 +1797,18 @@ async function loadProgressData() {
 
   // sprites (teacher-only server function)
   const pets = {};
-  const [petRes, vxRes] = await Promise.all([
+  const [petRes, vxRes, clCfgRes, clEvRes] = await Promise.all([
     db.rpc('pet_teacher_summary', { p_teacher_pass: teacherPass(), p_trimester: TRIMESTER }),
-    db.rpc('get_verified_xp', { p_trimester: TRIMESTER })
+    db.rpc('get_verified_xp', { p_trimester: TRIMESTER }),
+    db.rpc('cl_teacher_config_get', { p_teacher_pass: teacherPass(), p_trimester: TRIMESTER }),
+    db.rpc('cl_teacher_evidence', { p_teacher_pass: teacherPass(), p_trimester: TRIMESTER, p_student: null })
   ]);
+  // one progress % everywhere: the trimester checklist % (same number students see on Quest + Checklist)
+  const clPct = {};
+  if (!clCfgRes.error && !clEvRes.error && window.Checklist) {
+    const clCfg = Checklist.config(clCfgRes.data || {}, TRIMESTER);
+    Object.entries(clEvRes.data || {}).forEach(([id, ev]) => { try { clPct[id] = Checklist.build(ev, clCfg).summary.pct; } catch (e) {} });
+  }
   const vx = {}; (vxRes.data || []).forEach(v => { vx[v.student_id] = v; });
   const note = document.getElementById('pet-note');
   if (petRes.error){ note.style.display = 'block'; note.textContent = 'Sprite info could not load: ' + petRes.error.message; }
@@ -1819,6 +1827,7 @@ async function loadProgressData() {
       avatar: s.avatar,
       class_code: s.class_code,
       tasks,
+      pct: clPct[s.id] != null ? clPct[s.id] : null,
       xp: tasks * XP_PER_TASK + daySet.size * XP_PER_DAY,
       days: daySet.size,
       streak,
@@ -1834,11 +1843,11 @@ function renderLeaderboard() {
   if (!lbData) return;
   let rows = lbFilter === 'all' ? [...lbData] : lbData.filter(s => lbFilter === 'TEST' ? /test/i.test(s.class_code || '') : periodKey(s.class_code) === lbFilter);
 
-  const sortMap = { vxp:'vxp', xp:'xp', tasks:'tasks', name:'display_name', period:'class_code', days:'days', streak:'streak' };
+  const sortMap = { vxp:'vxp', xp:'xp', tasks:'tasks', pct:'pct', name:'display_name', period:'class_code', days:'days', streak:'streak' };
   if (lbSort === 'pet') rows.sort((a,b) => petScore(b) - petScore(a));
   else {
     const key = sortMap[lbSort] || 'xp';
-    rows.sort((a,b) => typeof a[key]==='string' ? a[key].localeCompare(b[key]) : b[key]-a[key]);
+    rows.sort((a,b) => typeof a[key]==='string' ? a[key].localeCompare(b[key]) : (b[key] ?? -1)-(a[key] ?? -1));
   }
   const withPet = rows.filter(s => s.pet);
   document.getElementById('pet-stat-hatched').textContent = withPet.length + ' / ' + rows.length;
@@ -1866,10 +1875,10 @@ function renderLeaderboard() {
     return;
   }
   tbody.innerHTML = rows.map((s,i) => {
-    const pct = Math.round(s.tasks / TOTAL_TASKS * 100);
-    const bar = `<div style="display:flex;align-items:center;gap:6px">
+    const pct = s.pct != null ? s.pct : 0;
+    const bar = `<div style="display:flex;align-items:center;gap:6px" title="Trimester checklist % (same number the student sees)">
       <div class="progress-mini" style="width:72px"><div class="progress-mini-fill" style="width:${pct}%"></div></div>
-      <span style="font-size:11px;color:var(--dim)">${s.tasks}/${TOTAL_TASKS}</span></div>`;
+      <span style="font-size:11px;color:var(--dim)">${s.pct != null ? pct + '%' : '—'}</span></div>`;
     return `<tr>
       <td style="text-align:center">${rankLabel(i)}</td>
       <td class="lb-avatar">${window.DoppHero ? DoppHero.html(s.avatar || '⚔') : escapeHtml(s.avatar || '⚔')}</td>
