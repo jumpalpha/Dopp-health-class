@@ -27,7 +27,7 @@
 
   function draw() {
     const root = $('cwt-root');
-    const tabs = [1, 2, 3, 4, 5].map(u => `<button class="cwt-u${u === unit ? ' on' : ''}" data-u="${u}">Unit ${u}</button>`).join('');
+    const tabs = (window.CLASSWORK_UNITS || [1, 2, 3, 4, 5, 6, 7, 8, 9].map(u => ({ unit: u }))).map(x => x.unit).map(u => `<button class="cwt-u${u === unit ? ' on' : ''}" data-u="${u}">Unit ${u}</button>`).join('');
     if (!data) { root.innerHTML = `<div class="cwt-tabs">${tabs}</div><div class="card">Loading…</div>`; wireTabs(); return; }
     const rows = data.rows.filter(r => filter === 'all' || r.status === filter);
     const n = k => data.rows.filter(r => r.status === k).length;

@@ -41,7 +41,7 @@ insert into public.cw_live (id, live) values (1, false) on conflict (id) do noth
 create table if not exists public.cw_work (
   student_id     uuid not null references public.students(id) on delete cascade,
   trimester      text not null,
-  unit           int  not null check (unit between 1 and 5),
+  unit           int  not null check (unit between 1 and 9),
   mastery_best   int  not null default 0,
   mastery_tries  int  not null default 0,
   quiz           jsonb,               -- the open mastery check's answer key (never sent to the page)
@@ -106,7 +106,7 @@ begin
     end if;
     rx := rx || case when rx = '' then '' else '|' end || one;
   end loop;
-  return '\m(' || rx || ')\M';
+  return '(^|[^a-z0-9])(' || rx || ')($|[^a-z0-9])';
 end $$;
 
 create or replace function public._cw_cue(p_text text) returns boolean
@@ -141,7 +141,7 @@ create or replace function public._cw_row(p_student uuid, p_tri text, p_unit int
 language plpgsql security definer set search_path = public as $$
 declare r public.cw_work;
 begin
-  if p_unit not between 1 and 5 then raise exception 'No such unit'; end if;
+  if not exists (select 1 from public.cw_terms where unit = p_unit) then raise exception 'No such unit'; end if;
   insert into public.cw_work (student_id, trimester, unit) values (p_student, p_tri, p_unit) on conflict do nothing;
   select * into r from public.cw_work where student_id = p_student and trimester = p_tri and unit = p_unit for update;
   return r;

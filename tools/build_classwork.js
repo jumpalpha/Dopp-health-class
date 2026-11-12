@@ -19,7 +19,12 @@ const UNITS = [
   { unit: 2, title: 'Mental & Emotional Health', chapters: [3, 4, 5] },
   { unit: 3, title: 'Relationships', chapters: [6, 7, 8, 9] },
   { unit: 4, title: 'Nutrition, Weight & Exercise', chapters: [10, 11, 12] },
-  { unit: 5, title: 'Your Body', chapters: [13, 14, 15, 16] }
+  { unit: 5, title: 'Your Body', chapters: [13, 14, 15, 16] },
+  // Units 6–9 match Realms 6–9 (ready in case Classwork expands past chapter 16)
+  { unit: 6, title: 'The Life Cycle', chapters: [17, 18] },
+  { unit: 7, title: 'Medicines, Tobacco, Alcohol & Drugs', chapters: [19, 20, 21, 22] },
+  { unit: 8, title: 'Diseases & Disorders', chapters: [23, 24, 25] },
+  { unit: 9, title: 'Safety, First Aid & Community', chapters: [26, 27, 28] }
 ];
 
 const EXTRAS = {
@@ -62,7 +67,17 @@ const NO_STORY = new Set([
   'abuse', 'domestic violence', 'spousal abuse', 'child abuse', 'neglect', 'elder abuse', 'cycle of violence', 'crisis center',
   'intimacy', 'sexually transmitted infections (stis)',
   'assault', 'homicide', 'sexual violence', 'physical abuse', 'emotional abuse', 'verbal abuse', 'stalking', 'hate crime',
-  'testes', 'ovaries', 'uterus', 'ovulation', 'menstruation', 'menstrual cycle', 'fertilization', 'fallopian tubes', 'sterility'
+  'testes', 'ovaries', 'uterus', 'ovulation', 'menstruation', 'menstrual cycle', 'fertilization', 'fallopian tubes', 'sterility',
+  // units 6–9
+  'implantation', 'zygote',
+  'medicine misuse', 'medicine abuse', 'drug overdose', 'drug misuse', 'drug abuse', 'addiction', 'fentanyl', 'opioid',
+  'e-cigarettes', 'vaping', 'smokeless tobacco',
+  'intoxication', 'binge drinking', 'alcohol poisoning', 'alcohol use disorder', 'underage drinking',
+  'substance abuse', 'illegal drugs', 'marijuana', 'inhalants', 'anabolic steroids', 'hallucinogens', 'opiates',
+  'counterfeit pills', 'thc', 'methamphetamine', 'mdma', 'gateway drug',
+  'sexually transmitted infection', 'asymptomatic', 'hpv', 'chlamydia', 'gonorrhea', 'syphilis', 'hiv', 'aids',
+  'antiretroviral therapy', 'u=u', 'prep', 'gardasil 9', 'herpes', 'hepatitis b', 'trichomoniasis', 'cd4 t-cells',
+  'partner notification', 'sti testing'
 ]);
 
 const out = [];
