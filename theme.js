@@ -262,3 +262,78 @@
 
   window.DoppThemeUI = { set: setLight, isLight: function () { return root.classList.contains('dl'); } };
 })();
+
+/* Arcade Leaderboard links on the Next.js pages (added 2026-11-12).
+   The Next.js build has no arcade leaderboard, so this adds:
+   - "🏆 Leaderboard" in the top nav (desktop + phone menu), right after Arcade
+   - on /arcade/: a gold button in the header, a leaderboard banner, and a tab in the sticky game bar
+   Runs after React has hydrated and re-checks on client-side page changes. */
+(function () {
+  if (window.DoppArcadeLB) return; window.DoppArcadeLB = true;
+  var URL = '/arcade_leaderboard.html';
+  var css = '.alb-banner{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:28px;padding:18px 22px;border-radius:22px;text-decoration:none;color:#07071a;' +
+    'background:linear-gradient(100deg,#ffd166,#ff9f1c 55%,#ff6b3d);box-shadow:0 14px 44px -14px rgba(255,159,28,.85);transition:transform .2s,box-shadow .2s}' +
+    '.alb-banner:hover{transform:translateY(-2px);box-shadow:0 20px 54px -14px rgba(255,159,28,.95)}' +
+    '.alb-banner .alb-ic{font-size:40px;line-height:1}' +
+    '.alb-banner .alb-tx{flex:1;min-width:200px}' +
+    '.alb-banner b{display:block;font:800 22px "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.01em}' +
+    '.alb-banner small{display:block;font-size:14px;font-weight:600;opacity:.8;margin-top:2px}' +
+    '.alb-banner .alb-go{font-weight:800;background:#07071a;color:#ffd166;padding:10px 16px;border-radius:14px;white-space:nowrap}' +
+    '.alb-tab{background:rgba(255,209,102,.16)!important;color:#ffd166!important;border:1px solid rgba(255,209,102,.5)!important;font-weight:800!important}' +
+    'html.dl .alb-tab{color:#9a6400!important}' +
+    '.alb-nav{color:#ffd166!important}html.dl .alb-nav{color:#9a6400!important}';
+  function addCss() {
+    if (document.getElementById('alb-css')) return;
+    var st = document.createElement('style'); st.id = 'alb-css'; st.textContent = css;
+    (document.head || document.documentElement).appendChild(st);
+  }
+  function navLinks() {
+    Array.prototype.forEach.call(document.querySelectorAll('header a[href="/arcade/"], header a[href="/arcade"]'), function (a) {
+      var n = a.nextElementSibling;
+      if (n && n.getAttribute('href') === URL) return;
+      // copy a plain (never-active) link from the same menu so it matches the desktop bar or the phone menu
+      var tpl = a.parentNode.querySelector('a[href="/quest.html"]');
+      if (!tpl) return;
+      var c = tpl.cloneNode(false);
+      c.setAttribute('href', URL);
+      c.removeAttribute('aria-current');
+      c.className = (c.className || '') + ' alb-nav';
+      c.textContent = '🏆 Leaderboard';
+      a.parentNode.insertBefore(c, a.nextSibling);
+    });
+  }
+  function arcadePage() {
+    if (!/^\/arcade\/?$/.test(location.pathname)) return;
+    var bar = document.querySelector('main a[href="#sprite"]');
+    bar = bar && bar.parentNode;
+    if (bar && !bar.querySelector('.alb-tab')) {
+      var t = bar.firstElementChild.cloneNode(false);
+      t.setAttribute('href', URL); t.className += ' alb-tab'; t.textContent = '🏆 Leaderboard';
+      bar.insertBefore(t, bar.firstChild);
+    }
+    if (bar && !document.querySelector('.alb-banner')) {
+      var b = document.createElement('a');
+      b.className = 'alb-banner'; b.href = URL;
+      b.innerHTML = '<span class="alb-ic">🏆</span><span class="alb-tx"><b>Arcade Leaderboard</b><small>Top scores for every game, Arcade Champions and Class Wars. Is your name on the board?</small></span><span class="alb-go">See the leaderboard →</span>';
+      bar.parentNode.insertBefore(b, bar);
+    }
+    var hall = document.querySelector('main a.glass[href="/leaderboard.html"]');
+    if (hall && !hall.parentNode.querySelector('.alb-hdr')) {
+      var g = hall.nextElementSibling ? hall.nextElementSibling.cloneNode(false) : hall.cloneNode(false);
+      g.setAttribute('href', URL); g.className += ' alb-hdr'; g.textContent = '🏆 Arcade Leaderboard';
+      hall.parentNode.insertBefore(g, hall);
+    }
+  }
+  var queued = false;
+  function run() { queued = false; addCss(); navLinks(); arcadePage(); }
+  function schedule() { if (!queued) { queued = true; setTimeout(run, 60); } }
+  function start() {
+    // Next.js pages only (classic pages get the link from next_skin.js)
+    if (!document.querySelector('link[href*="/_next/static/"], script[src*="/_next/static/"]')) return;
+    run();
+    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+  }
+  // wait for React to hydrate first so we don't trip a hydration mismatch
+  if (document.readyState === 'complete') setTimeout(start, 300);
+  else window.addEventListener('load', function () { setTimeout(start, 300); });
+})();

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<meta property="og:image" content="https://doppsclass.com/og-image.png">
+<title>Arcade Leaderboard — Legend of Wellness</title>
+<meta name="description" content="Top arcade scores, Arcade Champions and Class Wars for every class this trimester.">
+<link rel="canonical" href="https://doppsclass.com/arcade_leaderboard.html">
+<meta property="og:title" content="Arcade Leaderboard — Legend of Wellness">
+<meta property="og:description" content="Top arcade scores, Arcade Champions and Class Wars for every class this trimester.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doppsclass.com/arcade_leaderboard.html">
+<meta name="twitter:card" content="summary">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;
+  --bg:#0a0618;--card:#171030;--border:rgba(255,255,255,.11);--text:#F4EFFF;--dim:#B9B0D6}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:30px 18px 50px}
+.hero{text-align:center;margin-bottom:22px}
+.eyebrow{font-family:Cinzel,serif;font-size:12px;letter-spacing:4px;color:var(--emerald);text-transform:uppercase;font-weight:700}
+.hero h1{font-family:Cinzel,serif;font-weight:900;font-size:clamp(32px,6vw,56px);line-height:1.05;color:var(--gold);margin:8px 0 10px}
+.hero p{color:var(--dim);font-size:16px;max-width:620px;margin:0 auto;line-height:1.5}
+.jump{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.jump a{font-weight:800;font-size:14px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border);text-decoration:none}
+.jump a:hover{border-color:rgba(255,215,0,.5)}
+.jump a.play{background:var(--gold);color:#1a1205;border-color:transparent}
+h2.sec{font-family:Cinzel,serif;font-size:22px;font-weight:900;color:var(--gold);margin:34px 0 4px;scroll-margin-top:90px}
+.sec-sub{color:var(--dim);font-size:14px;margin-bottom:14px;line-height:1.5}
+.who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin:0 0 14px;font-weight:800}
+.who a{color:var(--emerald)}
+.who .tag{font-size:12px;padding:4px 9px;border-radius:99px;background:rgba(255,215,0,.12);color:var(--gold)}
+.pick{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.pick label{font-weight:800;color:var(--dim);font-size:14px}
+.pick select{font:800 15px Nunito,sans-serif;color:var(--text);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:240px;max-width:100%}
+.pick select:focus{outline:2px solid var(--gold)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.fbtn{font:800 13px Nunito,sans-serif;color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--border);padding:8px 14px;border-radius:10px;cursor:pointer}
+.fbtn:hover{color:var(--text)}
+.fbtn.on{color:var(--gold);border-color:rgba(255,215,0,.5);background:rgba(255,215,0,.1)}
+.board{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.board table{width:100%;border-collapse:collapse}
+.board th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border)}
+.board td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-weight:800}
+.board tr:last-child td{border-bottom:0}
+.board td.r{width:52px;font-size:18px;text-align:center}
+.board td.g{color:var(--dim);font-size:13px}
+.board td.s{color:var(--gold);text-align:right;font-family:Cinzel,serif;font-size:18px}
+.board tr.me td{background:rgba(124,255,178,.09)}
+.board tr.mycls td{background:rgba(56,191,255,.09)}
+.lv{display:inline-block;font-size:12px;font-weight:900;padding:2px 8px;border-radius:99px;background:rgba(255,215,0,.12);color:var(--gold);margin-left:6px;white-space:nowrap}
+.cw-bar,.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px;min-width:80px}
+.cw-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sky),var(--emerald));border-radius:99px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--emerald),var(--gold));border-radius:99px}
+.lvl{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px 18px;margin:0 0 16px}
+.lvl[hidden]{display:none}
+.lvl .num{font-family:Cinzel,serif;font-weight:900;font-size:44px;color:var(--gold);line-height:1;min-width:64px;text-align:center}
+.lvl .num small{display:block;font-size:11px;letter-spacing:2px;color:var(--dim);font-family:Nunito,sans-serif}
+.lvl .info{flex:1;min-width:200px}
+.lvl .ttl{font-weight:900;font-size:19px}
+.lvl .sub{font-size:13px;color:var(--dim);font-weight:700;margin:4px 0 8px}
+.empty{color:var(--dim);font-weight:700;padding:30px 12px;text-align:center}
+.note{font-size:13px;color:var(--dim);margin-top:12px;line-height:1.5}
+@media (max-width:560px){.board td.g,.board th.g{display:none}.pick select{min-width:0;width:100%}}
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <div class="eyebrow">🎮 The Arcade</div>
+    <h1>🏆 Arcade Leaderboard</h1>
+    <p>Top scores from every class this trimester. Pick a game to see who rules it, or check which period is winning Class Wars.</p>
+    <div class="jump">
+      <a href="#boards">📊 Top scores</a>
+      <a href="#classwars">⚔ Class Wars</a>
+      <a class="play" href="/arcade/">🎮 Play a game</a>
+    </div>
+  </header>
+
+  <div class="who" id="who">Checking your login…</div>
+  <div class="lvl" id="lvlCard" hidden></div>
+
+  <h2 class="sec" id="boards">📊 Top Scores · this trimester</h2>
+  <p class="sec-sub"><b style="color:var(--gold)">Champions</b> ranks players by Arcade Power across all games. Pick one game to see its high scores.</p>
+  <div class="pick">
+    <label for="lbGame">Game:</label>
+    <select id="lbGame"></select>
+  </div>
+  <div class="filters" id="lbGroups"></div>
+  <div class="board" id="lbTable"><div class="empty">Loading…</div></div>
+
+  <h2 class="sec" id="classwars">⚔ Class Wars · this trimester</h2>
+  <p class="sec-sub">Which period rules the arcade? Classes are ranked by <b style="color:var(--gold)">average Arcade Power per student</b>, so small classes can win and every classmate who plays helps.</p>
+  <div class="board" id="cwTable"><div class="empty">Loading…</div></div>
+
+  <p class="note"><b>How Arcade Power works:</b> every medal tier you earn in a game = 10 power (bronze 10, silver 20, gold 30, legend 40), and winning a game once = +5. Your <b>Level</b> grows with your power: Rookie → Squire → Knight → Hero → Champion → Legend. Everything resets each trimester.</p>
+  <p class="note">Signed in? Your scores post here automatically when a game ends. Visitors (past students) have their own board. Looking for quest XP instead? See the <a href="leaderboard.html" style="color:var(--emerald);font-weight:800">Hall of Heroes</a>.</p>
+</main>
+
+<script>
+(() => {
+const GAMES = [
+  ['sprite_flap','Sprite Flap','🪽'],['sprite_dash','Sprite Dash','🏃'],['sprite_run','Sprite Run','🛕'],['sprite_sling','Sprite Slingshot','🎯'],
+  ['germ_invaders','Germ Invaders','🦠'],['sprite_maze','Sprite Maze','🍎'],['habit_breaker','Habit Breaker','🧱'],['sprite_snake','Sprite Snake','🐍'],
+  ['field_day','Field Day','🏅'],['habit_showdown','Habit Showdown','⚖️'],['sprite_climb','Sprite Climb','🧗'],['sprite_rider','Sprite Rider','🏍️'],
+  ['word_quest','Word Quest','🔤'],['snack_2048','Snack 2048','🔢'],['sprite_memory','Sprite Memory','🧠'],['snack_stack','Snack Stack','🟦'],
+  ['sprite_catch','Sprite Catch','🧺'],['sprite_slice','Sprite Slice','🔪'],['vocab_slice','Vocab Slice','🥕'],['sprite_dodge','Sprite Dodge','👑'],
+  ['sprite_hoops','Sprite Hoops','🏀'],['cup_pong','Cup Pong','🏓'],['sprite_siege','Sprite Siege','🛡'],['immune_defense','Immune Defense','🛡️'],
+  ['germ_sweeper','Germ Sweeper','🦠'],['tic_tac_toe','Tic-Tac-Toe','⭕'],['blast_blocks','Blast Blocks','🧊'],['how_smart','How Smart Am I?','🧠'],
+  ['wellness_trail','The Wellness Trail','🌄'],
+  ['connect4_duel','Connect 4 (partner)','🔴'],['tictactoe_duel','Tic-Tac-Toe vs. a Friend','❌'],['battleship_duel','Battleship (partner)','🚢'],
+  ['memory_duel','Dopp Memory (partner)','🧔'],['dots_duel','Dots and Boxes (partner)','🔲']
+];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const NET = { URL: 'https://gmeyamrlqfrabtslsweu.supabase.co', KEY: 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c', TRIMESTER: ((window.TERM && TERM.id) || '2026-T1') };
+const session = () => { try { const id = localStorage.getItem('qSID_' + NET.TRIMESTER), pin = sessionStorage.getItem('qPIN_' + NET.TRIMESTER); return id && pin ? { id, pin } : null; } catch (e) { return null; } };
+async function rpc(name, args) {
+  const r = await fetch(NET.URL + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: NET.KEY, Authorization: 'Bearer ' + NET.KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+  const j = await r.json().catch(() => null); if (!r.ok) throw new Error((j && j.message) || 'HTTP ' + r.status); return j;
+}
+
+// ?game=sprite_flap opens that game's board (game-over screens link here)
+const want = new URLSearchParams(location.search).get('game');
+let lbGame = GAMES.some(g => g[0] === want) ? want : 'champions', lbGroup = 'all', mine = null;
+
+$('lbGame').innerHTML = '<option value="champions">🏆 Champions (all games)</option>' +
+  GAMES.map(g => `<option value="${g[0]}">${g[2]} ${esc(g[1])}</option>`).join('');
+$('lbGame').value = lbGame;
+$('lbGame').addEventListener('change', e => {
+  lbGame = e.target.value;
+  try { history.replaceState(null, '', lbGame === 'champions' ? location.pathname : '?game=' + lbGame); } catch (err) {}
+  loadBoard();
+});
+
+function groupOptions() {
+  const o = [['all', 'All classes']];
+  if (mine && !mine.visitor && mine.class_code) o.push(['mine', 'My class (' + mine.group + ')']);
+  for (let i = 1; i <= 6; i++) o.push([((window.TERM && TERM.prefix) || '2627T1') + 'P' + i, 'P' + i]);
+  o.push(['visitors', 'Visitors']);
+  return o;
+}
+function renderGroups() {
+  $('lbGroups').innerHTML = groupOptions().map(([k, l]) => `<button class="fbtn${k === lbGroup ? ' on' : ''}" data-p="${k}">${esc(l)}</button>`).join('');
+}
+$('lbGroups').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b) { lbGroup = b.dataset.p; renderGroups(); loadBoard(); } });
+
+async function loadBoard() {
+  const grp = lbGroup === 'mine' ? (mine && mine.class_code) || 'all' : lbGroup;
+  $('lbTable').innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const rows = lbGame === 'champions'
+      ? await rpc('arcade_champions', { p_trimester: NET.TRIMESTER, p_group: grp, p_limit: 10 })
+      : await rpc('arcade_board', { p_trimester: NET.TRIMESTER, p_game: lbGame, p_group: grp, p_limit: 10 });
+    if (!rows || !rows.length) { $('lbTable').innerHTML = '<div class="empty">No scores yet. Be the first on the board! <a href="/arcade/" style="color:var(--gold)">Play →</a></div>'; return; }
+    const champ = lbGame === 'champions', MED = ['', '🥉', '🥈', '🥇', '💎'];
+    $('lbTable').innerHTML = '<table><tr><th>#</th><th>Player</th><th class="g">Class</th><th style="text-align:right">' + (champ ? 'Power' : 'Best') + '</th></tr>' +
+      rows.map(r => `<tr${mine && r.name && r.name.indexOf(mine.name) >= 0 ? ' class="me"' : ''}><td class="r">${['🥇', '🥈', '🥉'][r.rank - 1] || r.rank}</td><td>${esc(r.name)}${champ && r.level ? `<span class="lv">Lv ${r.level} ${esc(r.title)}</span>` : ''}</td><td class="g">${esc(r.group)}</td>` +
+        `<td class="s">${champ ? (r.power != null ? r.power : r.medals) + ' <span style="font-size:13px;color:var(--dim)">· ' + r.medals + ' medals · ' + r.games_won + ' won</span>' : Number(r.best).toLocaleString() + ' ' + (MED[r.medal] || '')}</td></tr>`).join('') + '</table>';
+  } catch (e) { $('lbTable').innerHTML = '<div class="empty">Couldn\'t load the leaderboard right now.</div>'; }
+}
+
+async function loadClassWars() {
+  try {
+    const rows = await rpc('arcade_class_wars', { p_trimester: NET.TRIMESTER });
+    if (!rows || !rows.length) { $('cwTable').innerHTML = '<div class="empty">No class scores yet this trimester.</div>'; return; }
+    const top = Math.max(...rows.map(r => Number(r.avg_power) || 0), 1);
+    $('cwTable').innerHTML = '<table><tr><th>#</th><th>Class</th><th class="g">Players</th><th style="text-align:right">Avg power</th></tr>' +
+      rows.map(r => `<tr${mine && !mine.visitor && mine.class_code === r.class_code ? ' class="mycls"' : ''}><td class="r">${['🥇', '🥈', '🥉'][r.rank - 1] || r.rank}</td>` +
+        `<td>${esc(r.group)}<span class="lv">avg Lv ${r.avg_level}</span><div class="cw-bar"><i style="width:${Math.round((Number(r.avg_power) || 0) / top * 100)}%"></i></div></td>` +
+        `<td class="g">${r.players} of ${r.students} playing<br>${Number(r.medals).toLocaleString()} medals · top Lv ${r.top_level}</td>` +
+        `<td class="s">${Number(r.avg_power).toLocaleString()}</td></tr>`).join('') + '</table>';
+  } catch (e) { $('cwTable').innerHTML = '<div class="empty">Couldn\'t load Class Wars right now.</div>'; }
+}
+
+function renderLevel() {
+  const el = $('lvlCard');
+  if (!mine || mine.level == null) { el.hidden = true; return; }
+  const from = mine.level_at || 0, to = mine.next_at || 1, pct = Math.max(0, Math.min(100, Math.round((mine.power - from) / Math.max(1, to - from) * 100)));
+  el.hidden = false;
+  el.innerHTML = `<div class="num"><small>LEVEL</small>${mine.level}</div>
+    <div class="info"><div class="ttl">${esc(mine.title)} · ${Number(mine.power).toLocaleString()} Arcade Power</div>
+      <div class="sub">${Math.max(0, to - mine.power)} more power to reach Level ${mine.level + 1}. Earn medals in any game to level up.</div>
+      <div class="bar"><i style="width:${pct}%"></i></div></div>`;
+}
+
+async function loadMine() {
+  const ses = session();
+  if (!ses) {
+    $('who').innerHTML = '🔒 Not signed in. <a href="quest.html">Log in on the Quest page</a> to get on the leaderboard, or <a href="visitor.html">join as a visitor</a> if you\'re a past student.';
+    return;
+  }
+  try {
+    mine = await rpc('arcade_mine', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER });
+    if (!mine) throw new Error('expired');
+    $('who').innerHTML = '✅ Signed in as <span>' + esc(mine.name) + '</span><span class="tag">' + esc(mine.group) + '</span><span style="color:var(--dim);font-weight:700">Your scores post automatically.</span>';
+    if (mine.visitor) lbGroup = 'visitors';
+    renderLevel(); renderGroups(); loadBoard(); loadClassWars();
+  } catch (e) { $('who').innerHTML = '🔒 Your login has expired. <a href="quest.html">Log in again</a> to post scores.'; }
+}
+
+renderGroups(); loadBoard(); loadClassWars(); loadMine();
+})();
+</script>
+</body>
+</html>

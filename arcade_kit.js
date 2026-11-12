@@ -259,7 +259,7 @@
           el.innerHTML = '📡 Posted! <b>#' + r.rank + '</b>' + where + (r.visitor ? '' : ' · <b>#' + r.rank_group + '</b> in ' + r.group) +
             (r.xp ? '<br>⭐ +' + r.xp + ' Verified XP for your first quest win!' : '') +
             (r.level ? (r.level_up ? '<br>🎉 <b>LEVEL UP!</b> You\'re now <b>Level ' + r.level + ' ' + r.title + '</b>!' : '<br>⚔ Level ' + r.level + ' ' + r.title + (r.power_gain ? ' · +' + r.power_gain + ' Arcade Power' : '') + ' · ' + Math.max(0, r.next_at - r.power) + ' to next level') : '') +
-            '<br><a href="arcade.html#stats">See leaderboards →</a>';
+            '<br><a href="/arcade_leaderboard.html?game=' + encodeURIComponent(cfg.storageKey) + '">🏆 See the leaderboard →</a>';
         })
         .catch(err => { if (err.local) { el.textContent = '🧪 Local preview: scores aren\'t posted to the class leaderboard.'; return; }
           if (err.offline) { NET.queue({ p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: cfg.storageKey, p_score: A.score, p_won: !!A.won }); el.textContent = '📴 No internet right now. Your score is saved on this device and will post to the leaderboard when you\'re back online.'; return; }

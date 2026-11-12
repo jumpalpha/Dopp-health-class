@@ -33,6 +33,8 @@
   .nx-title{font:800 17px 'Bricolage Grotesque',sans-serif;letter-spacing:-.01em;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .nx-back{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;background:#ffd166;color:#07071a;font:700 14px Geist,sans-serif;text-decoration:none;white-space:nowrap;box-shadow:0 6px 24px -8px rgba(255,209,102,.9)}
   .nx-back:hover{filter:brightness(1.08)}
+  .nx-back.nx-lb{background:rgba(255,209,102,.12);color:#ffd166;border:1px solid rgba(255,209,102,.45);box-shadow:none}
+  @media (max-width:560px){.nx-lbt{display:none}}
   @media (max-width:560px){.nx-brand span{display:none}.nx-title{font-size:15px}}
 
   /* shared arcade engine (arcade_kit.js) */
@@ -75,7 +77,7 @@
     var b = document.createElement('div');
     b.className = 'nx-bar';
     b.innerHTML = '<a class="nx-brand" href="/"><i>⚔</i><span>Legend of Wellness</span></a>' +
-      '<div class="nx-title"></div><a class="nx-back" href="/arcade">← Arcade</a>';
+      '<div class="nx-title"></div><span style="display:flex;gap:6px"><a class="nx-back nx-lb" href="/arcade_leaderboard.html">🏆 <span class="nx-lbt">Leaderboard</span></a><a class="nx-back" href="/arcade">← Arcade</a></span>';
     b.querySelector('.nx-title').textContent = title;
     document.body.insertBefore(b, document.body.firstChild);
   }
@@ -166,9 +168,9 @@
     st.textContent = css;
     document.head.appendChild(st);
 
-    var LINKS = [['Home', '/'], ['Chapters', '/chapters'], ['Realms', '/realms'], ['Arcade', '/arcade'],
+    var LINKS = [['Home', '/'], ['Chapters', '/chapters'], ['Realms', '/realms'], ['Arcade', '/arcade'], ['🏆 Leaderboard', '/arcade_leaderboard.html'],
                  ['Quest', '/quest.html'], ['My Sprite', '/pet.html'], ['Hall', '/leaderboard.html']];
-    var current = /^chapter\d/.test(file) ? 'Chapters' : /^pets?$/.test(file) ? 'My Sprite' : file === 'leaderboard' ? 'Hall' : '';
+    var current = /^chapter\d/.test(file) ? 'Chapters' : /^pets?$/.test(file) ? 'My Sprite' : file === 'leaderboard' ? 'Hall' : file === 'arcade_leaderboard' ? '🏆 Leaderboard' : '';
 
     function nav() {
       if (NO_NAV.test(file) || document.querySelector('.nxn-wrap')) return;
