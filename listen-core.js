@@ -25,7 +25,17 @@
     9: { src: '/podcasts/ch09.mp3', title: 'Stopping Teen Conflict Before It Escalates' },
     10: { src: '/podcasts/ch10.mp3', title: 'How Engineered Snacks Trick Your Brain' },
     11: { src: '/podcasts/ch11.mp3', title: 'From Fad Diets to Intuitive Eating' },
-    12: { src: '/podcasts/ch12.mp3', title: 'The 60 Minute Daily Brain Reset' }
+    12: { src: '/podcasts/ch12.mp3', title: 'The 60 Minute Daily Brain Reset' },
+    13: { src: '/podcasts/ch13.mp3', title: "Why Flossing Protects Your Heart" },
+    14: { src: '/podcasts/ch14.mp3', title: "How Habits Hack Your Body's Hardware" },
+    15: { src: '/podcasts/ch15.mp3', title: "Inside Your Heart, Lungs, and Gut" },
+    16: { src: '/podcasts/ch16.mp3', title: "How Hormones Control Your Body" },
+    17: { src: '/podcasts/ch17.mp3', title: "How Fetal Growth Shapes Infant Brain Wiring" },
+    18: { src: '/podcasts/ch18.mp3', title: "Your Brain From Puberty To Grief" },
+    19: { src: '/podcasts/ch19.mp3', title: "From Painkillers to the Fentanyl Crisis" },
+    20: { src: '/podcasts/ch20.mp3', title: "How Nicotine Hijacks the Teenage Brain" },
+    24: { src: '/podcasts/ch24.mp3', title: "How Science Fights STIs and HIV" },
+    26: { src: '/podcasts/ch26.mp3', title: "Why Our Brains Misjudge Daily Risk" }
   };
 
   var CHAPTERS = [null,
