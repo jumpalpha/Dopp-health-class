@@ -3,7 +3,7 @@
 (function () {
   var file = (location.pathname.split('/').pop() || '').replace(/\.html$/, '');
   if (/\/textreader\//.test(location.pathname)) file = 'textreader';
-  var GAMES = 'sprite_flap sprite_dash sprite_run sprite_sling sprite_slice sprite_siege dopp_invaders dopp_pacman dopp_breakout dopp_snake field_day habit_showdown dopp_kong dopp_motomania dopp_wordle dopp_2048 dopp_match dopp_tetris dopp_drop vocab_slice dopp_corner dopp_dunk cup_pong immune_defense germ_sweeper tic_tac_toe blast_blocks how_smart trail germ_snipes team_hangman partner dopp_spin game01_jeopardy game02_deal_or_no_deal game03_wheel_of_fortune game04_millionaire game05_hot_takes game06_escape_room game07_survivor game08_price_is_right game09_family_feud game10_imposter game11_taboo game12_would_you_rather game13_pictionary game14_shark_tank game15_myth_busters'.split(' ');
+  var GAMES = 'art_studio sprite_flap sprite_dash sprite_run sprite_sling sprite_slice sprite_siege dopp_invaders dopp_pacman dopp_breakout dopp_snake field_day habit_showdown dopp_kong dopp_motomania dopp_wordle dopp_2048 dopp_match dopp_tetris dopp_drop vocab_slice dopp_corner dopp_dunk cup_pong immune_defense germ_sweeper tic_tac_toe blast_blocks how_smart trail germ_snipes team_hangman partner dopp_spin game01_jeopardy game02_deal_or_no_deal game03_wheel_of_fortune game04_millionaire game05_hot_takes game06_escape_room game07_survivor game08_price_is_right game09_family_feud game10_imposter game11_taboo game12_would_you_rather game13_pictionary game14_shark_tank game15_myth_busters'.split(' ');
   if (GAMES.indexOf(file) === -1) { pageSkin(file); return; }
 
   var root = document.documentElement;

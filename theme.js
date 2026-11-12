@@ -352,3 +352,61 @@
   if (document.readyState === 'complete') setTimeout(start, 300);
   else window.addEventListener('load', function () { setTimeout(start, 300); });
 })();
+
+/* Arcade "Activities" section on the Next.js /arcade/ page (added 2026-11-12).
+   Activities are things to make or do, not games to win. First one: the Art Studio (art_studio.html).
+   Adds an "🎨 Activities" tab in the sticky game bar and a section after Partner Games,
+   built by copying the Partner Games section so it matches the page. Add more cards to ACTS. */
+(function () {
+  if (window.DoppArcadeActs) return; window.DoppArcadeActs = true;
+  var ACTS = [
+    { href: '/art_studio.html', img: '/art/art_studio.png', title: 'Art Studio', badge: '✨ New',
+      text: 'Random curvy lines make the spaces. Decorate them with 100 designs and your own colors, then download or print it.' }
+  ];
+  function build() {
+    if (!/^\/arcade\/?$/.test(location.pathname)) return;
+    var partner = document.getElementById('partner');
+    if (!partner || document.getElementById('activities')) return;
+    var sec = partner.cloneNode(true);
+    sec.id = 'activities';
+    var eyebrow = sec.querySelector('.font-mono');
+    if (eyebrow && eyebrow.lastChild) eyebrow.lastChild.textContent = 'Create & relax';
+    var h2 = sec.querySelector('h2'); if (h2) h2.textContent = 'Activities';
+    var p = sec.querySelector('h2 + p'); if (p) p.textContent = 'Not every visit needs a high score. Make something, slow down, and take a mindful break.';
+    var grid = sec.querySelector('.grid'), tpl = grid && grid.querySelector('a');
+    if (!grid || !tpl) return;
+    grid.innerHTML = '';
+    ACTS.forEach(function (a) {
+      var c = tpl.cloneNode(true);
+      c.setAttribute('href', a.href); c.style.setProperty('--accent', '#FF6BCB');
+      var img = c.querySelector('img'); if (img) { img.setAttribute('src', a.img); img.removeAttribute('srcset'); }
+      var badge = c.querySelector('.rounded-full'); if (badge) badge.textContent = a.badge;
+      var h3 = c.querySelector('h3'); if (h3) h3.textContent = a.title;
+      var d = c.querySelector('h3 + p'); if (d) d.textContent = a.text;
+      var play = c.querySelector('.mt-auto .inline-flex'); if (play && play.lastChild) play.lastChild.textContent = ' Create';
+      grid.appendChild(c);
+    });
+    partner.parentNode.insertBefore(sec, partner.nextSibling);
+  }
+  function tab() {
+    if (!/^\/arcade\/?$/.test(location.pathname)) return;
+    var t = document.querySelector('main a[href="#partner"]');
+    if (!t || t.parentNode.querySelector('a[href="#activities"]')) return;
+    var n = t.cloneNode(false); n.setAttribute('href', '#activities'); n.textContent = '🎨 Activities';
+    t.parentNode.insertBefore(n, t.nextSibling);
+  }
+  var queued = false;
+  function run() { queued = false; build(); tab(); }
+  function schedule() { if (!queued) { queued = true; setTimeout(run, 80); } }
+  function start() {
+    if (!document.querySelector('link[href*="/_next/static/"], script[src*="/_next/static/"]')) return;
+    run();
+    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+  }
+  if (document.readyState === 'complete') setTimeout(start, 300);
+  else window.addEventListener('load', function () { setTimeout(start, 300); });
+  // arriving from another page with #activities in the link: scroll once the section exists
+  if (location.hash === '#activities') {
+    var tries = 0, iv = setInterval(function () { var s = document.getElementById('activities'); if (s || ++tries > 40) { clearInterval(iv); if (s) s.scrollIntoView(); } }, 150);
+  }
+})();
