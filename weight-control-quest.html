@@ -48,7 +48,7 @@ nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-con
 main{max-width:1000px;margin:-30px auto 60px;padding:0 16px;position:relative;z-index:2}
 
 .path{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:0 6px 20px rgba(20,12,46,.08)}
-.path ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.path ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(9,1fr);gap:4px}
 .path li{text-align:center}
 .path button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding:4px 0;border-radius:10px}
 .path button:focus-visible{outline:3px solid #5b8cff}
@@ -182,12 +182,35 @@ td.n,th.n{text-align:right}
 .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
 
 .sum h3{border-bottom:2px solid var(--gold);padding-bottom:4px}
+/* certificate */
+.cert{position:relative;margin:6px auto 0;max-width:820px;background:var(--card);border:3px double var(--gold-line);border-radius:18px;padding:28px clamp(16px,4vw,44px);text-align:center;box-shadow:inset 0 0 0 8px var(--parch-2)}
+.cert .seal{font-size:46px;line-height:1}
+.cert .ck{font-family:'Cinzel',serif;letter-spacing:3px;font-size:12px;color:var(--gold-deep);text-transform:uppercase;margin-top:6px}
+.cert h3.ct{font-family:'Cinzel',serif;font-weight:900;font-size:clamp(24px,4.4vw,36px);color:var(--indigo);margin:4px 0 10px;border:0;padding:0}
+.cert .cname{font-family:'Cinzel',serif;font-weight:900;font-size:clamp(22px,4vw,32px);color:var(--gold-deep);border-bottom:2px solid var(--gold-line);display:inline-block;padding:0 18px 2px;margin:4px 0 6px}
+.cert .cgroup{font-size:14px;color:var(--dim)}
+.cert .cline{font-size:17px;max-width:620px;margin:12px auto}
+.cert .ctiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:16px 0;text-align:left}
+.cert .ctile{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--parch)}
+.cert .ctile .k{font-size:12px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;color:var(--dim)}
+.cert .ctile .v{font-size:22px;font-weight:900;color:var(--indigo);line-height:1.2}
+.cert .ctile .s{font-size:13px;color:var(--dim)}
+.cert .cgraph{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap;margin:8px 0 14px;text-align:left}
+.cert .cgraph svg{width:150px;height:150px;flex:none}
+.cert .leg{list-style:none;margin:0;padding:0;font-size:14px}
+.cert .leg li{display:flex;align-items:center;gap:8px;margin:3px 0}
+.cert .leg i{width:14px;height:14px;border-radius:4px;flex:none}
+.cert .ctips{text-align:left;max-width:640px;margin:10px auto 0;padding:10px 14px;border-left:4px solid var(--sea);background:var(--sea-bg);border-radius:8px;font-size:15px}
+.cert .ctips ol{margin:4px 0 0 18px;padding:0}
+.cert .csig{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px;font-size:13px;color:var(--dim)}
+.cert .csig div{flex:1;min-width:160px;border-top:1px solid var(--ink);padding-top:4px}
 @media (max-width:720px){
   nav{padding:10px 12px}.nav-link{font-size:13px;padding:6px 8px}
   .path ol{grid-template-columns:repeat(4,1fr);row-gap:10px}
   .path .lbl{font-size:11px}
 }
 @media print{
+  .cert{box-shadow:none;break-inside:avoid}.cert .ctile{background:#fff}
   nav,.hero,.path,.nav-btns,.noprint{display:none!important}
   body{background:#fff}main{margin:0;max-width:none}
   .step{display:none!important}.step.printme{display:block!important;border:0;box-shadow:none;padding:0}
@@ -321,7 +344,15 @@ td.n,th.n{text-align:right}
     <div class="step-head"><span class="step-num">Finish</span><h2>Island Report</h2></div>
     <div id="report" class="sum"></div>
     <div id="turnin" class="noprint"></div>
-    <div class="nav-btns"><button class="btn btn-ghost" type="button" data-back>← Back</button><button class="btn btn-ink" type="button" id="printbtn">🖨 Print / Save PDF</button></div>
+    <div class="nav-btns"><button class="btn btn-ghost" type="button" data-back>← Back</button><span><button class="btn btn-ink" type="button" id="printbtn">🖨 Print / Save PDF</button> <button class="btn btn-gold" type="button" data-next>🏆 See my certificate →</button></span></div>
+  </section>
+
+  <!-- 8 Certificate -->
+  <section class="step" id="s8">
+    <div class="step-head"><span class="step-num">🏆</span><h2>Island Certificate</h2></div>
+    <div class="note noprint">📸 <b>Turn it in:</b> take a <b>screenshot</b> of your whole certificate and upload it to the <b>Weight Control Quest assignment in Schoology</b>.<br><small>Chromebook: <b>Ctrl + Shift + Show windows</b> (the □|| key), then drag around the certificate. Windows: <b>Win + Shift + S</b>. Mac: <b>Cmd + Shift + 4</b>. Phone/iPad: power + volume up.</small></div>
+    <div id="cert"></div>
+    <div class="nav-btns"><button class="btn btn-ghost" type="button" data-back>← Back to my report</button><button class="btn btn-ink" type="button" id="certprint">🖨 Print / Save PDF</button></div>
   </section>
 </main>
 
@@ -334,7 +365,7 @@ const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
 const TRI = (window.TERM && TERM.id) || '2026-T1';
 const N = 15, NAT = 13, COMBO = 2, PASS = 6, QN = 8;
 const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
-const STEPS = ['Island', 'Pallet', 'Labels', 'Meals', 'Top Foods', 'Energy', 'Test', 'Report'];
+const STEPS = ['Island', 'Pallet', 'Labels', 'Meals', 'Top Foods', 'Energy', 'Test', 'Report', 'Certificate'];
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const r0 = n => Math.round(n || 0);
@@ -385,7 +416,8 @@ function blank() {
   return { v: 2, group: '', bringing: '', foods: Array.from({ length: N }, () => ({ name: '', type: '' })),
     nut: Array.from({ length: N }, () => ({ serving: '', cal: '', pro: '', carb: '', fat: '', fib: '' })),
     meals, body: { age: '', sex: '', ft: '', inch: '', lb: '', act: '', bf: '' },
-    cats: {}, myDishes: [], seen4: false, quiz: { tries: 0, best: 0, passed: false }, tryCount: 0, submitted: false, lastStep: 0 };
+    cats: {}, myDishes: [], seen4: false, quiz: { tries: 0, best: 0, passed: false }, tryCount: 0, submitted: false, lastStep: 0,
+    bal: { tries: 0, passed: false, last: '' }, certSeen: false };
 }
 
 // ───────── checks ─────────
@@ -452,10 +484,20 @@ function balance() {
   return { c, t, gap, yr, ok: Math.abs(yr) <= LIMIT_LB, lo: c.maint - MAXGAP, hi: c.maint + MAXGAP };
 }
 const step5ok = () => step3ok() && !!bodyCalc() && balance().ok;
-function doneList() {
-  return [!!(D.group || '').trim(), step1ok().ok, step2ok(), step3ok(), step3ok() && D.seen4, step5ok() && D.seen4, D.quiz.passed, D.submitted];
+// Count balance-check tries: each new 3-day menu checked on Step 5 is one try, until it lands inside ±10 lb.
+function noteBalance() {
+  const b = step3ok() ? balance() : null; if (!b) return;
+  const B = D.bal;
+  if (B.passed) return;
+  const key = String(r0(b.t.avg.cal));          // a new try = a different menu (fixing body numbers isn't a try)
+  if (key !== B.last) { B.last = key; B.tries++; queueSave(); }
+  if (b.ok) { B.passed = true; B.at = new Date().toISOString(); queueSave(); }
 }
-function canEnter(i) { const d = doneList(); for (let k = 0; k < i; k++) if (!d[k]) return false; return true; }
+function doneList() {
+  return [!!(D.group || '').trim(), step1ok().ok, step2ok(), step3ok(), step3ok() && D.seen4, step5ok() && D.seen4, D.quiz.passed, D.submitted, D.quiz.passed && step5ok() && !!D.certSeen];
+}
+// The certificate opens once the test is passed (turning in the report isn't required, so practice mode can see it too).
+function canEnter(i) { const d = doneList(), need = i === 8 ? 7 : i; for (let k = 0; k < need; k++) if (!d[k]) return false; return true; }
 const stageCompleted = () => doneList().slice(1, 7).filter(Boolean).length;   // 0–6 for the teacher dashboard
 
 // ───────── totals ─────────
@@ -527,6 +569,7 @@ function merge(x) {
   o.meals = blank().meals.map((dm, d) => dm.map((m, k) => (((x.meals || [])[d] || [])[k] || []).map(it => ({ f: it.f, s: it.s }))));
   o.body = Object.assign(blank().body, x.body || {});
   o.quiz = Object.assign({ tries: 0, best: 0, passed: false }, x.quiz || {});
+  o.bal = Object.assign({ tries: 0, passed: false, last: '' }, x.bal || {});
   return o;
 }
 
@@ -545,7 +588,7 @@ function go(i) {
 }
 function renderStep(i) {
   if (i === 0) render0(); if (i === 1) render1(); if (i === 2) render2(); if (i === 3) render3();
-  if (i === 4) render4(); if (i === 5) render5(); if (i === 6) render6(); if (i === 7) render7();
+  if (i === 4) render4(); if (i === 5) render5(); if (i === 6) render6(); if (i === 7) render7(); if (i === 8) render8();
   const nb = document.querySelector('#s' + i + ' [data-next]');
   if (nb) nb.disabled = !canEnter(i + 1);
 }
@@ -726,7 +769,7 @@ function render4() {
 // ───────── step 5 ─────────
 function render5() {
   ['age', 'sex', 'ft', 'inch', 'lb', 'act', 'bf'].forEach(k => { $(k).value = D.body[k] == null ? '' : D.body[k]; });
-  out5();
+  noteBalance(); out5();
 }
 const LEVELS = [['Basal Metabolic Rate (BMR)', 1], ['Sedentary', 1.2], ['Light exercise', 1.375], ['Moderate exercise', 1.55], ['Heavy exercise', 1.725], ['Athlete', 1.9]];
 const SPLITS = [['Moderate carb', 30, 35, 35, 'protein 30 · fat 35 · carbs 35'], ['Lower carb', 40, 40, 20, 'protein 40 · fat 40 · carbs 20'], ['Higher carb', 30, 20, 50, 'protein 30 · fat 20 · carbs 50']];
@@ -936,6 +979,65 @@ function render7() {
     : '<div class="note">Everything looks done. Turn it in so it shows on your checklist and Mr. Dopp\'s dashboard.</div><button class="btn btn-gold" type="button" id="submitbtn">Turn in my Island Report</button>';
 }
 
+// ───────── step 8 certificate ─────────
+const ACT_NAMES = { '1.2': 'Sedentary', '1.375': 'Light exercise', '1.55': 'Moderate exercise', '1.725': 'Heavy exercise', '1.9': 'Athlete' };
+const PIE = ['#d4a000', '#0e7c86', '#b0243a', '#3b6fd8', '#0f7a4f', '#8a5cd6'];
+function tips(t, c) {
+  const out = [], avg = t.avg, cal = avg.cal || 1;
+  const best = k => { const b = named().slice().sort((a, x) => (+D.nut[x.i][k]) - (+D.nut[a.i][k]))[0]; return b ? esc(b.name) : 'a food on your pallet'; };
+  const fatPct = avg.fat * 9 / cal * 100, carbPct = avg.carb * 4 / cal * 100;
+  if (avg.fib < 25) out.push(`<b>Eat more fiber.</b> You averaged ${r0(avg.fib)}g a day; teens need about 25–31g. Add servings of <b>${best('fib')}</b> or more fruits, vegetables, beans and whole grains.`);
+  if (avg.pro < 46) out.push(`<b>Add protein.</b> You averaged ${r0(avg.pro)}g a day; teens need about 46–52g. <b>${best('pro')}</b> is your best protein source.`);
+  if (fatPct > 35) out.push(`<b>Cut back on fat.</b> ${r0(fatPct)}% of your calories came from fat (aim for 25–35%). Use less oil, butter and cheese, or pick leaner dishes.`);
+  if (carbPct < 45) out.push(`<b>Add more healthy carbs.</b> Only ${r0(carbPct)}% of your calories came from carbs (aim for 45–65%). Fruit, oats, rice and potatoes give your muscles and brain fuel.`);
+  if (t.top5share > 80) out.push(`<b>Mix it up.</b> Your top 5 foods were ${r0(t.top5share)}% of everything you ate. Using more of your 15 foods gives your body a wider range of vitamins and minerals.`);
+  if (c && c.act < 1.55) out.push(`<b>Move more.</b> Adding 30–60 minutes of activity most days would raise your energy out, strengthen your heart and help your mood and sleep.`);
+  if (out.length < 2) out.push(`<b>Drink water first.</b> Make water your main drink — it has zero calories and keeps your energy and focus up.`);
+  if (out.length < 2) out.push(`<b>Keep it up.</b> Your menu is well balanced. Keep eating a variety of colors and keep moving every day.`);
+  return out.slice(0, 2);
+}
+function donut(slices) {
+  const tot = slices.reduce((a, x) => a + x.v, 0) || 1, R = 15.9155;
+  let off = 25;
+  const segs = slices.map((x, k) => { const p = x.v / tot * 100; const s = `<circle r="${R}" cx="21" cy="21" fill="transparent" stroke="${PIE[k]}" stroke-width="7" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="${off}"></circle>`; off -= p; return s; }).join('');
+  return `<svg viewBox="0 0 42 42" role="img" aria-label="Where my calories came from">${segs}<text x="21" y="20.5" text-anchor="middle" font-size="5" font-weight="900" fill="currentColor">${fmt(tot / 3)}</text><text x="21" y="26" text-anchor="middle" font-size="3" fill="currentColor">cal / day</text></svg>`;
+}
+function render8() {
+  const t = totals(), c = bodyCalc(), b = balance(), el = $('cert');
+  if (!c || !b) { el.innerHTML = '<div class="warn">Finish Step 5 first.</div>'; return; }
+  if (!D.certSeen) { D.certSeen = true; queueSave(); renderPath(); }
+  if (!D.bal.passed && b.ok) { noteBalance(); }
+  const name = esc((window.DoppRemember && DoppRemember.get() || {}).name || '') || 'Island Survivor';
+  const gap = b.gap, word = Math.abs(gap) < 100 ? 'Balanced' : gap > 0 ? 'Small surplus' : 'Small deficit';
+  const top = t.rank.filter(p => p.cal > 0), five = top.slice(0, 5), rest = top.slice(5).reduce((a, p) => a + p.cal, 0);
+  const slices = five.map(p => ({ n: D.foods[p.i].name, v: p.cal })).concat(rest > 0 ? [{ n: 'Other ' + (top.length - 5) + ' foods', v: rest }] : []);
+  const pct = v => t.all.cal ? r0(v / t.all.cal * 100) : 0;
+  const mac = k => t.avg.cal ? r0(t.avg[k] * (k === 'fat' ? 9 : 4) / t.avg.cal * 100) : 0;
+  const tries = D.bal.tries || 1;
+  const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  el.innerHTML = `<div class="cert">
+    <div class="seal">🏝️</div>
+    <div class="ck">Weight Control Quest · WELL 255</div>
+    <h3 class="ct">Certificate of Island Survival</h3>
+    <div>This certifies that</div>
+    <div class="cname">${name}</div>
+    ${D.group ? `<div class="cgroup">Island group: ${esc(D.group)}</div>` : ''}
+    <p class="cline"><b>passed the Weight Control Quest and lived a long, happy life on their island.</b> They planned their meals from their 15 foods and <b>stayed within their energy requirements</b> — inside the ±${LIMIT_LB} lb-a-year limit.</p>
+    <div class="ctiles">
+      <div class="ctile"><div class="k">Calories used</div><div class="v">${fmt(t.avg.cal)}</div><div class="s">eaten per day (3-day average)</div></div>
+      <div class="ctile"><div class="k">Calories required</div><div class="v">${fmt(c.maint)}</div><div class="s">burned per day (BMR ${fmt(c.bmr)} + movement ${fmt(c.move)})</div></div>
+      <div class="ctile"><div class="k">Energy level</div><div class="v">${word}</div><div class="s">${gap >= 0 ? '+' : '−'}${fmt(Math.abs(gap))} cal/day ≈ ${b.yr >= 0 ? '+' : '−'}${Math.abs(r1(b.yr))} lb a year · ${ACT_NAMES[String(D.body.act)] || 'Activity set'}</div></div>
+      <div class="ctile"><div class="k">Tries to balance</div><div class="v">${tries}</div><div class="s">${tries === 1 ? 'got inside ±10 lb on the first try!' : 'tries to get inside ±10 lb a year'}</div></div>
+    </div>
+    <div><b>Where my calories came from</b></div>
+    <div class="cgraph">${donut(slices)}
+      <ul class="leg">${slices.map((x, k) => `<li><i style="background:${PIE[k]}"></i>${esc(x.n)} — <b>${pct(x.v)}%</b></li>`).join('')}</ul></div>
+    <div style="font-size:14px;color:var(--dim)">Protein ${mac('pro')}% · Carbs ${mac('carb')}% · Fat ${mac('fat')}% · Top 5 foods = ${r0(t.top5share)}% of calories · Island test ${D.quiz.best}/${QN}</div>
+    <div class="ctips"><b>💡 To live an even better island life:</b><ol>${tips(t, c).map(x => `<li>${x}</li>`).join('')}</ol></div>
+    <div class="csig"><div>Mr. Dopp · Island Researcher</div><div>${date}</div></div>
+  </div>`;
+}
+
 // ───────── events ─────────
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
@@ -952,6 +1054,7 @@ document.addEventListener('click', e => {
   else if (t.id === 'qdone') { render6(); renderPath(); }
   else if (t.hasAttribute('data-next-q')) go(7);
   else if (t.id === 'submitbtn') { D.submitted = true; queueSave(); render7(); renderPath(); }
+  else if (t.id === 'certprint') { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's8')); render8(); window.print(); }
   else if (t.id === 'printbtn') { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's7')); render7(); window.print(); }
   else if (t.id === 'samplebtn') fillSample();
   else if (t.dataset.mtab != null) { mtab = +t.dataset.mtab; out5(); }
@@ -975,7 +1078,8 @@ document.addEventListener('change', e => {
   if (el.dataset.ftype != null) { D.foods[+el.dataset.ftype].type = el.value; counts1(); refreshNext(); queueSave(); }
   else if (el.dataset.mf != null) { D.meals[day][+el.dataset.mf][+el.dataset.j].f = el.value; render3(); refreshNext(); queueSave(); }
   else if (el.dataset.ms != null) { render3(); refreshNext(); }
-  else if (el.id === 'sex' || el.id === 'act') { D.body[el.id] = el.value; out5(); queueSave(); }
+  else if (el.id === 'sex' || el.id === 'act') { D.body[el.id] = el.value; noteBalance(); out5(); queueSave(); }
+  else if (['age', 'ft', 'inch', 'lb', 'bf'].includes(el.id)) { noteBalance(); out5(); }
 });
 
 function fillSample() {
