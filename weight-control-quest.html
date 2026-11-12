@@ -202,6 +202,11 @@ td.n,th.n{text-align:right}
 .cert .leg i{width:14px;height:14px;border-radius:4px;flex:none}
 .cert .ctips{text-align:left;max-width:640px;margin:10px auto 0;padding:10px 14px;border-left:4px solid var(--sea);background:var(--sea-bg);border-radius:8px;font-size:15px}
 .cert .ctips ol{margin:4px 0 0 18px;padding:0}
+.cert .ctries{max-width:620px;margin:0 auto 16px;font-size:14px}
+.cert .ctries table{width:100%;border-collapse:collapse;margin-top:6px}
+.cert .ctries th,.cert .ctries td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left}
+.cert .ctries .n{text-align:right}
+.cert .ctries tr.pass td{font-weight:800;color:var(--good)}
 .cert .csig{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px;font-size:13px;color:var(--dim)}
 .cert .csig div{flex:1;min-width:160px;border-top:1px solid var(--ink);padding-top:4px}
 @media (max-width:720px){
@@ -417,7 +422,7 @@ function blank() {
     nut: Array.from({ length: N }, () => ({ serving: '', cal: '', pro: '', carb: '', fat: '', fib: '' })),
     meals, body: { age: '', sex: '', ft: '', inch: '', lb: '', act: '', bf: '' },
     cats: {}, myDishes: [], seen4: false, quiz: { tries: 0, best: 0, passed: false }, tryCount: 0, submitted: false, lastStep: 0,
-    bal: { tries: 0, passed: false, last: '' }, certSeen: false };
+    bal: { tries: 0, passed: false, last: '', log: [] }, certSeen: false, reportSeen: false };
 }
 
 // ───────── checks ─────────
@@ -484,20 +489,25 @@ function balance() {
   return { c, t, gap, yr, ok: Math.abs(yr) <= LIMIT_LB, lo: c.maint - MAXGAP, hi: c.maint + MAXGAP };
 }
 const step5ok = () => step3ok() && !!bodyCalc() && balance().ok;
-// Count balance-check tries: each new 3-day menu checked on Step 5 is one try, until it lands inside ±10 lb.
+// Balance tries: one try every time the Energy step tells the student to go back and change their food
+// (each different too-high / too-low result). The passing result is saved too, for the certificate.
 function noteBalance() {
   const b = step3ok() ? balance() : null; if (!b) return;
-  const B = D.bal;
+  const B = D.bal; B.log = B.log || [];
   if (B.passed) return;
-  const key = String(r0(b.t.avg.cal));          // a new try = a different menu (fixing body numbers isn't a try)
-  if (key !== B.last) { B.last = key; B.tries++; queueSave(); }
-  if (b.ok) { B.passed = true; B.at = new Date().toISOString(); queueSave(); }
+  const key = r0(b.t.avg.cal) + '|' + r0(b.c.maint);
+  if (key === B.last) return;
+  B.last = key;
+  B.log.push({ cal: r0(b.t.avg.cal), need: r0(b.c.maint), yr: r1(b.yr), ok: b.ok });
+  if (!b.ok) B.tries++;
+  else { B.passed = true; B.at = new Date().toISOString(); }
+  queueSave();
 }
 function doneList() {
-  return [!!(D.group || '').trim(), step1ok().ok, step2ok(), step3ok(), step3ok() && D.seen4, step5ok() && D.seen4, D.quiz.passed, D.submitted, D.quiz.passed && step5ok() && !!D.certSeen];
+  return [!!(D.group || '').trim(), step1ok().ok, step2ok(), step3ok(), step3ok() && D.seen4, step5ok() && D.seen4, D.quiz.passed, D.submitted || (D.reportSeen && MODE !== 'cloud'), D.quiz.passed && step5ok() && !!D.certSeen];
 }
-// The certificate opens once the test is passed (turning in the report isn't required, so practice mode can see it too).
-function canEnter(i) { const d = doneList(), need = i === 8 ? 7 : i; for (let k = 0; k < need; k++) if (!d[k]) return false; return true; }
+// The certificate comes after the report: it opens once the Island Report is turned in (practice mode: once the report is opened).
+function canEnter(i) { const d = doneList(); for (let k = 0; k < i; k++) if (!d[k]) return false; return true; }
 const stageCompleted = () => doneList().slice(1, 7).filter(Boolean).length;   // 0–6 for the teacher dashboard
 
 // ───────── totals ─────────
@@ -569,7 +579,8 @@ function merge(x) {
   o.meals = blank().meals.map((dm, d) => dm.map((m, k) => (((x.meals || [])[d] || [])[k] || []).map(it => ({ f: it.f, s: it.s }))));
   o.body = Object.assign(blank().body, x.body || {});
   o.quiz = Object.assign({ tries: 0, best: 0, passed: false }, x.quiz || {});
-  o.bal = Object.assign({ tries: 0, passed: false, last: '' }, x.bal || {});
+  o.bal = Object.assign({ tries: 0, passed: false, last: '', log: [] }, x.bal || {});
+  if (!o.bal.log) { o.bal = { tries: 0, passed: false, last: '', log: [] }; }   // reset counts saved by the first version
   return o;
 }
 
@@ -954,6 +965,7 @@ function gradeQuiz() {
 }
 // ───────── step 7 report ─────────
 function render7() {
+  if (!D.reportSeen) { D.reportSeen = true; queueSave(); }
   const t = totals(), c = bodyCalc();
   const gap = c ? t.avg.cal - c.maint : 0;
   $('report').innerHTML = `
@@ -1013,7 +1025,7 @@ function render8() {
   const slices = five.map(p => ({ n: D.foods[p.i].name, v: p.cal })).concat(rest > 0 ? [{ n: 'Other ' + (top.length - 5) + ' foods', v: rest }] : []);
   const pct = v => t.all.cal ? r0(v / t.all.cal * 100) : 0;
   const mac = k => t.avg.cal ? r0(t.avg[k] * (k === 'fat' ? 9 : 4) / t.avg.cal * 100) : 0;
-  const tries = D.bal.tries || 1;
+  const tries = D.bal.tries || 0, log = (D.bal.log || []);
   const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   el.innerHTML = `<div class="cert">
     <div class="seal">🏝️</div>
@@ -1027,8 +1039,11 @@ function render8() {
       <div class="ctile"><div class="k">Calories used</div><div class="v">${fmt(t.avg.cal)}</div><div class="s">eaten per day (3-day average)</div></div>
       <div class="ctile"><div class="k">Calories required</div><div class="v">${fmt(c.maint)}</div><div class="s">burned per day (BMR ${fmt(c.bmr)} + movement ${fmt(c.move)})</div></div>
       <div class="ctile"><div class="k">Energy level</div><div class="v">${word}</div><div class="s">${gap >= 0 ? '+' : '−'}${fmt(Math.abs(gap))} cal/day ≈ ${b.yr >= 0 ? '+' : '−'}${Math.abs(r1(b.yr))} lb a year · ${ACT_NAMES[String(D.body.act)] || 'Activity set'}</div></div>
-      <div class="ctile"><div class="k">Tries to balance</div><div class="v">${tries}</div><div class="s">${tries === 1 ? 'got inside ±10 lb on the first try!' : 'tries to get inside ±10 lb a year'}</div></div>
+      <div class="ctile"><div class="k">Tries</div><div class="v">${tries}</div><div class="s">${tries === 0 ? 'balanced on the first plan — never sent back!' : `time${tries === 1 ? '' : 's'} sent back to change food amounts`}</div></div>
     </div>
+    ${log.length ? `<div class="ctries"><b>My tries to stay within −${LIMIT_LB} to +${LIMIT_LB} lb a year</b><table><thead><tr><th>#</th><th class="n">Ate / day</th><th class="n">Needed / day</th><th class="n">Per year</th><th>Result</th></tr></thead><tbody>
+      ${log.map((x, k) => `<tr class="${x.ok ? 'pass' : ''}"><td>${x.ok ? '✓' : 'Try ' + (log.slice(0, k + 1).filter(y => !y.ok).length)}</td><td class="n">${fmt(x.cal)}</td><td class="n">${fmt(x.need)}</td><td class="n">${x.yr >= 0 ? '+' : '−'}${Math.abs(x.yr)} lb</td><td>${x.ok ? 'Balanced ✓' : x.yr > 0 ? 'Too much gain — sent back' : 'Too much loss — sent back'}</td></tr>`).join('')}
+    </tbody></table></div>` : ''}
     <div><b>Where my calories came from</b></div>
     <div class="cgraph">${donut(slices)}
       <ul class="leg">${slices.map((x, k) => `<li><i style="background:${PIE[k]}"></i>${esc(x.n)} — <b>${pct(x.v)}%</b></li>`).join('')}</ul></div>
@@ -1053,7 +1068,7 @@ document.addEventListener('click', e => {
   else if (t.id === 'qquit') { quizLive = null; renderPath(); render6(); }
   else if (t.id === 'qdone') { render6(); renderPath(); }
   else if (t.hasAttribute('data-next-q')) go(7);
-  else if (t.id === 'submitbtn') { D.submitted = true; queueSave(); render7(); renderPath(); }
+  else if (t.id === 'submitbtn') { D.submitted = true; queueSave(); render7(); renderPath(); refreshNext(); }
   else if (t.id === 'certprint') { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's8')); render8(); window.print(); }
   else if (t.id === 'printbtn') { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's7')); render7(); window.print(); }
   else if (t.id === 'samplebtn') fillSample();
