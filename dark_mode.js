@@ -8,6 +8,21 @@
    - 2026-11-10: light mode is back site-wide. The sun/moon button lives in the top nav (theme.js);
      default is still dark, arcade games always stay dark. Printables keep their own corner button.
 */
+// Per-page light/dark default (2026-11-12): each page opens in the mode that reads best on it.
+// Reading & paperwork pages open light, everything else dark (arcade games always dark).
+// A student's sun/moon tap is remembered for THAT page only: localStorage 'dopp_theme@<page>'.
+(function () {
+  if (window.DoppPagePref) return;
+  var LIGHT = /^(chapter\d\d|textreader|checklist|weight-control-quest|finance|reflection|mastery|review|parents|print_quest|sub_guide|wellness-255-signup-guide|family_quest|psa_challenge|cpr_aed_quest|cpr_checkoff|cpr_paper_aed|cpr_trainer_build|legacy-resources|vocab_engine)$/;
+  var p = location.pathname, id;
+  if (/\/textreader\//.test(p)) id = 'textreader';
+  else { id = (p.split('/').pop() || '').replace(/\.html$/, ''); if (!id) id = p.split('/').filter(Boolean)[0] || 'home'; }
+  window.DoppPagePref = {
+    id: id, key: 'dopp_theme@' + id, defLight: LIGHT.test(id),
+    light: function () { var v = null; try { v = localStorage.getItem(this.key); } catch (e) {} return v ? v === 'light' : this.defLight; },
+    save: function (light) { try { localStorage.setItem(this.key, light ? 'light' : 'dark'); } catch (e) {} }
+  };
+})();
 (function () {
   if (window.DoppTheme) return;
   var KEY = 'dopp_theme';
@@ -21,16 +36,9 @@
   var touched = [];         // elements we changed, so light mode can put them back
   var active = false, observer = null, gen = 0;
 
-  function saved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
-  function save(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
-  function wantsDark() {
-    if (GAME) return true;
-    var s = saved();
-    if (s === 'dark') return true;
-    if (s === 'light') return false;
-    if (!PRINTABLE) return true;   // the site defaults to the dark "aurora" look; printables follow the device
-    try { return window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) { return false; }
-  }
+  function saved() { return window.DoppPagePref.light() ? 'light' : 'dark'; }   // this page's mode (see DoppPagePref above)
+  function save(v) { window.DoppPagePref.save(v === 'light'); }
+  function wantsDark() { return GAME || saved() === 'dark'; }
 
   // ---------- color math ----------
   function parse(c) {
@@ -310,7 +318,7 @@
 
   // Keep other open tabs in sync.
   window.addEventListener('storage', function (e) {
-    if (e.key !== KEY || !lightPage || GAME) return;
+    if (e.key !== window.DoppPagePref.key || !lightPage || GAME) return;
     if (e.newValue === 'dark') turnOn(); else turnOff();
     paintBtn();
   });

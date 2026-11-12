@@ -1,5 +1,5 @@
 /* theme.js — light/dark switch for doppsclass.com (added 2026-11-10).
-   - One setting per device: localStorage 'dopp_theme' = 'light' | 'dark'. No setting = dark (the default look).
+   - Each page has its own best default and remembers its own choice (DoppPagePref below, 2026-11-12).
    - html.dl = light mode. Arcade games always stay dark.
    - Puts a sun/moon button in the top nav (site nav, quest nav, or the Next.js nav), next to Search.
    - Classic light-by-design pages (chapters, checklist…) are darkened by dark_mode.js; in light mode
@@ -13,6 +13,21 @@
   try { if (!localStorage.getItem('dopp_demo')) return; } catch (e) { return; }
   var s = document.createElement('script'); s.src = '/local-guard.js';
   (document.head || document.documentElement).appendChild(s);
+})();
+// Per-page light/dark default (2026-11-12): each page opens in the mode that reads best on it.
+// Reading & paperwork pages open light, everything else dark (arcade games always dark).
+// A student's sun/moon tap is remembered for THAT page only: localStorage 'dopp_theme@<page>'.
+(function () {
+  if (window.DoppPagePref) return;
+  var LIGHT = /^(chapter\d\d|textreader|checklist|weight-control-quest|finance|reflection|mastery|review|parents|print_quest|sub_guide|wellness-255-signup-guide|family_quest|psa_challenge|cpr_aed_quest|cpr_checkoff|cpr_paper_aed|cpr_trainer_build|legacy-resources|vocab_engine)$/;
+  var p = location.pathname, id;
+  if (/\/textreader\//.test(p)) id = 'textreader';
+  else { id = (p.split('/').pop() || '').replace(/\.html$/, ''); if (!id) id = p.split('/').filter(Boolean)[0] || 'home'; }
+  window.DoppPagePref = {
+    id: id, key: 'dopp_theme@' + id, defLight: LIGHT.test(id),
+    light: function () { var v = null; try { v = localStorage.getItem(this.key); } catch (e) {} return v ? v === 'light' : this.defLight; },
+    save: function (light) { try { localStorage.setItem(this.key, light ? 'light' : 'dark'); } catch (e) {} }
+  };
 })();
 (function () {
   if (window.DoppThemeUI) return;
@@ -29,7 +44,7 @@
   if (QUEST) root.classList.add('dl-native');
   if (NEXT) root.classList.add('dl-native');
 
-  function saved() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function saved() { return window.DoppPagePref.light() ? 'light' : 'dark'; }   // per page (DoppPagePref above)
   function isLight() { return !GAME && saved() === 'light'; }
 
   /* ---------------- styles ---------------- */
@@ -199,7 +214,7 @@
     if (fromUser) { try { document.dispatchEvent(new CustomEvent('dopp-theme', { detail: { light: light } })); } catch (e) {} }
   }
   function setLight(light) {
-    try { localStorage.setItem(KEY, light ? 'light' : 'dark'); } catch (e) {}
+    window.DoppPagePref.save(light);
     apply(light, true);
   }
   if (isLight()) root.classList.add('dl');   // before first paint
@@ -258,7 +273,7 @@
   window.addEventListener('load', function () { if (!hydrated()) return; placeButton(); resweep(); });
 
   // other tabs
-  window.addEventListener('storage', function (e) { if (e.key === KEY && !GAME) apply(e.newValue === 'light'); });
+  window.addEventListener('storage', function (e) { if (e.key === window.DoppPagePref.key && !GAME) apply(e.newValue === 'light'); });
 
   window.DoppThemeUI = { set: setLight, isLight: function () { return root.classList.contains('dl'); } };
 })();
