@@ -43,12 +43,14 @@
       <div class="card" style="overflow-x:auto"><table class="cwt-t"><thead><tr><th>Student</th><th>Period</th><th>Learn avg</th><th>Stories</th><th>Story avg</th><th>Classwork</th><th>Unit Test</th><th>Status</th><th></th></tr></thead><tbody>` +
       rows.map(r => {
         const chs = data.chapters || [], cs = r.ch_stories || {};
+        const UU = (window.CLASSWORK_UNITS || []).find(x => x.unit === unit);
+        const needAll = chs.reduce((t, c) => t + (UU ? Math.min(3, Math.floor(UU.terms.filter(w => w.c === c && w.s).length / 2)) : 3), 0);
         const st = chs.reduce((t, c) => t + (cs[c] || []).filter(Boolean).length, 0);
         const status = r.status === 'submitted' ? `<span style="color:#0f7a4f;font-weight:800">Turned in</span><br><small>${when(r.submitted_at)}</small>`
           : r.status === 'draft' ? '<span style="color:#b77900;font-weight:800">Working</span>' : '<span style="color:#888">Not started</span>';
         const row = `<tr><td><b>${esc(r.first)} ${esc(r.last)}</b></td><td>${esc(per(r.code))}</td>
           <td>${r.status === 'not_started' ? '—' : (r.learn_avg || 0) + '%'}</td>
-          <td>${r.status === 'not_started' ? '—' : st + '/' + chs.length * 3}</td><td>${r.story_avg == null ? '—' : r.story_avg + '%'}</td>
+          <td>${r.status === 'not_started' ? '—' : st + '/' + needAll}</td><td>${r.story_avg == null ? '—' : r.story_avg + '%'}</td>
           <td>${r.final_score == null ? '—' : '<b>' + r.final_score + '%</b>'}${r.posted_at ? `<br><small>posted ${r.posted_score}</small>` : ''}</td>
           <td>${r.unit_tries ? r.unit_best + '%<br><small>' + r.unit_tries + ' tries</small>' : '—'}</td>
           <td>${status}</td><td>${r.status !== 'not_started' ? `<button class="cwt-btn" data-open="${r.id}">${open === r.id ? 'Close' : 'Read'}</button>` : ''}</td></tr>`;

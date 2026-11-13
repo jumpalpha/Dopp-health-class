@@ -124,7 +124,7 @@ textarea{width:100%;min-height:130px;resize:vertical}
 <header class="hero">
   <div class="kicker" id="kicker">WELL 255 · Classwork</div>
   <h1 id="title">Unit Classwork</h1>
-  <p id="sub">Learn the words. Pass the mastery check. Tell 3 real stories.</p>
+  <p id="sub">Learn the words. Pass the mastery check. Tell real stories.</p>
   <div class="who" id="who" aria-live="polite"></div>
 </header>
 
@@ -228,8 +228,12 @@ const learnOk = c => learnBest(c) >= R.learnPass;
 const chOpen = c => U.chapters.filter(x => x < c).every(learnOk);
 const chStories = c => ((W.ch_stories || {})[c] || [null, null, null]);
 const storiesDone = c => chStories(c).filter(Boolean).length;
+const okWords = c => chWords(c).filter(w => w.s).length;
+// 3 stories per chapter, fewer when a chapter has too few story-safe words (6 needed); swap only if a spare word exists
+const need = c => Math.min(R.stories, Math.floor(okWords(c) / 2));
+const swapMax = c => okWords(c) - 2 * need(c) >= 1 ? R.swaps : 0;
 const allLearned = () => U.chapters.every(learnOk);
-const allStories = () => U.chapters.every(c => storiesDone(c) === 3);
+const allStories = () => U.chapters.every(c => storiesDone(c) >= need(c));
 const swapsIn = c => (W.swapped || []).filter(s => s.ch === c);
 R.learnPass = 80; R.unitPass = 80; R.swaps = 1;   // same as supabase/classwork_v2.sql
 
@@ -263,7 +267,7 @@ async function start() {
   // land on the first chapter that still needs something
   if (W.status === 'submitted') view = { ch: 'done' };
   else {
-    const next = U.chapters.find(c => !learnOk(c) || storiesDone(c) < 3);
+    const next = U.chapters.find(c => !learnOk(c) || storiesDone(c) < need(c));
     if (next == null) view = { ch: 'unit' };
     else view = { ch: next, step: !learnOk(next) ? 'learn' : 'stories' };
   }
@@ -274,7 +278,7 @@ async function start() {
 function hub(st, banner) {
   const by = {}; (st.units || []).forEach(w => { by[w.unit] = w; });
   app.innerHTML = banner + `<div class="card"><h2>Your Units</h2>
-    <p class="muted">Each unit is split into chapters. In every chapter: <b>Learn</b> the words (80% to move on), <b>Practice</b>, take the <b>Chapter Test</b>, and write <b>3 short true stories</b>. Then take the <b>Unit Test</b> and turn the unit in. Only Mr. Dopp reads your stories.</p></div>
+    <p class="muted">Each unit is split into chapters. In every chapter: <b>Learn</b> the words (80% to move on), <b>Practice</b>, take the <b>Chapter Test</b>, and write <b>3 short true stories</b> (fewer in a couple of short chapters). Then take the <b>Unit Test</b> and turn the unit in. Only Mr. Dopp reads your stories.</p></div>
     <div class="units">` + UNITS.map(u => {
       const w = by[u.unit];
       let pills = '<span class="pill">Not started</span>';
@@ -283,7 +287,7 @@ function hub(st, banner) {
         const lb = w.learn_best || {}, cs = w.ch_stories || {};
         const learned = u.chapters.filter(c => Number(lb[c] || 0) >= 80).length;
         const st3 = u.chapters.reduce((t, c) => t + (cs[c] || []).filter(Boolean).length, 0);
-        pills = `<span class="pill ${learned === u.chapters.length ? 'ok' : 'go'}">Learned ${learned}/${u.chapters.length} chapters</span><span class="pill">Stories ${st3}/${u.chapters.length * 3}</span>`;
+        pills = `<span class="pill ${learned === u.chapters.length ? 'ok' : 'go'}">Learned ${learned}/${u.chapters.length} chapters</span><span class="pill">Stories ${st3}/${u.chapters.reduce((t, c) => t + Math.min(3, Math.floor(u.terms.filter(x => x.c === c && x.s).length / 2)), 0)}</span>`;
       }
       return `<a class="unit" href="classwork.html?unit=${u.unit}"><b>Unit ${u.unit}</b>${esc(u.title)}<div class="muted">Chapters ${u.chapters.join(', ')} · ${u.terms.length} words</div>${pills}</a>`;
     }).join('') + '</div>';
@@ -293,7 +297,7 @@ function hub(st, banner) {
 function draw() {
   const sub = W.status === 'submitted';
   const chTabs = U.chapters.map(c => {
-    const open = sub || chOpen(c), done = learnOk(c) && storiesDone(c) === 3;
+    const open = sub || chOpen(c), done = learnOk(c) && storiesDone(c) >= need(c);
     return `<button class="step${view.ch === c ? ' on' : ''}${done ? ' done' : ''}" data-ch="${c}" ${open ? '' : 'disabled'}>Ch ${c}</button>`;
   });
   const unitOpen = sub || (allLearned() && allStories());
@@ -312,9 +316,9 @@ function draw() {
 
 function paneChapter(c) {
   const p = $('pane'), ok = learnOk(c);
-  const steps = [['learn', '1. Learn', true, ok], ['practice', '2. Practice', ok, false], ['test', '3. Chapter Test', ok, !!(W.ch_test || {})[c]], ['stories', '4. Stories', ok, storiesDone(c) === 3]];
+  const steps = [['learn', '1. Learn', true, ok], ['practice', '2. Practice', ok, false], ['test', '3. Chapter Test', ok, !!(W.ch_test || {})[c]], ['stories', '4. Stories', ok, storiesDone(c) >= need(c)]];
   p.innerHTML = `<div class="card" style="padding:12px 18px"><b style="font-family:Cinzel,serif;font-size:18px">Chapter ${c}</b>
-      <span class="muted"> · ${chWords(c).length} words · Learn best ${learnBest(c)}%${(W.ch_test || {})[c] ? ' · Test best ' + W.ch_test[c].best + '%' : ''} · Stories ${storiesDone(c)}/3</span></div>
+      <span class="muted"> · ${chWords(c).length} words · Learn best ${learnBest(c)}%${(W.ch_test || {})[c] ? ' · Test best ' + W.ch_test[c].best + '%' : ''} · Stories ${storiesDone(c)}/${need(c)}</span></div>
     <div class="steps">${steps.map(([k, l, open, done]) => `<button class="step${view.step === k ? ' on' : ''}${done ? ' done' : ''}" data-step="${k}" ${open ? '' : 'disabled'}>${l}</button>`).join('')}</div>
     <div id="body"></div>`;
   p.querySelectorAll('[data-step]').forEach(b => b.onclick = () => { view.step = b.dataset.step; test = null; learn = null; draw(); });
@@ -469,12 +473,12 @@ function paneUnitTest() {
 const openTimes = {};
 function stepStories(c, el) {
   const used = new Set(); chStories(c).forEach(s => { if (s) { used.add(s.a); used.add(s.b); } });
-  const swapLeft = R.swaps - swapsIn(c).length;
+  const swapLeft = swapMax(c) - swapsIn(c).length, k = need(c);
   el.innerHTML = `<div class="card"><h2>Chapter ${c} Stories</h2>
-    <p>Write <b>3 short stories</b> from your own life. Each uses <b>2 different words</b> from Chapter ${c} (6 words total) and needs at least <b>${R.minWords} words</b>.</p>
-    <div class="banner b-info">🔒 Only Mr. Dopp reads these. Your story must be true or based on real life. No story for a word? Tap "No story for this word" and pick another one (${swapLeft} swap left for this chapter).</div>
+    <p>Write <b>${k} short ${k === 1 ? 'story' : 'stories'}</b> from your own life. Each uses <b>2 different words</b> from Chapter ${c}${k > 1 ? ` (${2 * k} words total)` : ''} and needs at least <b>${R.minWords} words</b>.</p>
+    <div class="banner b-info">🔒 Only Mr. Dopp reads these. Your story must be true or based on real life. ${swapMax(c) ? `No story for a word? Tap "No story for this word" and pick another one (${swapLeft} swap left for this chapter).` : 'This chapter has only a few words you can use, so there is no word swap here.'}</div>
     <p class="muted">Each story is scored out of 100: length 40 · both words used 30 · real detail (2+ sentences and a who, where or when) 30.</p></div><div id="slots"></div>`;
-  for (let i = 0; i < 3; i++) $('slots').appendChild(storySlot(c, i));
+  for (let i = 0; i < k; i++) $('slots').appendChild(storySlot(c, i));
 }
 function storySlot(c, i) {
   const st = chStories(c)[i], key = c + ':' + i;
@@ -487,7 +491,7 @@ function storySlot(c, i) {
   const locked = W.status === 'submitted';
   d.innerHTML = `<h3>Story ${i + 1}${st ? `<small>Saved · ${st.score.total}/100</small>` : ''}</h3>
     <div class="row"><select id="a${i}" ${locked ? 'disabled' : ''}>${opt(st ? st.a : null)}</select><select id="b${i}" ${locked ? 'disabled' : ''}>${opt(st ? st.b : null)}</select></div>
-    ${locked ? '' : `<div class="row" style="margin-top:6px"><button class="btn btn-sm btn-ghost" id="sw${i}" type="button">No story for this word</button></div><div id="swb${i}"></div>`}
+    ${locked || !swapMax(c) ? '' : `<div class="row" style="margin-top:6px"><button class="btn btn-sm btn-ghost" id="sw${i}" type="button">No story for this word</button></div><div id="swb${i}"></div>`}
     <p class="preview" id="def${i}"></p>
     <textarea id="t${i}" placeholder="Tell what really happened. Use both words." ${locked ? 'readonly' : ''}>${esc(st ? st.text : '')}</textarea>
     <div class="meter" id="m${i}"></div><div id="h${i}" class="muted"></div><div class="preview" id="pv${i}"></div>
@@ -512,7 +516,7 @@ function storySlot(c, i) {
   });
   ta.addEventListener('input', live); sa.onchange = live; sb.onchange = live;
   if (!locked) {
-    d.querySelector('#sw' + i).onclick = () => swapPrompt(c, i, sa, sb, d.querySelector('#swb' + i));
+    if (swapMax(c)) d.querySelector('#sw' + i).onclick = () => swapPrompt(c, i, sa, sb, d.querySelector('#swb' + i));
     d.querySelector('#save' + i).onclick = async () => {
       if (!sa.value || !sb.value) { toast('Pick 2 words first.'); return; }
       if (sa.value === sb.value) { toast('Pick 2 different words.'); return; }
@@ -536,7 +540,7 @@ setInterval(() => {
   }
 }, 1000);
 function swapPrompt(c, i, sa, sb, el) {
-  const left = R.swaps - swapsIn(c).length;
+  const left = swapMax(c) - swapsIn(c).length;
   const picks = [sa, sb].filter(s => s.value);
   if (!picks.length) { toast('Pick the word you have no story for first.'); return; }
   if (left <= 0) { el.innerHTML = `<div class="swapbox">You've used the word swap for this chapter. Pick a word you can write about.</div>`; return; }
