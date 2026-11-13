@@ -242,6 +242,23 @@ def _():
     owner("select public.bs_consume_rate_limit('export') from generate_series(1, 30);")
     owner("select public.bs_consume_rate_limit('export');", expect_error='rate limit exceeded')
 
+@test('research notes: owner can create, edit and delete; edits are logged')
+def _():
+    nid = owner("insert into public.bs_research_notes (title, body, sync_key) values ('t', 'b', 'k1') returning id;")[-1]
+    owner(f"update public.bs_research_notes set status = 'verified' where id = '{nid}';")
+    assert owner(f"select status from public.bs_research_notes where id = '{nid}';")[-1] == 'verified'
+    assert int(owner("select count(*) from public.bs_audit_log where entity = 'research_notes';")[-1]) >= 2
+    owner(f"delete from public.bs_research_notes where id = '{nid}';")
+    owner("insert into public.bs_research_notes (title, body) values ('keep', 'b');")
+
+@test('research notes: anonymous and other accounts get nothing')
+def _():
+    anon('select 1 from public.bs_research_notes limit 1;', expect_error='permission denied')
+    assert intruder('select count(*) from public.bs_research_notes;')[-1] == '0'
+    intruder("insert into public.bs_research_notes (title) values ('x');", expect_error='row-level security')
+    intruder("update public.bs_research_notes set title = 'pwned';")
+    assert owner("select count(*) from public.bs_research_notes where title = 'pwned';")[-1] == '0'
+
 @test('shared project: other apps\' tables and functions keep their access')
 def _():
     assert anon('select title from public.songs;')[-1] == 'existing song'

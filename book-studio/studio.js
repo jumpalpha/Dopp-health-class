@@ -537,6 +537,61 @@
     dialog('Edit log', list, [{ label: 'Close' }]);
   }
 
+  // ------------------------------------------------------------ research notes
+  // Owner-only notes beside the manuscript (never part of it). Kept in sync weekly
+  // with Claude's project notes by a scheduled task (source = 'claude').
+  const NOTE_STATUSES = ['open', 'verified', 'integrated', 'archived'];
+  async function showResearch() {
+    const { data, error } = await S.sb.from('bs_research_notes')
+      .select('id,title,body,status,tags,source,updated_at').order('updated_at', { ascending: false });
+    if (error) return fail(error);
+    const filter = el('select', { 'aria-label': 'Show' },
+      el('option', { value: 'active', text: 'Open + verified' }),
+      ...NOTE_STATUSES.map((s) => el('option', { value: s, text: s[0].toUpperCase() + s.slice(1) })),
+      el('option', { value: 'all', text: 'All notes' }));
+    const list = el('ul', { class: 'list' });
+    const render = () => {
+      list.textContent = '';
+      const f = filter.value;
+      const rows = data.filter((n) => f === 'all' || (f === 'active' ? ['open', 'verified'].includes(n.status) : n.status === f));
+      if (!rows.length) list.append(el('li', { class: 'muted', text: 'No research notes here yet.' }));
+      for (const n of rows) {
+        list.append(el('li', null,
+          el('div', { class: 'grow' }, el('strong', { text: n.title }),
+            el('div', { class: 'small muted', text: `${fmtDate(n.updated_at)} · ${n.source === 'claude' ? 'from Claude' : 'yours'}${n.tags.length ? ' · ' + n.tags.join(', ') : ''}` })),
+          el('span', { class: 'tag', text: n.status }),
+          el('button', { type: 'button', text: 'Open', onclick: () => openNote(n) })));
+      }
+    };
+    filter.addEventListener('change', render); render();
+    dialog('Research notes', [el('p', { class: 'small muted', text: 'Notes and open questions that sit beside the book. They are not manuscript text.' }), filter, list],
+      [{ label: '+ New note', cls: 'primary', onClick: () => { openNote(null); return true; } }, { label: 'Close' }]);
+  }
+  function openNote(n) {
+    const title = el('input', { value: n?.title || '', maxlength: 300, 'aria-label': 'Title', placeholder: 'Title' });
+    const status = el('select', { 'aria-label': 'Status' }, ...NOTE_STATUSES.map((s) => el('option', { value: s, text: s, selected: (n?.status || 'open') === s })));
+    const tags = el('input', { value: (n?.tags || []).join(', '), 'aria-label': 'Tags', placeholder: 'Tags, comma separated' });
+    const body = el('textarea', { 'aria-label': 'Note' }); body.value = n?.body || '';
+    const save = async () => {
+      const row = { title: title.value.trim(), body: body.value, status: status.value,
+        tags: tags.value.split(',').map((t) => t.trim()).filter(Boolean) };
+      if (!row.title) { toast('Give the note a title.', true); return true; }
+      const q = n ? S.sb.from('bs_research_notes').update(row).eq('id', n.id)
+                  : S.sb.from('bs_research_notes').insert({ ...row, source: 'owner' });
+      const { error } = await q; if (error) throw error;
+      toast('Note saved'); await showResearch(); return true;
+    };
+    const buttons = [{ label: 'Save', cls: 'primary', onClick: save }];
+    if (n) buttons.push({ label: 'Delete', cls: 'danger', onClick: async () => {
+      if (!confirm('Delete this research note? This cannot be undone.')) return true;
+      const { error } = await S.sb.from('bs_research_notes').delete().eq('id', n.id); if (error) throw error;
+      toast('Note deleted'); await showResearch(); return true;
+    } });
+    buttons.push({ label: 'Back', onClick: async () => { await showResearch(); return true; } });
+    dialog(n ? 'Research note' : 'New research note',
+      [title, el('div', { class: 'row' }, status, tags), body], buttons);
+  }
+
   // ------------------------------------------------------------ text-to-speech
   const synth = window.speechSynthesis;
   function loadVoices() {
@@ -602,7 +657,7 @@
     'prev-chapter': () => step(-1), 'next-chapter': () => step(1),
     bookmark: addBookmark, propose: proposeEdit, history: showHistory, proposals: showProposals,
     'export-docx': () => exportDocx('current'), 'export-md': exportMd,
-    'show-masters': showMasters, 'import-docx': pickImport, 'show-audit': showAudit,
+    'show-masters': showMasters, 'import-docx': pickImport, 'show-audit': showAudit, research: showResearch,
     'tts-play': ttsPlayPause, 'tts-stop': ttsStop, 'tts-prev': () => ttsSkip(-1), 'tts-next': () => ttsSkip(1),
   };
   document.addEventListener('click', (ev) => {
