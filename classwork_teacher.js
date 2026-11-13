@@ -40,17 +40,19 @@
       <div class="cwt-tabs">${tabs}</div>
       <div class="cwt-tabs">${[['all', 'All ' + data.rows.length], ['submitted', 'Turned in ' + n('submitted')], ['draft', 'Working ' + n('draft')], ['not_started', 'Not started ' + n('not_started')]]
         .map(([k, l]) => `<button class="cwt-f${filter === k ? ' on' : ''}" data-f="${k}">${l}</button>`).join('')}</div>
-      <div class="card" style="overflow-x:auto"><table class="cwt-t"><thead><tr><th>Student</th><th>Period</th><th>Mastery</th><th>Stories</th><th>Story avg</th><th>Score</th><th>Status</th><th></th></tr></thead><tbody>` +
+      <div class="card" style="overflow-x:auto"><table class="cwt-t"><thead><tr><th>Student</th><th>Period</th><th>Learn avg</th><th>Stories</th><th>Story avg</th><th>Classwork</th><th>Unit Test</th><th>Status</th><th></th></tr></thead><tbody>` +
       rows.map(r => {
-        const st = (r.stories || []).filter(Boolean).length;
+        const chs = data.chapters || [], cs = r.ch_stories || {};
+        const st = chs.reduce((t, c) => t + (cs[c] || []).filter(Boolean).length, 0);
         const status = r.status === 'submitted' ? `<span style="color:#0f7a4f;font-weight:800">Turned in</span><br><small>${when(r.submitted_at)}</small>`
           : r.status === 'draft' ? '<span style="color:#b77900;font-weight:800">Working</span>' : '<span style="color:#888">Not started</span>';
         const row = `<tr><td><b>${esc(r.first)} ${esc(r.last)}</b></td><td>${esc(per(r.code))}</td>
-          <td>${r.mastery_best == null ? '—' : r.mastery_best + '%'}${r.mastery_tries ? `<br><small>${r.mastery_tries} tries</small>` : ''}</td>
-          <td>${r.status === 'not_started' ? '—' : st + '/3'}</td><td>${r.story_avg == null ? '—' : r.story_avg + '%'}</td>
+          <td>${r.status === 'not_started' ? '—' : (r.learn_avg || 0) + '%'}</td>
+          <td>${r.status === 'not_started' ? '—' : st + '/' + chs.length * 3}</td><td>${r.story_avg == null ? '—' : r.story_avg + '%'}</td>
           <td>${r.final_score == null ? '—' : '<b>' + r.final_score + '%</b>'}${r.posted_at ? `<br><small>posted ${r.posted_score}</small>` : ''}</td>
+          <td>${r.unit_tries ? r.unit_best + '%<br><small>' + r.unit_tries + ' tries</small>' : '—'}</td>
           <td>${status}</td><td>${r.status !== 'not_started' ? `<button class="cwt-btn" data-open="${r.id}">${open === r.id ? 'Close' : 'Read'}</button>` : ''}</td></tr>`;
-        return row + (open === r.id ? `<tr><td colspan="8">${detail(r)}</td></tr>` : '');
+        return row + (open === r.id ? `<tr><td colspan="9">${detail(r)}</td></tr>` : '');
       }).join('') + `</tbody></table></div>`;
     wireTabs();
     root.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filter = b.dataset.f; draw(); });
@@ -66,11 +68,13 @@
     };
   }
   function detail(r) {
-    const stories = (r.stories || []).map((s, i) => !s ? `<p><b>Story ${i + 1}:</b> <i>not written yet</i></p>` :
-      `<div class="cwt-story"><b>Story ${i + 1}</b> · ${esc(termName(s.a))} + ${esc(termName(s.b))} · <b>${s.score.total}/100</b>
-       <small>(length ${s.score.length}/40, words ${s.score.used}/30, detail ${s.score.detail}/30)</small><p>${esc(s.text)}</p></div>`).join('');
-    const swaps = (r.swapped || []).length ? '<p><b>No-story swaps:</b> ' + r.swapped.map(x => `${esc(termName(x.n))} — “${esc(x.reason)}”`).join('; ') + '</p>' : '';
-    return stories + swaps + (r.status === 'submitted' ? `<button class="cwt-btn" data-return="${r.id}">Return for changes</button>` : '');
+    const chs = data.chapters || [], cs = r.ch_stories || {}, lb = r.learn_best || {}, ct = r.ch_test || {};
+    const per = chs.map(c => `<h4 style="margin:12px 0 4px">Chapter ${c} · Learn ${lb[c] || 0}% · Chapter Test ${ct[c] ? ct[c].best + '% (' + ct[c].tries + ' tries)' : '—'}</h4>` +
+      (cs[c] || [null, null, null]).map((s, i) => !s ? `<p><b>Story ${i + 1}:</b> <i>not written yet</i></p>` :
+        `<div class="cwt-story"><b>Story ${i + 1}</b> · ${esc(termName(s.a))} + ${esc(termName(s.b))} · <b>${s.score.total}/100</b>
+         <small>(length ${s.score.length}/40, words ${s.score.used}/30, detail ${s.score.detail}/30)</small><p>${esc(s.text)}</p></div>`).join('')).join('');
+    const swaps = (r.swapped || []).length ? '<p><b>No-story swaps:</b> ' + r.swapped.map(x => `${esc(termName(x.n))} (Ch ${x.ch || '?'}) — “${esc(x.reason)}”`).join('; ') + '</p>' : '';
+    return per + swaps + (r.status === 'submitted' ? `<button class="cwt-btn" data-return="${r.id}">Return for changes</button>` : '');
   }
   function wireTabs() { $('cwt-root').querySelectorAll('[data-u]').forEach(b => b.onclick = () => { unit = +b.dataset.u; open = null; load(); }); }
 
