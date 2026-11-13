@@ -52,7 +52,7 @@
           <td>${r.status === 'not_started' ? '—' : (r.learn_avg || 0) + '%'}</td>
           <td>${r.status === 'not_started' ? '—' : st + '/' + needAll}</td><td>${r.story_avg == null ? '—' : r.story_avg + '%'}</td>
           <td>${r.final_score == null ? '—' : '<b>' + r.final_score + '%</b>'}${r.posted_at ? `<br><small>posted ${r.posted_score}</small>` : ''}</td>
-          <td>${r.unit_tries ? r.unit_best + '%<br><small>' + r.unit_tries + ' tries</small>' : '—'}</td>
+          <td>${r.unit_tries ? r.unit_best + '%<br><small>' + r.unit_tries + ' tries</small>' : '—'}${r.posted_unit_at ? `<br><small>posted ${r.posted_unit_score}</small>` : ''}</td>
           <td>${status}</td><td>${r.status !== 'not_started' ? `<button class="cwt-btn" data-open="${r.id}">${open === r.id ? 'Close' : 'Read'}</button>` : ''}</td></tr>`;
         return row + (open === r.id ? `<tr><td colspan="9">${detail(r)}</td></tr>` : '');
       }).join('') + `</tbody></table></div>`;
