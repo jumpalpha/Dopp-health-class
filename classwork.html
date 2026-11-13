@@ -234,6 +234,16 @@ const need = c => Math.min(R.stories, Math.floor(okWords(c) / 2));
 const swapMax = c => okWords(c) - 2 * need(c) >= 1 ? R.swaps : 0;
 const allLearned = () => U.chapters.every(learnOk);
 const allStories = () => U.chapters.every(c => storiesDone(c) >= need(c));
+// 15-minute cooldown between tries (server enforces it; this just shows the countdown)
+let clockSkew = 0;
+const waitLeft = k => { if (!W || !W.last_try || !W.last_try[k]) return 0; if (W.now) clockSkew = Date.parse(W.now) - Date.now();
+  return Math.max(0, Math.ceil((Date.parse(W.last_try[k]) + (W.cooldown || 900) * 1000 - (Date.now() + clockSkew)) / 1000)); };
+const mmss = t => Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+setInterval(() => document.querySelectorAll('[data-wait]').forEach(b => {
+  const t = waitLeft(b.dataset.wait);
+  b.disabled = t > 0; b.textContent = t > 0 ? `Retake in ${mmss(t)}` : b.dataset.label;
+}), 1000);
+const learnGrade = c => Number((W.learn_grade || {})[c] ?? learnBest(c));
 const swapsIn = c => (W.swapped || []).filter(s => s.ch === c);
 R.learnPass = 80; R.unitPass = 80; R.swaps = 1;   // same as supabase/classwork_v2.sql
 
@@ -333,12 +343,14 @@ function stepLearn(c, el) {
   if (!learn) {
     const res = learnResult && learnResult.chapter === c ? learnResult : null;
     el.innerHTML = `<div class="card"><h2>Learn the words</h2>
-      <p>Match every Chapter ${c} word with its definition. The list has every definition from this chapter plus a few from other chapters, and you can use any definition more than once, so read carefully. You need <b>${R.learnPass}%</b> to move on. Retake it as many times as you want: your best score counts toward your grade.</p>
+      <p>Match every Chapter ${c} word with its definition. The list has every definition from this chapter plus a few from other chapters, and you can use any definition more than once, so read carefully. You need <b>${R.learnPass}%</b> to move on. You can retake it (15 minutes apart). Your grade is the <b>average of all your tries</b>, so do your best every time.</p>
       ${res ? `<div class="banner ${res.score >= R.learnPass ? 'b-good' : 'b-mid'}">Last try: <b>${res.score}%</b> (${res.right}/${res.total}). ${res.passed ? (res.score >= R.learnPass ? 'Passed! The next chapter is open.' : 'You already passed with your best score.') : 'Study the ones you missed and try again.'}</div>` : ''}
-      <p>Best: <b>${learnBest(c)}%</b> · Tries: ${(W.learn_tries || {})[c] || 0}</p>
-      <div class="row"><button class="btn btn-gold" id="lgo">${(W.learn_tries || {})[c] ? 'Try again' : 'Start Learn'}</button>
+      <p>Best: <b>${learnBest(c)}%</b> · Grade (average): <b>${learnGrade(c)}%</b> · Tries: ${(W.learn_tries || {})[c] || 0}</p>
+      <div class="row"><button class="btn btn-gold" id="lgo" data-wait="L${c}" data-label="${(W.learn_tries || {})[c] ? 'Try again' : 'Start Learn'}" ${waitLeft('L' + c) ? 'disabled' : ''}>${waitLeft('L' + c) ? 'Retake in ' + mmss(waitLeft('L' + c)) : (W.learn_tries || {})[c] ? 'Try again' : 'Start Learn'}</button>
       ${learnOk(c) ? '<button class="btn btn-ink" id="lnext">Go to Practice →</button>' : ''}</div>
-      ${res && res.misses.length ? '<h3 style="margin-top:16px">Missed (with the right definition)</h3><div class="words">' + res.misses.map(m => `<div class="w"><b>${esc(m.term)}</b> — ${esc(m.def)}</div>`).join('') + '</div>' : ''}</div>`;
+      ${res && res.misses.length ? (res.reveal
+        ? '<h3 style="margin-top:16px">Missed (with the right definition)</h3><div class="words">' + res.misses.map(m => `<div class="w"><b>${esc(m.term)}</b> — ${esc(m.def)}</div>`).join('') + '</div>'
+        : '<h3 style="margin-top:16px">Words you missed</h3><p class="muted">Look these up in the chapter or flashcards. The right definitions show after you pass or after 3 tries.</p><div class="words">' + res.misses.map(m => `<div class="w"><b>${esc(m.term)}</b></div>`).join('') + '</div>') : ''}</div>`;
     $('lgo').onclick = async () => {
       $('lgo').disabled = true;
       try { learn = await rpc('cw_learn_start', { p_unit: U.unit, p_ch: c }); learn.answers = learn.words.map(() => -1); learnResult = null; stepLearn(c, el); }
@@ -421,10 +433,13 @@ function renderTest(el, opts) {
     el.innerHTML = `<div class="card"><h2>${opts.title}</h2><p>${opts.intro}</p>
       ${res ? `<div class="banner ${res.passed ? 'b-good' : 'b-mid'}">Last try: <b>${res.score}%</b> (${res.right}/${res.total}).</div>` : ''}
       <p>Best: <b>${opts.best}%</b> · Tries: ${opts.tries}</p>
-      <div class="row"><button class="btn btn-gold" id="tgo">${opts.tries ? 'Take it again' : 'Start'}</button>${opts.after || ''}</div>
-      ${res && res.review.length ? '<h3 style="margin-top:16px">Questions you missed</h3>' + res.review.map(q => `<div class="q"><p>${esc(q[3])}</p>
+      <div class="row"><button class="btn btn-gold" id="tgo" data-wait="${opts.wk}" data-label="${opts.tries ? 'Take it again' : 'Start'}" ${waitLeft(opts.wk) ? 'disabled' : ''}>${waitLeft(opts.wk) ? 'Retake in ' + mmss(waitLeft(opts.wk)) : opts.tries ? 'Take it again' : 'Start'}</button>${opts.after || ''}</div>
+      ${res && res.review.length ? '<h3 style="margin-top:16px">Questions you missed</h3>' + (res.reveal ? '' : '<p class="muted">Right answers show after you score 80% or after 3 tries. Think-it-through questions never show the answer: go back to the chapter and work it out.</p>') + res.review.map(q => {
+        const think = (res.no_answer || []).includes(q[0]);
+        return `<div class="q"><p>${esc(q[3])}</p>
         ${q.picked ? `<div class="opt wrong">Your answer: ${esc(q.picked)}</div>` : '<div class="opt wrong">No answer</div>'}
-        <div class="opt right">Correct: ${esc(q[4])}</div>${q[8] ? `<p class="muted" style="font-weight:600;margin-top:6px">${esc(q[8])}</p>` : ''}</div>`).join('') : ''}</div>`;
+        ${think ? '<p class="muted" style="font-weight:600;margin-top:6px">Think-it-through question: review the chapter and try it again.</p>'
+          : (res.reveal ? `<div class="opt right">Correct: ${esc(q[4])}</div>` : '') + (q[8] ? `<p class="muted" style="font-weight:600;margin-top:6px">${esc(q[8])}</p>` : '')}</div>`; }).join('') : ''}</div>`;
     $('tgo').onclick = async () => {
       $('tgo').disabled = true;
       try {
@@ -459,13 +474,13 @@ function renderTest(el, opts) {
 }
 function stepChapterTest(c, el) {
   const ct = (W.ch_test || {})[c] || {};
-  renderTest(el, { key: 'ch' + c, ch: c, best: ct.best || 0, tries: ct.tries || 0, title: `Chapter ${c} Test`,
-    intro: `20 questions from Chapter ${c}: about 8 make you think through a situation and 12 check the facts. There's no passing score here, so use it to see what you know. Retake it as many times as you want. Missed questions show the right answer and why.`,
+  renderTest(el, { key: 'ch' + c, wk: 'T' + c, ch: c, best: ct.best || 0, tries: ct.tries || 0, title: `Chapter ${c} Test`,
+    intro: `20 questions from Chapter ${c}: about 8 make you think through a situation and 12 check the facts. There's no passing score here, so use it to see what you know. Retake it as often as you want, 15 minutes apart. Missed questions show an explanation; the right answer shows after you score 80% or after 3 tries.`,
     after: '<button class="btn btn-ink" id="tnext">Go to Stories →</button>', wire: () => { $('tnext').onclick = () => { view.step = 'stories'; draw(); }; } });
 }
 function paneUnitTest() {
-  renderTest($('pane'), { key: 'unit', ch: null, best: W.unit_best || 0, tries: W.unit_tries || 0, title: `Unit ${U.unit} Test`,
-    intro: `20 questions from every chapter in this unit (Chapters ${U.chapters.join(', ')}). You need <b>${R.unitPass}%</b> to pass. Retake it as many times as you want: your best score is your Unit Test grade, separate from your Classwork grade.`,
+  renderTest($('pane'), { key: 'unit', wk: 'U', ch: null, best: W.unit_best || 0, tries: W.unit_tries || 0, title: `Unit ${U.unit} Test`,
+    intro: `20 questions from every chapter in this unit (Chapters ${U.chapters.join(', ')}). You need <b>${R.unitPass}%</b> to pass. Retake it as often as you want, 15 minutes apart: your best score is your Unit Test grade, separate from your Classwork grade.`,
     after: W.unit_best >= R.unitPass ? '<span class="pill ok">✓ Passed</span>' : '' });
 }
 
