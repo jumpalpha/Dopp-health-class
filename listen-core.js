@@ -30,7 +30,6 @@
     14: { src: '/podcasts/ch14.mp3', title: "How Habits Hack Your Body's Hardware" },
     15: { src: '/podcasts/ch15.mp3', title: "Inside Your Heart, Lungs, and Gut" },
     16: { src: '/podcasts/ch16.mp3', title: "How Hormones Control Your Body" },
-    17: { src: '/podcasts/ch17.mp3', title: "How Fetal Growth Shapes Infant Brain Wiring" },
     18: { src: '/podcasts/ch18.mp3', title: "Your Brain From Puberty To Grief" },
     19: { src: '/podcasts/ch19.mp3', title: "From Painkillers to the Fentanyl Crisis" },
     20: { src: '/podcasts/ch20.mp3', title: "How Nicotine Hijacks the Teenage Brain" },

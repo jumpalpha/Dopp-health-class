@@ -16,7 +16,7 @@
 (function () {
   var URL = 'https://gmeyamrlqfrabtslsweu.supabase.co', KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
   var REALMS = [[1, 2], [3, 4, 5], [6, 7, 8, 9], [10, 11, 12], [13, 14, 15, 16], [17, 18], [19, 20, 21, 22], [23, 24, 25], [26, 27, 28]];
-  var LESSONS = { 3: 3, 7: 3, 8: 3 };
+  var LESSONS = { 3: 3, 7: 3, 8: 3, 17: 2 };
   var MODES = [['flashcard', 'Flashcards', ''], ['speedquiz', 'Speed Quiz', '#speedquiz'], ['wordbuild', 'Word Builder', '#wordbuild'], ['conceptmap', 'Concept Map', '#conceptmap']];
   var lessonsIn = function (c) { return LESSONS[c] || 4; };
 

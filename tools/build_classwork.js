@@ -69,7 +69,6 @@ const NO_STORY = new Set([
   'assault', 'homicide', 'sexual violence', 'physical abuse', 'emotional abuse', 'verbal abuse', 'stalking', 'hate crime',
   'testes', 'ovaries', 'uterus', 'ovulation', 'menstruation', 'menstrual cycle', 'fertilization', 'fallopian tubes', 'sterility',
   // units 6–9
-  'implantation', 'zygote',
   'medicine misuse', 'medicine abuse', 'drug overdose', 'drug misuse', 'drug abuse', 'addiction', 'fentanyl', 'opioid',
   'e-cigarettes', 'vaping', 'smokeless tobacco',
   'intoxication', 'binge drinking', 'alcohol poisoning', 'alcohol use disorder', 'underage drinking',

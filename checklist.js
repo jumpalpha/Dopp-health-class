@@ -31,7 +31,7 @@
     28: 'Community & Environmental Health'
   };
   // lesson sections in each chapter's interactive reader (counted from chapterNN.html)
-  const LESSONS = { 3: 3, 7: 3, 8: 3 };
+  const LESSONS = { 3: 3, 7: 3, 8: 3, 17: 2 };
   const lessonsIn = c => LESSONS[c] || 4;
 
   // Realms 1–5 = required. Activities and boss battles copied from the Quest page (quest.html REALMS),

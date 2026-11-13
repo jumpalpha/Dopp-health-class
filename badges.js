@@ -19,7 +19,7 @@ var REALMS = [
     tasks:['Read Chapter 13 PDF','Complete Ch 13 Vocab Games','Read Chapter 14 PDF','Complete Ch 14 Vocab Games','Body System Diagram Activity','Read Chapter 15 PDF','Complete Ch 15 Vocab Games','Read Chapter 16 PDF','Complete Ch 16 Vocab Games','Diagnose-the-Patient Challenge','Boss Battle — Health Jeopardy'] },
   { id:'r6', name:'Life Cycle Shrine', icon:'🌱', color:'#38BFFF', badge:'Life Keeper',
     days:'Days 33–36', chapters:[17,18],
-    tasks:['Read Chapter 17 PDF','Complete Ch 17 Vocab Games','Prenatal Health Decision Tree','Read Chapter 18 PDF','Complete Ch 18 Vocab Games','Teen Brain Reflection Activity','Boss Battle — Millionaire'] },
+    tasks:['Read Chapter 17 PDF','Complete Ch 17 Vocab Games','Read Chapter 18 PDF','Complete Ch 18 Vocab Games','Teen Brain Reflection Activity','Boss Battle — Millionaire'] },
   { id:'r7', name:'Shadow World', icon:'💀', color:'#FF3B5C', badge:'Shadow Slayer',
     days:'Days 37–44', chapters:[19,20,21,22],
     tasks:['Read Chapter 19 PDF','Complete Ch 19 Vocab Games','Fentanyl Awareness Mission','Read Chapter 20 PDF','Complete Ch 20 Vocab Games','Read Chapter 21 PDF','Complete Ch 21 Vocab Games','Refusal Skills Role-Play','Read Chapter 22 PDF','Complete Ch 22 Vocab Games','Substance Risk Scenario Cards','Boss Battle — Health Jeopardy'] },

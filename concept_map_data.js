@@ -161,10 +161,8 @@ window.CONCEPT_MAP = {
       terms: ["Puberty", "Ovulation", "Menstruation", "Menstrual cycle", "Fertilization"] }
   ] },
   17: { groups: [
-    { name: "From conception to fetus", idea: "Stages a baby goes through as it forms and grows before birth.",
-      terms: ["Fertilization", "Zygote", "Implantation", "Embryo", "Fetus", "Placenta"] },
     { name: "Healthy pregnancy and birth", idea: "What helps or harms a baby during pregnancy, and how birth happens.",
-      terms: ["Prenatal care", "Folic acid", "Teratogen", "Fetal Alcohol Spectrum Disorders", "Trimester", "Labor", "Cesarean section"] },
+      terms: ["Labor", "Cesarean section"] },
     { name: "Genetics", idea: "How traits are passed down from parents.",
       terms: ["Chromosomes", "Genes", "DNA", "Gene therapy"] },
     { name: "Infancy and childhood", idea: "Growing up after birth, and a danger to babies.",
