@@ -50,7 +50,8 @@ insert into public.arcade_games (key, title, max_score, medals) values
   ('germ_sweeper',   'Germ Sweeper',     3000,   '{500,1000,1600,2000}'),
   ('tic_tac_toe',    'Tic-Tac-Toe',      1500,   '{400,700,1000,1200}'),
   ('blast_blocks',   'Blast Blocks',     2000000, '{1000,3000,6000,12000}'),
-  ('how_smart',      'How Smart Am I?',  1700,   '{700,900,1100,1400}')
+  ('how_smart',      'How Smart Am I?',  1700,   '{700,900,1100,1400}'),
+  ('coin_quest',     'Coin Quest',       2000000, '{1000,5000,25000,100000}')
 on conflict (key) do update set title = excluded.title, max_score = excluded.max_score, medals = excluded.medals;
 
 create table if not exists public.arcade_scores (

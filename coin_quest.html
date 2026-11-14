@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html data-app-name="Coin Quest" lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coin Quest — Dopp's Arcade</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Answer chapter questions to earn coins, buy upgrades, and reach the goal before time runs out.">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--ink:#1A1030;--text:#F4EFFF;--dim:#b9b0d6;--card:rgba(255,255,255,.06);--border:rgba(255,255,255,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse at top,#22134a 0%,#0a0618 70%) fixed;color:var(--text);font-family:Nunito,system-ui,sans-serif;overflow-x:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;max-width:1040px;margin:0 auto;padding:10px 16px;gap:10px}
+.top a{color:var(--gold);font-weight:800;text-decoration:none;white-space:nowrap}
+.top h1{font-family:Cinzel,serif;font-size:20px;color:var(--gold);text-shadow:0 2px 0 #000;text-align:center}
+.wrap{max-width:1040px;margin:0 auto;padding:6px 16px 40px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:22px}
+.hidden{display:none!important}
+button{font-family:inherit;cursor:pointer}
+.btn{display:inline-block;font:900 18px Nunito,sans-serif;padding:14px 28px;border-radius:16px;border:3px solid var(--ink);background:var(--gold);color:#2a1d00;box-shadow:0 5px 0 var(--ink);text-decoration:none}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:transparent;color:var(--gold);border-color:rgba(255,215,0,.5);box-shadow:none}
+/* start */
+.intro{text-align:center;max-width:720px;margin:10px auto}
+.intro .coin{font-size:72px;line-height:1;margin:6px 0;filter:drop-shadow(0 4px 0 #000)}
+.intro h2{font-family:Cinzel,serif;font-size:clamp(28px,6vw,44px);color:var(--gold);text-shadow:0 3px 0 #000;margin-bottom:8px}
+.intro p{color:var(--dim);font-size:17px;line-height:1.55;margin:8px 0}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:18px 0;text-align:left}
+.rules div{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:14px;padding:12px;font-size:14px;line-height:1.4}
+.rules b{display:block;font-size:15px;color:var(--text);margin-bottom:2px}
+.pick{margin:16px 0 6px;text-align:left}
+.pick h3{font-size:16px;font-weight:900;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.pick h3 span{display:flex;gap:6px}
+.mini{font:800 13px Nunito,sans-serif;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,215,0,.5);background:transparent;color:var(--gold)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.chip{font:900 15px Nunito,sans-serif;padding:9px 0;border-radius:10px;border:2px solid var(--border);background:rgba(255,255,255,.05);color:var(--dim)}
+.chip.on{border-color:var(--emerald);background:rgba(0,229,160,.18);color:#fff}
+.chip.bonus{border-style:dashed}
+.picknote{font-size:13px;color:var(--dim);margin-top:6px}
+.best{margin:12px 0 16px;color:var(--emerald);font-weight:800}
+/* play */
+.hud{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin-bottom:12px}
+.cash{font-family:Cinzel,serif;font-weight:900;font-size:clamp(26px,5vw,38px);color:var(--gold);text-shadow:0 2px 0 #000;position:relative;justify-self:start}
+.goal .lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--dim);margin-bottom:4px}
+.goal .track{height:14px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.goal .fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--gold));transition:width .4s}
+.goal.done .fill{background:linear-gradient(90deg,var(--emerald),var(--gold))}
+.clock{font-family:Cinzel,serif;font-weight:900;font-size:26px;color:var(--text);text-align:right}
+.clock.low{color:var(--crimson)}
+.play{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-weight:800;color:var(--dim);font-size:14px}
+.tag{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(56,191,255,.15);border:1px solid rgba(56,191,255,.4);color:#bfe8ff;font-size:13px}
+.streak{color:var(--gold)}
+.q{font-size:clamp(19px,3.4vw,25px);font-weight:900;line-height:1.3;margin:6px 0 16px}
+.answers{display:grid;gap:10px}
+.ans{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:14px 16px;border-radius:14px;border:2px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);font:800 17px Nunito,sans-serif;line-height:1.3;transition:transform .12s,border-color .12s,background .12s}
+.ans:hover:not(:disabled){border-color:rgba(255,215,0,.6);background:rgba(255,215,0,.08);transform:translateY(-1px)}
+.ans .k{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.1);font-size:14px}
+.ans.right{border-color:var(--emerald);background:rgba(0,229,160,.16)}
+.ans.wrong{border-color:var(--crimson);background:rgba(255,59,92,.16)}
+.ans:disabled{cursor:default}
+.why{margin-top:14px;padding:14px 16px;border-radius:14px;font-size:16px;line-height:1.45;background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.4)}
+.why b{display:block;font-size:17px;margin-bottom:2px}
+.nextrow{display:flex;justify-content:flex-end;margin-top:14px}
+.pop{position:absolute;left:100%;top:4px;margin-left:10px;z-index:3;font:900 20px Nunito,sans-serif;pointer-events:none;animation:pop 1s ease-out forwards;white-space:nowrap}
+.pop.plus{color:var(--emerald)}.pop.minus{color:var(--crimson)}
+@keyframes pop{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-26px)}}
+/* shop */
+.shop{background:linear-gradient(#2c1b55,#1a1035);border:1px solid var(--border);border-radius:18px;padding:12px;position:sticky;top:10px}
+.shop h3{font-family:Cinzel,serif;color:var(--gold);font-size:16px;text-align:center;margin-bottom:8px}
+.up{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:14px;padding:10px;margin-bottom:8px}
+.up .t{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:15px}
+.up .d{font-size:12.5px;color:var(--dim);margin:3px 0 6px;line-height:1.35}
+.pips{display:flex;gap:4px}
+.pips i{width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,.14)}
+.pips i.on{background:var(--gold)}
+.buy{width:100%;font:900 14px Nunito,sans-serif;padding:8px;border-radius:10px;border:2px solid var(--ink);background:var(--emerald);color:#03261a}
+.buy:disabled{background:rgba(255,255,255,.1);color:var(--dim);border-color:transparent;cursor:default}
+.buy.max{background:transparent;color:var(--gold);border-color:rgba(255,215,0,.4)}
+.shopBtn{display:none}
+/* results */
+.res{text-align:center}
+.res .big{font-family:Cinzel,serif;font-size:clamp(34px,8vw,56px);color:var(--gold);text-shadow:0 3px 0 #000;line-height:1.1}
+.res .title{font-size:22px;font-weight:900;margin:6px 0 10px}
+.res .title.win{color:var(--emerald)}
+.stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:16px 0}
+.stats span{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-weight:800;font-size:14px}
+.cheer{max-width:640px;margin:6px auto 16px;color:var(--dim);font-size:16px;line-height:1.5}
+.net{margin:12px auto;color:var(--dim);font-size:14px;max-width:560px}
+.net a{color:var(--gold)}
+.review{max-width:720px;margin:16px auto 0;text-align:left;display:grid;gap:10px}
+.review h3{font-size:17px;font-weight:900;margin-top:8px}
+.rv{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.45}
+.rv .rq{font-weight:900;margin-bottom:4px}
+.rv .ra{color:var(--emerald);font-weight:800}
+.rv .rx{color:var(--dim);font-size:14px;margin-top:3px}
+@media (max-width:820px){
+  .play{grid-template-columns:1fr}
+  .shop{position:fixed;left:0;right:0;bottom:0;top:auto;border-radius:18px 18px 0 0;max-height:72vh;overflow:auto;z-index:20;transform:translateY(100%);transition:transform .25s;box-shadow:0 -10px 40px rgba(0,0,0,.6)}
+  .shop.open{transform:none}
+  .shopBtn{display:block;grid-column:1/-1;grid-row:3;font:900 16px Nunito,sans-serif;padding:10px 16px;border-radius:12px;border:3px solid var(--ink);background:var(--gold);color:#2a1d00;box-shadow:0 4px 0 var(--ink)}
+  .shopBtn .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--emerald);margin-left:8px;vertical-align:middle;box-shadow:0 0 0 3px rgba(0,229,160,.3)}
+  .hud{grid-template-columns:1fr auto}
+  .hud .goal{grid-column:1/-1;grid-row:2}
+  .card{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="top"><a href="arcade.html">← Arcade</a><h1>Coin Quest</h1><a href="arcade_leaderboard.html">🏆 Leaders</a></div>
+<div class="wrap">
+
+  <!-- START -->
+  <div class="card intro" id="startView">
+    <div class="coin">🪙</div>
+    <h2>Coin Quest</h2>
+    <p>Answer chapter questions to earn coins. Spend coins in the shop to earn even more. Reach <b style="color:var(--gold)" id="goalTxt"></b> before the clock runs out!</p>
+    <div class="rules">
+      <div><b>✅ Right answer</b>earns coins. Answer right in a row to build a streak.</div>
+      <div><b>❌ Wrong answer</b>costs a few coins and breaks your streak. You'll see the right answer.</div>
+      <div><b>🛒 The shop</b>Upgrades cost coins now but pay you back fast. Buy early, then save up!</div>
+      <div><b>⏱ 7 minutes</b>Keep playing after you hit the goal to climb the leaderboard.</div>
+    </div>
+    <div class="pick">
+      <h3>Pick your chapters <span><button class="mini" id="pickCur">My chapter</button><button class="mini" id="pickReq">1–16</button><button class="mini" id="pickNone">Clear</button></span></h3>
+      <div class="chips" id="chips"></div>
+      <div class="picknote" id="pickNote"></div>
+    </div>
+    <div class="best" id="bestLine"></div>
+    <button class="btn" id="startBtn">▶ Start the quest</button>
+  </div>
+
+  <!-- PLAY -->
+  <div class="hidden" id="playView">
+    <div class="card hud">
+      <div class="cash" id="cash">$0</div>
+      <div class="goal" id="goal"><div class="lbl"><span id="goalL"></span><span id="goalR"></span></div><div class="track"><div class="fill" id="goalFill"></div></div></div>
+      <div class="clock" id="clock">7:00</div>
+      <button class="shopBtn" id="shopBtn">🛒 Open the shop<span class="dot hidden" id="shopDot"></span></button>
+    </div>
+    <div class="play" style="margin-top:12px">
+      <div class="card">
+        <div class="qhead"><span id="qNum"></span><span class="tag" id="qTag"></span><span class="streak" id="streak"></span></div>
+        <div class="q" id="qText"></div>
+        <div class="answers" id="answers"></div>
+        <div class="why hidden" id="why"></div>
+        <div class="nextrow hidden" id="nextRow"><button class="btn" id="nextBtn">Got it ▶</button></div>
+      </div>
+      <div class="shop" id="shop"><h3>🛒 Shop</h3><div id="ups"></div><button class="btn ghost hidden" id="closeShop" style="width:100%;margin-top:4px">Back to questions</button></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card res hidden" id="resView">
+    <div style="color:var(--dim);font-weight:800">Final coins</div>
+    <div class="big" id="rCash"></div>
+    <div class="title" id="rTitle"></div>
+    <div class="stats" id="rStats"></div>
+    <div class="cheer" id="rCheer"></div>
+    <div class="net" id="rNet"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn" id="againBtn">↻ Play again</button>
+      <a class="btn ghost" href="arcade.html">🎮 More games</a>
+    </div>
+    <div class="review" id="rReview"></div>
+  </div>
+</div>
+
+<script src="pet_sprite.js"></script>
+<script src="arcade_kit.js"></script>
+<script src="quick_checks_data.js"></script>
+<script>
+(function () {
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const rnd = n => Math.floor(Math.random() * n);
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const money = n => '$' + Math.floor(n).toLocaleString();
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+// ── game settings (tuned by simulation: ~80% right usually reaches the goal) ──
+const GOAL = 5000, SECONDS = 420, STREAK_CAP = 10;
+const UPS = [
+  { key: 'mpq', icon: '💰', name: 'Coins per Answer', desc: v => 'Earn ' + money(v) + ' for each right answer.',
+    vals: [10, 25, 60, 150, 400, 1000, 2500], cost: [0, 50, 200, 700, 2500, 8000, 25000] },
+  { key: 'mult', icon: '✨', name: 'Multiplier', desc: v => 'Every right answer pays ×' + v + '.',
+    vals: [1, 1.5, 2, 3, 4], cost: [0, 100, 500, 2500, 10000] },
+  { key: 'streak', icon: '🔥', name: 'Streak Bonus', desc: v => v ? '+' + money(v) + ' for each answer in your streak (up to ' + STREAK_CAP + ').' : 'No bonus yet for answering right in a row.',
+    vals: [0, 5, 15, 40, 100, 250], cost: [0, 40, 180, 700, 2500, 8000] },
+  { key: 'ins', icon: '🛡️', name: 'Insurance', desc: v => v ? 'Wrong answers cost ' + Math.round(v * 100) + '% less.' : 'A wrong answer costs half of your Coins per Answer.',
+    vals: [0, .25, .5, .75, 1], cost: [0, 60, 300, 1500, 6000] }
+];
+const val = k => { const u = UPS.find(x => x.key === k); return u.vals[lv[k]]; };
+
+// ── chapters ──
+const BANK = window.QC_BANK || {};
+const CHS = Object.keys(BANK).map(Number).filter(n => BANK[n] && BANK[n].length >= 4).sort((a, b) => a - b);
+let picked = new Set(store.get('coin_quest_chapters', []).filter(n => CHS.indexOf(n) >= 0));
+function lastChapter() { try { return +((JSON.parse(localStorage.getItem('lw_last_chapter') || 'null') || {}).n) || 0; } catch (e) { return 0; } }
+if (!picked.size) picked.add(CHS.indexOf(lastChapter()) >= 0 ? lastChapter() : CHS[0]);
+function drawChips() {
+  $('chips').innerHTML = CHS.map(n => '<button class="chip' + (picked.has(n) ? ' on' : '') + (n > 16 ? ' bonus' : '') + '" data-n="' + n + '">' + n + '</button>').join('');
+  $('chips').querySelectorAll('.chip').forEach(b => b.onclick = () => { const n = +b.dataset.n; picked.has(n) ? picked.delete(n) : picked.add(n); drawChips(); });
+  const qs = [...picked].reduce((s, n) => s + BANK[n].length, 0);
+  $('pickNote').textContent = picked.size ? picked.size + ' chapter' + (picked.size > 1 ? 's' : '') + ' · ' + qs + ' questions' : 'Pick at least one chapter.';
+  $('startBtn').disabled = !picked.size;
+}
+$('pickCur').onclick = () => { const c = lastChapter(); picked = new Set([CHS.indexOf(c) >= 0 ? c : CHS[0]]); drawChips(); };
+$('pickReq').onclick = () => { picked = new Set(CHS.filter(n => n <= 16)); drawChips(); };
+$('pickNone').onclick = () => { picked = new Set(); drawChips(); };
+
+// ── state ──
+let cash, lv, streak, deck, cur, answered, right, missed, endAt, tick, lockUntil, wonAt, earned, prevQ;
+function buildDeck() {
+  const rows = [];
+  picked.forEach(n => BANK[n].forEach(r => rows.push({ ch: n, q: r[1], a: r[2], wrong: [r[3], r[4], r[5]], why: r[6] })));
+  shuffle(rows);
+  if (prevQ && rows.length > 1 && rows[0].q === prevQ) rows.push(rows.shift());   // no back-to-back repeat
+  return rows;
+}
+function start() {
+  if (!picked.size) return;
+  store.set('coin_quest_chapters', [...picked]);
+  cash = 0; earned = 0; streak = 0; answered = 0; right = 0; missed = []; wonAt = 0; prevQ = null;
+  lv = { mpq: 0, mult: 0, streak: 0, ins: 0 };
+  deck = buildDeck();
+  endAt = Date.now() + SECONDS * 1000;
+  $('startView').classList.add('hidden'); $('resView').classList.add('hidden'); $('playView').classList.remove('hidden');
+  clearInterval(tick); tick = setInterval(clock, 250);
+  drawShop(); hud(); next(); clock();
+  window.scrollTo({ top: 0 });
+}
+function clock() {
+  const left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+  $('clock').textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+  $('clock').classList.toggle('low', left <= 30);
+  if (left <= 0) finish();
+}
+function hud() {
+  $('cash').firstChild ? ($('cash').firstChild.nodeValue = money(cash)) : ($('cash').textContent = money(cash));
+  const p = Math.min(100, cash / GOAL * 100);
+  $('goalFill').style.width = (wonAt ? 100 : p) + '%';
+  $('goal').classList.toggle('done', !!wonAt);
+  $('goalL').textContent = wonAt ? '🏆 Goal reached! Keep going for the leaderboard' : 'Goal';
+  $('goalR').textContent = wonAt ? '' : money(cash) + ' / ' + money(GOAL);
+  $('streak').textContent = streak >= 2 ? '🔥 ' + streak + ' in a row' : '';
+  const canBuy = UPS.some(u => lv[u.key] + 1 < u.vals.length && u.cost[lv[u.key] + 1] <= cash);
+  $('shopDot').classList.toggle('hidden', !canBuy);
+}
+function pop(txt, cls) {
+  const s = document.createElement('span'); s.className = 'pop ' + cls; s.textContent = txt;
+  $('cash').appendChild(s); setTimeout(() => s.remove(), 1000);
+}
+
+// ── questions ──
+function next() {
+  if (!deck.length) deck = buildDeck();
+  cur = deck.shift(); prevQ = cur.q;
+  const opts = shuffle([cur.a].concat(cur.wrong));
+  $('qNum').textContent = 'Question ' + (answered + 1);
+  $('qTag').textContent = 'Chapter ' + cur.ch;
+  $('qText').textContent = cur.q;
+  $('answers').innerHTML = opts.map((o, i) => '<button class="ans" data-a="' + esc(o) + '"><span class="k">' + (i + 1) + '</span><span>' + esc(o) + '</span></button>').join('');
+  $('answers').querySelectorAll('.ans').forEach(b => b.onclick = () => answer(b));
+  $('why').classList.add('hidden'); $('nextRow').classList.add('hidden');
+  lockUntil = 0;
+}
+function answer(b) {
+  if (!cur) return;
+  const btns = $('answers').querySelectorAll('.ans');
+  if (btns[0].disabled) return;
+  btns.forEach(x => { x.disabled = true; if (x.dataset.a === cur.a) x.classList.add('right'); });
+  answered++;
+  if (b.dataset.a === cur.a) {
+    right++; streak++;
+    const gain = Math.round((val('mpq') + val('streak') * Math.min(streak - 1, STREAK_CAP)) * val('mult'));
+    cash += gain; earned += gain; pop('+' + money(gain), 'plus');
+    checkWin(); hud(); drawShop();
+    setTimeout(next, 650);
+  } else {
+    b.classList.add('wrong'); streak = 0;
+    const loss = Math.min(cash, Math.round(val('mpq') * 0.5 * (1 - val('ins'))));
+    cash -= loss; if (loss) pop('−' + money(loss), 'minus');
+    missed.push(cur); hud(); drawShop();
+    $('why').innerHTML = '<b>The answer: ' + esc(cur.a) + '</b>' + esc(cur.why || '');
+    $('why').classList.remove('hidden'); $('nextRow').classList.remove('hidden');
+    $('nextBtn').disabled = true; lockUntil = Date.now() + 1500;
+    setTimeout(() => { $('nextBtn').disabled = false; }, 1500);
+  }
+}
+$('nextBtn').onclick = () => { if (Date.now() >= lockUntil) next(); };
+function checkWin() { if (!wonAt && cash >= GOAL) { wonAt = Date.now(); pop('🏆 GOAL!', 'plus'); } }
+
+// ── shop ──
+function drawShop() {
+  $('ups').innerHTML = UPS.map(u => {
+    const l = lv[u.key], maxed = l + 1 >= u.vals.length, c = maxed ? 0 : u.cost[l + 1];
+    return '<div class="up"><div class="t"><span>' + u.icon + ' ' + u.name + '</span><span class="pips">' +
+      u.vals.map((_, i) => '<i class="' + (i <= l ? 'on' : '') + '"></i>').join('') + '</span></div>' +
+      '<div class="d">' + u.desc(u.vals[l]) + (maxed ? '' : '<br>Next: ' + u.desc(u.vals[l + 1]).replace(/\.$/, '') + '.') + '</div>' +
+      (maxed ? '<button class="buy max" disabled>MAXED</button>' : '<button class="buy" data-k="' + u.key + '"' + (c > cash ? ' disabled' : '') + '>Buy for ' + money(c) + '</button>') + '</div>';
+  }).join('');
+  $('ups').querySelectorAll('.buy[data-k]').forEach(b => b.onclick = () => buy(b.dataset.k));
+}
+function buy(k) {
+  const u = UPS.find(x => x.key === k), l = lv[k];
+  if (l + 1 >= u.vals.length || u.cost[l + 1] > cash) return;
+  cash -= u.cost[l + 1]; lv[k] = l + 1;
+  pop('−' + money(u.cost[l + 1]), 'minus'); hud(); drawShop();
+}
+$('shopBtn').onclick = () => { $('shop').classList.add('open'); $('closeShop').classList.remove('hidden'); };
+$('closeShop').onclick = () => $('shop').classList.remove('open');
+
+// ── end ──
+function finish() {
+  if ($('playView').classList.contains('hidden')) return;
+  clearInterval(tick);
+  $('shop').classList.remove('open');
+  $('playView').classList.add('hidden'); $('resView').classList.remove('hidden');
+  const won = !!wonAt, score = Math.floor(cash), pct = answered ? Math.round(right / answered * 100) : 0;
+  $('rCash').textContent = money(score);
+  $('rTitle').textContent = won ? '🏆 Quest complete! You reached ' + money(GOAL) + '.' : 'So close! The goal was ' + money(GOAL) + '.';
+  $('rTitle').classList.toggle('win', won);
+  const ups = UPS.reduce((s, u) => s + lv[u.key], 0);
+  $('rStats').innerHTML = '<span>✅ ' + right + ' / ' + answered + ' right (' + pct + '%)</span><span>💰 ' + money(earned) + ' earned</span><span>🛒 ' + ups + ' upgrades</span>';
+  $('rCheer').textContent = won ? 'Nice work. Try more chapters, or beat your best score.'
+    : answered && pct < 70 ? 'Every wrong answer costs coins. Review the questions below, then try again.'
+    : ups < 3 ? 'Tip: buy upgrades early. Coins per Answer and Multiplier pay you back fast.'
+    : 'Tip: build long streaks. The Streak Bonus grows with every right answer in a row.';
+  const best = store.get('coin_quest_best', 0);
+  if (score > best) store.set('coin_quest_best', score);
+  const seen = new Set();
+  const miss = missed.filter(m => !seen.has(m.q) && seen.add(m.q));
+  $('rReview').innerHTML = miss.length ? '<h3>Questions to review (' + miss.length + ')</h3>' + miss.map(m =>
+    '<div class="rv"><div class="rq">Ch ' + m.ch + ' · ' + esc(m.q) + '</div><div class="ra">✓ ' + esc(m.a) + '</div>' + (m.why ? '<div class="rx">' + esc(m.why) + '</div>' : '') + '</div>').join('') : '';
+  post(score, won);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+// ── class leaderboard (same as the Sprite arcade) ──
+function post(score, won) {
+  const el = $('rNet'), NET = window.ArcadeNet; el.innerHTML = '';
+  if (!NET) return;
+  const ses = NET.session();
+  if (!ses) { el.innerHTML = '🏆 <a href="quest.html">Log in</a> (or <a href="visitor.html">join as a visitor</a>) to post your score to the class leaderboard.'; return; }
+  if (score <= 0) return;
+  const args = { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: NET.TRIMESTER, p_game: 'coin_quest', p_score: score, p_won: won };
+  el.textContent = '📡 Posting to the leaderboard…';
+  NET.rpc('arcade_submit', args)
+    .then(r => { el.innerHTML = '📡 Posted! <b>#' + r.rank + '</b>' + (r.visitor ? ' among visitors' : ' in all classes · <b>#' + r.rank_group + '</b> in ' + esc(r.group)) +
+      (r.xp ? '<br>⭐ +' + r.xp + ' Verified XP for your first Coin Quest win!' : ''); })
+    .catch(e => { if (e.offline && NET.queue) { NET.queue(args); el.textContent = '📴 No internet right now. Your score is saved on this device and will post when you\'re back online.'; return; }
+      el.textContent = /too fast/.test(e.message) ? '' : '⚠ Couldn\'t post your score right now.'; });
+}
+
+function showBest() { const b = store.get('coin_quest_best', 0); $('bestLine').textContent = b ? '🏅 Your best: ' + money(b) : ''; }
+$('goalTxt').textContent = money(GOAL);
+$('startBtn').onclick = start;
+$('againBtn').onclick = () => { $('resView').classList.add('hidden'); $('startView').classList.remove('hidden'); showBest(); drawChips(); window.scrollTo({ top: 0 }); };
+document.addEventListener('keydown', e => {
+  if ($('playView').classList.contains('hidden')) return;
+  const btns = $('answers').querySelectorAll('.ans');
+  if (/^[1-4]$/.test(e.key) && btns[0] && !btns[0].disabled) { const b = btns[+e.key - 1]; if (b) answer(b); }
+  else if ((e.key === 'Enter' || e.key === ' ') && !$('nextRow').classList.contains('hidden') && !$('nextBtn').disabled) { e.preventDefault(); next(); }
+});
+showBest(); drawChips();
+window.__coin = { state: () => ({ cash, lv, streak, answered, right, wonAt, deck: deck && deck.length }), end: () => { endAt = Date.now(); } };   // automated playtests
+})();
+</script>
+</body>
+</html>
