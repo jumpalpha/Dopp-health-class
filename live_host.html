@@ -141,13 +141,16 @@ a{color:var(--gold)}
       <option value="pick_a_side">Pick a Side Live: class vote</option>
       <option value="showdown">⚡ Vocab Showdown: speed quiz with scores</option>
       <option value="raid">🐉 Realm Raid: teams vs. a boss</option>
+      <option value="coins">🪙 Coin Quest Live: earn coins, buy upgrades</option>
     </select>
     <div id="sdSetup" class="hidden">
       <div class="sd-settings">
         <div><label for="sdFrom">From chapter</label><select id="sdFrom"></select></div>
         <div><label for="sdTo">To chapter</label><select id="sdTo"></select></div>
-        <div><label for="sdCount">Questions</label><select id="sdCount"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
-        <div><label for="sdSecs">Seconds each</label><select id="sdSecs"><option>10</option><option selected>20</option><option>30</option></select></div>
+        <div class="sdOnly"><label for="sdCount">Questions</label><select id="sdCount"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
+        <div class="sdOnly"><label for="sdSecs">Seconds each</label><select id="sdSecs"><option>10</option><option selected>20</option><option>30</option></select></div>
+        <div class="coinOnly hidden"><label for="coinMins">Minutes</label><select id="coinMins"><option>5</option><option selected>7</option><option>10</option><option>15</option></select></div>
+        <div class="coinOnly hidden"><label for="coinTeams">Teams</label><select id="coinTeams"><option value="0">Everyone for themselves</option><option value="2">2 teams</option><option value="3">3 teams</option><option value="4">4 teams</option></select></div>
         <div id="raidTeamsBox" class="hidden"><label for="raidTeams">Teams</label><select id="raidTeams"><option>2</option><option selected>3</option><option>4</option></select></div>
       </div>
       <label class="check" style="margin-top:12px"><input type="checkbox" id="sdLogin" checked> Students must use their Quest login (scores saved with real names)</label>
@@ -273,6 +276,7 @@ a{color:var(--gold)}
 <script src="vendor/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="pet_vocab.js"></script>
+<script src="quick_checks_data.js"></script>
 <script>
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
@@ -424,6 +428,7 @@ async function startGame(){
   $('startBtn').disabled = true;
   try {
     const game = $('game').value;
+    if (game === 'coins') return await startCoins(pass);
     let sd = null, settings = {};
     if (game === 'showdown' || game === 'raid'){
       sd = buildShowdown();
@@ -442,6 +447,23 @@ async function startGame(){
   } catch(e){
     $('setupErr').textContent = /passphrase/i.test(e.message) ? 'That passphrase or sub code is not right. (Sub codes stop working after their last day.)' : 'Could not start: ' + e.message;
   } finally { $('startBtn').disabled = false; }
+}
+
+// ---------- Coin Quest Live ----------
+// Loads the chosen chapters' questions (QC_BANK) into the game, then opens the Coin Quest projector screen.
+async function startCoins(pass){
+  let a = +$('sdFrom').value, b = +$('sdTo').value; if (a > b) [a, b] = [b, a];
+  const QB = window.QC_BANK || {}, qs = [];
+  for (let ch = a; ch <= b; ch++) (QB[ch] || []).forEach(r => qs.push({ ch, prompt: r[1], choices: [r[2], r[3], r[4], r[5]], answer: r[2], why: r[6] || '' }));
+  if (qs.length < 4){ $('setupErr').textContent = 'No questions found for those chapters.'; return; }
+  const teams = +$('coinTeams').value, secs = +$('coinMins').value * 60;
+  const settings = { require_login: $('sdLogin').checked ? 'true' : 'false' };
+  if (teams) settings.teams = String(teams);
+  const r = (await rpc('create_live_session', { p_teacher_pass: pass, p_game_type: 'coins', p_settings: settings }))[0];
+  await rpc('host_coin_setup', { p_session_id: r.session_id, p_host_token: r.host_token, p_questions: qs });
+  $('pass').value = '';
+  try { sessionStorage.setItem('coin_host', JSON.stringify({ sid: r.session_id, tok: r.host_token, code: r.join_code, secs, from: a, to: b, teams, n: qs.length })); } catch(e){}
+  location.href = 'coin_host.html';
 }
 
 function joinUrl(){
@@ -616,6 +638,8 @@ function buildSdSetup(){
     const g = $('game').value;
     $('sdSetup').classList.toggle('hidden', g === 'pick_a_side');
     $('raidTeamsBox').classList.toggle('hidden', g !== 'raid');
+    document.querySelectorAll('.sdOnly').forEach(el => el.classList.toggle('hidden', g === 'coins'));
+    document.querySelectorAll('.coinOnly').forEach(el => el.classList.toggle('hidden', g !== 'coins'));
   };
 }
 function buildShowdown(){

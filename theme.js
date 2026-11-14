@@ -410,3 +410,32 @@
     var tries = 0, iv = setInterval(function () { var s = document.getElementById('activities'); if (s || ++tries > 40) { clearInterval(iv); if (s) s.scrollIntoView(); } }, 150);
   }
 })();
+
+/* Coin Quest card on the Next.js /arcade/ page (added 2026-11-13).
+   Copies the "How Smart Am I?" card so it matches, and puts Coin Quest right after it. */
+(function () {
+  if (window.DoppArcadeCoin) return; window.DoppArcadeCoin = true;
+  function build() {
+    if (!/^\/arcade\/?$/.test(location.pathname)) return;
+    if (document.querySelector('main a[href="/coin_quest.html"]')) return;
+    var ref = document.querySelector('main a[href="/arcade/play/how_smart"]');
+    if (!ref) return;
+    var c = ref.cloneNode(true);
+    c.setAttribute('href', '/coin_quest.html'); c.style.setProperty('--accent', '#FFD700');
+    var img = c.querySelector('img'); if (img) { img.setAttribute('src', '/art/coin_quest.png'); img.removeAttribute('srcset'); }
+    var badge = c.querySelector('.rounded-full'); if (badge) badge.textContent = '✨ New';
+    var h3 = c.querySelector('h3'); if (h3) h3.textContent = 'Coin Quest';
+    var d = c.querySelector('h3 + p'); if (d) d.textContent = 'Answer chapter questions to earn coins, buy upgrades, and reach $5,000 before time runs out.';
+    var goal = c.querySelector('.mt-auto .font-mono'); if (goal) goal.textContent = '🎯 Reach $5,000';
+    ref.parentNode.insertBefore(c, ref.nextSibling);
+  }
+  var queued = false;
+  function schedule() { if (!queued) { queued = true; setTimeout(function () { queued = false; build(); }, 80); } }
+  function start() {
+    if (!document.querySelector('link[href*="/_next/static/"], script[src*="/_next/static/"]')) return;
+    build();
+    new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+  }
+  if (document.readyState === 'complete') setTimeout(start, 300);
+  else window.addEventListener('load', function () { setTimeout(start, 300); });
+})();

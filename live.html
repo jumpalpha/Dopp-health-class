@@ -133,6 +133,7 @@ async function join(useQuest){
     P = { sid: r.session_id, pid: r.player_id, tok: r.player_token, code, name: null, team: r.team };
     if (!q) store('live_nick', nick);
     store('live_player', P);
+    if (r.game_type === 'coins'){ P.game = 'coins'; store('live_player', P); location.href = 'coin_live.html'; return; }
     startGame();
   } catch(e){
     const m = e.message || '';
@@ -167,6 +168,7 @@ async function poll(){
     $('gameErr').textContent = '';
     if (!s){ showJoin('That game is over.'); return; }
     if (!s.me){ showJoin('You were signed in on another device. Join again here.'); return; }
+    if (s.game_type === 'coins'){ clearInterval(timer); P.game = 'coins'; store('live_player', P); location.href = 'coin_live.html'; return; }
     st = s; P.name = s.me.nickname; $('meName').textContent = s.me.nickname + (s.me.team && TEAMS[s.me.team] ? ' · ' + TEAMS[s.me.team].name : '');
     deadline = (s.phase === 'question' && s.seconds_left != null) ? Date.now() + s.seconds_left * 1000 : 0;
     render(); tickCountdown();
@@ -263,7 +265,10 @@ $('leaveBtn').onclick = () => showJoin('');
     } catch(e){}
   }
   const saved = read('live_player');
-  if (saved && saved.sid && (!params.get('code') || params.get('code') === saved.code)){ P = saved; startGame(); }
+  if (saved && saved.sid && (!params.get('code') || params.get('code') === saved.code)){
+    if (saved.game === 'coins'){ location.href = 'coin_live.html'; return; }
+    P = saved; startGame();
+  }
 })();
 </script>
 </body>
