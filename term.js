@@ -21,12 +21,33 @@
     var end = TERM_END[tri];
     return end ? Date.parse(end + 'T23:59:59-07:00') : Date.now() + 120 * 86400000;
   }
+  // "Never expires" is decided by the server (students.permanent), not by the class code.
+  // srv: true marks a record the server has confirmed. Older records (perm without srv) are checked once.
+  var permAsked = {};
+  function checkPerm(sid, pin) {
+    if (permAsked[sid] || location.protocol === 'file:') return;
+    permAsked[sid] = true;
+    fetch(URL + '/rest/v1/rpc/student_remember_perm', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_student_id: sid, p_pin_hash: pin }) })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (t) {
+        var v = (t && typeof t === 'object' && 'student_remember_perm' in t) ? t.student_remember_perm : t;   // demo router wraps scalars
+        if (v !== true && v !== false) return;   // no answer: change nothing
+        var r = JSON.parse(localStorage.getItem(REM) || 'null');
+        if (!r || r.sid !== sid || r.pin !== pin) return;
+        r.perm = v; r.srv = true;
+        r.exp = v ? Date.now() + 3650 * 86400000 : remExpiry(r.tri);
+        localStorage.setItem(REM, JSON.stringify(r));
+      })
+      .catch(function () {});
+  }
   window.DoppRemember = {
     get: function () {
       try {
         var r = JSON.parse(localStorage.getItem(REM) || 'null');
         if (!r || !r.sid || !r.pin) return null;
-        if (r.perm) {   // permanent TEST accounts (teacher test + demo): never expire, follow the site into each new trimester
+        if (r.perm && !r.srv) checkPerm(r.sid, r.pin);   // saved by an older version of this file
+        if (r.perm) {   // permanent accounts (students.permanent: teacher test + demo): never expire, follow the site into each new trimester
           if (r.tri !== window.TERM.id) { r.tri = window.TERM.id; localStorage.setItem(REM, JSON.stringify(r)); }
           return r;
         }
@@ -36,9 +57,13 @@
     },
     save: function (sid, pin, name, avatar, classCode) {
       try {
-        var perm = /^TEST$/i.test(classCode || '');
+        var old = null;
+        try { old = JSON.parse(localStorage.getItem(REM) || 'null'); } catch (e) {}
+        var same = !!(old && old.sid === sid && old.pin === pin);
+        var perm = !!(same && old.perm), srv = !!(same && old.srv);   // keep what the server already said
         localStorage.setItem(REM, JSON.stringify({ sid: sid, pin: pin, name: name || '', avatar: avatar || '', tri: window.TERM.id,
-          exp: perm ? Date.now() + 3650 * 86400000 : remExpiry(window.TERM.id), perm: perm }));
+          exp: perm ? Date.now() + 3650 * 86400000 : remExpiry(window.TERM.id), perm: perm, srv: srv }));
+        if (!srv && /^TEST$/i.test(classCode || '')) checkPerm(sid, pin);   // only TEST-class accounts can be permanent today; the server decides
       } catch (e) {}
     },
     clear: function () {   // "Not you? Switch student" and Log out

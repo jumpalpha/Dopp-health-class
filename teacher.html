@@ -1108,6 +1108,7 @@ async function pinSearch(){
     '<span><b>' + escapeHtml(r.name) + '</b><br><span style="color:var(--dim);font-size:13px">' + escapeHtml(r.period) + '</span></span>' +
     '<span style="display:flex;gap:6px;align-items:center"><input class="pin-new" data-id="' + escapeHtml(r.id) + '" inputmode="numeric" maxlength="4" placeholder="New PIN" autocomplete="off" style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">' +
     '<button class="btn btn-sm pin-set" data-id="' + escapeHtml(r.id) + '" data-name="' + escapeHtml(r.name) + '">Set PIN</button>' +
+    '<button class="btn btn-sm pin-unlock" data-id="' + escapeHtml(r.id) + '" data-name="' + escapeHtml(r.name) + '" title="Clear a lockout after 5 wrong PINs">🔓 Unlock</button>' +
     '<button class="btn btn-sm rn-open" data-id="' + escapeHtml(r.id) + '">✏️ Rename</button>' +
     '<button class="btn btn-sm mv-open" data-id="' + escapeHtml(r.id) + '">↔ Move</button>' +
     '<button class="btn btn-sm dl-open" data-id="' + escapeHtml(r.id) + '" style="background:transparent;color:var(--crimson);border:1px solid var(--crimson)">🗑 Delete</button></span>' +
@@ -1128,6 +1129,7 @@ async function pinSearch(){
       '<button class="btn btn-sm rn-cancel" data-id="' + escapeHtml(r.id) + '" style="background:transparent;color:var(--dim);border:1px solid var(--border)">Cancel</button></div>' +
     '<div class="pin-msg" data-id="' + escapeHtml(r.id) + '" style="width:100%;font-weight:800;font-size:13px"></div></div>').join('');
   box.querySelectorAll('.pin-set').forEach(b => b.onclick = () => pinSet(b));
+  box.querySelectorAll('.pin-unlock').forEach(b => b.onclick = () => pinUnlock(b));
   box.querySelectorAll('.rn-open').forEach(b => b.onclick = () => { const x = box.querySelector('.rn-box[data-id="' + b.dataset.id + '"]'); x.style.display = x.style.display === 'none' ? 'flex' : 'none'; if (x.style.display === 'flex') x.querySelector('.rn-first').focus(); });
   box.querySelectorAll('.rn-cancel').forEach(b => b.onclick = () => { box.querySelector('.rn-box[data-id="' + b.dataset.id + '"]').style.display = 'none'; });
   box.querySelectorAll('.rn-save').forEach(b => b.onclick = () => rnSave(b));
@@ -1179,6 +1181,15 @@ async function dlSave(btn){
   if (error){ msg.textContent = notSetUp(error.message) ? 'Not set up yet (run supabase/student_move_delete.sql).' : error.message; return; }
   msg.style.color = '#0a7a55'; msg.textContent = '✓ ' + data.name + ' was deleted.';
   setTimeout(pinSearch, 2000);
+}
+// 5 wrong PINs in 15 minutes locks a student out for 15 minutes; this clears it now (a PIN reset also does).
+async function pinUnlock(btn){
+  const id = btn.dataset.id, msg = document.querySelector('.pin-msg[data-id="' + id + '"]');
+  btn.disabled = true;
+  const { error } = await db.rpc('teacher_clear_lockout', { p_teacher_pass: teacherPass(), p_student_id: id });
+  btn.disabled = false;
+  msg.style.color = error ? 'var(--crimson)' : '#0a7a55';
+  msg.textContent = error ? error.message : '✓ ' + btn.dataset.name + ' can sign in again now (wrong-PIN lockout cleared).';
 }
 async function pinSet(btn){
   const id = btn.dataset.id, inp = document.querySelector('.pin-new[data-id="' + id + '"]'), msg = document.querySelector('.pin-msg[data-id="' + id + '"]');
@@ -1796,7 +1807,11 @@ async function loadProgressData() {
   document.getElementById('lb-body').innerHTML =
     '<tr><td colspan="8" class="lb-empty">⏳ Fetching student data…</td></tr>';
 
-  const { data, error } = await db.rpc('get_leaderboard_data', { p_trimester: TRIMESTER });
+  // Full names for the teacher; the public get_leaderboard_data shows "First L." (demo mode uses the public one)
+  const demoLb = !!(window.DoppDemo && DoppDemo.on);
+  let { data, error } = await db.rpc(demoLb ? 'get_leaderboard_data' : 'get_leaderboard_data_teacher',
+    demoLb ? { p_trimester: TRIMESTER } : { p_teacher_pass: teacherPass(), p_trimester: TRIMESTER });
+  if (error && !demoLb) ({ data, error } = await db.rpc('get_leaderboard_data', { p_trimester: TRIMESTER }));
 
   if (error) {
     setLbError('Supabase error: ' + error.message);
