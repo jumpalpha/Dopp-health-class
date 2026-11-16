@@ -21,7 +21,7 @@ Every piece of content has been fully modernized with 2024 statistics, updated m
 |------|-------------|
 | `index.html` | Home page — animated quest map, all 9 realms, chapter grid, game preview |
 | `chapters.html` | All 28 chapters organized by realm |
-| `arcade.html` | Full game arcade — 35 arcade games + 16 classroom games (51 total) |
+| `arcade.html` | Full game arcade — 37 arcade games + 16 classroom games (53 total) |
 | `vocab_engine.html` | Universal vocabulary game engine — 4 modes × 28 chapters |
 | `quest.html` | Student progress tracker — XP, badges, streaks, achievements |
 | `teacher.html` | Teacher dashboard — week planner, game launcher, notes, realm tracker |
@@ -149,4 +149,4 @@ To update any file: go to the repository → **Add file → Upload files** → d
 
 ---
 
-*Built for Alan Dopp's Health Class · Legend of Wellness · 28 chapters · 9 realms · 51 games · 3-month adventure*
+*Built for Alan Dopp's Health Class · Legend of Wellness · 28 chapters · 9 realms · 53 games · 3-month adventure*
