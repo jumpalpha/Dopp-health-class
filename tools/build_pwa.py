@@ -110,17 +110,21 @@ for p in pages:
     open(p, 'w', encoding='utf-8').write(s)
 
 # ---------- sw.js: what to save for offline play ----------
+# Pages and files that aren't arcade.html games but should also work offline (2026-11-15: Coin Quest).
+# theme.js: dark_mode.js loads it on every page (by script, so the src= scan below can't see it).
+OFFLINE_EXTRA = ['coin_quest.html', 'coin_live.html', 'coin_host.html', 'art/coin_quest.png', 'theme.js']
 pre = {'index.html', 'arcade.html', 'offline.html', 'pwa.js', 'manifest.webmanifest'}
-for page in [g['file'] for g in GAMES] + ['index.html', 'arcade.html']:
+pre |= {f for f in OFFLINE_EXTRA if os.path.exists(f)}
+for page in [g['file'] for g in GAMES] + ['index.html', 'arcade.html'] + [f for f in OFFLINE_EXTRA if f.endswith('.html')]:
     pre.add(page)
     for ref in re.findall(r'(?:src|href)="([^"#:?]+\.(?:js|css|png|jpg|svg|webp|mp3|json))"', open(page, encoding='utf-8').read()):
         if os.path.exists(ref): pre.add(ref)
-pre |= {f for f in glob.glob('app/*') if f.endswith(('.webmanifest', '-192.png'))}   # big icons load only when installing
+pre |= {f.replace(os.sep, '/') for f in glob.glob('app/*') if f.endswith(('.webmanifest', '-192.png'))}   # big icons load only when installing
 pre = sorted(pre)
 h = hashlib.sha1()
 for f in pre: h.update(open(f, 'rb').read())
 sw = open('sw.js', encoding='utf-8').read()
-sw = re.sub(r"/\*VERSION\*/.*?/\*END\*/", '/*VERSION*/' + h.hexdigest()[:12] + '/*END*/', sw)
-sw = re.sub(r"/\*PRECACHE\*/.*?/\*END\*/", '/*PRECACHE*/' + json.dumps(pre) + '/*END*/', sw, flags=re.S)
+sw = re.sub(r"/\*VERSION\*/.*?/\*END\*/", lambda m: '/*VERSION*/' + h.hexdigest()[:12] + '/*END*/', sw)
+sw = re.sub(r"/\*PRECACHE\*/.*?/\*END\*/", lambda m: '/*PRECACHE*/' + json.dumps(pre) + '/*END*/', sw, flags=re.S)
 open('sw.js', 'w', encoding='utf-8').write(sw)
 print('games: %d · pages tagged: %d · offline files: %d · version %s' % (len(GAMES), len(pages), len(pre), h.hexdigest()[:12]))
