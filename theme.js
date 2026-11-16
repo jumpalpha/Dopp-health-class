@@ -144,6 +144,12 @@
       ['top', 'right', 'bottom', 'left'].forEach(function (s) {
         if (nat && parseFloat(cs['border-' + s + '-width']) > 0 && whiteTint(c = rgba(cs['border-' + s + '-color']))) set(el, 'border-' + s + '-color', 'rgba(21,23,43,.12)');
       });
+      // Classic dark-by-design pages (pet, mastery, leaderboards…): their dark panels and inputs stay dark
+      // in light mode, but --text/--dim turn to ink above. Give each dark box its light text back. 2026-11-15
+      if (!nat && darkBox(cs) && lum(rgba(cs.color)) < 110) {
+        set(el, '--text', '#f4efff'); set(el, '--dim', '#b9b0d6'); set(el, 'color', '#f4efff');
+        continue;
+      }
       // plain near-white text that isn't on a dark/colored chip -> ink
       c = rgba(cs.color);
       if (!c || c.a < 0.5 || !hasText(el)) continue;
@@ -151,6 +157,17 @@
       // bright accent text (realm colors, gold labels) -> a deeper shade of the same hue
       if (0.299 * c.r + 0.587 * c.g + 0.114 * c.b > 140 && !onDark(el)) set(el, 'color', deepen(c));
     }
+  }
+  function lum(c) { return c ? 0.299 * c.r + 0.587 * c.g + 0.114 * c.b : 255; }
+  function darkBox(cs) {   // a solid dark background (color or gradient, no image)
+    var bi = cs.backgroundImage;
+    if (bi && bi !== 'none') {
+      if (/url\(/.test(bi)) return false;
+      var cols = (bi.match(/rgba?\([^)]*\)/g) || []).map(rgba).filter(function (x) { return x && x.a > 0.5; });
+      if (cols.length) return cols.every(function (x) { return lum(x) < 80; });
+    }
+    var c = rgba(cs.backgroundColor);
+    return !!c && c.a > 0.5 && lum(c) < 80;
   }
   function hasText(el) {
     for (var n = el.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && n.textContent.trim()) return true;
@@ -176,6 +193,12 @@
     return false;
   }
   function resweep() { if (!root.classList.contains('dl')) return; Array.prototype.forEach.call(document.querySelectorAll('*'), function (el) { el.__dlDone = false; }); sweep(document.body); }
+  function unsweepOne(el) {
+    var o = el.__dl; if (!o) return;
+    for (var p in o) { if (o[p][0]) el.style.setProperty(p, o[p][0], o[p][1]); else el.style.removeProperty(p); }
+    el.__dl = null;
+    var i = swept.indexOf(el); if (i >= 0) swept.splice(i, 1);
+  }
   function unsweep() {
     swept.forEach(function (el) {
       var o = el.__dl;
@@ -188,12 +211,22 @@
   var obs = null;
   function watch(on) {
     if (on && !obs && window.MutationObserver && document.body) {
-      var q = [], t = null;
+      var q = [], again = [], t = null;
       obs = new MutationObserver(function (ms) {
-        ms.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) q.push(n); }); });
-        if (!t) t = setTimeout(function () { t = null; var a = q; q = []; a.forEach(function (n) { if (n.isConnected) sweep(n); }); placeButton(); }, 60);
+        ms.forEach(function (m) {
+          if (m.type === 'attributes') { if (again.indexOf(m.target) < 0) again.push(m.target); return; }
+          m.addedNodes.forEach(function (n) { if (n.nodeType === 1) q.push(n); });
+        });
+        if (!t) t = setTimeout(function () {
+          t = null; var a = q, r = again; q = []; again = [];
+          // A button/answer changed state (picked, pressed, right/wrong): undo our colors on it and look again.
+          r.forEach(function (el) { if (el.isConnected) { unsweepOne(el); el.__dlDone = false; } });
+          a.concat(r).forEach(function (n) { if (n.isConnected) sweep(n); });
+          placeButton();
+        }, 60);
       });
-      obs.observe(document.body, { childList: true, subtree: true });
+      obs.observe(document.body, { childList: true, subtree: true, attributes: true,
+        attributeFilter: ['class', 'aria-pressed', 'aria-selected', 'aria-checked', 'data-state'] });
     } else if (!on && obs) { obs.disconnect(); obs = null; }
   }
 

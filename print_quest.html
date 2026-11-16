@@ -35,6 +35,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .ctrl-btn{padding:12px 24px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s}
 .btn-print{background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.15));border:1.5px solid rgba(255,215,0,0.4);color:var(--gold)}
 .btn-print:hover{background:linear-gradient(135deg,rgba(255,215,0,0.3),rgba(255,140,0,0.25))}
+/* light mode: bright gold text is unreadable on cream, use a deep gold (dark mode keeps the bright gold) */
+html:not(.dopp-dark) .nav-logo,html:not(.dopp-dark) .screen-title,html:not(.dopp-dark) .btn-print{color:#8A6D00}
 .btn-back{background:var(--card);border:1px solid var(--border);color:var(--dim)}
 .print-preview{max-width:800px;margin:0 auto 60px;padding:0 28px}
 .preview-label{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:12px;text-align:center}

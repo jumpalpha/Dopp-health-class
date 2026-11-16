@@ -215,24 +215,32 @@
       var r = +m[1], g = +m[2], b = +m[3];
       return r > 235 && g > 175 && g < 230 && b < 120;
     }
+    var goldObs = null;
     function goldButtons(top) {
       var els = (top || document).querySelectorAll('button, a, input[type=submit], input[type=button], .btn');
       for (var i = 0; i < els.length; i++) {
         var el = els[i];
-        if (el.classList.contains('nx-gold') || el.closest('.nxn-wrap')) continue;
+        if (el.closest('.nxn-wrap')) continue;
+        var had = el.classList.contains('nx-gold');
+        if (had && !el.__nxGold) continue;          // the page's own nx-gold (none today), leave it
+        // Re-check buttons we made gold: a picked button can be un-picked (Pick a Side's mode switch).
+        if (had) el.classList.remove('nx-gold');
         var cs = getComputedStyle(el);
-        if (isGold(cs.backgroundColor) || /255, 215, 0/.test(cs.backgroundImage)) el.classList.add('nx-gold');
+        if (isGold(cs.backgroundColor) || /255, 215, 0/.test(cs.backgroundImage)) { el.classList.add('nx-gold'); el.__nxGold = true; }
+        else el.__nxGold = false;
       }
+      if (goldObs) goldObs.takeRecords();            // our own class changes shouldn't trigger another pass
     }
 
     function go() {
       nav(); clearBody(); goldButtons();
       if (window.MutationObserver) {
         var t = null;
-        new MutationObserver(function () {
+        goldObs = new MutationObserver(function () {
           if (t) return;
           t = setTimeout(function () { t = null; goldButtons(); }, 120);
-        }).observe(document.body, { childList: true, subtree: true });
+        });
+        goldObs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'aria-pressed'] });
       }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();

@@ -186,6 +186,12 @@
     }
   }
 
+  function restoreOne(el) {
+    var o = el.__doppOrig; if (!o) return;
+    for (var p in o) { if (o[p][0]) el.style.setProperty(p, o[p][0], o[p][1]); else el.style.removeProperty(p); }
+    el.__doppOrig = null;
+    var i = touched.indexOf(el); if (i >= 0) touched.splice(i, 1);
+  }
   function restoreAll() {
     touched.forEach(function (el) {
       var o = el.__doppOrig;
@@ -197,15 +203,22 @@
 
   function startObserver() {
     if (observer || !window.MutationObserver) return;
-    var queue = [], timer = null;
+    var queue = [], again = [], timer = null;
     observer = new MutationObserver(function (muts) {
-      muts.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) queue.push(n); }); });
+      muts.forEach(function (m) {
+        if (m.type === 'attributes') { if (again.indexOf(m.target) < 0) again.push(m.target); return; }
+        m.addedNodes.forEach(function (n) { if (n.nodeType === 1) queue.push(n); });
+      });
       if (!timer) timer = setTimeout(function () {
-        timer = null; var q = queue; queue = [];
-        q.forEach(function (n) { if (n.isConnected) processTree(n); });
+        timer = null; var q = queue, r = again; queue = []; again = [];
+        // A button/answer changed state (picked, pressed, right/wrong): undo our colors on it and look again,
+        // so a "selected" style with a light background can't leave light text on a white box.
+        r.forEach(function (el) { if (el.isConnected && active) { restoreOne(el); el.__doppGen = -1; } });
+        q.concat(r).forEach(function (n) { if (n.isConnected) processTree(n); });
       }, 30);
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true,
+      attributeFilter: ['class', 'aria-pressed', 'aria-selected', 'aria-checked', 'data-state'] });
   }
 
   // ---------- early styles (before the page paints) ----------
