@@ -262,8 +262,8 @@ td.n,th.n{text-align:right}
     </div>
     <div class="note"><b>Why this matters off the island:</b> most people already eat a small number of foods over and over. A handful of foods make up most of what you eat. If you <i>know</i> those foods — their calories, protein, fat, carbs and fiber — you can control your weight and your health.</div>
     <div class="grid">
-      <label class="f">Your group members <small>Everyone in your group enters the same 15 foods in their own account.</small><input id="group" placeholder="Example: Maya, Josh, Ellie"></label>
-      <label class="f">Who are you bringing to the island? <small>Just for fun.</small><input id="bringing" placeholder="Anyone you want"></label>
+      <label class="f">Your group members <small>Everyone in your group enters the same 15 foods in their own account.</small><input id="group"></label>
+      <label class="f">Who are you bringing to the island? <small>Just for fun.</small><input id="bringing"></label>
     </div>
     <div class="nav-btns"><span></span><button class="btn btn-gold" type="button" data-next>Choose our 15 foods →</button></div>
   </section>
@@ -610,7 +610,7 @@ function render0() { $('group').value = D.group; $('bringing').value = D.bringin
 // ───────── step 1 ─────────
 function render1() {
   $('foodrows').innerHTML = D.foods.map((f, i) => `<div class="frow"><span class="fnum">${i + 1}</span>
-    <input data-food="${i}" value="${esc(f.name)}" placeholder="Food ${i + 1}" maxlength="60" aria-label="Food ${i + 1}">
+    <input data-food="${i}" value="${esc(f.name)}" maxlength="60" aria-label="Food ${i + 1}">
     <select data-ftype="${i}" aria-label="Food ${i + 1} type"><option value="">Natural or combination?</option>
       <option value="N" ${f.type === 'N' ? 'selected' : ''}>Natural</option><option value="C" ${f.type === 'C' ? 'selected' : ''}>Combination</option></select></div>`).join('');
   counts1();
@@ -625,9 +625,9 @@ function counts1() {
 function render2() {
   $('nutcards').innerHTML = D.foods.map((f, i) => {
     const n = D.nut[i];
-    const inp = (k, lbl, ph) => `<label>${lbl}<input data-nut="${i}" data-k="${k}" type="number" min="0" step="any" inputmode="decimal" value="${esc(n[k])}" placeholder="${ph}"></label>`;
+    const inp = (k, lbl, ph) => `<label>${lbl}<input data-nut="${i}" data-k="${k}" type="number" min="0" step="any" inputmode="decimal" value="${esc(n[k])}"></label>`;
     return `<div class="ncard" id="nc${i}"><div class="nhead"><span>${i + 1}. ${esc(f.name || 'Food ' + (i + 1))}</span><span class="t">${f.type === 'C' ? 'Combination' : 'Natural'}</span></div>
-      <div class="ngrid"><label>Serving size<input data-nut="${i}" data-k="serving" value="${esc(n.serving)}" placeholder="1 cup" maxlength="40"></label>
+      <div class="ngrid"><label>Serving size<input data-nut="${i}" data-k="serving" value="${esc(n.serving)}" maxlength="40"></label>
       ${inp('cal', 'Calories', '0')}${inp('pro', 'Protein g', '0')}${inp('carb', 'Carbs g', '0')}${inp('fat', 'Fat g', '0')}${inp('fib', 'Fiber g', '0')}</div>
       <div class="nmsg" id="nm${i}"></div></div>`;
   }).join('');
@@ -706,7 +706,7 @@ function renderKitchen() {
   if (!q && almost.length) html += `<details class="kalmost" style="margin-top:10px"><summary>Almost! ${almost.length} more dishes are missing just 1 food</summary><div class="ksmall" style="margin-top:6px">${almost.map(a => `${esc(a.name)} <i>(needs ${esc(a.missing)})</i>`).join(' · ')}</div></details>`;
   html += `<div class="ksug">Want a dish that isn’t here? <b>Make your own</b> from your pallet foods. <button type="button" class="btn btn-ink btn-sm" id="sugopen">${sugOpen ? 'Close' : '🍳 Make a dish'}</button>
     ${sugMsg ? `<div class="kmsg">${sugMsg}</div>` : ''}
-    ${sugOpen ? `<form id="sugform"><label class="f">Dish name<input id="sugname" maxlength="50" value="${esc(q && !can.length ? kq : '')}" placeholder="Example: Corn chowder"></label>
+    ${sugOpen ? `<form id="sugform"><label class="f">Dish name<input id="sugname" maxlength="50" value="${esc(q && !can.length ? kq : '')}"></label>
       <div><b style="font-size:14px">How many servings of each food go in one plate?</b> <span class="ksmall">(leave 0 for foods it doesn’t use)</span>
       <div class="kfoods">${named().map(f => `<label>${esc(f.name)} <input type="number" min="0" max="5" step="0.25" value="0" data-mkf="${f.i}" style="width:64px;padding:4px 6px" aria-label="Servings of ${esc(f.name)}"></label>`).join('')}</div></div>
       <div><button class="btn btn-gold btn-sm" type="submit">Add to my kitchen</button></div>
