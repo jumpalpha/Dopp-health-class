@@ -287,12 +287,12 @@ textarea.refl{min-height:260px;line-height:1.6}
     <div class="step-head"><span class="step-num">Step 1</span><h2 id="h1">Choose Your Future Career</h2></div>
     <p class="lead">Pick a career you could really see yourself doing. This is a plan for your future self — not your family's real income.</p>
     <div class="grid">
-      <label class="f">Planned occupation<input id="c_job" maxlength="80" autocomplete="off" placeholder="e.g. Registered Nurse"></label>
+      <label class="f">Planned occupation<input id="c_job" maxlength="80" autocomplete="off"></label>
       <label class="f">Expected first-year salary (per year)
-        <span class="money"><span>$</span><input id="c_salary" inputmode="decimal" autocomplete="off" placeholder="0"></span><span class="err" id="e_c_salary"></span></label>
-      <label class="f">Average days worked per week<input id="c_days" inputmode="decimal" autocomplete="off" placeholder="5"><span class="err" id="e_c_days"></span></label>
-      <label class="f">Average hours worked per day<input id="c_hours" inputmode="decimal" autocomplete="off" placeholder="8"><span class="err" id="e_c_hours"></span></label>
-      <label class="f">State or city where you plan to live<input id="c_place" maxlength="80" autocomplete="off" placeholder="e.g. Idaho Falls, ID"></label>
+        <span class="money"><span>$</span><input id="c_salary" inputmode="decimal" autocomplete="off"></span><span class="err" id="e_c_salary"></span></label>
+      <label class="f">Average days worked per week<input id="c_days" inputmode="decimal" autocomplete="off"><span class="err" id="e_c_days"></span></label>
+      <label class="f">Average hours worked per day<input id="c_hours" inputmode="decimal" autocomplete="off"><span class="err" id="e_c_hours"></span></label>
+      <label class="f">State or city where you plan to live<input id="c_place" maxlength="80" autocomplete="off"></label>
     </div>
     <h3 id="srcq">Where did your salary number come from?</h3>
     <div class="radio-row" role="radiogroup" aria-labelledby="srcq">
@@ -300,7 +300,7 @@ textarea.refl{min-height:260px;line-height:1.6}
       <label class="chip"><input type="radio" name="salsrc" value="guess"> It's my guess</label>
     </div>
     <div id="salurlwrap" hidden>
-      <label class="f" style="margin-top:12px">Where you found it (web address)<input id="c_salurl" inputmode="url" maxlength="300" placeholder="https://www.bls.gov/ooh/…"></label>
+      <label class="f" style="margin-top:12px">Where you found it (web address)<input id="c_salurl" inputmode="url" maxlength="300"></label>
       <p class="map-note">Good places to look: the Bureau of Labor Statistics <a href="https://www.bls.gov/ooh/" target="_blank" rel="noopener">Occupational Outlook Handbook</a> or <a href="https://www.careeronestop.org/" target="_blank" rel="noopener">CareerOneStop</a>. Use a starting or entry-level number if you can find one.</p>
     </div>
     <div class="tiles" aria-live="polite">
@@ -343,7 +343,7 @@ textarea.refl{min-height:260px;line-height:1.6}
 
     <h3>About your research</h3>
     <div class="grid">
-      <label class="f">Location researched<input id="r_location" maxlength="100" placeholder="e.g. Bonneville County, ID"></label>
+      <label class="f">Location researched<input id="r_location" maxlength="100"></label>
       <label class="f">Household type
         <select id="r_household">
           <option value="">Choose…</option>
@@ -352,13 +352,13 @@ textarea.refl{min-height:260px;line-height:1.6}
           <option>2 adults (1 working), 1 child</option><option>2 adults (both working), 1 child</option>
           <option>2 adults (both working), 2 children</option><option>Other</option>
         </select></label>
-      <label class="f">Source web address<input id="r_url" inputmode="url" maxlength="300" placeholder="https://livingwage.mit.edu/…"><small>Copy the address of the exact results page.</small></label>
+      <label class="f">Source web address<input id="r_url" inputmode="url" maxlength="300"><small>Copy the address of the exact results page.</small></label>
     </div>
 
     <details class="box" open>
       <summary>Yearly → monthly converter</summary>
       <div class="grid" style="margin-top:10px;align-items:end">
-        <label class="f">Yearly amount<span class="money"><span>$</span><input id="cv_in" inputmode="decimal" placeholder="13,200"></span></label>
+        <label class="f">Yearly amount<span class="money"><span>$</span><input id="cv_in" inputmode="decimal"></span></label>
         <div class="tile"><div class="k">÷ 12 = monthly</div><div class="v" id="cv_out">$0.00</div></div>
         <label class="f">Put it in
           <select id="cv_to"></select></label>
@@ -683,7 +683,7 @@ function out1() {
 // ── STEP 2 ──
 function step2() {
   $('predbody').innerHTML = F.CATS.map(c => `<tr><td><label for="p_${c.key}">${esc(c.label)}</label></td>
-    <td class="n"><span class="money" style="display:inline-block;max-width:180px"><span>$</span><input id="p_${c.key}" class="in-blue" inputmode="decimal" autocomplete="off" placeholder="0"></span>
+    <td class="n"><span class="money" style="display:inline-block;max-width:180px"><span>$</span><input id="p_${c.key}" class="in-blue" inputmode="decimal" autocomplete="off"></span>
     <div class="err" id="e_p_${c.key}"></div></td></tr>`).join('');
   F.CATS.forEach(c => bindMoney($('p_' + c.key), $('e_p_' + c.key), () => D.predicted[c.key], v => D.predicted[c.key] = v, 1e6));
   $('lockbtn').addEventListener('click', lockPredictions);
@@ -719,10 +719,10 @@ function step3() {
     return `<div class="rrow">
       <div class="cat">${esc(c.label)} ${pill}<div class="map-note">MIT line: <b>${esc(c.mitLine)}</b>. ${esc(c.note)}</div></div>
       <div><div class="map-note">My estimate</div><div class="predv" id="pv_${c.key}">$0</div></div>
-      <label class="f"><span class="map-note">Researched / month</span><span class="money"><span>$</span><input id="rv_${c.key}" class="in-gold" inputmode="decimal" autocomplete="off" placeholder="0"></span><span class="err" id="e_rv_${c.key}"></span></label>
+      <label class="f"><span class="map-note">Researched / month</span><span class="money"><span>$</span><input id="rv_${c.key}" class="in-gold" inputmode="decimal" autocomplete="off"></span><span class="err" id="e_rv_${c.key}"></span></label>
       <label class="f"><span class="map-note">Where this number came from</span>
         <select id="rs_${c.key}"><option value="mit">MIT Living Wage Calculator</option><option value="own">My own research</option></select>
-        <input id="rn_${c.key}" maxlength="160" placeholder="Source or how you figured it" hidden></label>
+        <input id="rn_${c.key}" maxlength="160" hidden></label>
     </div>`;
   }).join('');
   F.CATS.forEach(c => {
