@@ -156,6 +156,8 @@ main { position:relative; z-index:10; }
 #cl-link { display:none; align-items:center; gap:8px; padding:11px 16px; border-radius:14px; background:var(--gold); color:var(--ink); font-weight:800; font-size:15px; text-decoration:none;
   box-shadow:0 8px 26px -10px rgba(255,209,102,.9); }
 #cl-link small { font-weight:600; font-size:13px; opacity:.8; }
+#rc-link { display:none; align-items:center; gap:8px; padding:11px 16px; border-radius:14px; background:var(--sky,#38BFFF); color:var(--ink,#1C1A2E); font-weight:800; font-size:15px; text-decoration:none; }
+#rc-link small { font-weight:600; font-size:13px; opacity:.8; }
 #nm-box { font-size:13px; color:var(--muted); }
 #nm-box a { color:var(--muted); font-weight:600; }
 #nm-form { margin-top:10px; }
@@ -518,6 +520,7 @@ main { position:relative; z-index:10; }
       </div>
       <div class="hero-actions">
         <a id="cl-link" href="checklist.html">📋 My Trimester Checklist <small>see what to do next →</small></a>
+        <a id="rc-link" href="reading_check.html">📖 Reading Check <small>🔒 private</small></a>
         <button class="mini-link" type="button" onclick="showModal()">Log out</button>
       </div>
       <div id="nm-box" style="display:none;margin-top:12px">
@@ -1037,6 +1040,7 @@ function render() {
   document.getElementById('ring-fill').style.strokeDashoffset = String(326.73 * (1 - (pct || 0) / 100));
   renderStreak(); renderRealms(st); renderAchievements(st); renderNextUp();
   checklistLink();
+  readingLink();
   spriteCard();
   if (!nmShown) { nmShown = true; nameStatus(); }
 }
@@ -1109,6 +1113,19 @@ async function nameStatus() {
 
 // Show the checklist button only once Mr. Dopp has opened it to the class (TEST accounts see it early for review).
 let clChecked = false;
+// ── Reading Check link (private: only this student + the teacher see the result; never shows the level here) ──
+let rcChecked = false;
+async function readingLink() {
+  if (rcChecked || !student || !studentPinHash) return;
+  rcChecked = true;
+  const { data, error } = await db.rpc('reading_status', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER });
+  if (error || !data || !student) return;
+  const a = document.getElementById('rc-link');
+  a.innerHTML = data.can_take
+    ? '📖 Reading Check <small>' + (data.attempts ? 'retake open' : 'new · ~7 min') + ' · 🔒 private</small>'
+    : '📖 My Reading Check <small>🔒 private</small>';
+  a.style.display = 'inline-flex';
+}
 async function checklistLink() {
   if (clChecked || !student || !studentPinHash) return;
   clChecked = true;
@@ -1389,6 +1406,7 @@ function showModal() {
       if (window.DoppDemo) DoppDemo.clear();
       student = null; studentPinHash = null; doneKeys = new Set(); doneDays = new Set(); badgeExtra = {};
       clChecked = false; document.getElementById('cl-link').style.display = 'none';
+      rcChecked = false; document.getElementById('rc-link').style.display = 'none';
       nmShown = false; document.getElementById('nm-box').style.display = 'none';
       spriteLoaded = false; document.getElementById('sprite-card').style.display = 'none';
       openRealms.clear(); renderRealms.opened = false;

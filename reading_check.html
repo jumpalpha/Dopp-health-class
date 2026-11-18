@@ -143,7 +143,7 @@ html.dark .passage, html.dark .sent { background:#1d1b2e; }
         <button class="btn btn-dark" id="reveal" style="margin-top:14px">${hidden ? '👁 Tap to show' : '🙈 Hide'}</button>
         <p class="hint" style="margin-top:14px">Reading level grows with practice — reading anything you enjoy for 20 minutes a day really helps.
           Your result is never posted, ranked or shown to classmates. ${status && status.can_take ? '' : 'If you think something went wrong, talk to Mr. Dopp about a retake.'}</p>
-        <a class="btn btn-wide" href="welcome.html">🏠 Back to Today</a></section>`);
+        <a class="btn btn-wide" href="quest.html">⚔ Back to Quest</a></section>`);
     $('reveal').onclick = () => { const v = $('veil').classList.toggle('veil'); $('reveal').textContent = v ? '👁 Tap to show' : '🙈 Hide'; };
   }
 
