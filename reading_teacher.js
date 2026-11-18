@@ -35,10 +35,10 @@
     const order = ['Below 3', 'Gr 3', 'Gr 4', 'Gr 5', 'Gr 6', 'Gr 7', 'Gr 8', 'Gr 9', 'Gr 10', 'Gr 11', 'Gr 12', 'College'];
     const maxH = Math.max(1, ...Object.values(hist));
     $('rt-root').innerHTML = `
-      <div class="card"><p class="bt-note" style="margin:0">🔒 <b>Private.</b> Students take the Reading Check from their Today screen (about 7 minutes, one try per trimester).
+      <div class="card"><p class="bt-note" style="margin:0">🔒 <b>Private.</b> Students take the Reading Check from the Quest page (about 7 minutes).
         Only you and that student can see a result — nothing goes on boards, badges, XP or the demo account.
         <b>Level</b> = highest passage level read comfortably (5 of 6 words right) just below a level that was too hard (adaptive maze, grade 3 → college).
-        <b>Speed</b> = sentences right minus wrong in 60 seconds (silent reading efficiency); the % is compared with this list only, not national norms.
+        Students can retake any time; every try is kept and the newest is shown. <b>Speed</b> = sentences right minus wrong in 60 seconds (silent reading efficiency); the % is compared with this list only, not national norms.
         Treat it as a screener: a flag or a surprising score is a reason to check in with the student, not a diagnosis.</p></div>
       <div class="rt-bar">
         <select id="rt-cls"><option value="all">All classes</option>${codes.map(c => `<option${c === cls ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
@@ -50,18 +50,17 @@
       <div class="card" style="overflow-x:auto"><table class="rt-tbl">
         <thead><tr><th>Student</th><th>Class</th><th>Level</th><th>Speed</th><th>Maze</th><th>Time</th><th>Taken</th><th>Flags</th><th></th></tr></thead>
         <tbody>${rows.map(s => {
-          const l = s.latest;
-          const hist = s.history && s.history.length > 1 ? `<div class="rt-sm">Earlier: ${s.history.slice(0, -1).map(h => label(h.level)).join(', ')}</div>` : '';
+          const l = s.latest, n = (s.history || []).length;
+          const hist = n > 1 ? `<div class="rt-sm">${n} tries: ${s.history.map(h => label(h.level)).join(' → ')}</div>` : '';
           return `<tr data-id="${esc(s.id)}"><td><b>${esc(s.name)}</b>${hist}</td><td>${esc(s.class_code)}</td>
             ${l ? `<td><span class="rt-lv ${band(l.level)}">${label(l.level)}</span></td>
               <td>${esc(l.sre_net)}<span class="rt-sm"> · ${pctile(l.sre_net, speeds)}%</span></td>
               <td>${esc(l.maze_pct)}%</td><td>${esc(l.minutes)} min</td>
               <td>${esc(new Date(l.taken_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}</td>
               <td>${(l.flags || []).map(f => `<span class="rt-flag">${esc(f)}</span>`).join(' ')}</td>
-              <td style="white-space:nowrap"><button class="btn btn-sm" data-rt="detail">Details</button>
-                ${l.retake_ok ? '<button class="btn btn-sm" data-rt="noretake" title="Retake is open — click to close it">↩ Close retake</button>' : '<button class="btn btn-sm" data-rt="retake">Allow retake</button>'}</td>`
+              <td style="white-space:nowrap"><button class="btn btn-sm" data-rt="detail">${n > 1 ? 'All ' + n + ' tries' : 'Details'}</button></td>`
             : '<td colspan="7" class="rt-sm">Not taken yet</td><td></td>'}</tr>
-            ${open === s.id && l ? `<tr><td colspan="9" class="rt-det">${detail(l)}</td></tr>` : ''}`;
+            ${open === s.id && l ? `<tr><td colspan="9" class="rt-det">${detail(l)}${allTries(s.history || [])}</td></tr>` : ''}`;
         }).join('') || '<tr><td colspan="9" class="rt-sm">No students in this trimester yet.</td></tr>'}</tbody></table></div>`;
   }
 
@@ -71,11 +70,25 @@
       `<br><b>Speed round:</b> ${esc(sr.right)} right, ${esc(sr.wrong)} wrong of ${esc(sr.answered)} answered (${esc(l.sre_acc)}% accurate).`;
   }
 
+  function allTries(h) {
+    if (h.length < 2) return '';
+    return `<br><b>Every try (oldest first):</b><table class="rt-tbl" style="margin-top:4px"><tr><th>#</th><th>Date</th><th>Level</th><th>Speed</th><th>Maze</th><th>Time</th><th>Flags</th></tr>` +
+      h.map((t, i) => `<tr><td>${i + 1}</td><td>${esc(new Date(t.taken_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}</td>
+        <td>${label(t.level)}</td><td>${esc(t.sre_net)}</td><td>${t.maze_pct == null ? '' : esc(t.maze_pct) + '%'}</td><td>${t.minutes == null ? '' : esc(t.minutes) + ' min'}</td>
+        <td>${(t.flags || []).map(f => `<span class="rt-flag">${esc(f)}</span>`).join(' ')}</td></tr>`).join('') + '</table>';
+  }
+
   function csv() {
-    const head = ['Student', 'Class', 'Level', 'Speed (net/min)', 'Speed accuracy %', 'Maze %', 'Minutes', 'Taken', 'Flags'];
-    const lines = S.map(s => { const l = s.latest || {};
-      return [s.name, s.class_code, l.level != null ? label(l.level) : 'Not taken', l.sre_net, l.sre_acc, l.maze_pct, l.minutes, l.taken_at ? l.taken_at.slice(0, 10) : '', (l.flags || []).join('; ')]
-        .map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(','); });
+    // One row per try (every score kept); students with no tries get one "Not taken" row.
+    const head = ['Student', 'Class', 'Try #', 'Level', 'Speed (net/min)', 'Speed accuracy %', 'Maze %', 'Minutes', 'Taken', 'Flags'];
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = [];
+    S.forEach(s => {
+      const h = s.history || [];
+      if (!h.length) lines.push([s.name, s.class_code, '', 'Not taken'].map(q).join(','));
+      h.forEach((t, i) => lines.push([s.name, s.class_code, i + 1, label(t.level), t.sre_net, t.sre_acc, t.maze_pct, t.minutes,
+        t.taken_at ? new Date(t.taken_at).toLocaleString('en-US') : '', (t.flags || []).join('; ')].map(q).join(',')));
+    });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([[head.join(',')].concat(lines).join('\n')], { type: 'text/csv' }));
     a.download = 'reading-levels-' + TRIMESTER + '.csv'; a.click();

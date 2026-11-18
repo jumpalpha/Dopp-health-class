@@ -6,7 +6,7 @@
 --   passphrase, _teacher_ok) can read them. Nothing here feeds a leaderboard, badge, board,
 --   roster, XP or anything other students can see.
 -- • reading_checks has RLS on and no policies: only the functions below can touch it.
--- • One attempt per trimester. The teacher can allow a retake (keeps the old attempt).
+-- • Unlimited retakes (2026-11-18). Every attempt is kept; the newest is the current level.
 -- • The demo account (students.is_demo) can take it, but nothing is saved.
 -- ============================================================
 
@@ -46,7 +46,7 @@ begin
   select count(*) into n from public.reading_checks where student_id = p_student_id and trimester = p_trimester;
   return jsonb_build_object(
     'attempts', n,
-    'can_take', r.id is null or r.retake_ok,
+    'can_take', true,
     'latest', case when r.id is null then null else jsonb_build_object(
       'level', r.level, 'sre_net', r.sre_net, 'taken_at', r.taken_at, 'form', r.details->>'form') end);
 end $$;
@@ -54,7 +54,7 @@ end $$;
 create or replace function public.reading_submit(p_student_id uuid, p_pin_hash text, p_trimester text, p_result jsonb)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
-  last public.reading_checks; demo boolean; v_level int; v_flags text[];
+  demo boolean; v_level int; v_flags text[];
 begin
   if not public._rc_student_ok(p_student_id, p_pin_hash, p_trimester) then raise exception 'not signed in'; end if;
   if jsonb_typeof(p_result) <> 'object' or pg_column_size(p_result) > 20000 then raise exception 'bad result'; end if;
@@ -63,11 +63,6 @@ begin
   select coalesce(s.is_demo, false) into demo from public.students s where s.id = p_student_id;
   if demo then return jsonb_build_object('ok', true, 'saved', false); end if;   -- demo: nothing saved
 
-  select * into last from public.reading_checks
-   where student_id = p_student_id and trimester = p_trimester order by taken_at desc limit 1;
-  if last.id is not null and not last.retake_ok then
-    raise exception 'You already took the Reading Check this trimester. Ask Mr. Dopp if you need a retake.';
-  end if;
   select coalesce(array_agg(x), '{}') into v_flags
     from (select left(jsonb_array_elements_text(coalesce(p_result->'flags', '[]'::jsonb)), 40) x limit 8) f;
 
@@ -79,7 +74,6 @@ begin
           case when p_result->>'minutes' is null then null else least(greatest((p_result->>'minutes')::numeric, 0), 999) end,
           v_flags,
           coalesce(p_result->'details', '{}'::jsonb));
-  if last.id is not null then update public.reading_checks set retake_ok = false where id = last.id; end if;
   return jsonb_build_object('ok', true, 'saved', true);
 end $$;
 
@@ -98,7 +92,8 @@ begin
                           'minutes', c.minutes, 'flags', c.flags, 'taken_at', c.taken_at, 'retake_ok', c.retake_ok, 'details', c.details)
                      from public.reading_checks c where c.student_id = s.id and c.trimester = p_trimester
                     order by c.taken_at desc limit 1),
-        'history', (select coalesce(jsonb_agg(jsonb_build_object('level', c.level, 'taken_at', c.taken_at) order by c.taken_at), '[]'::jsonb)
+        'history', (select coalesce(jsonb_agg(jsonb_build_object('level', c.level, 'sre_net', c.sre_net, 'sre_acc', c.sre_acc, 'maze_pct', c.maze_pct,
+                            'minutes', c.minutes, 'flags', c.flags, 'taken_at', c.taken_at) order by c.taken_at), '[]'::jsonb)
                       from public.reading_checks c where c.student_id = s.id and c.trimester = p_trimester))
       order by s.class_code, lower(s.last_name), lower(s.display_name))
     from public.students s

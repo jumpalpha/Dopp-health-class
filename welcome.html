@@ -196,7 +196,7 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
   // ───── Reading Check (private: only this student + the teacher) ─────
   function rcHTML() {
     if (!rc) return '';
-    const fresh = rc.can_take && !rc.attempts, retake = rc.can_take && rc.attempts;
+    const fresh = !rc.attempts, retake = false;
     const title = fresh ? '📖 Reading Check <span class="tag">New</span>' : retake ? '📖 Reading Check <span class="tag">Retake open</span>' : 'My Reading Check';
     const sub = fresh ? 'About 7 minutes, not graded. 🔒 Only you and Mr. Dopp see your result.'
       : retake ? 'Mr. Dopp opened a retake for you. 🔒 Still private.'

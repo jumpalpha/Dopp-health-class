@@ -1121,9 +1121,8 @@ async function readingLink() {
   const { data, error } = await db.rpc('reading_status', { p_student_id: student.id, p_pin_hash: studentPinHash, p_trimester: TRIMESTER });
   if (error || !data || !student) return;
   const a = document.getElementById('rc-link');
-  a.innerHTML = data.can_take
-    ? '📖 Reading Check <small>' + (data.attempts ? 'retake open' : 'new · ~7 min') + ' · 🔒 private</small>'
-    : '📖 My Reading Check <small>🔒 private</small>';
+  a.innerHTML = data.attempts ? '📖 My Reading Check <small>🔒 private</small>'
+    : '📖 Reading Check <small>new · ~7 min · 🔒 private</small>';
   a.style.display = 'inline-flex';
 }
 async function checklistLink() {

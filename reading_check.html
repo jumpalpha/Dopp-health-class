@@ -125,7 +125,7 @@ html.dark .passage, html.dark .sent { background:#1d1b2e; }
       <section class="sec"><h2>How it works</h2>
         <ul><li><b>Part 1 · Passages (about 5 min).</b> Read a short passage. Some words are missing — pick the word that makes sense in each blue box. Passages get harder or easier based on how you do.</li>
             <li><b>Part 2 · Speed round (1 min).</b> Read short sentences and tap <b>True</b> or <b>False</b> as fast as you can while still being right.</li></ul>
-        <p class="hint">Tips: Find a quiet spot. Don't use a dictionary, translator or help from anyone — that would only hide what you're good at. You get one try this trimester.</p>
+        <p class="hint">Tips: Find a quiet spot. Don't use a dictionary, translator or help from anyone — that would only hide what you're good at. You can retake it any time; every try is saved for Mr. Dopp.</p>
         <button class="btn btn-wide" id="go">Start Part 1 ▶</button></section>`);
     $('go').onclick = () => { t0 = Date.now(); busy = true; passage(); };
   }
@@ -142,8 +142,10 @@ html.dark .passage, html.dark .sent { background:#1d1b2e; }
         </div>
         <button class="btn btn-dark" id="reveal" style="margin-top:14px">${hidden ? '👁 Tap to show' : '🙈 Hide'}</button>
         <p class="hint" style="margin-top:14px">Reading level grows with practice — reading anything you enjoy for 20 minutes a day really helps.
-          Your result is never posted, ranked or shown to classmates. ${status && status.can_take ? '' : 'If you think something went wrong, talk to Mr. Dopp about a retake.'}</p>
+          Your result is never posted, ranked or shown to classmates. You can retake it any time — every try is saved privately for Mr. Dopp.</p>
+        <button class="btn btn-dark btn-wide" id="again">🔁 Take it again</button>
         <a class="btn btn-wide" href="quest.html">⚔ Back to Quest</a></section>`);
+    $('again').onclick = () => { location.href = 'reading_check.html?again=1'; };
     $('reveal').onclick = () => { const v = $('veil').classList.toggle('veil'); $('reveal').textContent = v ? '👁 Tap to show' : '🙈 Hide'; };
   }
 
@@ -279,12 +281,11 @@ html.dark .passage, html.dark .sent { background:#1d1b2e; }
     view('<div class="msg">Saving privately…</div>');
     const { error } = await db.rpc('reading_submit', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER, p_result: payload });
     if (error) {
-      if (/already took/i.test(error.message)) return load();
       view(`<div class="msg"><b>Couldn't save your result.</b><br>Check your internet and try again — your answers are still here.
         <div class="err">${esc(error.message)}</div><button class="btn" style="margin-top:12px" id="retry">Try again</button></div>`);
       $('retry').onclick = () => { finished = false; finish(); }; return;
     }
-    busy = false; status = { can_take: false };
+    busy = false;
     showResult(lv, payload.sre_net, new Date().toISOString(), false);
   }
 
@@ -298,7 +299,7 @@ html.dark .passage, html.dark .sent { background:#1d1b2e; }
     }
     status = data || {};
     form = (status.attempts || 0) % 2 ? 'B' : 'A';              // a retake gets the other set of passages
-    if (status.latest && !status.can_take) return showResult(status.latest.level, status.latest.sre_net, status.latest.taken_at, true);
+    if (status.latest && !/[?&]again\b/.test(location.search)) return showResult(status.latest.level, status.latest.sre_net, status.latest.taken_at, true);
     intro();
   }
   window.addEventListener('beforeunload', e => { if (busy) { e.preventDefault(); e.returnValue = ''; } });
