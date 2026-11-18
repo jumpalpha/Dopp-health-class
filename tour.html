@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<title>Student Tour — Legend of Wellness</title>
+<meta name="description" content="An interactive tour of doppsclass.com for new students, with a 'Where do I find…?' helper and a quick Find It challenge.">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Geist:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#07071a; --card:rgba(23,22,52,.85); --line:rgba(255,255,255,.1); --text:#eef0ff; --dim:#a3a6c8; --gold:#ffd166; --sky:#38BFFF; --em:#00E5A0; --red:#FF3B5C; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:Geist,system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.wrap { max-width:1200px; margin:0 auto; padding:24px 16px 80px; }
+h1 { font:800 clamp(28px,4.5vw,44px)/1.05 'Bricolage Grotesque',sans-serif; letter-spacing:-.02em; }
+h1 em { font-style:normal; background:linear-gradient(115deg,#fff4d6,#ffd166 40%,#ff9f1c 75%,#ff3b5c); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.lead { color:var(--dim); margin:8px 0 18px; font-size:17px; max-width:680px; }
+.grid { display:grid; grid-template-columns:260px 1fr; gap:16px; }
+@media (max-width:860px) { .grid { grid-template-columns:1fr; } .side { order:2; } }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:16px; }
+.side h2, .panel h2 { font:800 15px 'Bricolage Grotesque',sans-serif; letter-spacing:.02em; color:var(--gold); text-transform:uppercase; margin-bottom:10px; }
+.stops { list-style:none; display:grid; gap:4px; }
+.stops button { width:100%; text-align:left; display:flex; gap:10px; align-items:center; padding:9px 10px; border-radius:12px; border:1px solid transparent; background:none; color:var(--dim); font:600 14px Geist,sans-serif; cursor:pointer; }
+.stops button:hover { background:rgba(255,255,255,.05); color:var(--text); }
+.stops button[aria-current="step"] { background:rgba(255,209,102,.12); border-color:rgba(255,209,102,.45); color:var(--text); }
+.stops .ck { margin-left:auto; color:var(--em); font-weight:800; }
+.stage .top { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.stage .num { font:700 12px Geist,sans-serif; color:var(--sky); letter-spacing:.12em; text-transform:uppercase; }
+.stage h3 { font:800 28px 'Bricolage Grotesque',sans-serif; letter-spacing:-.01em; margin:2px 0 6px; }
+.stage .why { font-size:17px; color:#d9dbf3; }
+.look { margin:12px 0 4px; display:grid; gap:6px; list-style:none; }
+.look li { padding:8px 12px 8px 34px; position:relative; border-radius:10px; background:rgba(255,255,255,.04); font-size:15px; }
+.look li::before { content:'👀'; position:absolute; left:10px; top:8px; font-size:14px; }
+.bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:11px 18px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--text); font:700 15px Geist,sans-serif; text-decoration:none; cursor:pointer; }
+.btn:hover { background:rgba(255,255,255,.09); }
+.btn.gold { border:0; background:linear-gradient(90deg,#ffd166,#ff9f1c); color:#1a0d00; box-shadow:0 10px 30px -12px rgba(255,159,28,.9); }
+.btn[disabled] { opacity:.4; cursor:default; }
+.prog { height:6px; border-radius:6px; background:rgba(255,255,255,.08); overflow:hidden; margin:14px 0 0; }
+.prog i { display:block; height:100%; background:linear-gradient(90deg,#38BFFF,#00E5A0); transition:width .3s; }
+.preview { margin-top:16px; border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#0d0d24; position:relative; height:430px; }
+.preview .lbl { position:absolute; top:8px; left:10px; z-index:2; font:700 11px Geist,sans-serif; color:var(--dim); background:rgba(7,7,26,.8); padding:4px 8px; border-radius:8px; letter-spacing:.06em; text-transform:uppercase; }
+.preview iframe { width:166.67%; height:166.67%; border:0; transform:scale(.6); transform-origin:0 0; pointer-events:none; }
+.preview .cover { position:absolute; inset:0; z-index:1; cursor:pointer; }
+@media (max-width:640px) { .preview { display:none; } }
+.finder { margin-top:16px; }
+.finder form { display:flex; gap:8px; }
+.finder input { flex:1; min-width:0; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.25); color:var(--text); font:600 16px Geist,sans-serif; }
+.finder input:focus { outline:2px solid var(--sky); }
+.ans { display:grid; gap:8px; margin-top:10px; }
+.ans .r { padding:10px 12px; border-radius:12px; background:rgba(56,191,255,.08); border:1px solid rgba(56,191,255,.25); font-size:14px; color:#d9dbf3; }
+.ans .r b { display:block; color:var(--text); margin-bottom:2px; }
+.ans .r a { color:var(--gold); font-weight:800; text-decoration:none; display:inline-block; margin-top:4px; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.chips button { padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:none; color:var(--dim); font:600 12px Geist,sans-serif; cursor:pointer; }
+.chips button:hover { color:var(--text); border-color:var(--gold); }
+.quiz .q { font:800 20px 'Bricolage Grotesque',sans-serif; margin:6px 0 12px; }
+.opts { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; }
+.opts button { padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); font:700 15px Geist,sans-serif; cursor:pointer; text-align:left; }
+.opts button.ok { border-color:var(--em); background:rgba(0,229,160,.12); }
+.opts button.no { border-color:var(--red); background:rgba(255,59,92,.12); }
+.fb { margin-top:10px; min-height:24px; color:#d9dbf3; }
+.done { text-align:center; padding:10px; }
+.done .big { font-size:54px; }
+html.dl body { background:#f5f6fb; color:#15172b; }
+html.dl .panel { background:#fff; border-color:rgba(21,23,43,.12); }
+html.dl .stage .why, html.dl .ans .r, html.dl .fb { color:#2b2e4a; }
+html.dl .look li { background:rgba(21,23,43,.04); }
+html.dl .btn { color:#15172b; border-color:rgba(21,23,43,.15); }
+html.dl .finder input { background:#fff; color:#15172b; border-color:rgba(21,23,43,.2); }
+html.dl .opts button { color:#15172b; }
+html.dl .side h2, html.dl .panel h2 { color:#9a6400; }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="wrap">
+  <h1>Your <em>student tour</em></h1>
+  <p class="lead">Twelve quick stops through the site. Look at each one, then try the Find It challenge at the end. Stuck anywhere? Ask "Where do I find…?" on the left.</p>
+
+  <div class="grid">
+    <aside class="side">
+      <div class="panel">
+        <h2>Tour stops</h2>
+        <ol class="stops" id="stops"></ol>
+      </div>
+      <div class="panel finder">
+        <h2>Where do I find…?</h2>
+        <form id="ff" onsubmit="event.preventDefault();askFind()">
+          <input id="fq" type="search" placeholder="e.g. vocab games" autocomplete="off" aria-label="Where do I find">
+          <button class="btn gold" type="submit">Ask</button>
+        </form>
+        <div class="chips" id="chips"></div>
+        <div class="ans" id="fans" aria-live="polite"></div>
+      </div>
+    </aside>
+
+    <main class="panel stage" id="stage" aria-live="polite"></main>
+  </div>
+</div>
+
+<script src="guide_data.js"></script>
+<script>
+(function () {
+  var STOPS = DoppGuide.STOPS, i = 0, seen = {};
+  var KEY = 'dopp_tour_seen';
+  try { seen = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(seen)); } catch (e) {} }
+
+  var list = document.getElementById('stops');
+  function drawList() {
+    list.innerHTML = STOPS.map(function (s, n) {
+      return '<li><button type="button" data-n="' + n + '"' + (n === i ? ' aria-current="step"' : '') + '><span>' + s.icon + '</span><span>' + esc(s.title) + '</span>' + (seen[s.id] ? '<span class="ck">✓</span>' : '') + '</button></li>';
+    }).join('') + '<li><button type="button" data-n="quiz"' + (i === 'quiz' ? ' aria-current="step"' : '') + '><span>🎯</span><span>Find It challenge</span>' + (seen.quiz ? '<span class="ck">✓</span>' : '') + '</button></li>';
+  }
+  list.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var n = b.getAttribute('data-n'); if (n === 'quiz') quiz(); else show(+n);
+  });
+
+  var stage = document.getElementById('stage');
+  function show(n) {
+    i = n; var s = STOPS[n]; seen[s.id] = 1; save(); drawList();
+    stage.innerHTML =
+      '<div class="top"><span style="font-size:34px">' + s.icon + '</span><div><div class="num">Stop ' + (n + 1) + ' of ' + STOPS.length + '</div><h3>' + esc(s.title) + '</h3></div></div>' +
+      '<p class="why">' + esc(s.why) + '</p>' +
+      '<ul class="look">' + s.look.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>' +
+      '<div class="bar">' +
+        '<button class="btn" type="button" id="bk"' + (n === 0 ? ' disabled' : '') + '>← Back</button>' +
+        '<button class="btn gold" type="button" id="nx">' + (n === STOPS.length - 1 ? 'Find It challenge →' : 'Next stop →') + '</button>' +
+        '<a class="btn" href="' + esc(s.href) + '" target="_blank" rel="noopener">Open the real page ↗</a>' +
+      '</div>' +
+      '<div class="prog"><i style="width:' + Math.round((n + 1) / (STOPS.length + 1) * 100) + '%"></i></div>' +
+      '<div class="preview"><span class="lbl">Live preview · click to open</span><a class="cover" href="' + esc(s.href) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(s.title) + '"></a>' +
+        '<iframe title="Preview of ' + esc(s.title) + '" loading="lazy" tabindex="-1" src="' + esc(s.href) + '"></iframe></div>';
+    document.getElementById('bk').onclick = function () { if (i > 0) show(i - 1); };
+    document.getElementById('nx').onclick = function () { if (i < STOPS.length - 1) show(i + 1); else quiz(); };
+    if (window.innerWidth < 860) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Find It challenge: "Where would you go to…?" ──
+  var Q = [
+    ['You just walked into class. Where do you see today\'s briefing and what\'s due?', 'today'],
+    ['You want to see everything left to do this trimester.', 'checklist'],
+    ['It\'s day one and you need to sign in with your class code.', 'quest'],
+    ['You need to learn Chapter 4\'s words and write your stories.', 'classwork'],
+    ['You have a private health question you don\'t want to ask out loud.', 'ask'],
+    ['You want to read Chapter 6 and play its vocab games.', 'chapters']
+  ];
+  var qi = 0, score = 0;
+  function quiz() {
+    i = 'quiz'; qi = 0; score = 0; drawList(); ask();
+  }
+  function shuffle(a) { for (var k = a.length - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)), t = a[k]; a[k] = a[j]; a[j] = t; } return a; }
+  function stopById(id) { for (var k = 0; k < STOPS.length; k++) if (STOPS[k].id === id) return STOPS[k]; }
+  function ask() {
+    var item = Q[qi], right = stopById(item[1]);
+    var others = shuffle(STOPS.filter(function (s) { return s.id !== right.id; })).slice(0, 3);
+    var opts = shuffle([right].concat(others));
+    stage.innerHTML = '<div class="quiz"><div class="num">🎯 Find It · ' + (qi + 1) + ' of ' + Q.length + '</div>' +
+      '<p class="q">' + esc(item[0]) + '</p><div class="opts">' +
+      opts.map(function (o) { return '<button type="button" data-id="' + o.id + '">' + o.icon + ' ' + esc(o.title) + '</button>'; }).join('') +
+      '</div><div class="fb" id="fb"></div><div class="prog"><i style="width:' + Math.round(qi / Q.length * 100) + '%"></i></div></div>';
+    var answered = false;
+    stage.querySelector('.opts').onclick = function (e) {
+      var b = e.target.closest('button'); if (!b || answered) return; answered = true;
+      var ok = b.getAttribute('data-id') === right.id; if (ok) score++;
+      b.classList.add(ok ? 'ok' : 'no');
+      if (!ok) stage.querySelector('[data-id="' + right.id + '"]').classList.add('ok');
+      document.getElementById('fb').innerHTML = (ok ? '✅ Yes! ' : '👉 It\'s <b>' + esc(right.title) + '</b>. ') + esc(right.why) +
+        '<div class="bar"><button class="btn gold" type="button" id="qn">' + (qi < Q.length - 1 ? 'Next →' : 'See my score →') + '</button></div>';
+      document.getElementById('qn').onclick = function () { qi++; if (qi < Q.length) ask(); else finish(); };
+    };
+  }
+  function finish() {
+    seen.quiz = 1; save(); drawList();
+    stage.innerHTML = '<div class="done"><div class="big">' + (score === Q.length ? '🏆' : score >= 4 ? '⭐' : '🧭') + '</div>' +
+      '<h3 style="font:800 28px \'Bricolage Grotesque\',sans-serif">' + score + ' of ' + Q.length + '</h3>' +
+      '<p class="why">' + (score === Q.length ? 'You know your way around. Go sign in and start your quest!' : 'Nice work. Replay any stop on the left, or try the challenge again.') + '</p>' +
+      '<div class="bar" style="justify-content:center"><a class="btn gold" href="quest.html">⚔ Sign in</a><a class="btn" href="start.html">🧭 Start Here guide</a><button class="btn" type="button" id="again">↻ Try again</button></div></div>';
+    document.getElementById('again').onclick = quiz;
+  }
+
+  // ── Where do I find…? ──
+  var CH = ['vocab games', 'classwork', 'forgot my PIN', 'turn in a drawing', 'my grades', 'live game'];
+  document.getElementById('chips').innerHTML = CH.map(function (c) { return '<button type="button">' + esc(c) + '</button>'; }).join('');
+  document.getElementById('chips').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; document.getElementById('fq').value = b.textContent; askFind(); };
+  window.askFind = function () {
+    var q = document.getElementById('fq').value, hits = DoppGuide.find(q, 2), out = document.getElementById('fans');
+    out.innerHTML = hits.length ? hits.map(function (f) {
+      return '<div class="r"><b>' + esc(f.q) + '</b>' + esc(f.a) + '<br><a href="' + esc(f.href) + '">' + esc(f.go) + ' →</a></div>';
+    }).join('') : '<div class="r">No match yet. Try different words, use <a href="search.html">Search</a>, or <a href="ask.html">Ask Mr. Dopp</a>.</div>';
+  };
+
+  var start = 0, m = location.hash.match(/^#(\w+)/);
+  if (m) { if (m[1] === 'quiz') { quiz(); return; } STOPS.forEach(function (s, n) { if (s.id === m[1]) start = n; }); }
+  show(start);
+})();
+</script>
+</body>
+</html>

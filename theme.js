@@ -19,7 +19,7 @@
 // A student's sun/moon tap is remembered for THAT page only: localStorage 'dopp_theme@<page>'.
 (function () {
   if (window.DoppPagePref) return;
-  var LIGHT = /^(chapter\d\d|textreader|checklist|weight-control-quest|finance|reflection|mastery|review|parents|print_quest|sub_guide|wellness-255-signup-guide|family_quest|psa_challenge|cpr_aed_quest|cpr_checkoff|cpr_paper_aed|cpr_trainer_build|legacy-resources|vocab_engine)$/;
+  var LIGHT = /^(chapter\d\d|textreader|checklist|start|weight-control-quest|finance|reflection|mastery|review|parents|print_quest|sub_guide|wellness-255-signup-guide|family_quest|psa_challenge|cpr_aed_quest|cpr_checkoff|cpr_paper_aed|cpr_trainer_build|legacy-resources|vocab_engine)$/;
   var p = location.pathname, id;
   if (/\/textreader\//.test(p)) id = 'textreader';
   else { id = (p.split('/').pop() || '').replace(/\.html$/, ''); if (!id) id = p.split('/').filter(Boolean)[0] || 'home'; }
@@ -471,4 +471,11 @@
   }
   if (document.readyState === 'complete') setTimeout(start, 300);
   else window.addEventListener('load', function () { setTimeout(start, 300); });
+})();
+// New-student help (2026-11-18): "Start Here"/"Today" menu link, ❓ Help button, home banner.
+// Delete these lines to turn it off everywhere.
+(function () {
+  if (window.DoppStudentGuide || document.querySelector('script[src="/student_guide.js"]')) return;
+  var s = document.createElement('script'); s.src = '/student_guide.js'; s.defer = true;
+  (document.head || document.documentElement).appendChild(s);
 })();

@@ -451,8 +451,8 @@ main { position:relative; z-index:10; }
       <div class="modal-sub">You're new! Set up your hero.</div>
       <label class="modal-label" for="m-last-new">Last name (family name), e.g. Smith</label>
       <input class="modal-input" id="m-last-new" placeholder="Your LAST name" maxlength="30" autocomplete="family-name">
-      <label class="modal-label" for="m-display">First name or nickname</label>
-      <input class="modal-input" id="m-display" placeholder="First name or nickname" maxlength="20">
+      <label class="modal-label" for="m-display">Your real first name (so Mr. Dopp can match your grades)</label>
+      <input class="modal-input" id="m-display" placeholder="Your real FIRST name" maxlength="20" autocomplete="given-name">
       <div class="modal-label">Pick your hero</div>
       <div class="modal-avatars" id="avatar-opts">
         <div class="av-opt sel" onclick="selAv(this,'⚔')">⚔</div>
@@ -574,7 +574,7 @@ main { position:relative; z-index:10; }
   <section class="section" aria-labelledby="realms-h">
     <div class="sec-head">
       <div><span class="eyebrow">The world map</span><h2 id="realms-h"><span class="only-in">Realm progress</span><span class="only-out">The 9 realms of your quest</span></h2></div>
-      <span class="sec-note only-in">Tap a realm to see and check off its tasks</span>
+      <span class="sec-note only-in">Tap a realm for its XP tasks · your full to-do list is your <a href="checklist.html" style="color:inherit;text-decoration:underline">📋 Checklist</a></span>
       <span class="sec-note only-out">Sign in to check off tasks and earn badges</span>
     </div>
     <div class="realm-grid" id="realm-grid"></div>

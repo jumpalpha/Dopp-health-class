@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<title>Start Here — Legend of Wellness</title>
+<meta name="description" content="New to Mr. Dopp's health class? How doppsclass.com works, what to do on day one, and how each chapter and the trimester flow.">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --emerald-text:#00704D; --sky:#38BFFF; --sky-text:#0a5f8a; --crimson:#FF3B5C;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.68);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
+.wrap { max-width:920px; margin:0 auto; padding:28px 18px 80px; }
+a { color:var(--sky-text); font-weight:800; }
+.hero { text-align:center; padding:26px 10px 8px; }
+.hero .ic { font-size:46px; }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(28px,5vw,42px); margin:6px 0 8px; }
+.hero p { font-size:18px; color:var(--dim); max-width:640px; margin:0 auto; }
+.btns { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:18px 0 6px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:12px; font-weight:900; font-size:16px; text-decoration:none; border:2px solid #1C1A2E; color:#1C1A2E; background:#fff; box-shadow:0 3px 0 #1C1A2E; }
+.btn.gold { background:var(--gold); }
+.btn:active { transform:translateY(2px); box-shadow:0 1px 0 #1C1A2E; }
+.toc { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:14px 0 4px; }
+.toc a { font-size:13px; padding:5px 11px; border:1px solid var(--border); border-radius:999px; text-decoration:none; color:var(--text); background:var(--card); font-weight:700; }
+section.sec { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:22px 22px 18px; margin-top:22px; scroll-margin-top:90px; }
+section.sec h2 { font-family:'Cinzel',serif; font-size:22px; margin-bottom:4px; }
+section.sec > p.sub { color:var(--dim); margin-bottom:12px; }
+ol.steps { list-style:none; counter-reset:s; display:grid; gap:10px; }
+ol.steps > li { counter-increment:s; position:relative; padding:12px 14px 12px 54px; border:1px solid var(--border); border-radius:14px; background:#fffdf6; }
+ol.steps > li::before { content:counter(s); position:absolute; left:12px; top:11px; width:30px; height:30px; border-radius:50%; background:var(--gold); border:2px solid #1C1A2E; display:grid; place-items:center; font-weight:900; color:#1C1A2E !important; }
+ol.steps b { display:block; font-size:16px; }
+ol.steps span.t { color:var(--dim); font-size:14px; }
+.flow { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-top:6px; }
+.flow .f { border:1px solid var(--border); border-radius:14px; padding:12px; background:#f7fbff; position:relative; }
+.flow .f .n { font-size:12px; font-weight:900; color:var(--sky-text); letter-spacing:.06em; text-transform:uppercase; }
+.flow .f b { display:block; margin:2px 0 4px; }
+.flow .f p { font-size:13px; color:var(--dim); }
+table { width:100%; border-collapse:collapse; font-size:14px; margin-top:6px; }
+th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+th { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); }
+.tools { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+.tools a { display:block; text-decoration:none; color:var(--text); border:1px solid var(--border); border-radius:14px; padding:12px 14px; background:#fff; }
+.tools a:hover { border-color:#1C1A2E; }
+.tools a b { display:block; font-size:15px; }
+.tools a span { font-size:13px; color:var(--dim); font-weight:600; }
+ul.dots { padding-left:20px; display:grid; gap:6px; }
+.note { background:#fff6d6; border:1px solid #f1d27a; border-radius:12px; padding:10px 14px; font-size:14px; margin-top:12px; }
+.ask { display:flex; gap:8px; margin-top:8px; }
+.ask input { flex:1; padding:12px 14px; border-radius:12px; border:2px solid #1C1A2E; font:700 16px Nunito,sans-serif; }
+.ans { margin-top:10px; display:grid; gap:8px; }
+.ans .r { border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:#f7fbff; }
+.ans .r b { display:block; }
+.ans .r a { display:inline-block; margin-top:4px; }
+@media print { .btns, .toc, #find { display:none; } section.sec { break-inside:avoid; } }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="ic" aria-hidden="true">🧭</div>
+    <h1>Start Here</h1>
+    <p>Welcome to Mr. Dopp's health class. This site is where you read, practice, and keep track of your work all trimester. Here's how it works.</p>
+    <div class="btns">
+      <a class="btn gold" href="tour.html">🗺 Take the 3-minute tour</a>
+      <a class="btn" href="quest.html">⚔ Sign in</a>
+      <a class="btn" href="welcome.html">📣 Today</a>
+    </div>
+    <nav class="toc" aria-label="On this page">
+      <a href="#day1">Day one</a><a href="#daily">Every day</a><a href="#chapter">Each chapter</a><a href="#map">Trimester map</a>
+      <a href="#always">All trimester</a><a href="#tools">Toolbox</a><a href="#grades">Grades</a><a href="#tips">Tips</a><a href="#find">Where is…?</a>
+    </nav>
+  </header>
+
+  <section class="sec" id="day1">
+    <h2>Day one: get set up</h2>
+    <p class="sub">About 10 minutes. Do this on your own school device.</p>
+    <ol class="steps">
+      <li><b>Get your class code</b><span class="t">Mr. Dopp gives each period its own code. It's usually on the board.</span></li>
+      <li><b>Sign in on the <a href="quest.html">Quest page</a></b><span class="t">Tap "Sign in with my class code." New here? Tap to create your hero. Use your <b style="display:inline">real first and last name</b> so Mr. Dopp can match your work to the gradebook.</span></li>
+      <li><b>Make a 4-digit PIN and write it down</b><span class="t">Keep it private. Your device remembers you until the trimester ends, so you won't type it every day. Forgot it? Mr. Dopp can reset it. Don't make a second account.</span></li>
+      <li><b>Hatch your Wellness Sprite</b><span class="t">Tap <a href="pet.html">My Sprite</a> in the top menu. It's the first item on your checklist.</span></li>
+      <li><b>Open your <a href="checklist.html">Checklist</a></b><span class="t">The gold button at the top right of every page. It's your to-do list for the whole trimester.</span></li>
+    </ol>
+  </section>
+
+  <section class="sec" id="daily">
+    <h2>Every class day</h2>
+    <ol class="steps">
+      <li><b>Open <a href="welcome.html">Today</a></b><span class="t">Read Mr. Dopp's briefing, vote in the Survey of the Day, and see what's due today and soon, with how long each takes.</span></li>
+      <li><b>Do what's due, in order</b><span class="t">Work from top to bottom. Most items check themselves off when the site sees you do them (🔒 means "checks itself").</span></li>
+      <li><b>Check your Checklist %</b><span class="t">The little 📋 button in the bottom-left corner shows your progress on every page.</span></li>
+    </ol>
+  </section>
+
+  <section class="sec" id="chapter">
+    <h2>How each chapter works</h2>
+    <p class="sub">Chapters 1–16 are required. Do them in order; each step builds on the one before.</p>
+    <div class="flow">
+      <div class="f"><span class="n">Step 1</span><b>📖 Read</b><p>Open the chapter. Scroll to the end of every lesson and keep it on screen at least 15 seconds. Reading is how we learn. So read it!</p></div>
+      <div class="f"><span class="n">Step 2</span><b>✅ Quick Checks</b><p>Two quick questions after each lesson. Practice only, no grade.</p></div>
+      <div class="f"><span class="n">Step 3</span><b>🎮 Vocab games</b><p>All 4: Flashcard, Speed Quiz, Word Builder, Concept Map. 70%+ to count.</p></div>
+      <div class="f"><span class="n">Step 4</span><b>✏️ Classwork</b><p>Learn the words (80% opens the next chapter) → Chapter Test → 3 short true stories using vocab words.</p></div>
+      <div class="f"><span class="n">Step 5</span><b>🎓 Mastery</b><p>10-question practice check. Get 8 right. Retake anytime.</p></div>
+      <div class="f"><span class="n">Step 6</span><b>📝 Schoology</b><p>Do the chapter's Schoology homework, then tick "Homework done" on your checklist.</p></div>
+    </div>
+    <div class="note"><b>End of each unit:</b> take the Unit Test in Classwork (80% to pass, retakes allowed) and the unit test in class when Mr. Dopp gives it. After Chapter 9 comes the <a href="family_quest.html">Roots &amp; Branches</a> family project.</div>
+  </section>
+
+  <section class="sec" id="map">
+    <h2>The trimester map</h2>
+    <p class="sub">Each Realm is a unit. Finish its chapters to earn the realm badge. Chapters 17–28 are bonus.</p>
+    <table>
+      <thead><tr><th>Unit / Realm</th><th>Chapters</th><th>What it's about</th></tr></thead>
+      <tbody>
+        <tr><td>🏰 1 · Foundation Keep</td><td>1–2</td><td>What health means, decisions and goals</td></tr>
+        <tr><td>🧠 2 · Mind Citadel</td><td>3–5</td><td>Mental health, stress, getting help</td></tr>
+        <tr><td>💞 3 · Relationship Realm</td><td>6–9</td><td>Relationships, family, peers, conflict + Roots &amp; Branches project</td></tr>
+        <tr><td>🥗 4 · Nourish Dungeon</td><td>10–12</td><td>Nutrition, weight, fitness</td></tr>
+        <tr><td>⚙️ 5 · Body Labyrinth</td><td>13–16</td><td>Personal care and body systems</td></tr>
+        <tr><td>⭐ Bonus realms</td><td>17–28</td><td>Life cycle, drugs, disease, safety, first aid, community health</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="sec" id="always">
+    <h2>All trimester long</h2>
+    <p class="sub">These are on your checklist too. Chip away at them, a little at a time.</p>
+    <ul class="dots">
+      <li><b>Wellness Sprite:</b> care for it on 10 different days and get 30 chapter questions right ("Ask me a question").</li>
+      <li><b>Wellness Trail:</b> play on 3 different days.</li>
+      <li><b>Live class games:</b> join at least 3 when Mr. Dopp runs one (<a href="live.html">Join Live Game</a>).</li>
+      <li><b>Arcade:</b> play every solo game at least once, and each partner game with a classmate.</li>
+      <li><b>Weak spots:</b> replay a vocab game you scored under 80% on, or retake a Mastery check you missed (twice).</li>
+      <li><b>CPR/AED:</b> the hands-on part happens in class; Mr. Dopp checks it off.</li>
+    </ul>
+  </section>
+
+  <section class="sec" id="tools">
+    <h2>Your toolbox</h2>
+    <div class="tools">
+      <a href="welcome.html"><b>📣 Today</b><span>Briefing, survey, what's due</span></a>
+      <a href="checklist.html"><b>📋 Checklist</b><span>Everything you need to do</span></a>
+      <a href="chapters/"><b>📖 Chapters</b><span>Reading, PDF, podcast, vocab</span></a>
+      <a href="classwork.html"><b>✏️ Classwork</b><span>Learn, Chapter Test, Stories, Unit Test</span></a>
+      <a href="mastery.html"><b>🎓 Chapter Mastery</b><span>Practice checks, 8 of 10</span></a>
+      <a href="quest.html"><b>⚔ Quest</b><span>Sign in, XP, badges, Reading Check</span></a>
+      <a href="pet.html"><b>🐣 My Sprite</b><span>Your Wellness Sprite</span></a>
+      <a href="arcade/"><b>🕹️ Arcade</b><span>Health games + 🏆 Leaderboard</span></a>
+      <a href="side_quests.html"><b>🗺 Side Quests</b><span>Projects and bonus missions</span></a>
+      <a href="ask.html"><b>💬 Ask Mr. Dopp</b><span>Anonymous questions</span></a>
+      <a href="pick_a_side.html"><b>⚖️ Pick a Side</b><span>Daily debate</span></a>
+      <a href="textreader/"><b>🔊 Text Reader</b><span>Reads anything out loud</span></a>
+      <a href="leaderboard.html"><b>🏆 Hall of Heroes</b><span>Class sprites, badges, XP</span></a>
+      <a href="search.html"><b>🔍 Search</b><span>Find anything on the site</span></a>
+    </div>
+  </section>
+
+  <section class="sec" id="grades">
+    <h2>Grades and turning things in</h2>
+    <ul class="dots">
+      <li>Work you do on doppsclass.com <b>saves itself</b>. There's nothing extra to turn in for it.</li>
+      <li><b>Files</b> (drawings, screenshots, certificates, videos) go to the matching assignment in <b>Schoology</b>.</li>
+      <li><b>Schoology is the gradebook.</b> Your Checklist % counts toward your grade, so keep it climbing.</li>
+      <li>Boxes that say "Tick when done" are on your honor. Only tick them when it's really done.</li>
+    </ul>
+  </section>
+
+  <section class="sec" id="tips">
+    <h2>Tips for a strong trimester</h2>
+    <ul class="dots">
+      <li>Sign in on <b>your own</b> device. Never sign in as someone else or share your PIN.</li>
+      <li>Don't skip ahead in games or click through readings. The site counts real work, not clicks.</li>
+      <li>"AI Guide" activities open ChatGPT, an outside site. Never type your name or personal information there.</li>
+      <li>Fall behind? Open Today, then your Checklist, and do the oldest thing first.</li>
+      <li>Lost? Tap the <b>❓ Help</b> button in the corner of any page.</li>
+    </ul>
+  </section>
+
+  <section class="sec" id="find">
+    <h2>Where is…?</h2>
+    <p class="sub">Type what you're looking for. Example: "where do I turn in my drawing" or "vocab games".</p>
+    <form class="ask" onsubmit="event.preventDefault();ask()">
+      <input id="q" type="search" placeholder="Where do I find…" autocomplete="off" aria-label="Where do I find">
+      <button class="btn gold" type="submit">Find</button>
+    </form>
+    <div class="ans" id="ans" aria-live="polite"></div>
+  </section>
+</div>
+<script src="guide_data.js"></script>
+<script>
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function ask() {
+  var q = document.getElementById('q').value, out = document.getElementById('ans');
+  var hits = DoppGuide.find(q, 3);
+  out.innerHTML = hits.length ? hits.map(function (f) {
+    return '<div class="r"><b>' + esc(f.q) + '</b>' + esc(f.a) + '<br><a href="' + esc(f.href) + '">' + esc(f.go) + ' →</a></div>';
+  }).join('') : '<div class="r">No match yet. Try other words, use <a href="search.html">Search</a>, or <a href="ask.html">ask Mr. Dopp</a>.</div>';
+}
+document.getElementById('q').addEventListener('input', function () { if (this.value.trim().length > 2) ask(); else document.getElementById('ans').innerHTML = ''; });
+</script>
+</body>
+</html>
