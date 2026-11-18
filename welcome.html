@@ -146,7 +146,7 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
   // Leaving this page for Home shouldn't bounce the student straight back here this visit.
   try { sessionStorage.setItem('dopp_welcomed', '1'); } catch (e) {}
 
-  let ses = null, student = null, checkedIn = false, briefing = null;
+  let ses = null, student = null, checkedIn = false, briefing = null, rc = null;
 
   function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600); }
   function session() {
@@ -184,12 +184,29 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
       <div id="cont"></div>
       <section class="sec" id="brief"><h2>📣 Today's briefing</h2><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></section>
       <div id="work"><section class="sec"><h2>📋 Your work</h2><div class="skeleton"></div><div class="skeleton"></div></section></div>
+      <div id="rc-card">${rcHTML()}</div>
       <a class="cont cont-rev" href="listen.html"><span class="cont-ic" aria-hidden="true">📻</span><span><b>Listen</b><small>Chapter podcasts — pick up where you left off and earn listener badges.</small></span></a>
       <a class="cont cont-rev" href="ask.html"><span class="cont-ic" aria-hidden="true">🙋</span><span><b>Ask Mr. Dopp</b><small>Got a question you don't want to ask out loud? Ask it anonymously.</small></span></a>
       <div class="links">
         <a class="btn btn-dark" href="checklist.html">📋 My full checklist</a>
         <a class="btn" href="index.html" data-home>🏰 Home page</a>
       </div>`;
+  }
+
+  // ───── Reading Check (private: only this student + the teacher) ─────
+  function rcHTML() {
+    if (!rc) return '';
+    const fresh = rc.can_take && !rc.attempts, retake = rc.can_take && rc.attempts;
+    const title = fresh ? '📖 Reading Check <span class="tag">New</span>' : retake ? '📖 Reading Check <span class="tag">Retake open</span>' : 'My Reading Check';
+    const sub = fresh ? 'About 7 minutes, not graded. 🔒 Only you and Mr. Dopp see your result.'
+      : retake ? 'Mr. Dopp opened a retake for you. 🔒 Still private.'
+      : '🔒 Private — tap to see your reading level. Only you and Mr. Dopp can see it.';
+    return `<a class="cont cont-rev" href="reading_check.html"><span class="cont-ic" aria-hidden="true">📖</span><span><b>${title}</b><small>${sub}</small></span></a>`;
+  }
+  async function loadRC() {
+    const { data, error } = await db.rpc('reading_status', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER });
+    rc = error ? null : data;
+    const el = $('rc-card'); if (el) el.innerHTML = rcHTML();
   }
 
   // ───── continue where you left off + review deck ─────
@@ -283,6 +300,7 @@ nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; just
     ses = session();
     if (!ses) return signInMessage();
     render();
+    loadRC();
     const [who, days, brief, cl] = await Promise.all([
       db.rpc('get_student_by_auth', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER }),
       db.rpc('get_student_days', { p_student_id: ses.id, p_pin_hash: ses.pin }),

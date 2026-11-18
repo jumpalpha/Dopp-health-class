@@ -234,6 +234,20 @@ input, select, textarea { color: var(--text); }
 .bt-note { font-size:12.5px; color:var(--dim); line-height:1.5; margin:4px 0 8px; }
 #ak-root textarea { width:100%; font:600 14.5px 'Nunito',sans-serif; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#fff; margin-bottom:8px; resize:vertical; }
 #ak-root .ak-body { font-weight:800; background:#f7f9ff; }
+.rt-bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:12px 0; }
+.rt-bar select { font:700 14px 'Nunito',sans-serif; padding:8px 10px; border-radius:10px; border:1px solid var(--border); }
+.rt-tbl { width:100%; border-collapse:collapse; font-size:14px; }
+.rt-tbl th { text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.4px; opacity:.7; padding:6px 8px; border-bottom:2px solid var(--border); }
+.rt-tbl td { padding:8px; border-bottom:1px solid var(--border); vertical-align:top; }
+.rt-sm { font-size:12px; opacity:.7; }
+.rt-lv { font-weight:900; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+.rt-red { background:rgba(255,59,92,.15); color:#B4123A; } .rt-amber { background:rgba(255,196,0,.22); color:#7a5c00; } .rt-green { background:rgba(0,229,160,.18); color:#00704D; }
+.rt-flag { font-size:11px; font-weight:800; background:rgba(255,59,92,.1); color:#B4123A; border-radius:6px; padding:2px 6px; }
+.rt-det { font-size:13px; line-height:1.7; background:rgba(56,191,255,.06); }
+.rt-hist { display:flex; gap:6px; align-items:flex-end; overflow-x:auto; }
+.rt-hist div { flex:1; min-width:42px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:110px; }
+.rt-hist i { display:block; width:70%; background:linear-gradient(180deg,#38BFFF,#00E5A0); border-radius:6px 6px 0 0; }
+.rt-hist b { font-size:12px; } .rt-hist small { font-size:11px; opacity:.7; white-space:nowrap; }
 .ak-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 12px; }
 .ak-head { display:flex; gap:10px; align-items:center; flex-wrap:wrap; font-size:12px; color:var(--dim); margin-bottom:8px; }
 .ak-tag { font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; padding:2px 8px; border-radius:6px; background:#e6f6ff; color:#0a5f96; }
@@ -294,6 +308,7 @@ input, select, textarea { color: var(--text); }
     <button class="sb-btn" onclick="showPage('tracker',this)"><span class="sb-btn-icon">🗺</span>Realm Tracker</button>
     <button class="sb-btn" onclick="showPage('briefing',this)"><span class="sb-btn-icon">📣</span>Daily Briefing</button>
     <button class="sb-btn" onclick="showPage('ask',this)"><span class="sb-btn-icon">🙋</span>Ask Mr. Dopp <span id="ak-badge" style="display:none;background:#FF3B5C;color:#fff;border-radius:999px;font-size:11px;font-weight:900;padding:1px 7px;margin-left:4px"></span></button>
+    <button class="sb-btn" onclick="showPage('reading',this)"><span class="sb-btn-icon">📖</span>Reading Levels 🔒</button>
     <button class="sb-btn" onclick="showPage('checklist',this)"><span class="sb-btn-icon">✅</span>Student Checklist Draft</button>
     <button class="sb-btn" onclick="showPage('finance',this)"><span class="sb-btn-icon">💰</span>Cost of Your Future</button>
     <button class="sb-btn" onclick="showPage('classwork',this)"><span class="sb-btn-icon">📝</span>Unit Classwork</button>
@@ -564,6 +579,15 @@ input, select, textarea { color: var(--text); }
       <div class="page-sub">Anonymous student questions. Answer them in class or post an answer to the class board.</div>
     </div>
     <div id="ak-root"></div>
+  </div>
+
+  <!-- ── READING LEVELS (private Reading Check results) ── -->
+  <div class="page" id="page-reading">
+    <div class="page-hdr">
+      <div class="page-title">Reading Levels 🔒</div>
+      <div class="page-sub">Private Reading Check results. Only you and each student can see their own level — never the class.</div>
+    </div>
+    <div id="rt-root"></div>
   </div>
 
   <!-- ── STUDENT CHECKLIST DRAFT (teacher-only until approved) ── -->
@@ -1483,6 +1507,7 @@ function renderPage(id) {
   else if(id==='checklist' && window.renderChecklistDraft) renderChecklistDraft();
   else if(id==='briefing' && window.renderBriefing) renderBriefing();
   else if(id==='ask' && window.renderAsk) renderAsk();
+  else if(id==='reading' && window.renderReadingTeacher) renderReadingTeacher();
   else if(id==='finance' && window.renderFinanceTeacher) renderFinanceTeacher();
   else if(id==='classwork' && window.renderClassworkTeacher) renderClassworkTeacher();
 }
@@ -2094,6 +2119,7 @@ renderOverview();
 <script src="checklist_teacher.js"></script>
 <script src="briefing_teacher.js"></script>
 <script src="ask_teacher.js"></script>
+<script src="reading_teacher.js"></script>
 <script src="wcq_recipes.js"></script>
 <script src="recipes_teacher.js"></script>
 <script src="finance_calc.js"></script>

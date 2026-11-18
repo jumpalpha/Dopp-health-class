@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<title>Reading Check — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --emerald-text:#00704D; --sky:#38BFFF; --crimson:#FF3B5C;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); }
+.wrap { max-width:760px; margin:0 auto; padding:22px 16px 60px; }
+.hero { position:relative; overflow:hidden; border-radius:20px; padding:24px 22px 20px; color:#fff; text-align:center;
+  background:radial-gradient(circle at 20% 0%, #3b2a7a 0%, #1C1A2E 60%), #1C1A2E; box-shadow:0 10px 30px rgba(28,26,46,.18); }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(24px,6vw,34px); color:var(--gold); text-shadow:0 2px 0 #000; line-height:1.15; }
+.hero p { font-size:15px; color:rgba(255,255,255,.85); margin-top:8px; line-height:1.55; }
+.lock { display:inline-flex; gap:8px; align-items:center; margin-top:12px; font-weight:800; font-size:13.5px; color:#1C1A2E; background:var(--emerald); border-radius:999px; padding:7px 14px; }
+.sec { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px 16px; margin-top:16px; }
+.sec h2 { font-family:'Cinzel',serif; font-size:17px; color:var(--gold-text); margin-bottom:10px; }
+.sec p, .sec li { font-size:15px; line-height:1.6; }
+.sec ul { padding-left:20px; margin:6px 0; }
+.btn { display:inline-block; font:900 16px 'Nunito',sans-serif; padding:14px 22px; border-radius:14px; border:none; cursor:pointer; text-decoration:none;
+  background:linear-gradient(180deg,#FFE34D,#FFC400); color:#1C1A2E; box-shadow:0 4px 0 #a37d00; }
+.btn:active { transform:translateY(3px); box-shadow:0 1px 0 #a37d00; }
+.btn[disabled] { opacity:.5; cursor:default; }
+.btn-dark { background:#1C1A2E; color:var(--gold); box-shadow:none; }
+.btn-wide { width:100%; margin-top:14px; }
+.bar { height:8px; background:rgba(28,26,46,.08); border-radius:99px; overflow:hidden; margin:4px 0 14px; }
+.bar i { display:block; height:100%; background:linear-gradient(90deg,var(--sky),var(--emerald)); transition:width .4s; }
+.step { font-size:12.5px; font-weight:800; color:var(--dim); text-transform:uppercase; letter-spacing:.5px; }
+.passage { font-family:Georgia,'Times New Roman',serif; font-size:19px; line-height:2.05; background:#fffdf6; border:1px solid var(--border); border-radius:14px; padding:18px 18px; }
+.passage select { font:700 17px 'Nunito',sans-serif; color:var(--text); background:#e9f7ff; border:2px solid var(--sky); border-radius:8px; padding:2px 4px; margin:0 2px; max-width:100%; cursor:pointer; }
+.passage select.done { background:#eafff6; border-color:var(--emerald); }
+.hint { font-size:13px; color:var(--dim); margin-top:10px; }
+.timer { font:900 34px 'Nunito',sans-serif; text-align:center; color:var(--gold-text); }
+.sent { min-height:120px; display:flex; align-items:center; justify-content:center; text-align:center; font-family:Georgia,serif; font-size:24px; line-height:1.4;
+  background:#fffdf6; border:1px solid var(--border); border-radius:14px; padding:18px; margin:10px 0 14px; }
+.tf { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.tf button { font:900 20px 'Nunito',sans-serif; padding:18px 10px; border-radius:14px; border:2px solid var(--border); cursor:pointer; background:#fff; color:var(--text); }
+.tf .t { border-color:var(--emerald); background:#eafff6; }
+.tf .f { border-color:var(--crimson); background:#fff1f4; }
+.tf button:active { transform:scale(.97); }
+.fb { text-align:center; font-weight:800; min-height:22px; font-size:14px; margin-top:8px; }
+.result { text-align:center; padding:6px 0 4px; }
+.big { font-family:'Cinzel',serif; font-size:clamp(30px,8vw,44px); color:var(--gold-text); margin:6px 0; }
+.veil { filter:blur(14px); user-select:none; }
+.msg { background:#fff; border:1px solid var(--border); border-radius:16px; padding:26px 20px; text-align:center; font-size:15px; line-height:1.6; margin-top:16px; }
+.err { color:#B4123A; font-weight:800; margin-top:10px; }
+html.dark .passage, html.dark .sent { background:#1d1b2e; }
+@media (max-width:480px) { .passage { font-size:17.5px; padding:14px 12px; } .sent { font-size:21px; } }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="welcome.html">🏠 Today</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+  </div>
+</nav>
+<div class="wrap" id="app"><div class="msg">Loading…</div></div>
+
+<script src="vendor/supabase.js"></script>
+<script src="reading_check_data.js"></script>
+<script>
+/*
+ * Reading Check — private reading-level screener (~6–8 minutes).
+ * Part 1: adaptive maze passages (pick the word that fits; grade 3 → college). Result = the
+ *         highest level read comfortably (≥5 of 6 right) just below a level that was too hard.
+ * Part 2: 60-second true/false sentence speed round (silent reading efficiency, net correct).
+ * Saved only through reading_submit (supabase/reading_check.sql). Only this student and the
+ * teacher dashboard can see it. Never shown on boards, badges, or anything class-wide.
+ */
+(function () {
+  const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+  const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const D = window.RC_DATA;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const MIN = 3, MAX = 13, START = 8, MAX_PASSAGES = 7, PASS = 5, SPEED_SECS = 60;
+  const label = L => L <= 2 ? 'Below Grade 3' : L >= 13 ? 'College level' : 'Grade ' + L;
+
+  let ses = null, status = null, form = 'A', t0 = 0, busy = false, finished = false;
+  const ok = s => s.right >= Math.min(PASS, s.of - 1);   // 5 of 6 (or all but one) = read comfortably
+  let steps = [], cur = START, step = 2, lastDir = 0;
+  let sre = { right: 0, wrong: 0, order: [], i: 0, end: 0, timer: null };
+
+  function session() {
+    try {
+      const r = window.DoppRemember && DoppRemember.get();
+      const id = localStorage.getItem('qSID_' + TRIMESTER) || (r && r.sid), pin = sessionStorage.getItem('qPIN_' + TRIMESTER) || (r && r.pin);
+      return id && pin ? { id, pin } : null;
+    } catch (e) { return null; }
+  }
+  function view(html) { $('app').innerHTML = html; window.scrollTo(0, 0); }
+  function signIn(extra) {
+    view(`<div class="msg"><b>Sign in first</b><br>${extra || 'The Reading Check is inside your student login. Sign in on the Quest page with your class code, last name and PIN.'}<br>
+      <a class="btn btn-dark" style="margin-top:12px" href="quest.html">⚔ Sign in on the Quest page</a></div>`);
+  }
+
+  // ───────── start / already done ─────────
+  function intro() {
+    view(`<section class="hero"><h1>📖 Reading Check</h1>
+        <p>A quick check (about 7 minutes) that shows the reading level where you read comfortably.
+        It is <b>not graded</b> and gives no XP — just do your honest best.</p>
+        <div class="lock">🔒 Private — only you and Mr. Dopp ever see your result</div></section>
+      <section class="sec"><h2>How it works</h2>
+        <ul><li><b>Part 1 · Passages (about 5 min).</b> Read a short passage. Some words are missing — pick the word that makes sense in each blue box. Passages get harder or easier based on how you do.</li>
+            <li><b>Part 2 · Speed round (1 min).</b> Read short sentences and tap <b>True</b> or <b>False</b> as fast as you can while still being right.</li></ul>
+        <p class="hint">Tips: Find a quiet spot. Don't use a dictionary, translator or help from anyone — that would only hide what you're good at. You get one try this trimester.</p>
+        <button class="btn btn-wide" id="go">Start Part 1 ▶</button></section>`);
+    $('go').onclick = () => { t0 = Date.now(); busy = true; passage(); };
+  }
+
+  function showResult(lv, sreNet, when, hidden) {
+    view(`<section class="hero"><h1>📖 Your Reading Check</h1>
+        <div class="lock">🔒 Private — only you and Mr. Dopp can see this</div></section>
+      <section class="sec result">
+        <div class="step">${when ? 'Taken ' + esc(new Date(when).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) : 'Your result'}</div>
+        <div id="veil" class="${hidden ? 'veil' : ''}">
+          <div class="big">${esc(label(lv))}</div>
+          <p>This is the level where you can read on your own and understand it well.${lv < 13 ? ' Text a grade or two above this is a good stretch with some help.' : ''}</p>
+          ${sreNet != null ? `<p style="margin-top:8px">Speed round: <b>${esc(sreNet)}</b> sentences read correctly in one minute.</p>` : ''}
+        </div>
+        <button class="btn btn-dark" id="reveal" style="margin-top:14px">${hidden ? '👁 Tap to show' : '🙈 Hide'}</button>
+        <p class="hint" style="margin-top:14px">Reading level grows with practice — reading anything you enjoy for 20 minutes a day really helps.
+          Your result is never posted, ranked or shown to classmates. ${status && status.can_take ? '' : 'If you think something went wrong, talk to Mr. Dopp about a retake.'}</p>
+        <a class="btn btn-wide" href="welcome.html">🏠 Back to Today</a></section>`);
+    $('reveal').onclick = () => { const v = $('veil').classList.toggle('veil'); $('reveal').textContent = v ? '👁 Tap to show' : '🙈 Hide'; };
+  }
+
+  // ───────── Part 1: adaptive maze ─────────
+  function pick(level) { return D.passages.find(p => p.level === level && p.form === form) || D.passages.find(p => p.level === level); }
+
+  function passage() {
+    const p = pick(cur), started = Date.now();
+    let n = 0;
+    const html = esc(p.text).replace(/\{([^}]*)\}/g, (m, inner) => {
+      const opts = inner.split('|');
+      return `<select data-i="${n++}" data-ans="${esc(opts[0])}" aria-label="Missing word ${n}"><option value="">  ▾  </option>${shuffle(opts).map(o => `<option>${o}</option>`).join('')}</select>`;
+    });
+    view(`<div class="step">Part 1 of 2 · Passage ${steps.length + 1}</div>
+      <div class="bar"><i style="width:${Math.min(100, (steps.length / 5) * 100)}%"></i></div>
+      <section class="sec"><div class="passage" id="ps">${html}</div>
+        <p class="hint">Pick the word that makes sense in every blue box, then tap Next.</p>
+        <button class="btn btn-wide" id="next" disabled>Next ▶</button></section>`);
+    const sels = [...document.querySelectorAll('#ps select')];
+    const check = () => { sels.forEach(s => s.classList.toggle('done', !!s.value)); $('next').disabled = sels.some(s => !s.value); };
+    sels.forEach(s => s.addEventListener('change', check));
+    $('next').onclick = () => {
+      const right = sels.filter(s => s.value === s.dataset.ans).length;
+      const secs = Math.round((Date.now() - started) / 1000);
+      steps.push({ level: cur, id: p.id, right, of: sels.length, secs, wpm: Math.round(p.words / Math.max(secs, 1) * 60) });
+      advance(ok(steps[steps.length - 1]));
+    };
+  }
+
+  // Bracket = a passed level L with L+1 failed. Stop at the first bracket, the top, the bottom, or 7 passages.
+  function sets() {
+    return { passed: steps.filter(ok).map(s => s.level), failed: steps.filter(s => !ok(s)).map(s => s.level) };
+  }
+  function bracketed() { const { passed, failed } = sets(); return passed.filter(L => failed.includes(L + 1)); }
+  function result() {
+    const { passed, failed } = sets(), b = bracketed();
+    if (b.length) return Math.max(...b);
+    if (passed.includes(MAX)) return MAX;
+    if (!passed.length) return Math.max(2, Math.min(...failed) - 1);
+    const lowFail = failed.length ? Math.min(...failed) : 99;
+    const below = passed.filter(L => L < lowFail);
+    return below.length ? Math.max(...below) : Math.max(...passed);
+  }
+  function done() {
+    const { passed, failed } = sets();
+    return bracketed().length > 0 || passed.includes(MAX) || failed.includes(MIN) || steps.length >= MAX_PASSAGES;
+  }
+  function advance(ok) {
+    if (done()) return speedIntro();
+    const dir = ok ? 1 : -1;
+    if (lastDir && dir !== lastDir) step = 1;
+    lastDir = dir;
+    let next = Math.max(MIN, Math.min(MAX, cur + dir * step));
+    const tried = new Set(steps.map(s => s.level));
+    while (tried.has(next) && next > MIN && next < MAX) next += dir;   // never repeat a level
+    if (tried.has(next)) return speedIntro();
+    cur = next;
+    passage();
+  }
+
+  // ───────── Part 2: 60-second speed round ─────────
+  const PRACTICE = [[true, 'A cow can walk.'], [false, 'A hat is a kind of fish.'], [true, 'Milk can be cold.']];
+  function speedIntro() {
+    view(`<div class="step">Part 2 of 2 · Speed round</div><div class="bar"><i style="width:100%"></i></div>
+      <section class="sec"><h2>⚡ Speed round — 1 minute</h2>
+        <p>Read each sentence and tap <b>True</b> if it makes sense or <b>False</b> if it's silly or wrong. Go as fast as you can, but be right — wrong taps <b>subtract</b> points.
+        Keyboard: <b>T</b> / <b>F</b> or ← / →.</p><p class="hint">First, 3 practice sentences (not timed).</p>
+        <div class="sent" id="sent"></div>
+        <div class="tf"><button class="t" id="bt">✔ True</button><button class="f" id="bf">✘ False</button></div>
+        <div class="fb" id="fb"></div></section>`);
+    let i = 0;
+    const show = () => { $('sent').textContent = PRACTICE[i][1]; };
+    const answer = v => {
+      const ok = v === PRACTICE[i][0];
+      $('fb').textContent = ok ? '✓ Right!' : '✗ Not quite — that one was ' + (PRACTICE[i][0] ? 'True' : 'False') + '.';
+      $('fb').style.color = ok ? 'var(--emerald-text)' : '#B4123A';
+      if (++i >= PRACTICE.length) { detach(); setTimeout(speedReady, 700); } else show();
+    };
+    attach(answer); show();
+  }
+  let keyFn = null;
+  function attach(fn) {
+    $('bt').onclick = () => fn(true); $('bf').onclick = () => fn(false);
+    keyFn = e => { const k = e.key.toLowerCase(); if (k === 't' || k === 'arrowleft') fn(true); else if (k === 'f' || k === 'arrowright') fn(false); };
+    document.addEventListener('keydown', keyFn);
+  }
+  function detach() { if (keyFn) document.removeEventListener('keydown', keyFn); keyFn = null; }
+
+  function speedReady() {
+    view(`<div class="step">Part 2 of 2 · Speed round</div><div class="bar"><i style="width:100%"></i></div>
+      <section class="sec" style="text-align:center"><h2>Ready?</h2><p>The 1-minute timer starts when you tap Go.</p>
+      <button class="btn btn-wide" id="go">Go! ⚡</button></section>`);
+    $('go').onclick = speedRun;
+  }
+  function speedRun() {
+    sre.order = shuffle(D.sre); sre.i = 0; sre.right = sre.wrong = 0; sre.end = Date.now() + SPEED_SECS * 1000;
+    view(`<div class="step">Part 2 of 2 · Speed round</div>
+      <section class="sec"><div class="timer" id="tm">60</div>
+        <div class="sent" id="sent"></div>
+        <div class="tf"><button class="t" id="bt">✔ True</button><button class="f" id="bf">✘ False</button></div></section>`);
+    const show = () => { $('sent').textContent = sre.order[sre.i][1]; };
+    attach(v => {
+      if (Date.now() > sre.end) return;
+      if (v === sre.order[sre.i][0]) sre.right++; else sre.wrong++;
+      if (++sre.i >= sre.order.length) return finish(); show();
+    });
+    show();
+    sre.timer = setInterval(() => {
+      const left = Math.max(0, Math.ceil((sre.end - Date.now()) / 1000));
+      if ($('tm')) $('tm').textContent = left;
+      if (left <= 0) finish();
+    }, 200);
+  }
+
+  // ───────── save ─────────
+  async function finish() {
+    if (finished) return; finished = true;
+    clearInterval(sre.timer); detach();
+    const lv = result();
+    const answered = sre.right + sre.wrong;
+    const totalRight = steps.reduce((a, s) => a + s.right, 0), totalOf = steps.reduce((a, s) => a + s.of, 0);
+    const flags = [];
+    if (steps.some(s => s.wpm > 450 && !ok(s))) flags.push('rushed passage');
+    if (answered >= 5 && sre.right / answered < 0.8) flags.push('speed round guessing');
+    if (!bracketed().length && !sets().passed.includes(MAX) && !sets().failed.includes(MIN)) flags.push('no clear cutoff');
+    if (bracketed().length && sets().passed.some(L => L > Math.max(...bracketed()) + 1)) flags.push('uneven');
+    const payload = {
+      level: lv, maze_pct: totalOf ? Math.round(totalRight / totalOf * 100) : 0,
+      sre_net: sre.right - sre.wrong, sre_acc: answered ? Math.round(sre.right / answered * 100) : 0,
+      minutes: Math.round((Date.now() - t0) / 6000) / 10, flags,
+      details: { form, steps, sre: { right: sre.right, wrong: sre.wrong, answered } }
+    };
+    view('<div class="msg">Saving privately…</div>');
+    const { error } = await db.rpc('reading_submit', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER, p_result: payload });
+    if (error) {
+      if (/already took/i.test(error.message)) return load();
+      view(`<div class="msg"><b>Couldn't save your result.</b><br>Check your internet and try again — your answers are still here.
+        <div class="err">${esc(error.message)}</div><button class="btn" style="margin-top:12px" id="retry">Try again</button></div>`);
+      $('retry').onclick = () => { finished = false; finish(); }; return;
+    }
+    busy = false; status = { can_take: false };
+    showResult(lv, payload.sre_net, new Date().toISOString(), false);
+  }
+
+  async function load() {
+    ses = session();
+    if (!ses) return signIn();
+    const { data, error } = await db.rpc('reading_status', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER });
+    if (error) {
+      if (/not signed in/i.test(error.message)) { if (window.DoppRemember) DoppRemember.clear(); return signIn('This device\'s saved login doesn\'t work anymore. Please sign in again.'); }
+      return view('<div class="msg">Couldn\'t load the Reading Check right now. Try again in a minute.</div>');
+    }
+    status = data || {};
+    form = (status.attempts || 0) % 2 ? 'B' : 'A';              // a retake gets the other set of passages
+    if (status.latest && !status.can_take) return showResult(status.latest.level, status.latest.sre_net, status.latest.taken_at, true);
+    intro();
+  }
+  window.addEventListener('beforeunload', e => { if (busy) { e.preventDefault(); e.returnValue = ''; } });
+  load();
+})();
+</script>
+</body>
+</html>
