@@ -137,7 +137,7 @@
     if (!HOME || document.getElementById('sg-banner')) return;
     // right under the hero's "Enter the Quest" buttons (the top of <main> sits under the fixed menu)
     var cta = null;
-    Array.prototype.forEach.call(document.querySelectorAll('main a'), function (a) { if (!cta && /Enter the Quest/.test(a.textContent || '')) cta = a; });
+    Array.prototype.forEach.call(document.querySelectorAll('main a'), function (a) { if (!cta && /^(Enter the Quest|Continue Chapter|Game Arcade)/.test((a.textContent || '').trim())) cta = a; });
     var row = cta && cta.parentNode; if (!row || !row.parentNode) return;
     var b = document.createElement('div'); b.id = 'sg-banner'; b.setAttribute('data-keep-colors', '');
     b.innerHTML = who
