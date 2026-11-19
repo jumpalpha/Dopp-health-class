@@ -282,6 +282,8 @@
     (ev.vocab || []).forEach(v => { if (v.n >= 2 && v.meta && v.meta.first_pct != null && v.meta.first_pct < 80) reviews++; });
     (ev.mastery || []).forEach(m => { if (m.fails > 0 && m.attempts > m.fails) reviews++; else if (m.fails > 1) reviews++; });
 
+    const cprProj = new Set((ev.bonus && ev.bonus.projects) || []);
+    const cprDone = cprProj.has('cpr_aed_quest_done'), cprStarted = cprDone || cprProj.has('cpr_aed_quest');
     const ongoing = [
       finish({ id: 'sprite:hatch', kind: 'auto', label: 'Hatch your Wellness Sprite', status: ev.pet ? 'complete' : 'not_started',
         detail: ev.pet ? 'hatched ' + fmt(iso(ev.pet.born)) + (ev.pet.alive === false ? ' · needs reviving' : '') : 'hatch one on the Sprite page', href: 'pet.html' }),
@@ -299,8 +301,9 @@
       finish({ id: 'live:games', kind: 'auto', label: 'Take part in ' + cfg.live_min + ' live class games',
         status: liveIn.length >= cfg.live_min ? 'complete' : liveIn.length ? 'in_progress' : 'not_started',
         detail: liveIn.length + ' of ' + cfg.live_min + ' · sign in first, then join and answer when we play in class' }),
-      finish({ id: 'cpr:handson', kind: 'teacher', label: 'CPR/AED hands-on ✓ (teacher-verified)', status: 'needs_teacher',
-        detail: 'Hands-only CPR and AED practice in class (Chapter 27). Mr. Dopp checks this off · get ready with the CPR & AED Side Quest',
+      // tracked automatically from the CPR & AED Side Quest (hand spot, push-to-the-beat drill, AED steps, 5/5 quick check)
+      finish({ id: 'cpr:handson', kind: 'auto', label: 'CPR & AED practice', status: cprDone ? 'complete' : cprStarted ? 'in_progress' : 'not_started',
+        detail: cprDone ? 'CPR & AED Side Quest passed' : cprStarted ? 'started · finish the drills and pass the 5-question check' : 'do the CPR & AED Side Quest (Chapter 27)',
         href: 'cpr_aed_quest.html' }),
       finish({ id: 'review:weak', kind: 'auto', label: 'Go back over your weak spots (' + cfg.review_min + ' times)',
         status: reviews >= cfg.review_min ? 'complete' : reviews ? 'in_progress' : 'not_started',
