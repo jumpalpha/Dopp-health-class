@@ -30,7 +30,7 @@
   var root = document.documentElement;
   var FILE = (location.pathname.split('/').pop() || '').replace(/\.html$/, '');
   // Games (and projector tools) always stay dark; theme.js handles the light/dark switch everywhere else.
-  var GAME = root.hasAttribute('data-app-name') || /^(dopp_spin|germ_snipes|team_hangman|partner|trail|live|live_host|timer)$/.test(FILE);
+  var GAME = root.hasAttribute('data-app-name') || /^(dopp_spin|germ_snipes|germ_snipes_classic|team_hangman|partner|trail|live|live_host|timer)$/.test(FILE);
   var PROPS = ['background-color', 'background-image', 'color', 'border-top-color', 'border-right-color',
                'border-bottom-color', 'border-left-color', 'outline-color', 'fill', 'stroke'];
   var touched = [];         // elements we changed, so light mode can put them back

@@ -36,7 +36,7 @@
   var path = location.pathname;
   var file = (path.split('/').pop() || '').replace(/\.html$/, '');
   var GAME = /\/arcade\/play\//.test(path) || root.hasAttribute('data-app-name') ||
-             /^(dopp_spin|germ_snipes|team_hangman|partner|trail|live|live_host|timer|print_quest|sub_guide)$/.test(file) ||
+             /^(dopp_spin|germ_snipes|germ_snipes_classic|team_hangman|partner|trail|live|live_host|timer|print_quest|sub_guide)$/.test(file) ||
              /^game\d\d_/.test(file);
   var NEXT = !!document.querySelector('link[href*="/_next/static/"], script[src*="/_next/static/"]') || root.classList.contains('h-full');
   var QUEST = file === 'quest';

@@ -14,7 +14,7 @@
   var path = location.pathname, file = (path.split('/').pop() || '').replace(/\.html$/, '');
   var root = document.documentElement;
   if (/\/arcade\/play\//.test(path) || root.hasAttribute('data-app-name') || /^game\d\d_/.test(file)) return;
-  if (/^(teacher|teacher-admin|live|live_host|timer|print_quest|sub_guide|offline|dopp_spin|germ_snipes|team_hangman|partner|trail|coin_host|coin_live|cpr_trainer_build)$/.test(file)) return;
+  if (/^(teacher|teacher-admin|live|live_host|timer|print_quest|sub_guide|offline|dopp_spin|germ_snipes|germ_snipes_classic|team_hangman|partner|trail|coin_host|coin_live|cpr_trainer_build)$/.test(file)) return;
   var NOHELP = file === 'tour';   // the tour page gets the menu links but not the Help button
   var GAMEISH = /^(dopp_|sprite_|vocab_slice|vocab_engine|cup_pong|tic_tac_toe|blast_blocks|how_smart|coin_quest|immune_defense|germ_sweeper|field_day|habit_showdown|art_studio)/.test(file);
   var HOME = path === '/' || /^\/(index\.html)?$/.test(path);
