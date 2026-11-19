@@ -247,7 +247,7 @@ const termByN = n => U.terms[n - 1];
 const chWords = c => U.terms.map((w, i) => Object.assign({ n: i + 1 }, w)).filter(w => w.c === c);
 const learnBest = c => Number((W.learn_best || {})[c] || 0);
 const learnOk = c => learnBest(c) >= R.learnPass;
-const chOpen = c => U.chapters.filter(x => x < c).every(learnOk);
+const chOpen = c => c >= 17 || U.chapters.filter(x => x < c).every(learnOk);   // 2026-11-18: Ch 17–28 light track open from the start, any order
 const chStories = c => ((W.ch_stories || {})[c] || [null, null, null]);
 const storiesDone = c => chStories(c).filter(Boolean).length;
 const okWords = c => chWords(c).filter(w => w.s).length;
@@ -310,7 +310,8 @@ async function start() {
 function hub(st, banner) {
   const by = {}; (st.units || []).forEach(w => { by[w.unit] = w; });
   app.innerHTML = banner + `<div class="card"><h2>Your Units</h2>
-    <p class="muted">Each unit is split into chapters. In every chapter: <b>Learn</b> the words (80% to move on), <b>Practice</b>, take the <b>Chapter Test</b>, and write <b>3 short true stories</b> (fewer in a couple of short chapters). Then take the <b>Unit Test</b> and turn the unit in. Only Mr. Dopp reads your stories.</p></div>
+    <p class="muted">Each unit is split into chapters. In every chapter: <b>Learn</b> the words (80% to move on), <b>Practice</b>, take the <b>Chapter Test</b>, and write <b>3 short true stories</b> (fewer in a couple of short chapters). Then take the <b>Unit Test</b> and turn the unit in. Only Mr. Dopp reads your stories.</p>
+    <p class="muted" style="margin-top:8px">⚡ <b>Units 6–9 (Chapters 17–28) are a light track:</b> they're open from day one, in any order. For your Checklist you only need <b>Learn (80%)</b> in each chapter, plus reading and Mastery. Tests and stories there are optional practice.</p></div>
     <div class="units">` + UNITS.map(u => {
       const w = by[u.unit];
       let pills = '<span class="pill">Not started</span>';

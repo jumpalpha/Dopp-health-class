@@ -99,12 +99,12 @@
   const MINUTE_TYPES = [
     ['reading', 'Chapter reading (all lessons)', 20], ['vocab', 'Vocab game round', 5], ['mastery', 'Chapter Mastery quiz', 10],
     ['homework', 'Schoology homework', 20], ['test', 'Test taken in class', 30], ['activity', 'Sprite, Trail, live game & review tasks', 10],
-    ['games', 'Arcade game goals', 15], ['project', 'Unit project (multi-day)', 60]
+    ['games', 'Arcade game goals', 15], ['project', 'Unit project (multi-day)', 60], ['learn', 'Classwork Learn (vocab check)', 10]
   ];
   const MINUTE_DEFAULTS = {}; MINUTE_TYPES.forEach(([k, , m]) => { MINUTE_DEFAULTS[k] = m; });
   function minuteType(id) {
     const p = String(id || '').split(':')[0];
-    return { read: 'reading', vocab: 'vocab', mastery: 'mastery', hw: 'homework', test: 'test', games: 'games', proj: 'project' }[p] || 'activity';
+    return { read: 'reading', vocab: 'vocab', mastery: 'mastery', hw: 'homework', test: 'test', games: 'games', proj: 'project', learn: 'learn' }[p] || 'activity';
   }
   function minutesFor(it, cfg) {
     const id = typeof it === 'string' ? it : it && it.id;
@@ -132,7 +132,8 @@
       minutes: Object.assign({}, MINUTE_DEFAULTS),   // default minutes per task type
       min_override: {},                      // item id → minutes (teacher override for one item)
       excuse_before: tri === '2026-T1' || !TERM_DATES[tri] ? 5 : 1,   // class-wide: everything for chapters below this is excused (T1 started before tracking)
-      cw_required: tri !== '2026-T1'        // Unit Classwork: optional + counted as done in T1 (new, gathering feedback); required from T2
+      cw_required: tri !== '2026-T1',       // Unit Classwork: optional + counted as done in T1 (new, gathering feedback); required from T2
+      light_required: tri !== '2026-T1'     // 2026-11-18: chapters 17–28 required as a LIGHT track from T2 (read + Learn 80% + Mastery), any order, any time
     };
   }
   function config(saved, tri) {
@@ -180,6 +181,7 @@
     const arcade = {}; (ev.arcade || []).forEach(a => { arcade[a.g] = a; });
     const quest = new Set(ev.quest || []);
     const projKeys = new Set(((ev.bonus || {}).projects) || []);
+    const learn = ev.learn || {};   // Classwork Learn best % per chapter
 
     const exBefore = Number(cfg.excuse_before) || 1;
     function finish(it, upToCh) {
@@ -325,8 +327,19 @@
 
     // ── bonus (never required) ──
     const bonusCh = [];
+    const lightReq = cfg.light_required !== false;
     for (let c = 17; c <= 28; c++) {
-      const its = chapterItems(c, false);
+      let its = chapterItems(c, false);
+      if (lightReq) {   // LIGHT TRACK: reading + Classwork Learn + Mastery (vocab games stay optional practice)
+        const lb = Number(learn[c] != null ? learn[c] : learn[String(c)]) || 0;
+        const unitN = c <= 18 ? 6 : c <= 22 ? 7 : c <= 25 ? 8 : 9;
+        its = its.filter(i => !/^vocab:/.test(i.id));
+        its.splice(1, 0, finish({ id: 'learn:ch' + c, kind: 'auto', label: 'Classwork: Learn the words (80%+)',
+          status: lb >= 80 ? 'complete' : lb > 0 ? 'in_progress' : 'not_started',
+          detail: lb ? 'best ' + lb + '%' + (lb >= 80 ? '' : ' · need 80%') : 'match every word to its meaning · retakes allowed',
+          href: 'classwork.html?unit=' + unitN }));
+        its.forEach(i => { i.light = true; });
+      }
       bonusCh.push({ n: c, title: CHAPTERS[c], items: its, any: its.some(i => i.done || i.status === 'in_progress') });
     }
     const b = ev.bonus || {}, projects = new Set(b.projects || []);
@@ -347,6 +360,7 @@
     const required = [];
     realms.forEach(r => { r.chapters.forEach(ch => required.push(...ch.items)); required.push(...r.items); });
     required.push(...ongoing, ...games.items);
+    if (lightReq) bonusCh.forEach(ch => required.push(...ch.items));
     const counted = required.filter(i => i.status !== 'excused' && !i.notRequired);
     const done = counted.filter(i => i.done).length;
     const tally = {}; counted.forEach(i => { tally[i.status] = (tally[i.status] || 0) + 1; });
@@ -396,7 +410,7 @@
     if (o.banner) h += `<div class="cl-banner">${o.banner}</div>`;
     h += `<div class="cl-head">
       <div><div class="cl-name">${esc(o.title || 'My Trimester Checklist')}</div>
-        <div class="cl-sub">${esc(fmt(v.cfg.start))} – ${esc(fmt(v.cfg.end))} · Chapters ${Number(v.cfg.excuse_before) > 1 ? v.cfg.excuse_before : 1}–16 are required. Chapters 17–28 are bonus.</div></div>
+        <div class="cl-sub">${esc(fmt(v.cfg.start))} – ${esc(fmt(v.cfg.end))} · Chapters ${Number(v.cfg.excuse_before) > 1 ? v.cfg.excuse_before : 1}–16 are required.${v.cfg.light_required !== false ? ' Chapters 17–28 are a required light track: do them in any order, any time.' : ' Chapters 17–28 are bonus.'}</div></div>
       <div class="cl-pct"><b>${s.pct}%</b><span>${s.done} of ${s.total} done</span></div></div>
       <div class="cl-bar"><i style="width:${s.pct}%"></i></div>
       <div class="cl-pills">${tallyHTML}</div>`;
@@ -447,10 +461,18 @@
       (student ? '' : `<details class="cl-ch"><summary>Classroom games (teacher-run, ${g.classroom.length}) — not tracked</summary><div class="cl-games">` +
         g.classroom.map(x => `<div class="cl-game"><b>${esc(x.title)}</b><span class="cl-gc">${esc(x.tag)}</span></div>`).join('') + `</div></details>`) + `</section>`;
 
-    h += `<section class="cl-realm cl-bonus" style="--rc:#a855f7"><h3>⭐ Bonus XP — optional <small>never required</small></h3>
-      <details class="cl-ch"><summary>Chapters 17–28 (${v.bonus.chapters.filter(c => c.any).length} started)</summary>` +
+    const light = v.cfg.light_required !== false;
+    if (light) {
+      const lc = ch => ch.items.filter(i => i.status !== 'excused' && !i.notRequired);
+      h += `<section class="cl-realm" style="--rc:#a855f7"><h3>⚡ Light track: Chapters 17–28 <small>required · any order · due by ${esc(fmt(v.cfg.end))}</small></h3>
+        <p class="cl-detail" style="margin:0 0 8px">For each chapter: read it, pass Classwork Learn (80%), and pass Chapter Mastery. About 40 minutes each. Start any time.</p>` +
+        v.bonus.chapters.map(c => { const it = lc(c), d = it.filter(i => i.done).length;
+          return `<details class="cl-ch"${o.open ? ' open' : ''}><summary><span class="cl-chn">Ch ${c.n}</span> ${esc(c.title)} <span class="cl-chm">${d}/${it.length}</span></summary><ul>${c.items.map(i => itemHTML(i, o)).join('')}</ul></details>`; }).join('') + `</section>`;
+    }
+    h += `<section class="cl-realm cl-bonus" style="--rc:#a855f7"><h3>⭐ Bonus XP — optional <small>never required</small></h3>` +
+      (light ? '' : `<details class="cl-ch"><summary>Chapters 17–28 (${v.bonus.chapters.filter(c => c.any).length} started)</summary>` +
       v.bonus.chapters.map(c => `<details class="cl-ch"><summary><span class="cl-chn">Ch ${c.n}</span> ${esc(c.title)}</summary><ul>${c.items.map(i => itemHTML(i, Object.assign({}, o, { teacher: false }))).join('')}</ul></details>`).join('') +
-      `</details><ul>` + v.bonus.quests.map(q => `<li class="cl-item cl-${q.status}"><span class="cl-ic">${q.status === 'not_started' ? '☆' : ICON[q.status]}</span><span class="cl-main"><span class="cl-label">${student ? `<a href="${esc(q.href)}">${esc(q.title)}</a>` : esc(q.title)} <span class="cl-tag">Side quest</span></span><span class="cl-detail">${esc(q.detail)}</span>${q.status !== 'not_started' ? `<span class="cl-st">${esc(q.label_status)}</span>` : ''}</span></li>`).join('') +
+      `</details>`) + `<ul>` + v.bonus.quests.map(q => `<li class="cl-item cl-${q.status}"><span class="cl-ic">${q.status === 'not_started' ? '☆' : ICON[q.status]}</span><span class="cl-main"><span class="cl-label">${student ? `<a href="${esc(q.href)}">${esc(q.title)}</a>` : esc(q.title)} <span class="cl-tag">Side quest</span></span><span class="cl-detail">${esc(q.detail)}</span>${q.status !== 'not_started' ? `<span class="cl-st">${esc(q.label_status)}</span>` : ''}</span></li>`).join('') +
       `</ul></section></div>`;
     return h;
   }
