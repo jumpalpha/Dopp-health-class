@@ -65,7 +65,8 @@ function streakFrom(daySet) {
 }
 
 // Extra counts from get_badge_data (arcade, trail, shop, mastery, surveys, finance)
-var EXTRA_KEYS = ['arcadeGames','arcadeTops','trailFinishes','upgrades','mastered','masteredCore','surveyVotes','financeDone'];
+var EXTRA_KEYS = ['arcadeGames','arcadeTops','trailFinishes','upgrades','mastered','masteredCore','surveyVotes','financeDone','petFades'];
+var XP_PER_FADE = 25;   // 2026-11-18: each time your sprite fades costs 25 XP (fades from 2026-11-19 on)
 function withExtra(s, extra) { EXTRA_KEYS.forEach(function (k) { if (extra && extra[k] != null) s[k] = extra[k]; }); return s; }
 
 // Same math as the Quest page, from raw task keys + login days.
@@ -87,6 +88,7 @@ function stats(taskKeys, dayDates, extra) {
   var s = { xp: xp, badges: badges, realms: realms, totalTasks: totalTasks, bossTasks: bossTasks, vocabTasks: vocabTasks,
             streak: streakFrom(days), totalDays: days.size };
   withExtra(s, extra);
+  if (s.petFades) s.xp = Math.max(0, s.xp - s.petFades * XP_PER_FADE);
   s.achievements = ACHIEVEMENTS.filter(function (a) { try { return a.req(s); } catch (e) { return false; } });
   s.count = s.badges.length + s.achievements.length;
   return s;
@@ -139,5 +141,5 @@ async function loadExtra(db, trimester, studentId) {
   } catch (e) { return {}; }
 }
 
-window.DoppBadges = { REALMS: REALMS, ACHIEVEMENTS: ACHIEVEMENTS, TOTAL_TASKS: TOTAL_TASKS, stats: stats, chip: chip, loadAll: loadAll, loadExtra: loadExtra, withExtra: withExtra };
+window.DoppBadges = { XP_PER_FADE: XP_PER_FADE, REALMS: REALMS, ACHIEVEMENTS: ACHIEVEMENTS, TOTAL_TASKS: TOTAL_TASKS, stats: stats, chip: chip, loadAll: loadAll, loadExtra: loadExtra, withExtra: withExtra };
 })();

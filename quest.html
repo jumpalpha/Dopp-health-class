@@ -1019,7 +1019,9 @@ function calcStats() {
     else break;
   }
   xp += doneDays.size * XP_PER_DAY;
-  return DoppBadges.withExtra({ xp, badges, totalTasks, bossTasks, vocabTasks, streak, totalDays: doneDays.size }, badgeExtra);
+  const st = DoppBadges.withExtra({ xp, badges, totalTasks, bossTasks, vocabTasks, streak, totalDays: doneDays.size }, badgeExtra);
+  if (st.petFades) st.xp = Math.max(0, st.xp - st.petFades * (DoppBadges.XP_PER_FADE || 25));   // sprite fades cost XP
+  return st;
 }
 
 function calcCompletedChapters() {

@@ -10,81 +10,160 @@
 <meta name="description" content="Raise your own Wellness Sprite all trimester with real healthy habits and chapter knowledge.">
 <link rel="icon" type="image/png" href="app/site-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Geist:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#FFD700;--emerald:#00E5A0;--sky:#38BFFF;--crimson:#FF3B5C;--bg:#0a0618;--panel:#160f2e;--panel2:#0f0a22;--line:rgba(255,215,0,.22);--text:#f4efff;--dim:#b9b0d6}
+/* Sprite page v2 (2026-11-18): matches the site's new look (glass panels, Geist/Bricolage). */
+:root{--bg:#07071a;--card:rgba(23,22,52,.82);--card2:rgba(255,255,255,.04);--line:rgba(255,255,255,.1);--text:#eef0ff;--dim:#a3a6c8;
+  --gold:#ffd166;--em:#00E5A0;--sky:#38BFFF;--red:#FF3B5C;--violet:#B49BFF}
 *{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;background:radial-gradient(ellipse at top,#1d3a2e 0%,#170f33 45%,var(--bg) 80%) fixed;color:var(--text);font-family:Nunito,system-ui,sans-serif}
-.wrap{max-width:980px;margin:0 auto;padding:18px 16px 48px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-h1{font-family:Cinzel,serif;color:var(--gold);text-shadow:0 2px 0 #000,0 0 14px rgba(255,215,0,.3);font-size:clamp(24px,4vw,34px)}
-.links a{color:var(--gold);font-weight:800;text-decoration:none;margin-left:14px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
-h2{font-family:Cinzel,serif;color:var(--gold);font-size:19px;margin-bottom:4px}
-.dim{color:var(--dim)} .small{font-size:14px}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 15% -10%,rgba(0,229,160,.14),transparent 60%),radial-gradient(900px 500px at 90% 0%,rgba(180,155,255,.14),transparent 60%),var(--bg) fixed;color:var(--text);font-family:Geist,system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 70px}
 .hidden{display:none!important}
-button{font:inherit;font-weight:900;border:0;border-radius:12px;cursor:pointer}
-button:disabled{opacity:.45;cursor:not-allowed}
-.btn{padding:12px 18px;font-size:16px}
-.btn-gold{background:var(--gold);color:#2a1d00}.btn-em{background:var(--emerald);color:#03261a}.btn-ghost{background:transparent;color:var(--text);border:1px solid #5b4d8c}
-input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;border:1px solid #4a3d78;background:#0b0716;color:var(--text);width:100%}
-.err{color:var(--crimson);font-weight:800;min-height:1.2em;margin-top:8px}
-/* layout */
-.grid{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:16px}
-@media(max-width:760px){.grid{grid-template-columns:1fr}}
-.stage{position:relative;background:radial-gradient(circle at 50% 80%,#2a5a3a 0%,#1a2f2a 45%,#0f1a22 100%);border:1px solid rgba(0,229,160,.3);border-radius:16px;padding:10px;text-align:center;overflow:hidden}
-.stage svg{width:100%;max-width:300px;height:auto;display:block;margin:0 auto}
-.bubble{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#fff;color:#1a1030;font-weight:900;font-size:15px;padding:6px 12px;border-radius:12px;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.3);max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.eyebrow{font:700 12px Geist,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--em)}
+h1{font:800 clamp(30px,5vw,48px)/1.02 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;margin:4px 0 6px}
+h1 em{font-style:normal;background:linear-gradient(115deg,#c9fbe8,#00E5A0 45%,#38BFFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--dim);max-width:640px}
+.toplinks{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--text);text-decoration:none;font:700 14px Geist,sans-serif;cursor:pointer}
+.pill:hover{border-color:var(--gold)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:16px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+h2{font:800 20px 'Bricolage Grotesque',sans-serif;letter-spacing:-.01em;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .tag{margin-left:auto;font:700 12px Geist,sans-serif;color:var(--dim);border:1px solid var(--line);padding:4px 10px;border-radius:999px}
+.dim{color:var(--dim)} .small{font-size:14px;line-height:1.45}
+button{font:inherit;font-weight:800;border:0;border-radius:14px;cursor:pointer}
+button:disabled{opacity:.42;cursor:not-allowed}
+.btn{padding:11px 18px;font-size:15px}
+.btn-gold{background:linear-gradient(90deg,#ffd166,#ff9f1c);color:#1a0d00}
+.btn-em{background:var(--em);color:#03261a}
+.btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+input,select{font:inherit;font-size:16px;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--text);width:100%}
+.err{color:var(--red);font-weight:800;min-height:1.2em;margin-top:8px}
+.grid{display:grid;grid-template-columns:minmax(300px,400px) 1fr;gap:16px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.sticky{position:sticky;top:84px}
+@media(max-width:860px){.sticky{position:static}}
+
+/* stage + habitat (changes with each life stage) */
+.stage{position:relative;border-radius:18px;overflow:hidden;padding:44px 10px 6px;border:1px solid var(--line);min-height:300px;
+  background:linear-gradient(180deg,#0f1a3a 0%,#132a44 55%,#16352b 100%)}
+.stage::after{content:"";position:absolute;left:-10%;right:-10%;bottom:-38px;height:96px;border-radius:50%;background:radial-gradient(ellipse at 50% 30%,#2c6b46,#173a29 70%);z-index:0}
+.stage.h-egg{background:linear-gradient(180deg,#1b1438 0%,#2a1f45 60%,#3b2b2b 100%)} .stage.h-egg::after{background:radial-gradient(ellipse at 50% 30%,#6b4a2b,#3a2817 70%)}
+.stage.h-baby{background:linear-gradient(180deg,#14234a 0%,#1d3f55 60%,#1e4a37 100%)}
+.stage.h-child{background:linear-gradient(180deg,#1a3a6a 0%,#2a6a7a 60%,#2c7a4a 100%)}
+.stage.h-teen{background:linear-gradient(180deg,#2a2a7a 0%,#5a4aa0 55%,#2c7a5a 100%)}
+.stage.h-adult{background:linear-gradient(180deg,#3a1f6a 0%,#7a4aa0 45%,#d08a4a 85%)} .stage.h-adult::after{background:radial-gradient(ellipse at 50% 30%,#3d8a55,#1d4a30 70%)}
+.stage.h-ghost{background:linear-gradient(180deg,#14142a,#1e2238 60%,#23263a)} .stage.h-ghost::after{background:radial-gradient(ellipse at 50% 30%,#3a3f52,#22263a 70%)}
+.stage .deco{position:absolute;inset:0;pointer-events:none;z-index:0}
+.stage .deco i{position:absolute;border-radius:50%;background:#fff;opacity:.7;width:3px;height:3px}
+.stage #sprite{position:relative;z-index:1}
+.stage svg{width:100%;max-width:290px;height:auto;display:block;margin:0 auto}
+.bubble{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:2;background:#fff;color:#1a1030;font-weight:800;font-size:14px;padding:6px 12px;border-radius:12px;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
 .bubble:after{content:"";position:absolute;bottom:-7px;left:50%;margin-left:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
-.petname{font-family:Cinzel,serif;font-weight:900;font-size:24px;color:var(--gold);text-shadow:0 2px 0 #000;margin-top:6px}
+.petname{font:800 26px 'Bricolage Grotesque',sans-serif;margin-top:10px;text-align:center}
 .chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:6px}
-.chip{background:var(--panel2);border:1px solid #3b2f66;border-radius:99px;padding:4px 10px;font-size:13px;font-weight:800}
-.bars{display:flex;flex-direction:column;gap:9px;margin-top:12px}
-.bar{display:grid;grid-template-columns:86px 1fr 38px;align-items:center;gap:8px;font-weight:800;font-size:14px}
-.track{height:14px;background:#0b0716;border:1px solid #3b2f66;border-radius:99px;overflow:hidden}
+.chip{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.bar{display:grid;grid-template-columns:88px 1fr 34px;align-items:center;gap:8px;font-weight:700;font-size:13.5px}
+.track{height:10px;background:rgba(0,0,0,.35);border-radius:99px;overflow:hidden}
 .fill{height:100%;border-radius:99px;transition:width .5s}
-.status{margin-top:12px;font-weight:800;text-align:center}
+.status{margin-top:12px;font-weight:700;text-align:center;font-size:15px}
+
+/* growth path */
+.path{margin-top:16px;padding:14px;border-radius:16px;background:var(--card2);border:1px solid var(--line)}
+.path .ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.path .ph b{font:800 15px 'Bricolage Grotesque',sans-serif}
+.nodes{position:relative;display:flex;justify-content:space-between;margin:16px 4px 2px}
+.nodes .rail{position:absolute;left:14px;right:14px;top:13px;height:5px;border-radius:5px;background:rgba(255,255,255,.1)}
+.nodes .rail i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--em),var(--sky),var(--violet));transition:width .5s}
+.node{position:relative;z-index:1;text-align:center;width:48px}
+.node .dot{width:30px;height:30px;margin:0 auto;border-radius:50%;display:grid;place-items:center;background:#1b1a3c;border:2px solid rgba(255,255,255,.18);font-size:15px}
+.node.on .dot{border-color:var(--em);background:#0f3a2e}
+.node.now .dot{box-shadow:0 0 0 4px rgba(0,229,160,.25)}
+.node small{display:block;font-size:11px;font-weight:700;color:var(--dim);margin-top:4px;line-height:1.1}
+.node small b{color:var(--text);display:block;font-size:11.5px}
+.today-ok{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px}
+.today-ok.y{background:rgba(0,229,160,.14);color:var(--em)} .today-ok.n{background:rgba(255,209,102,.12);color:var(--gold)} .today-ok.f{background:rgba(255,59,92,.14);color:#ff8a9e}
+
+/* how it works */
+details.how{margin-top:16px}
+details.how summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font:800 20px 'Bricolage Grotesque',sans-serif}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::after{content:"▾";margin-left:auto;color:var(--dim);font-size:16px;transition:transform .2s}
+details.how[open] summary::after{transform:rotate(180deg)}
+.howgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:12px}
+.how .card{padding:12px 14px;border-radius:14px;background:var(--card2);border:1px solid var(--line);font-size:14px;line-height:1.5}
+.how .card b.t{display:block;font:800 15.5px 'Bricolage Grotesque',sans-serif;margin-bottom:4px}
+.how .card ul{padding-left:18px;margin-top:4px}
+.how .card.warn{border-color:rgba(255,59,92,.4);background:rgba(255,59,92,.07)}
+.stagerow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.stagerow span{font-size:12.5px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.06);font-weight:700}
+
 /* habits */
-.habits{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
-.habit{background:var(--panel2);border:2px solid #3b2f66;color:var(--text);padding:12px 10px;text-align:left;font-size:15px;line-height:1.25;min-height:76px;position:relative}
+.picks{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.picks .pip{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.22)}
+.picks .pip.on{background:var(--em);border-color:var(--em)}
+.picks .lbl{font-size:13.5px;font-weight:700;color:var(--dim);margin-left:6px}
+.habits{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:10px;margin-top:12px}
+.habit{background:var(--card2);border:1.5px solid var(--line);color:var(--text);padding:12px;text-align:left;font-size:14.5px;line-height:1.25;min-height:96px;position:relative;border-radius:16px;font-weight:700;transition:border-color .15s,transform .1s}
+.habit:hover:not(:disabled){border-color:var(--gold);transform:translateY(-1px)}
 .habit .ico{font-size:24px;display:block;margin-bottom:4px}
-.habit .cnt{position:absolute;top:8px;right:10px;font-size:12px;color:var(--dim)}
-.habit.done{border-color:var(--emerald);background:rgba(0,229,160,.1)}
-.habit.done .cnt{color:var(--emerald)}
+.habit .dimn{position:absolute;top:10px;right:10px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:700}
+.habit .fx{display:block;margin-top:6px;font-size:11.5px;color:var(--dim);font-weight:600}
+.habit.done{border-color:var(--em);background:rgba(0,229,160,.12)}
+.habit.done .dimn{color:var(--em)}
+.habit.left{opacity:.38}
+.habit.done:disabled{opacity:1;cursor:default}
+
 /* quiz */
-.quiz-def{background:var(--panel2);border-left:4px solid var(--sky);padding:12px 14px;border-radius:8px;font-size:17px;font-weight:700;line-height:1.4;margin:12px 0}
+.quiz-def{background:rgba(0,0,0,.25);border-left:4px solid var(--sky);padding:12px 14px;border-radius:10px;font-size:17px;font-weight:600;line-height:1.4;margin:12px 0}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:520px){.opts{grid-template-columns:1fr}}
-.opt{background:#22184a;border:2px solid #4a3d78;color:var(--text);padding:13px;font-size:16px;text-align:center}
-.opt.right{background:rgba(0,229,160,.18);border-color:var(--emerald)}
-.opt.wrong{background:rgba(255,59,92,.18);border-color:var(--crimson)}
+.opt{background:var(--card2);border:1.5px solid var(--line);color:var(--text);padding:13px;font-size:15.5px;text-align:center;border-radius:14px}
+.opt.right{background:rgba(0,229,160,.18);border-color:var(--em)}
+.opt.wrong{background:rgba(255,59,92,.18);border-color:var(--red)}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.feedback{font-weight:900;margin-top:10px;min-height:1.3em}
-.extras{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-.revive{border-color:rgba(255,215,0,.6);background:linear-gradient(180deg,rgba(255,215,0,.08),var(--panel))}
-.progress{height:16px;background:#0b0716;border:1px solid #4a3d78;border-radius:99px;overflow:hidden;margin-top:8px}
-.progress>div{height:100%;background:linear-gradient(90deg,#b98a00,var(--gold));transition:width .4s}
-/* shop */
+.feedback{font-weight:800;margin-top:10px;min-height:1.3em}
+.meter{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:13.5px;font-weight:700}
+.meter span b{color:var(--gold)}
+
+/* revive */
+.revive{border-color:rgba(255,209,102,.55);background:linear-gradient(180deg,rgba(255,209,102,.1),var(--card))}
+.progress{height:14px;background:rgba(0,0,0,.35);border-radius:99px;overflow:hidden;margin-top:10px}
+.progress>div{height:100%;background:linear-gradient(90deg,#ff9f1c,var(--gold));transition:width .4s}
+.cost{margin-top:10px;display:grid;gap:6px}
+.cost div{font-size:14px;padding:8px 12px;border-radius:12px;background:rgba(255,59,92,.08);border:1px solid rgba(255,59,92,.25)}
+
+/* care kit + shop */
 .kbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 4px}
-.kbig{font-size:22px;font-weight:900;color:var(--gold)}
+.kbig{font:800 24px 'Bricolage Grotesque',sans-serif;color:var(--gold)}
+.kit{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:10px}
+.kitem{display:flex;gap:10px;align-items:center;padding:12px;border-radius:16px;background:var(--card2);border:1px solid var(--line)}
+.kitem .ki{font-size:30px}
+.kitem .kt{flex:1;min-width:0}
+.kitem .kt b{display:block;font-size:14.5px}
+.kitem .kt span{font-size:12.5px;color:var(--dim)}
+.kitem button{padding:8px 12px;font-size:13px;white-space:nowrap}
 .shop-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
-.shop-tabs button{background:var(--panel2);border:1px solid #3b2f66;color:var(--text);padding:6px 11px;font-size:13px;border-radius:99px}
-.shop-tabs button.on{background:var(--gold);color:#2a1d00;border-color:var(--gold)}
-.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
-.item{background:var(--panel2);border:2px solid #3b2f66;border-radius:12px;padding:8px;text-align:center;display:flex;flex-direction:column;gap:4px}
+.shop-tabs button{background:var(--card2);border:1px solid var(--line);color:var(--text);padding:6px 11px;font-size:13px;border-radius:999px}
+.shop-tabs button.on{background:var(--gold);color:#1a0d00;border-color:var(--gold)}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(134px,1fr));gap:10px}
+.item{background:var(--card2);border:1.5px solid var(--line);border-radius:16px;padding:8px;text-align:center;display:flex;flex-direction:column;gap:4px}
 .item svg{width:84px;height:84px;margin:0 auto;display:block}
-.item.worn{border-color:var(--emerald);background:rgba(0,229,160,.08)}
+.item.worn{border-color:var(--em);background:rgba(0,229,160,.08)}
 .item.locked svg{filter:grayscale(1) brightness(.6)}
-.item .nm{font-weight:900;font-size:14px;line-height:1.15}
+.item .nm{font-weight:800;font-size:13.5px;line-height:1.15}
 .item .pr{font-size:13px;font-weight:800;color:var(--gold)}
-.item .lk{font-size:12px;color:var(--dim);font-weight:700}
+.item .lk{font-size:11.5px;color:var(--dim);font-weight:600}
 .item button{padding:7px 8px;font-size:13px;margin-top:auto}
+.extras{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+
 /* hatch */
 .swatches{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-.sw{width:84px;padding:4px;background:var(--panel2);border:2px solid #3b2f66;border-radius:12px}
-.sw.sel{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,215,0,.3)}
+.sw{width:88px;padding:4px;background:var(--card2);border:2px solid var(--line);border-radius:14px}
+.sw.sel{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,209,102,.3)}
 .sw svg{width:100%;height:auto;display:block}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#fff;color:#1a1030;font-weight:900;padding:10px 16px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:50;max-width:92vw;text-align:center}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#fff;color:#1a1030;font-weight:800;padding:10px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.45);z-index:9500;max-width:92vw;text-align:center}
+
 /* sprite motion */
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
@@ -97,16 +176,56 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
 .anim-slow{animation:bob 3.5s ease-in-out infinite}
 .pop{animation:pop .45s ease}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion: reduce){.anim-happy,.anim-egg,.anim-sugar,.anim-ghost,.anim-slow,.pop{animation:none}}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:.9}}
+.stage .deco i{animation:tw 3s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.anim-happy,.anim-egg,.anim-sugar,.anim-ghost,.anim-slow,.pop,.stage .deco i{animation:none}}
+
+/* light mode */
+html.dl body{background:#f5f6fb;color:#15172b}
+html.dl .panel,html.dl .path,html.dl .how .card,html.dl .habit,html.dl .kitem,html.dl .item,html.dl .opt,html.dl .chip{background:#fff;border-color:rgba(21,23,43,.12);color:#15172b}
+html.dl .dim,html.dl .habit .fx,html.dl .habit .dimn,html.dl .kitem .kt span{color:#575b78}
+html.dl input,html.dl select{background:#fff;color:#15172b;border-color:rgba(21,23,43,.2)}
+html.dl .pill,html.dl .btn-ghost{background:#fff;color:#15172b;border-color:rgba(21,23,43,.15)}
+html.dl .kbig,html.dl .meter span b{color:#9a6400}
 </style>
 <!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
 </head>
 <body>
 <div class="wrap">
-  <div class="top">
-    <h1>🌱 Wellness Sprite</h1>
-    <div class="links"><a href="pets.html">🏆 Sprite Gallery</a><a href="index.html">🏠 Home</a></div>
-  </div>
+  <header>
+    <div class="eyebrow">Your companion</div>
+    <h1>Wellness <em>Sprite</em></h1>
+    <p class="lead">Raise a sprite all trimester with the real healthy choices you make. Care for it 30 days and it grows from an egg into an adult.</p>
+    <div class="toplinks">
+      <a class="pill" href="#how" id="howLink">📖 How it works</a>
+      <a class="pill" href="pets.html">🏆 Sprite Gallery</a>
+      <a class="pill" href="checklist.html">📋 My Checklist</a>
+    </div>
+  </header>
+
+  <!-- how it works (always visible, also before sign-in) -->
+  <details class="panel how" style="margin-top:16px" id="how">
+    <summary>📖 How your sprite works</summary>
+    <div class="howgrid">
+      <div class="card"><b class="t">🌱 1. Care for it every day</b>
+        Pick up to <b>6 of 12</b> healthy habits you really did today. Log <b>3 or more</b> and it's a <b>care day</b>: +1 growth and +1 to your streak 🔥. You can also answer chapter questions to feed it.</div>
+      <div class="card"><b class="t">📈 2. Egg to adult in 30 care days</b>
+        Your egg hatches on your first care. Then it grows by care days:
+        <div class="stagerow"><span>🥚 Egg</span><span>🐣 Baby · day 1</span><span>🌿 Child · day 8</span><span>⚡ Teen · day 18</span><span>👑 Adult · day 30</span></div>
+        <div style="margin-top:6px">Care for it 30 days in a row and it's an adult in 30 days. A missed day just doesn't count.</div></div>
+      <div class="card"><b class="t">⏳ 3. Its needs drop every hour</b>
+        Food, Energy, Mood and Clean go down all the time. When they get low, <b>Health</b> drops. About <b>4 days</b> with no care and your sprite <b>fades away</b>. Different habits fill different needs, so mix them up.</div>
+      <div class="card warn"><b class="t">👻 4. If it fades</b>
+        <ul><li>It loses <b>3 care days</b> of growth (it can shrink a stage).</li>
+        <li>You lose <b>25 Quest XP</b>.</li>
+        <li>Growth and your Checklist sprite care days <b>freeze</b> until it's back.</li>
+        <li><b>To revive:</b> answer <b>10 chapter questions</b> correctly. It comes back at 40 health.</li></ul></div>
+      <div class="card"><b class="t">💡 5. Knowledge</b>
+        Every right answer earns 1 💡, up to <b>20 a day</b> (the first 10 also feed it). Spend it on the <b>Care Kit</b> (each item once a day) and on <b>Shop gear</b>. Bigger gear unlocks after more correct answers.</div>
+      <div class="card"><b class="t">✨ 6. What kind of adult?</b>
+        How well you cared decides its adult form: <b>Radiant</b> (great care), <b>Steady</b>, <b>Scruffy</b> (spotty care), or <b>Sugar-Crashed</b> (too many treats).</div>
+    </div>
+  </details>
 
   <!-- not signed in -->
   <section id="v-login" class="panel hidden">
@@ -120,8 +239,8 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
 
   <!-- hatch -->
   <section id="v-hatch" class="panel hidden">
-    <h2>Choose your egg</h2>
-    <p class="dim small">Your sprite grows all trimester through the life stages: baby, child, teen, and adult. How you care for it decides what kind of adult it becomes. Stay healthy and it thrives. Ignore it for 4 days and it fades away.</p>
+    <h2>🥚 Choose your egg</h2>
+    <p class="dim small">Your sprite hatches the first day you care for it, then grows through baby, child and teen into an adult after <b>30 care days</b>. Ignore it for about 4 days and it fades away. Read <b>How your sprite works</b> above first.</p>
     <div class="swatches" id="swatches"></div>
     <label for="petName" style="font-weight:800;display:block;margin:6px 0">Name your sprite</label>
     <input id="petName" maxlength="16" placeholder="e.g. Sprout" autocomplete="off" style="max-width:320px">
@@ -132,39 +251,54 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
   <!-- pet -->
   <section id="v-pet" class="hidden">
     <div class="grid">
-      <div class="panel" style="margin-top:16px">
-        <div class="stage"><div class="bubble" id="bubble"></div><div id="sprite"></div></div>
-        <div style="text-align:center"><div class="petname" id="pName"></div>
-          <button id="renameBtn" type="button" style="background:none;border:none;color:inherit;opacity:.75;font:700 12px Nunito,sans-serif;cursor:pointer;text-decoration:underline">✏️ Rename</button>
-          <div id="renameForm" class="hidden" style="margin:6px auto;max-width:320px">
-            <input id="renameIn" maxlength="16" placeholder="New sprite name" autocomplete="off" style="max-width:200px">
-            <button class="btn btn-em" id="renameGo" type="button">Save</button>
-            <div class="dim small" id="renameNote">You can rename your sprite once a week.</div>
+      <div class="sticky">
+        <div class="panel">
+          <div class="stage" id="stage"><div class="deco" id="deco"></div><div class="bubble" id="bubble"></div><div id="sprite"></div></div>
+          <div class="petname" id="pName"></div>
+          <div style="text-align:center">
+            <button id="renameBtn" type="button" style="background:none;border:none;color:var(--dim);font:600 12px Geist,sans-serif;cursor:pointer;text-decoration:underline">✏️ Rename</button>
+            <div id="renameForm" class="hidden" style="margin:6px auto;max-width:320px">
+              <div class="row"><input id="renameIn" maxlength="16" placeholder="New sprite name" autocomplete="off" style="flex:1;min-width:0">
+              <button class="btn btn-em" id="renameGo" type="button">Save</button></div>
+              <div class="dim small" id="renameNote">You can rename your sprite once a week.</div>
+            </div>
           </div>
-          <div class="chips" id="chips"></div></div>
-        <div class="bars" id="bars"></div>
-        <div class="status" id="status"></div>
-        <p class="dim small" style="margin-top:10px;text-align:center" id="growth"></p>
+          <div class="chips" id="chips"></div>
+          <div class="bars" id="bars"></div>
+          <div class="status" id="status"></div>
+
+          <div class="path" id="path">
+            <div class="ph"><b>Growing up</b><span class="today-ok" id="todayOk"></span></div>
+            <div class="nodes" id="nodes"></div>
+            <p class="dim small" style="margin-top:10px;text-align:center" id="growth"></p>
+          </div>
+        </div>
       </div>
 
       <div>
         <div class="panel revive hidden" id="revivePanel">
-          <h2>👻 <span class="rvName"></span> has faded away…</h2>
-          <p class="dim small">Answer <b>10 chapter questions</b> correctly to bring your sprite back. Each right answer adds a spark of life.</p>
+          <h2>👻 <span class="rvName"></span> has faded away</h2>
+          <p class="dim small">Answer <b>10 chapter questions</b> correctly (below) to bring your sprite back. Each right answer adds a spark of life.</p>
           <div class="progress"><div id="reviveBar" style="width:0"></div></div>
           <p class="small" style="margin-top:6px;font-weight:800"><span id="reviveTxt">0 / 10</span> sparks</p>
+          <div class="cost">
+            <div>⏸ Growth and your Checklist sprite care days are <b>frozen</b> until it's revived.</div>
+            <div>📉 Fading cost <b>3 care days</b> of growth and <b>25 Quest XP</b>.</div>
+          </div>
         </div>
 
         <div class="panel" id="habitPanel">
-          <h2>Today's healthy habits</h2>
-          <p class="dim small">Did you do these in real life today? Be honest. Your sprite feels what you do! Log 3 different habits in a day to grow your streak 🔥.</p>
+          <h2>Today's healthy habits <span class="tag" id="pickTag">Pick 6</span></h2>
+          <p class="dim small">Tap the ones you <b>really did</b> today. You only get <b>6 picks</b> from 12, so choose your highest priorities. In real life you can't do everything every day, but you can do some things some of the time. Log <b>3 or more</b> to make today a <b>care day</b> (+1 growth, +1 streak 🔥).</p>
+          <div class="picks" id="picks"></div>
           <div class="habits" id="habits"></div>
         </div>
 
         <div class="panel" id="quizPanel">
           <h2>📚 Feed it knowledge</h2>
-          <p class="dim small" id="quizNote">Each right answer earns <b>+1 💡 Knowledge</b> for the Sprite Shop. The first 15 a day also feed your sprite (<span id="quizLeft">15</span> snacks left), then you can keep studying for <span id="studyLeft">25</span> more Knowledge.</p>
+          <p class="dim small" id="quizNote">Each right answer earns <b>+1 💡 Knowledge</b>, up to <b>20 a day</b>. The first 10 also feed your sprite a snack.</p>
           <p class="dim small hidden" id="quizRevive">Each right answer adds a spark of life. No daily limit while reviving.</p>
+          <div class="meter" id="meter"></div>
           <div class="row" style="margin-top:10px">
             <select id="quizCh" style="flex:1;min-width:200px"></select>
             <button class="btn btn-em" id="quizBtn">Ask me a question</button>
@@ -176,9 +310,15 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
           </div>
         </div>
 
+        <div class="panel" id="kitPanel">
+          <h2>🧰 Care Kit <span class="tag">once a day each</span></h2>
+          <p class="dim small">A quick boost when your sprite is struggling. Kits help, but they can't replace real habits.</p>
+          <div class="kit" id="kit"></div>
+        </div>
+
         <div class="panel" id="shopPanel">
           <h2>🛍️ Sprite Shop</h2>
-          <p class="dim small">Spend Knowledge on upgrades for your sprite. Bigger upgrades unlock after more correct answers. Everyone in the Sprite Gallery sees what your sprite is wearing!</p>
+          <p class="dim small">Spend Knowledge on gear. Bigger gear unlocks after more correct answers. Everyone in the Sprite Gallery sees what your sprite is wearing.</p>
           <div class="kbar"><span class="kbig">💡 <span id="kNow">0</span></span><span class="dim small">Knowledge to spend · <b id="kTotal">0</b> correct answers all-time</span></div>
           <p class="dim small hidden" id="shopEgg">🥚 Your gear will show once your egg hatches.</p>
           <div class="shop-tabs" id="shopTabs"></div>
@@ -191,15 +331,15 @@ input,select{font:inherit;font-size:17px;padding:11px 13px;border-radius:10px;bo
             <button class="btn btn-ghost" id="playBtn">⚽ Play (<span id="playLeft">3</span>)</button>
             <button class="btn btn-ghost" id="treatBtn">🍩 Sugary treat (<span id="treatLeft">3</span>)</button>
           </div>
-          <p class="dim small" style="margin-top:8px">Treats make your sprite happy for a moment… but they cost health and energy. Lots of treats can turn it into a sugar-crashed adult.</p>
+          <p class="dim small" style="margin-top:8px">Treats make your sprite happy for a moment, but they cost health and energy. Lots of treats can turn it into a Sugar-Crashed adult.</p>
         </div>
       </div>
     </div>
   </section>
+
   <div class="err" id="pageErr"></div>
 </div>
-<div class="toast hidden" id="toast"></div>
-
+<div class="toast hidden" id="toast" role="status"></div>
 <script src="vendor/supabase.js"></script>
 <script src="pet_sprite.js"></script>
 <script src="pet_vocab.js"></script>
@@ -214,14 +354,28 @@ const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+// 12 habits across the dimensions of health (server: _pet_habits / pet_action). fx = what it fills.
 const HABITS = [
-  { k:'meal',     ico:'🥗', label:'Ate a balanced meal',        tip:'Balanced meals give steady energy all day.' },
-  { k:'water',    ico:'💧', label:'Drank 6+ cups of water',     tip:'Even mild dehydration can make it harder to focus.' },
-  { k:'sleep',    ico:'😴', label:'Slept 8+ hours',             tip:'Teens need about 8–10 hours of sleep a night.' },
-  { k:'exercise', ico:'🏃', label:'Moved 30+ minutes',          tip:'Teens need about 60 minutes of activity a day.' },
-  { k:'relax',    ico:'🧘', label:'Did something to de-stress', tip:'Deep breathing and breaks lower stress hormones.' },
-  { k:'hygiene',  ico:'🪥', label:'Brushed teeth / showered',   tip:'Good hygiene helps prevent the spread of germs.' }
+  { k:'meal',     ico:'🥗', dim:'Physical',      label:'Ate a balanced meal',              fx:'🍎 Food',            tip:'Balanced meals give steady energy all day.' },
+  { k:'water',    ico:'💧', dim:'Physical',      label:'Drank 6+ cups of water',           fx:'⚡ Energy ❤️ Health', tip:'Even mild dehydration makes it harder to focus.' },
+  { k:'sleep',    ico:'😴', dim:'Physical',      label:'Slept 8+ hours',                   fx:'⚡⚡ Energy',          tip:'Teens need about 8–10 hours of sleep a night.' },
+  { k:'exercise', ico:'🏃', dim:'Physical',      label:'Moved 30+ minutes',                fx:'😊 Mood ❤️ Health',   tip:'Teens need about 60 minutes of activity a day.' },
+  { k:'hygiene',  ico:'🪥', dim:'Physical',      label:'Brushed teeth / showered',         fx:'🚿🚿 Clean',          tip:'Good hygiene helps prevent the spread of germs.' },
+  { k:'relax',    ico:'🧘', dim:'Emotional',     label:'Did something to de-stress',       fx:'😊😊 Mood',           tip:'Deep breathing and breaks lower stress hormones.' },
+  { k:'kind',     ico:'🤝', dim:'Social',        label:'Was kind to someone',              fx:'😊 Mood ❤️ Health',   tip:'Kindness boosts your mood as much as theirs.' },
+  { k:'spirit',   ico:'🕊️', dim:'Spiritual',     label:'Spiritual growth (prayer, meditation, reflection, service)', fx:'😊 Mood ⚡ ❤️', tip:'A sense of purpose is linked to better health.' },
+  { k:'homework', ico:'📚', dim:'Mental',        label:'Up to date on homework',           fx:'😊 Mood ⚡ Energy',   tip:'Staying caught up cuts stress before it starts.' },
+  { k:'goal',     ico:'🎯', dim:'Mental',        label:'Made progress on a goal',          fx:'😊 Mood ⚡ ❤️',       tip:'Small steps toward a goal build confidence.' },
+  { k:'money',    ico:'💰', dim:'Financial',     label:'Saved money / skipped an impulse buy', fx:'😊 Mood ❤️ Health', tip:'Money stress is one of the hidden drivers of poor health.' },
+  { k:'outside',  ico:'🌳', dim:'Environmental', label:'Time outside or tidied my space',  fx:'🚿 Clean ⚡ 😊',       tip:'Fresh air and a tidy space both lower stress.' }
 ];
+const KIT = {
+  k_snack:    { ico:'🥕', fx:'+30 Food' },
+  k_vitamins: { ico:'💊', fx:'+15 Energy, +5 Health' },
+  k_bath:     { ico:'🛁', fx:'+35 Clean, +10 Mood' },
+  k_medicine: { ico:'🩺', fx:'+25 Health · only when health is under 60' }
+};
+const STAGES = [['egg','🥚','Egg',0],['baby','🐣','Baby',1],['child','🌿','Child',8],['teen','⚡','Teen',18],['adult','👑','Adult',30]];
 const STAGE_NAME = { egg:'Egg', baby:'Baby', child:'Child', teen:'Teen', adult:'Adult' };
 const FORM_NAME = { radiant:'Radiant ✨', steady:'Steady', scruffy:'Scruffy', sugar:'Sugar-Crashed' };
 const MOOD_TEXT = {
@@ -229,8 +383,8 @@ const MOOD_TEXT = {
   hungry: n => n + ' is hungry. A balanced meal would help.',
   tired:  n => n + ' is exhausted. Sleep is the fix.',
   dirty:  n => n + ' could really use some hygiene.',
-  sad:    n => n + ' feels down. Try some stress relief.',
-  sick:   n => n + ' is sick! Keep up healthy habits to nurse it back.',
+  sad:    n => n + ' feels down. Try stress relief, kindness or time outside.',
+  sick:   n => n + ' is sick! Keep up healthy habits (or use Medicine) to nurse it back.',
   sugar:  n => n + ' is bouncing off the walls from sugar…',
   ghost:  n => n + ' has faded away.'
 };
@@ -251,7 +405,7 @@ async function rpc(name, extra){
 }
 function show(id){ ['v-login','v-loading','v-hatch','v-pet'].forEach(v => $(v).classList.toggle('hidden', v !== id)); }
 let toastTimer;
-function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add('hidden'), 3200); }
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add('hidden'), 3400); }
 function friendly(e){
   const m = e.message || String(e);
   if (/Login expired/.test(m)){ show('v-login'); return 'Your login expired. Sign in again on the Quest page.'; }
@@ -276,9 +430,16 @@ async function hatch(){
 }
 
 // ---------- render ----------
-function barColor(v){ return v >= 60 ? 'var(--emerald)' : v >= 30 ? 'var(--gold)' : 'var(--crimson)'; }
+function barColor(v){ return v >= 60 ? 'var(--em)' : v >= 30 ? 'var(--gold)' : 'var(--red)'; }
+function decoFor(stage){
+  let h = '';
+  for (let i = 0; i < 14; i++) h += '<i style="left:' + ((i * 37 + 11) % 96) + '%;top:' + ((i * 23 + 7) % 46) + '%;animation-delay:-' + (i * 0.4).toFixed(1) + 's"></i>';
+  return h;
+}
 function render(pop){
   const p = pet, mood = p.alive ? (p.stage === 'egg' ? 'egg' : p.mood_label) : 'ghost';
+  $('stage').className = 'stage h-' + (p.alive ? p.stage : 'ghost');
+  if (!$('deco').innerHTML) $('deco').innerHTML = decoFor(p.stage);
   $('sprite').innerHTML = petSpriteSVG(p);
   const svg = $('sprite').firstChild;
   svg.classList.add(p.stage === 'egg' ? 'anim-egg' : !p.alive ? 'anim-ghost' : mood === 'sugar' ? 'anim-sugar' : (mood === 'happy' ? 'anim-happy' : 'anim-slow'));
@@ -288,41 +449,51 @@ function render(pop){
   document.querySelectorAll('.rvName').forEach(e => e.textContent = p.name);
   $('chips').innerHTML =
     '<span class="chip">' + (p.title ? '👑 ' + p.title : (p.form ? FORM_NAME[p.form] + ' ' : '') + STAGE_NAME[p.stage]) + '</span>' +
-    '<span class="chip">🎂 ' + p.age_days + ' day' + (p.age_days === 1 ? '' : 's') + '</span>' +
     '<span class="chip">🔥 ' + p.streak + ' day streak</span>' +
-    (p.deaths ? '<span class="chip">👻 revived ' + p.deaths + '×</span>' : '') +
-    '<span class="chip" style="color:var(--gold)">💡 ' + (p.knowledge || 0) + ' Knowledge</span>';
+    (p.deaths ? '<span class="chip">👻 faded ' + p.deaths + '×</span>' : '') +
+    '<span class="chip" style="color:var(--gold)">💡 ' + (p.knowledge || 0) + '</span>';
   const bars = [['❤️ Health', p.health], ['🍎 Food', p.food], ['⚡ Energy', p.energy], ['😊 Mood', p.mood], ['🚿 Clean', p.clean]];
   $('bars').innerHTML = bars.map(([l, v]) =>
     '<div class="bar"><span>' + l + '</span><div class="track"><div class="fill" style="width:' + v + '%;background:' + barColor(v) + '"></div></div><span>' + v + '</span></div>').join('');
   $('status').textContent = p.stage === 'egg' && p.alive ? 'Your egg is waiting. Log a habit or answer a question to hatch it!' : (MOOD_TEXT[mood] || MOOD_TEXT.happy)(p.name);
-  // growth hint
-  if (!p.alive) $('growth').textContent = '';
+
+  // growth path
+  const gd = p.growth_days || 0, goal = p.growth_goal || 30;
+  const idx = STAGES.findIndex(s => s[0] === p.stage);
+  $('nodes').innerHTML = '<div class="rail"><i style="width:' + Math.min(100, gd / goal * 100) + '%"></i></div>' +
+    STAGES.map((s, i) => '<div class="node' + (i <= idx ? ' on' : '') + (i === idx ? ' now' : '') + '"><div class="dot">' + s[1] + '</div><small><b>' + s[2] + '</b>' + (i ? 'day ' + s[3] : 'start') + '</small></div>').join('');
+  $('todayOk').className = 'today-ok ' + (!p.alive ? 'f' : p.cared_today ? 'y' : 'n');
+  $('todayOk').textContent = !p.alive ? '⏸ Frozen' : p.cared_today ? '✓ Today counted' : (p.picks_used || 0) + ' / 3 habits for today';
+  if (!p.alive) $('growth').textContent = 'Growth is frozen until ' + p.name + ' is revived. Care days: ' + gd + ' of ' + goal + '.';
   else if (p.immortal) $('growth').textContent = 'Ancient of Days: timeless, always healthy, and its streak only grows.';
-  else if (p.stage === 'adult') $('growth').textContent = 'Fully grown! Keep it healthy to stay at the top of the gallery.';
-  else if (p.stage === 'egg') $('growth').textContent = '';
+  else if (p.stage === 'adult') $('growth').textContent = 'Fully grown after ' + gd + ' care days! Keep it healthy to stay at the top of the gallery.';
   else {
-    const next = { baby:'Child', child:'Teen', teen:'Adult' }[p.stage];
-    const needPts = Math.max(0, p.next_stage_points - p.care_points), needDays = Math.max(0, p.next_stage_days - p.age_days);
-    $('growth').textContent = 'Next stage: ' + next + ' — ' +
-      (needPts ? needPts + ' more care point' + (needPts === 1 ? '' : 's') : 'care points ✓') + ', ' +
-      (needDays ? needDays + ' more day' + (needDays === 1 ? '' : 's') : 'age ✓') + '.';
+    const nxt = STAGES[idx + 1], need = Math.max(0, nxt[3] - gd);
+    $('growth').textContent = 'Care day ' + gd + ' of ' + goal + ' · ' + need + ' more to ' + nxt[2] + (p.stage === 'egg' ? ' (your first care hatches it)' : '') + '.';
   }
-  // habits
+
+  // habits: pick 6 of 12
   const today = p.today || {}, caps = p.caps || {};
+  const used = p.picks_used || HABITS.filter(h => today[h.k]).length, max = p.picks_max || 6;
+  const full = used >= max;
+  $('pickTag').textContent = used + ' of ' + max + ' picked';
+  $('picks').innerHTML = Array.from({ length: max }, (_, i) => '<span class="pip' + (i < used ? ' on' : '') + '"></span>').join('') +
+    '<span class="lbl">' + (full ? 'All 6 picks used. See you tomorrow!' : (max - used) + ' pick' + (max - used === 1 ? '' : 's') + ' left' + (used < 3 ? ' · ' + (3 - used) + ' more for a care day' : ' · today is a care day ✓')) + '</span>';
   $('habits').innerHTML = HABITS.map(h => {
-    const n = today[h.k] || 0, cap = caps[h.k] || 1, done = n >= cap;
-    return '<button class="habit' + (n ? ' done' : '') + '" data-k="' + h.k + '"' + (done || !p.alive ? ' disabled' : '') + '>' +
-      '<span class="cnt">' + (n ? '✓ ' : '') + n + '/' + cap + '</span><span class="ico">' + h.ico + '</span>' + esc(h.label) + '</button>';
+    const n = today[h.k] || 0, done = n >= (caps[h.k] || 1), left = !n && full;
+    return '<button class="habit' + (n ? ' done' : '') + (left ? ' left' : '') + '" data-k="' + h.k + '"' + (done || left || !p.alive ? ' disabled' : '') + ' title="' + esc(h.tip) + '">' +
+      '<span class="dimn">' + (n ? '✓ ' : '') + h.dim + '</span><span class="ico">' + h.ico + '</span>' + esc(h.label) +
+      '<span class="fx">' + h.fx + '</span></button>';
   }).join('');
   $('habits').querySelectorAll('.habit').forEach(b => b.onclick = () => doAction(b.dataset.k));
   $('habitPanel').classList.toggle('hidden', !p.alive);
   $('extraPanel').classList.toggle('hidden', !p.alive);
+  $('kitPanel').classList.toggle('hidden', !p.alive || p.stage === 'egg');
   $('revivePanel').classList.toggle('hidden', p.alive);
   $('reviveBar').style.width = (100 * p.revive_progress / p.revive_needed) + '%';
   $('reviveTxt').textContent = p.revive_progress + ' / ' + p.revive_needed;
   const left = k => Math.max(0, (caps[k] || 0) - (today[k] || 0));
-  $('quizLeft').textContent = left('quiz'); $('studyLeft').textContent = left('study');
+  $('meter').innerHTML = p.alive ? '<span>🍪 Snacks left: <b>' + left('quiz') + '</b></span><span>📘 Study left: <b>' + left('study') + '</b></span><span>💡 Today: <b>' + ((today.quiz || 0) + (today.study || 0)) + ' / 20</b></span>' : '';
   $('playLeft').textContent = left('play'); $('treatLeft').textContent = left('treat');
   $('playBtn').disabled = !left('play'); $('treatBtn').disabled = !left('treat');
   $('quizNote').classList.toggle('hidden', !p.alive);
@@ -334,13 +505,14 @@ function render(pop){
 // ---------- actions ----------
 async function doAction(k){
   if (busy) return; busy = true;
-  const wasStage = pet && pet.stage, wasAlive = pet && pet.alive;
+  const wasStage = pet && pet.stage;
   try {
     pet = await rpc('pet_action', { p_action: k });
     render(true);
     const h = HABITS.find(x => x.k === k);
     if (pet.result === 'revived') toast('✨ ' + pet.name + ' is back! Take good care of it this time.');
     else if (wasStage !== pet.stage) toast(pet.stage === 'baby' ? '🐣 Your egg hatched!' : '🌟 ' + pet.name + ' grew into a ' + STAGE_NAME[pet.stage] + '!');
+    else if (pet.result === 'care_day') toast('🌱 Care day! ' + pet.name + ' grew a little (day ' + pet.growth_days + ' of 30).');
     else if (h) toast(h.ico + ' ' + h.tip);
     else if (k === 'treat') toast('🍩 Yum… but that sugar costs health and energy.');
     else if (k === 'play') toast('⚽ ' + pet.name + ' had fun!');
@@ -386,7 +558,6 @@ function newQuestion(){
   const pick = terms[Math.floor(Math.random() * terms.length)];
   const others = shuffle(terms.filter(t => t[0] !== pick[0])).slice(0, 3);
   const opts = shuffle([pick].concat(others)).map(t => t[0]);
-  // hide the answer if the definition repeats the term
   const re = new RegExp(pick[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
   quiz = { answer: pick[0], def: pick[1].replace(re, '_____'), opts, done: false, ch };
   $('quizArea').classList.remove('hidden');
@@ -406,13 +577,13 @@ async function answer(i){
     if (quiz.opts[j] === quiz.answer) b.classList.add('right'); else if (j === i) b.classList.add('wrong');
   });
   if (right){
-    $('quizFb').style.color = 'var(--emerald)';
+    $('quizFb').style.color = 'var(--em)';
     const today = pet.today || {}, caps = pet.caps || {}, left = k => (caps[k] || 0) - (today[k] || 0);
     const act = !pet.alive || left('quiz') > 0 ? 'quiz' : left('study') > 0 ? 'study' : null;
-    $('quizFb').textContent = !pet.alive ? '✅ Correct! A spark of life returns…' : act === 'quiz' ? '✅ Correct! ' + pet.name + ' munches happily.' : act === 'study' ? '✅ Correct! +1 💡 Knowledge.' : '✅ Correct! (You hit today\'s Knowledge limit, but keep practicing.)';
+    $('quizFb').textContent = !pet.alive ? '✅ Correct! A spark of life returns…' : act === 'quiz' ? '✅ Correct! ' + pet.name + ' munches happily.' : act === 'study' ? '✅ Correct! +1 💡 Knowledge.' : '✅ Correct! (You hit today\'s 20 Knowledge, but keep practicing.)';
     if (act){ const ok = await doAction(act); if (!ok) $('quizFb').textContent = '✅ Correct! (You hit today\'s limit, but keep practicing.)'; }
   } else {
-    $('quizFb').style.color = 'var(--crimson)';
+    $('quizFb').style.color = 'var(--red)';
     $('quizFb').textContent = '❌ Not quite. The answer is “' + quiz.answer + '”.' + (quiz.why ? ' ' + quiz.why : ' Try another!');
   }
   $('quizBtn').textContent = 'Next question ▶';
@@ -442,23 +613,36 @@ async function doRename(){
 $('renameGo').addEventListener('click', doRename);
 $('renameIn').addEventListener('keydown', e => { if (e.key === 'Enter') doRename(); });
 
-// ---------- shop ----------
+// ---------- care kit + shop ----------
 const SLOT_NAME = { skin:'🎨 Skins', shoes:'👟 Shoes', shirt:'👕 Clothes', back:'🦸 Capes', hair:'💇 Hair', hat:'🧢 Hats', arms:'💪 Muscles', face:'🕶️ Glasses', neck:'🏅 Medals', hand:'🥤 Gear', aura:'✨ Auras' };
 let shopItems = null, shopTab = 'all', shopBusy = false;
 async function loadShop(){
   try { const { data, error } = await db.rpc('pet_shop_items'); if (error) throw error; shopItems = data || []; renderShop(); }
   catch(e){ $('shop').innerHTML = '<p class="dim small">The shop couldn\'t load right now. Refresh to try again.</p>'; }
 }
+function renderKit(){
+  const today = pet.today || {}, k = pet.knowledge || 0;
+  $('kit').innerHTML = shopItems.filter(it => it.slot === 'kit').map(it => {
+    const d = KIT[it.key] || { ico:'🧰', fx:'' }, usedToday = (today[it.key] || 0) >= 1;
+    const med = it.key === 'k_medicine' && pet.health >= 60;
+    const why = usedToday ? 'Used today' : med ? 'Not sick' : k < it.cost ? 'Need ' + (it.cost - k) + ' more 💡' : '';
+    return '<div class="kitem"><span class="ki">' + d.ico + '</span><span class="kt"><b>' + esc(it.name) + '</b><span>' + esc(d.fx) + '</span></span>' +
+      '<button class="btn btn-gold" data-kit="' + it.key + '"' + (why ? ' disabled title="' + esc(why) + '"' : '') + '>' + (usedToday ? '✓ Used' : '💡' + it.cost) + '</button></div>';
+  }).join('');
+  $('kit').querySelectorAll('button[data-kit]').forEach(b => b.onclick = () => shopDo('buy', null, b.dataset.kit));
+}
 function renderShop(){
   if (!shopItems || !pet) return;
+  renderKit();
   const owned = pet.owned || [], gear = pet.gear || {}, k = pet.knowledge || 0, kt = pet.knowledge_total || 0;
   $('kNow').textContent = k; $('kTotal').textContent = kt;
   $('shopEgg').classList.toggle('hidden', pet.stage !== 'egg');
-  const slots = ['all'].concat([...new Set(shopItems.map(i => i.slot))]);
+  const items = shopItems.filter(it => it.slot !== 'kit');
+  const slots = ['all'].concat([...new Set(items.map(i => i.slot))]);
   $('shopTabs').innerHTML = slots.map(sl => '<button type="button" data-s="' + sl + '" class="' + (sl === shopTab ? 'on' : '') + '">' + (sl === 'all' ? 'All' : (SLOT_NAME[sl] || sl)) + '</button>').join('');
   $('shopTabs').querySelectorAll('button').forEach(b => b.onclick = () => { shopTab = b.dataset.s; renderShop(); });
   const base = Object.assign({}, pet, { stage: pet.stage === 'egg' ? 'child' : pet.stage, alive: true, mood_label: 'happy' });
-  $('shop').innerHTML = shopItems.filter(it => shopTab === 'all' || it.slot === shopTab).map(it => {
+  $('shop').innerHTML = items.filter(it => shopTab === 'all' || it.slot === shopTab).map(it => {
     const has = owned.indexOf(it.key) !== -1, worn = gear[it.slot] === it.key, locked = !has && kt < it.unlock;
     const g = Object.assign({}, gear); g[it.slot] = it.key;
     let btn;
@@ -477,7 +661,11 @@ function renderShop(){
 async function shopDo(a, slot, key){
   if (shopBusy) return; shopBusy = true;
   try {
-    if (a === 'buy'){ const it = shopItems.find(i => i.key === key); pet = await rpc('pet_shop_buy', { p_item: key }); toast('🎉 ' + pet.name + ' got the ' + it.name + '!'); }
+    if (a === 'buy'){
+      const it = shopItems.find(i => i.key === key);
+      pet = await rpc('pet_shop_buy', { p_item: key });
+      toast(it.slot === 'kit' ? (KIT[key] ? KIT[key].ico : '🧰') + ' ' + pet.name + ' feels better! (' + (KIT[key] ? KIT[key].fx : '') + ')' : '🎉 ' + pet.name + ' got the ' + it.name + '!');
+    }
     else pet = await rpc('pet_equip', { p_slot: slot, p_item: a === 'off' ? null : key });
     render(true);
   } catch(e){ toast(friendly(e)); }
@@ -488,19 +676,21 @@ async function shopDo(a, slot, key){
 async function load(){
   try {
     pet = await rpc('pet_get');
-    if (!pet){ buildSwatches(); show('v-hatch'); return; }
+    if (!pet){ buildSwatches(); show('v-hatch'); $('how').open = true; return; }
     render(); show('v-pet'); loadShop();
+    try { if (!localStorage.getItem('pet_how_seen_v2')) { $('how').open = true; localStorage.setItem('pet_how_seen_v2', '1'); } } catch(e){}
   } catch(e){
     $('pageErr').textContent = friendly(e);
     if (!/Login expired/.test(e.message)) show('v-loading');
   }
 }
+$('howLink').addEventListener('click', () => { $('how').open = true; });
 (function init(){
   buildChapters();
   if (window.QuickChecks) QuickChecks.ready.then(buildChapters);   // adds the Review Deck option once saved answers load
   if (!db){ $('pageErr').textContent = 'Could not reach the server. Check your internet and refresh.'; return; }
   session = getSession();
-  if (!session){ show('v-login'); return; }
+  if (!session){ show('v-login'); $('how').open = true; return; }
   load();
   setInterval(() => { if (!busy && pet && !document.hidden) rpc('pet_get').then(p => { if (p){ pet = p; render(); } }).catch(() => {}); }, 5 * 60 * 1000);
 })();

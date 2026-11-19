@@ -22,10 +22,15 @@
       '<defs><radialGradient id="eg' + p.base.slice(1) + '" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#FFF4DE"/><stop offset="1" stop-color="#E8D6B4"/></radialGradient>' +
       '<radialGradient id="esh"><stop offset="0" stop-color="#000" stop-opacity=".38"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>' +
       '<ellipse cx="100" cy="182" rx="44" ry="9" fill="url(#esh)"/>' +
+      '<circle cx="100" cy="124" r="70" fill="' + p.base + '" opacity=".12"/>' +
       '<path d="M100 62 C 132 62 146 112 146 138 C 146 166 126 182 100 182 C 74 182 54 166 54 138 C 54 112 68 62 100 62 Z" fill="url(#eg' + p.base.slice(1) + ')" stroke="' + INK + '" stroke-width="4"/>' +
       '<circle cx="82" cy="112" r="9" fill="' + p.base + '"/><circle cx="118" cy="98" r="7" fill="' + p.base + '"/>' +
       '<circle cx="112" cy="140" r="11" fill="' + p.base + '"/><circle cx="78" cy="152" r="6" fill="' + p.base + '"/>' +
       '<path d="M86 76 q6 -6 12 0" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".8"/>' +
+      '<path d="M120 84 l-6 10 l7 6 l-5 9" stroke="' + INK + '" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>' +
+      // v2: a twig nest
+      '<path d="M46 170 q54 26 108 0" stroke="#8A5A2B" stroke-width="10" fill="none" stroke-linecap="round"/>' +
+      '<path d="M50 168 q50 22 100 0 M58 176 l14 -6 M88 182 l12 -8 M118 180 l14 -6 M140 172 l10 -8 M62 166 l-10 -6 M140 166 l10 -6" stroke="#C48A4A" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
       '</g>';
   }
 
@@ -186,7 +191,8 @@
       const scale = { baby: 0.62, child: 0.78, teen: 0.9, adult: 1 }[stage] || 1;
       scaleUsed = scale;
       const fat = form === 'sugar' ? 1.14 : 1;
-      const rx = 52 * fat, ry = (stage === 'teen' || stage === 'adult' ? 50 : 46);
+      const SHAPE = { baby: [52, 44], child: [50, 47], teen: [47, 53], adult: [52, 54] }[stage] || [52, 50];   // v2: each stage has its own build
+      const rx = SHAPE[0] * fat, ry = SHAPE[1];
       const cy = 122, cx = 100;
       const sick = mood === 'sick';
       const bLight = sick ? '#E4F2C6' : p.light, bBase = sick ? '#B9D98C' : p.base, bDark = sick ? '#7E9A52' : p.dark;
@@ -206,6 +212,21 @@
       g += G.aura(gear.aura);
       // shadow
       g += '<ellipse cx="100" cy="182" rx="' + (50 * fat) + '" ry="9" fill="url(#sh' + uid + ')"/>';
+      // v2: leaf tail for teens and adults
+      if (stage === 'teen' || stage === 'adult') {
+        const tx = cx + rx * 0.62, ty = cy + ry * 0.55, L = stage === 'adult' ? 1 : 0.8;
+        g += '<path d="M' + tx + ' ' + ty + ' q' + (30 * L) + ' 14 ' + (40 * L) + ' -' + (6 * L) + '" stroke="' + p.dark + '" stroke-width="' + (9 * L) + '" fill="none" stroke-linecap="round"/>';
+        g += '<path d="M' + tx + ' ' + ty + ' q' + (30 * L) + ' 14 ' + (40 * L) + ' -' + (6 * L) + '" stroke="' + INK + '" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>';
+        g += '<ellipse cx="' + (tx + 44 * L) + '" cy="' + (ty - 14 * L) + '" rx="' + (8 * L) + '" ry="' + (13 * L) + '" fill="' + LEAF + '" stroke="' + LEAF_D + '" stroke-width="3" transform="rotate(35 ' + (tx + 44 * L) + ' ' + (ty - 14 * L) + ')"/>';
+      }
+      if (stage === 'adult' && alive) {   // v2: big feathered adult wings behind the small ones
+        const tip = form === 'radiant' ? '#FFE066' : form === 'scruffy' ? '#CFC4B0' : '#fff', droop = form === 'scruffy' ? 14 : 0;
+        [-1, 1].forEach(sd => {
+          const bx = cx + sd * (rx - 6), by = cy - 14;
+          g += '<path d="M' + bx + ' ' + by + ' q' + (sd * 40) + ' ' + (-50 + droop) + ' ' + (sd * 50) + ' ' + (2 + droop) + ' q' + (sd * -8) + ' 6 ' + (sd * -16) + ' 4 q' + (sd * -2) + ' 8 ' + (sd * -14) + ' 8 q' + (sd * -4) + ' 8 ' + (sd * -16) + ' 6 q' + (sd * -10) + ' 4 ' + (sd * -28) + ' 4 z" fill="url(#wg' + uid + ')" stroke="' + INK + '" stroke-width="3" opacity=".95"/>';
+          g += '<path d="M' + (bx + sd * 30) + ' ' + (by - 26 + droop) + ' q' + (sd * 14) + ' 8 ' + (sd * 20) + ' ' + (26) + '" stroke="' + tip + '" stroke-width="5" fill="none" stroke-linecap="round"/>';
+        });
+      }
       // wings
       if (stage === 'teen' || stage === 'adult') {
         const w = stage === 'adult' ? 1 : 0.75;
@@ -227,6 +248,13 @@
       g += '<path d="M' + (cx + rx * 0.2) + ' ' + (cy + ry * 0.93) + ' A' + rx + ' ' + ry + ' 0 0 0 ' + (cx + rx * 0.93) + ' ' + (cy + ry * 0.2) + '" stroke="#fff" stroke-width="3" fill="none" opacity=".35" stroke-linecap="round"/>';
       g += '<g clip-path="url(#bd' + uid + ')">' + G.skinPattern(gear.skin, cx, cy, rx, ry, p) + (gear.arms === 'buff' ? G.abs(cx, cy) : '') + (gear.shirt ? G.shirt(gear.shirt, cx, cy, rx, ry) : '') + '</g>';
       g += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="none" stroke="' + INK + '" stroke-width="4"/>';
+      if (stage === 'adult' && !gear.shirt && alive) {   // v2: the Wellness emblem every adult earns
+        const ey = cy + 34;
+        g += '<path d="M' + cx + ' ' + (ey + 8) + ' l-9 -9 a5.5 5.5 0 0 1 9 -6 a5.5 5.5 0 0 1 9 6 z" fill="' + (form === 'radiant' ? '#FFD700' : '#FF7E9B') + '" stroke="' + INK + '" stroke-width="2"/>';
+      }
+      if (stage === 'teen' && !gear.shirt && alive) {   // v2: teen stripe marks on the cheeks/forehead
+        g += '<path d="M' + (cx - 8) + ' ' + (cy - ry + 14) + ' l8 6 l8 -6" stroke="' + p.dark + '" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>';
+      }
       if (gear.shoes) g += G.shoe(gear.shoes, cx - 24, cy + ry + 2) + G.shoe(gear.shoes, cx + 24, cy + ry + 2);
       if (gear.hair) g += G.hair(gear.hair, cx, top, p.dark);
       if (gear.hat === 'headband' || gear.hat === 'cap') g += G.hatLow(gear.hat, cx, cy, rx, ry, top);
