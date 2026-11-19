@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="local-guard.js"></script>
+<meta charset="UTF-8">
+<script src="dark_mode.js"></script>
+<script src="term.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="app/site-32.png">
+<title>Exit Survey — Legend of Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-text:#7a5c00; --emerald:#00E5A0; --emerald-text:#00704D; --sky:#38BFFF; --crimson:#FF3B5C;
+  --bg:#FDFAF2; --card:#fff; --border:rgba(28,26,46,0.12); --text:#1C1A2E; --dim:rgba(28,26,46,0.66);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:12px 20px; background:rgba(248,244,232,0.97); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:var(--gold-text); text-decoration:none; }
+.nav-links { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-link { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700; color:var(--dim); text-decoration:none; border:1px solid transparent; }
+.nav-link:hover { color:var(--text); border-color:var(--border); }
+.wrap { max-width:760px; margin:0 auto; padding:22px 16px 60px; }
+.hero { border-radius:20px; padding:24px 22px 20px; color:#fff; text-align:center;
+  background:radial-gradient(circle at 20% 0%, #3b2a7a 0%, #1C1A2E 60%), #1C1A2E; box-shadow:0 10px 30px rgba(28,26,46,.18); }
+.hero h1 { font-family:'Cinzel',serif; font-size:clamp(24px,6vw,34px); color:var(--gold); text-shadow:0 2px 0 #000; line-height:1.15; }
+.hero p { font-size:15px; color:rgba(255,255,255,.85); margin-top:8px; line-height:1.55; }
+.lock { display:inline-flex; gap:8px; align-items:center; margin-top:12px; font-weight:800; font-size:13.5px; color:#1C1A2E; background:var(--emerald); border-radius:999px; padding:7px 14px; }
+.sec-title { font-family:'Cinzel',serif; font-size:19px; color:var(--gold-text); margin:26px 4px 4px; }
+.q { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px 16px 14px; margin-top:12px; scroll-margin-top:80px; }
+.q.miss { border-color:var(--crimson); box-shadow:0 0 0 2px rgba(255,59,92,.25); }
+.q h3 { font-size:16.5px; line-height:1.45; margin-bottom:10px; }
+.q h3 .n { color:var(--gold-text); font-weight:900; margin-right:4px; }
+.ch { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:2px solid var(--border); border-radius:12px; margin-top:8px; cursor:pointer; font-size:15px; line-height:1.4; }
+.ch input { position:absolute; opacity:0; pointer-events:none; }
+.ch .L { flex:none; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-weight:900; background:rgba(28,26,46,.07); }
+.ch:hover { border-color:var(--sky); }
+.ch.on { border-color:var(--emerald); background:#eafff6; }
+.ch.on .L { background:var(--emerald); color:#1C1A2E; }
+.more { margin-top:10px; font-size:13px; font-weight:800; color:var(--dim); background:none; border:none; cursor:pointer; text-decoration:underline; }
+textarea { width:100%; margin-top:8px; font:600 15px 'Nunito',sans-serif; color:var(--text); background:#fffdf6; border:1px solid var(--border); border-radius:10px; padding:10px; resize:vertical; }
+.btn { display:inline-block; font:900 16px 'Nunito',sans-serif; padding:14px 22px; border-radius:14px; border:none; cursor:pointer; text-decoration:none;
+  background:linear-gradient(180deg,#FFE34D,#FFC400); color:#1C1A2E; box-shadow:0 4px 0 #a37d00; }
+.btn:active { transform:translateY(3px); box-shadow:0 1px 0 #a37d00; }
+.btn[disabled] { opacity:.5; cursor:default; }
+.btn-dark { background:#1C1A2E; color:var(--gold); box-shadow:none; }
+.btn-wide { width:100%; margin-top:14px; }
+.prog { padding:10px 2px 0; font-size:13px; font-weight:800; color:var(--dim); }
+.bar { height:8px; background:rgba(28,26,46,.08); border-radius:99px; overflow:hidden; margin-top:4px; }
+.bar i { display:block; height:100%; background:linear-gradient(90deg,var(--sky),var(--emerald)); transition:width .3s; }
+.msg { background:#fff; border:1px solid var(--border); border-radius:16px; padding:26px 20px; text-align:center; font-size:15px; line-height:1.6; margin-top:16px; }
+.msg input { font:800 18px 'Nunito',sans-serif; padding:12px 14px; border-radius:12px; border:2px solid var(--border); width:min(260px,100%); text-align:center; margin-top:12px; }
+.err { color:#B4123A; font-weight:800; margin-top:10px; }
+.hint { font-size:13px; color:var(--dim); margin-top:10px; line-height:1.5; }
+html.dark .q, html.dark .msg { background:#1d1b2e; } html.dark textarea, html.dark .msg input { background:#15131f; color:inherit; }
+html.dark .ch.on { background:rgba(0,229,160,.12); } html.dark .prog { background:transparent; }
+</style>
+<!-- PWA --><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="app/site-180.png"><meta name="apple-mobile-web-app-title" content="Doppsclass"><meta name="theme-color" content="#140c2e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><script src="pwa.js" defer></script><!-- /PWA -->
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚔ Legend of Wellness</a>
+  <div class="nav-links">
+    <a class="nav-link" href="welcome.html">🏠 Today</a>
+    <a class="nav-link" href="quest.html">⚔ Quest</a>
+  </div>
+</nav>
+<div class="wrap" id="app"><div class="msg">Loading…</div></div>
+
+<script src="vendor/supabase.js"></script>
+<script src="exit_survey_data.js"></script>
+<script>
+/*
+ * Exit Survey — end-of-trimester feedback (added 2026-11-19).
+ * Gate: page password "exit", then the student must be signed in (Quest login).
+ * 20 required A–D questions, each with an optional comment, plus a final open comment.
+ * Saved through exit_survey_submit (supabase/exit_survey.sql): one response per student per
+ * trimester (resubmitting replaces it). Mr. Dopp sees answers by class period only — no names.
+ */
+(function () {
+  const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
+  const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
+  const PASS = 'exit', PASS_KEY = 'exit_survey_ok';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const S = window.EXIT_SURVEY, QS = S.questions, L = ['A', 'B', 'C', 'D'];
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let ses = null, ans = {}, com = {}, dirty = false;
+
+  function session() {
+    try {
+      const r = window.DoppRemember && DoppRemember.get();
+      const id = localStorage.getItem('qSID_' + TRIMESTER) || (r && r.sid), pin = sessionStorage.getItem('qPIN_' + TRIMESTER) || (r && r.pin);
+      return id && pin ? { id, pin } : null;
+    } catch (e) { return null; }
+  }
+  function view(html) { $('app').innerHTML = html; window.scrollTo(0, 0); }
+  function signIn(extra) {
+    view(`<div class="msg"><b>Sign in first</b><br>${extra || 'The Exit Survey is only for students in Mr. Dopp’s class. Sign in on the Quest page with your class code, last name and PIN, then come back here.'}<br>
+      <a class="btn btn-dark" style="margin-top:12px" href="quest.html">⚔ Sign in on the Quest page</a></div>`);
+  }
+
+  // ───────── password gate ─────────
+  function gate() {
+    view(`<section class="hero"><h1>🚪 Exit Survey</h1><p>Mr. Dopp will give you the password in class.</p></section>
+      <div class="msg"><label for="pw"><b>Survey password</b></label><br>
+        <input id="pw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="password">
+        <br><button class="btn" id="pwgo" style="margin-top:12px">Open survey ▶</button><div class="err" id="pwerr"></div></div>`);
+    const go = () => {
+      if ($('pw').value.trim().toLowerCase() === PASS) { try { sessionStorage.setItem(PASS_KEY, '1'); } catch (e) {} load(); }
+      else { $('pwerr').textContent = 'That’s not the password. Ask Mr. Dopp.'; $('pw').select(); }
+    };
+    $('pwgo').onclick = go;
+    $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    $('pw').focus();
+  }
+
+  // ───────── survey form ─────────
+  function qHtml(i) {
+    const k = 'q' + (i + 1), q = QS[i], c = com[k] || '';
+    return `<div class="q" id="${k}"><h3><span class="n">${i + 1}.</span>${esc(q.q)}</h3>
+      ${q.c.map((t, j) => `<label class="ch${ans[k] === L[j] ? ' on' : ''}"><input type="radio" name="${k}" value="${L[j]}"${ans[k] === L[j] ? ' checked' : ''}><span class="L">${L[j]}</span><span>${esc(t)}</span></label>`).join('')}
+      <button type="button" class="more" data-k="${k}"${c ? ' hidden' : ''}>💬 Add a comment (optional)</button>
+      <textarea data-k="${k}" rows="2" maxlength="1500" placeholder="Additional comments (optional)"${c ? '' : ' hidden'}>${esc(c)}</textarea></div>`;
+  }
+  function form(done, when) {
+    view(`<section class="hero"><h1>🚪 Exit Survey</h1>
+        <p>20 quick questions about WELL 255 and Mr. Dopp (about 10 minutes). Pick the answer that fits best — add a comment any time you want to say more. Honest answers help next year’s students.</p>
+        <div class="lock">🔒 Anonymous — Mr. Dopp sees answers by class period, never your name</div></section>
+      ${done ? `<div class="msg" style="margin-top:14px">✅ You already turned this in${when ? ' on ' + esc(new Date(when).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })) : ''}. You can change your answers below and submit again — only your newest answers count.</div>` : ''}
+      <div class="prog"><span id="pt">0 of 20 answered</span><div class="bar"><i id="pb" style="width:0"></i></div></div>
+      ${S.sections.map(s => `<h2 class="sec-title">${esc(s.title)}</h2>` + QS.slice(s.from - 1, s.to).map((_, j) => qHtml(s.from - 1 + j)).join('')).join('')}
+      <h2 class="sec-title">✍ Anything else?</h2>
+      <div class="q"><h3>Is there anything else you want Mr. Dopp to know — about the class, about him, or ideas for next year? (optional)</h3>
+        <textarea data-k="final" rows="4" maxlength="1500" placeholder="Your thoughts…">${esc(com.final || '')}</textarea></div>
+      <button class="btn btn-wide" id="send">Submit my survey ✔</button><div class="err" id="serr" style="text-align:center"></div>`);
+    $('app').addEventListener('change', e => {
+      const r = e.target; if (r.type !== 'radio') return;
+      ans[r.name] = r.value; dirty = true;
+      r.closest('.q').querySelectorAll('.ch').forEach(l => l.classList.toggle('on', l.contains(r)));
+      r.closest('.q').classList.remove('miss'); prog();
+    });
+    $('app').addEventListener('input', e => { if (e.target.tagName === 'TEXTAREA') { com[e.target.dataset.k] = e.target.value; dirty = true; } });
+    $('app').addEventListener('click', e => {
+      const b = e.target.closest('.more'); if (!b) return;
+      b.hidden = true; const t = b.parentNode.querySelector('textarea'); t.hidden = false; t.focus();
+    });
+    $('send').onclick = submit;
+    prog();
+  }
+  function prog() {
+    const n = QS.filter((_, i) => ans['q' + (i + 1)]).length;
+    $('pt').textContent = n + ' of 20 answered'; $('pb').style.width = (n / 20 * 100) + '%';
+  }
+
+  async function submit() {
+    const missing = QS.map((_, i) => 'q' + (i + 1)).filter(k => !ans[k]);
+    document.querySelectorAll('.q.miss').forEach(q => q.classList.remove('miss'));
+    if (missing.length) {
+      missing.forEach(k => $(k).classList.add('miss'));
+      $('serr').textContent = `Please answer question${missing.length > 1 ? 's' : ''} ${missing.map(k => k.slice(1)).join(', ')}.`;
+      $(missing[0]).scrollIntoView({ behavior: 'smooth' }); return;
+    }
+    $('send').disabled = true; $('serr').textContent = '';
+    const comments = {}; Object.keys(com).forEach(k => { if ((com[k] || '').trim()) comments[k] = com[k].trim(); });
+    const { data, error } = await db.rpc('exit_survey_submit', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER, p_answers: ans, p_comments: comments });
+    if (error) { $('send').disabled = false; $('serr').textContent = 'Couldn’t send your survey — check your internet and tap Submit again. (' + error.message + ')'; return; }
+    dirty = false;
+    view(`<section class="hero"><h1>🎉 Thank you!</h1><p>Your Exit Survey is in${data && data.saved === false ? ' (demo account — nothing was saved)' : ''}. Mr. Dopp reads every comment.
+      Thanks for a great trimester — keep taking care of your mind, body and heart.</p></section>
+      <a class="btn btn-wide" href="index.html">🏠 Back to Home</a>
+      <button class="btn btn-dark btn-wide" id="edit">✏ Change my answers</button>`);
+    $('edit').onclick = () => form(true, new Date().toISOString());
+  }
+
+  async function load() {
+    let ok = false; try { ok = sessionStorage.getItem(PASS_KEY) === '1'; } catch (e) {}
+    if (!ok) return gate();
+    ses = session();
+    if (!ses) return signIn();
+    const { data, error } = await db.rpc('exit_survey_status', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER });
+    if (error) {
+      if (/not signed in/i.test(error.message)) { if (window.DoppRemember) DoppRemember.clear(); return signIn('This device’s saved login doesn’t work anymore. Please sign in again.'); }
+      return view(`<div class="msg">Couldn’t load the Exit Survey right now. Try again in a minute.<div class="err">${esc(error.message)}</div></div>`);
+    }
+    ans = Object.assign({}, (data && data.answers) || {}); com = Object.assign({}, (data && data.comments) || {});
+    form(!!(data && data.done), data && data.submitted_at);
+  }
+  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+  load();
+})();
+</script>
+</body>
+</html>

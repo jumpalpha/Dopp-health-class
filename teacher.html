@@ -309,6 +309,7 @@ input, select, textarea { color: var(--text); }
     <button class="sb-btn" onclick="showPage('briefing',this)"><span class="sb-btn-icon">📣</span>Daily Briefing</button>
     <button class="sb-btn" onclick="showPage('ask',this)"><span class="sb-btn-icon">🙋</span>Ask Mr. Dopp <span id="ak-badge" style="display:none;background:#FF3B5C;color:#fff;border-radius:999px;font-size:11px;font-weight:900;padding:1px 7px;margin-left:4px"></span></button>
     <button class="sb-btn" onclick="showPage('reading',this)"><span class="sb-btn-icon">📖</span>Reading Levels 🔒</button>
+    <button class="sb-btn" onclick="showPage('exitsurvey',this)"><span class="sb-btn-icon">🚪</span>Exit Survey</button>
     <button class="sb-btn" onclick="showPage('checklist',this)"><span class="sb-btn-icon">✅</span>Student Checklist Draft</button>
     <button class="sb-btn" onclick="showPage('finance',this)"><span class="sb-btn-icon">💰</span>Cost of Your Future</button>
     <button class="sb-btn" onclick="showPage('classwork',this)"><span class="sb-btn-icon">📝</span>Unit Classwork</button>
@@ -588,6 +589,15 @@ input, select, textarea { color: var(--text); }
       <div class="page-sub">Private Reading Check results. Only you and each student can see their own level — never the class.</div>
     </div>
     <div id="rt-root"></div>
+  </div>
+
+  <!-- ── EXIT SURVEY (anonymous end-of-trimester feedback) ── -->
+  <div class="page" id="page-exitsurvey">
+    <div class="page-hdr">
+      <div class="page-title">Exit Survey 🚪</div>
+      <div class="page-sub">Anonymous end-of-trimester feedback — totals for each question plus every comment.</div>
+    </div>
+    <div id="es-root"></div>
   </div>
 
   <!-- ── STUDENT CHECKLIST DRAFT (teacher-only until approved) ── -->
@@ -1508,6 +1518,7 @@ function renderPage(id) {
   else if(id==='briefing' && window.renderBriefing) renderBriefing();
   else if(id==='ask' && window.renderAsk) renderAsk();
   else if(id==='reading' && window.renderReadingTeacher) renderReadingTeacher();
+  else if(id==='exitsurvey' && window.renderExitSurveyTeacher) renderExitSurveyTeacher();
   else if(id==='finance' && window.renderFinanceTeacher) renderFinanceTeacher();
   else if(id==='classwork' && window.renderClassworkTeacher) renderClassworkTeacher();
 }
@@ -2120,6 +2131,8 @@ renderOverview();
 <script src="briefing_teacher.js"></script>
 <script src="ask_teacher.js"></script>
 <script src="reading_teacher.js"></script>
+<script src="exit_survey_data.js"></script>
+<script src="exit_survey_teacher.js"></script>
 <script src="wcq_recipes.js"></script>
 <script src="recipes_teacher.js"></script>
 <script src="finance_calc.js"></script>
