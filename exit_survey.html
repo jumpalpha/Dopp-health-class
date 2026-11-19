@@ -78,7 +78,7 @@ html.dark .ch.on { background:rgba(0,229,160,.12); } html.dark .prog { backgroun
  * Gate: page password "exit", then the student must be signed in (Quest login).
  * 20 required A–D questions, each with an optional comment, plus a final open comment.
  * Saved through exit_survey_submit (supabase/exit_survey.sql): one response per student per
- * trimester (resubmitting replaces it). Mr. Dopp sees answers by class period only — no names.
+ * trimester (resubmitting replaces it). Mr. Dopp sees each student's name with their answers.
  */
 (function () {
   const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
@@ -130,7 +130,7 @@ html.dark .ch.on { background:rgba(0,229,160,.12); } html.dark .prog { backgroun
   function form(done, when) {
     view(`<section class="hero"><h1>🚪 Exit Survey</h1>
         <p>20 quick questions about WELL 255 and Mr. Dopp (about 10 minutes). Pick the answer that fits best — add a comment any time you want to say more. Honest answers help next year’s students.</p>
-        <div class="lock">🔒 Anonymous — Mr. Dopp sees answers by class period, never your name</div></section>
+        <div class="lock">👤 Mr. Dopp will see your name with your answers — please be honest and kind</div></section>
       ${done ? `<div class="msg" style="margin-top:14px">✅ You already turned this in${when ? ' on ' + esc(new Date(when).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })) : ''}. You can change your answers below and submit again — only your newest answers count.</div>` : ''}
       <div class="prog"><span id="pt">0 of 20 answered</span><div class="bar"><i id="pb" style="width:0"></i></div></div>
       ${S.sections.map(s => `<h2 class="sec-title">${esc(s.title)}</h2>` + QS.slice(s.from - 1, s.to).map((_, j) => qHtml(s.from - 1 + j)).join('')).join('')}

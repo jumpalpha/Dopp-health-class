@@ -4,8 +4,8 @@
 -- • Students take it from exit_survey.html (linked at the bottom of the home page,
 --   page password "exit") while signed in (student id + PIN hash).
 -- • One response per student per trimester; submitting again replaces their earlier answers.
--- • ANONYMOUS to the teacher: exit_survey_teacher_list returns class code + answers only,
---   never the student id or name. student_id is kept only to allow one response each.
+-- • NAMED (teacher's choice 2026-11-19): exit_survey_teacher_list returns each student's name,
+--   class code and answers. Students are told on the survey that Mr. Dopp sees their name.
 -- • exit_surveys has RLS on and no policies: only the functions below can touch it.
 -- • Demo account can take it, but nothing is saved.
 -- ============================================================
@@ -66,16 +66,20 @@ begin
   return jsonb_build_object('ok', true, 'saved', true);
 end $$;
 
--- Teacher: every response for a trimester, anonymous (no id, no name), shuffled order.
+-- Teacher: every response for a trimester, with the student's name, sorted by class and name.
 create or replace function public.exit_survey_teacher_list(p_teacher_pass text, p_trimester text)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
 begin
   if not public._teacher_ok(p_teacher_pass) then raise exception 'not allowed'; end if;
   return jsonb_build_object(
     'trimesters', coalesce((select jsonb_agg(distinct trimester) from public.exit_surveys), '[]'::jsonb),
-    'responses', coalesce((select jsonb_agg(jsonb_build_object('class_code', e.class_code, 'answers', e.answers,
-                                   'comments', e.comments, 'day', e.submitted_at::date) order by md5(e.id::text))
-                            from public.exit_surveys e where e.trimester = p_trimester), '[]'::jsonb));
+    'responses', coalesce((select jsonb_agg(jsonb_build_object(
+                                   'name', btrim(coalesce(s.display_name, '') || ' ' || coalesce(s.last_name, '')),
+                                   'class_code', e.class_code, 'answers', e.answers,
+                                   'comments', e.comments, 'day', e.submitted_at::date)
+                                 order by e.class_code, lower(s.last_name), lower(s.display_name))
+                            from public.exit_surveys e join public.students s on s.id = e.student_id
+                           where e.trimester = p_trimester), '[]'::jsonb));
 end $$;
 
 grant execute on function public.exit_survey_status(uuid, text, text) to anon, authenticated;
