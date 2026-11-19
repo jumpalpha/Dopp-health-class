@@ -124,19 +124,21 @@ html.dark .ch.on { background:rgba(0,229,160,.12); } html.dark .prog { backgroun
     const k = 'q' + (i + 1), q = QS[i], c = com[k] || '';
     return `<div class="q" id="${k}"><h3><span class="n">${i + 1}.</span>${esc(q.q)}</h3>
       ${q.c.map((t, j) => `<label class="ch${ans[k] === L[j] ? ' on' : ''}"><input type="radio" name="${k}" value="${L[j]}"${ans[k] === L[j] ? ' checked' : ''}><span class="L">${L[j]}</span><span>${esc(t)}</span></label>`).join('')}
-      <button type="button" class="more" data-k="${k}"${c ? ' hidden' : ''}>💬 Add a comment (optional)</button>
-      <textarea data-k="${k}" rows="2" maxlength="1500" placeholder="Additional comments (optional)"${c ? '' : ' hidden'}>${esc(c)}</textarea></div>`;
+      <button type="button" class="more" data-k="${k}"${c ? ' hidden' : ''}>💬 Add a private comment (optional)</button>
+      <textarea data-k="${k}" rows="2" maxlength="1500" placeholder="Private — only you and Mr. Dopp will see this (optional)"${c ? '' : ' hidden'}>${esc(c)}</textarea></div>`;
   }
   function form(done, when) {
     view(`<section class="hero"><h1>🚪 Exit Survey</h1>
         <p>20 quick questions about WELL 255 and Mr. Dopp (about 10 minutes). Pick the answer that fits best — add a comment any time you want to say more. Honest answers help next year’s students.</p>
+        <div class="lock">🔒 Your answers and comments are <b>NOT public</b>. Only you and Mr. Dopp will see them.</div>
         <div class="lock">👤 Mr. Dopp will see your name with your answers — please be honest and kind</div></section>
       ${done ? `<div class="msg" style="margin-top:14px">✅ You already turned this in${when ? ' on ' + esc(new Date(when).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })) : ''}. You can change your answers below and submit again — only your newest answers count.</div>` : ''}
       <div class="prog"><span id="pt">0 of 20 answered</span><div class="bar"><i id="pb" style="width:0"></i></div></div>
       ${S.sections.map(s => `<h2 class="sec-title">${esc(s.title)}</h2>` + QS.slice(s.from - 1, s.to).map((_, j) => qHtml(s.from - 1 + j)).join('')).join('')}
       <h2 class="sec-title">✍ Anything else?</h2>
       <div class="q"><h3>Is there anything else you want Mr. Dopp to know — about the class, about him, or ideas for next year? (optional)</h3>
-        <textarea data-k="final" rows="4" maxlength="1500" placeholder="Your thoughts…">${esc(com.final || '')}</textarea></div>
+        <p style="margin:4px 0 0;font-size:14px;opacity:.8">🔒 Not public — only you and Mr. Dopp will see this.</p>
+        <textarea data-k="final" rows="4" maxlength="1500" placeholder="Your thoughts… (private — only you and Mr. Dopp)">${esc(com.final || '')}</textarea></div>
       <button class="btn btn-wide" id="send">Submit my survey ✔</button><div class="err" id="serr" style="text-align:center"></div>`);
     $('app').addEventListener('change', e => {
       const r = e.target; if (r.type !== 'radio') return;
@@ -170,7 +172,7 @@ html.dark .ch.on { background:rgba(0,229,160,.12); } html.dark .prog { backgroun
     const { data, error } = await db.rpc('exit_survey_submit', { p_student_id: ses.id, p_pin_hash: ses.pin, p_trimester: TRIMESTER, p_answers: ans, p_comments: comments });
     if (error) { $('send').disabled = false; $('serr').textContent = 'Couldn’t send your survey — check your internet and tap Submit again. (' + error.message + ')'; return; }
     dirty = false;
-    view(`<section class="hero"><h1>🎉 Thank you!</h1><p>Your Exit Survey is in${data && data.saved === false ? ' (demo account — nothing was saved)' : ''}. Mr. Dopp reads every comment.
+    view(`<section class="hero"><h1>🎉 Thank you!</h1><p>Your Exit Survey is in${data && data.saved === false ? ' (demo account — nothing was saved)' : ''}. Mr. Dopp reads every comment — and only he sees them. They are never made public.
       Thanks for a great trimester — keep taking care of your mind, body and heart.</p></section>
       <a class="btn btn-wide" href="index.html">🏠 Back to Home</a>
       <button class="btn btn-dark btn-wide" id="edit">✏ Change my answers</button>`);
