@@ -156,6 +156,16 @@
     const t0 = Date.parse(cfg.start + 'T12:00:00Z'), t1 = Date.parse(addDays(cfg.end, -5) + 'T12:00:00Z');
     const out = {};
     for (let c = 1; c <= 16; c++) out[c] = (cfg.targets && cfg.targets[c]) || iso(t0 + (t1 - t0) * (c / 16));
+    // light track 17–28: soft "aim by" dates spread over the same span (a nudge only, never a penalty)
+    // 12 school Fridays (winter break skipped), spread evenly from the start to a week before the end
+    const fris = []; for (let d = cfg.start; d <= addDays(cfg.end, -5); d = addDays(d, 1)) {
+      const md = d.slice(5);
+      if (new Date(d + 'T12:00:00Z').getUTCDay() === 5 && !(md >= '12-19' || md <= '01-04')) fris.push(d);
+    }
+    for (let c = 17; c <= 28; c++) {
+      const k = c - 16, f = fris.length ? fris[Math.max(0, Math.min(fris.length - 1, Math.round(k * fris.length / 12) - 1))] : iso(t0 + (t1 - t0) * (k / 12));
+      out[c] = (cfg.targets && cfg.targets[c]) || f;
+    }
     return out;
   }
 
@@ -340,7 +350,7 @@
           href: 'classwork.html?unit=' + unitN }));
         its.forEach(i => { i.light = true; });
       }
-      bonusCh.push({ n: c, title: CHAPTERS[c], items: its, any: its.some(i => i.done || i.status === 'in_progress') });
+      bonusCh.push({ n: c, title: CHAPTERS[c], items: its, aim: lightReq ? tgt[c] : null, any: its.some(i => i.done || i.status === 'in_progress') });
     }
     const b = ev.bonus || {}, projects = new Set(b.projects || []);
     const quests = SIDE_QUESTS.map(([k, t, href]) => {
@@ -465,9 +475,10 @@
     if (light) {
       const lc = ch => ch.items.filter(i => i.status !== 'excused' && !i.notRequired);
       h += `<section class="cl-realm" style="--rc:#a855f7"><h3>⚡ Light track: Chapters 17–28 <small>required · any order · due by ${esc(fmt(v.cfg.end))}</small></h3>
-        <p class="cl-detail" style="margin:0 0 8px">For each chapter: read it, pass Classwork Learn (80%), and pass Chapter Mastery. About 40 minutes each. Start any time.</p>` +
+        <p class="cl-detail" style="margin:0 0 8px">For each chapter: read it, pass Classwork Learn (80%), and pass Chapter Mastery. About 40 minutes each. Start any time. The \"aim by\" dates keep you on pace (about one a week); they're a nudge, not a deadline. ⏰ means you're behind pace.</p>` +
         v.bonus.chapters.map(c => { const it = lc(c), d = it.filter(i => i.done).length;
-          return `<details class="cl-ch"${o.open ? ' open' : ''}><summary><span class="cl-chn">Ch ${c.n}</span> ${esc(c.title)} <span class="cl-chm">${d}/${it.length}</span></summary><ul>${c.items.map(i => itemHTML(i, o)).join('')}</ul></details>`; }).join('') + `</section>`;
+          const full = it.length && d === it.length, behind = !full && c.aim && v.today > c.aim;
+          return `<details class="cl-ch"${o.open ? ' open' : ''}><summary><span class="cl-chn">Ch ${c.n}</span> ${esc(c.title)} <span class="cl-chm">${full ? '✓ done' : (behind ? '⏰ ' : '') + 'aim by ' + esc(fmt(c.aim))} · ${d}/${it.length}</span></summary><ul>${c.items.map(i => itemHTML(i, o)).join('')}</ul></details>`; }).join('') + `</section>`;
     }
     h += `<section class="cl-realm cl-bonus" style="--rc:#a855f7"><h3>⭐ Bonus XP — optional <small>never required</small></h3>` +
       (light ? '' : `<details class="cl-ch"><summary>Chapters 17–28 (${v.bonus.chapters.filter(c => c.any).length} started)</summary>` +
