@@ -113,6 +113,7 @@ details.how[open] summary::after{transform:rotate(180deg)}
 .habit.done .dimn{color:var(--em)}
 .habit.left{opacity:.38}
 .habit.done:disabled{opacity:1;cursor:default}
+.habit.slip.done{border-color:rgba(255,59,92,.55);background:rgba(255,59,92,.1)} .habit.slip.done .dimn{color:#ff8a9e}
 
 /* quiz */
 .quiz-def{background:rgba(0,0,0,.25);border-left:4px solid var(--sky);padding:12px 14px;border-radius:10px;font-size:17px;font-weight:600;line-height:1.4;margin:12px 0}
@@ -223,7 +224,9 @@ html.dl .kbig,html.dl .meter span b{color:#9a6400}
       <div class="card"><b class="t">💡 5. Knowledge</b>
         Every right answer earns 1 💡, up to <b>20 a day</b> (the first 10 also feed it). Spend it on the <b>Care Kit</b> (each item once a day) and on <b>Shop gear</b>. Bigger gear unlocks after more correct answers.</div>
       <div class="card"><b class="t">✨ 6. What kind of adult?</b>
-        How well you cared decides its adult form: <b>Radiant</b> (great care), <b>Steady</b>, <b>Scruffy</b> (spotty care), or <b>Sugar-Crashed</b> (too many treats).</div>
+        How well you cared decides its adult form: <b>Radiant</b> (great care), <b>Steady</b>, <b>Scruffy</b> (spotty care), or <b>Sugar-Crashed</b> (too much sugar).</div>
+      <div class="card"><b class="t">🙈 7. Free time and slips</b>
+        <b>Play</b> once a day: +Mood, but it costs Energy and Clean. <b>Real-life slips</b> (sugary drink, 3+ hours of screens, up past midnight, skipped breakfast) are honest logs. They hurt your sprite a little and earn nothing, so you see what your choices cost.</div>
     </div>
   </details>
 
@@ -326,12 +329,15 @@ html.dl .kbig,html.dl .meter span b{color:#9a6400}
         </div>
 
         <div class="panel" id="extraPanel">
-          <h2>Extras</h2>
-          <div class="extras">
-            <button class="btn btn-ghost" id="playBtn">⚽ Play (<span id="playLeft">3</span>)</button>
-            <button class="btn btn-ghost" id="treatBtn">🍩 Sugary treat (<span id="treatLeft">3</span>)</button>
-          </div>
-          <p class="dim small" style="margin-top:8px">Treats make your sprite happy for a moment, but they cost health and energy. Lots of treats can turn it into a Sugar-Crashed adult.</p>
+          <h2>⚽ Free time <span class="tag">once a day</span></h2>
+          <p class="dim small">Playing cheers your sprite up, but it wears it out and gets it messy. Fun has a cost, just like in real life.</p>
+          <div class="extras"><button class="btn btn-ghost" id="playBtn">⚽ Play together <span class="dim" style="font-weight:600">(+15 😊 · −10 ⚡ · −10 🚿)</span></button></div>
+        </div>
+
+        <div class="panel" id="slipPanel">
+          <h2>🙈 Real-life slips <span class="tag">be honest</span></h2>
+          <p class="dim small">Everyone has off days. If one of these happened today, log it. Your sprite feels it too. Slips never count as picks and earn nothing. Honesty is how you learn what your choices cost.</p>
+          <div class="habits" id="slips"></div>
         </div>
       </div>
     </div>
@@ -390,6 +396,12 @@ const MOOD_TEXT = {
 };
 const BUBBLE = { happy:'Feeling good!', hungry:'So hungry…', tired:'Sooo sleepy…', dirty:'I feel grimy…', sad:'Kinda blue…', sick:'I don\'t feel well…', sugar:'WHEEEE!!!', ghost:'…help me…', egg:'*wobble wobble*' };
 
+const SLIPS = [
+  { k:'slip_sugar',  ico:'🥤', label:'Sugary drink or junk-food snack', fx:'+😊 now, −❤️ −⚡ later', tip:'Sugar gives a quick high, then a crash. Too many makes a Sugar-Crashed adult.' },
+  { k:'slip_screen', ico:'📱', label:'3+ hours of fun screen time',     fx:'−⚡ Energy −😊 Mood',  tip:'Long screen time is linked to worse sleep and lower mood.' },
+  { k:'slip_late',   ico:'🌙', label:'Stayed up past midnight',         fx:'−⚡⚡ Energy −❤️',     tip:'Late nights steal sleep your brain needs to learn and recover.' },
+  { k:'slip_skip',   ico:'🍽️', label:'Skipped breakfast',               fx:'−🍎 Food −⚡ Energy',  tip:'Breakfast fuels focus. Even something small helps.' }
+];
 let session = null, pet = null, busy = false, chosenColor = 'emerald', quiz = null;
 
 function getSession(){
@@ -494,8 +506,17 @@ function render(pop){
   $('reviveTxt').textContent = p.revive_progress + ' / ' + p.revive_needed;
   const left = k => Math.max(0, (caps[k] || 0) - (today[k] || 0));
   $('meter').innerHTML = p.alive ? '<span>🍪 Snacks left: <b>' + left('quiz') + '</b></span><span>📘 Study left: <b>' + left('study') + '</b></span><span>💡 Today: <b>' + ((today.quiz || 0) + (today.study || 0)) + ' / 20</b></span>' : '';
-  $('playLeft').textContent = left('play'); $('treatLeft').textContent = left('treat');
-  $('playBtn').disabled = !left('play'); $('treatBtn').disabled = !left('treat');
+  $('playBtn').disabled = !left('play');
+  $('playBtn').innerHTML = left('play') ? '⚽ Play together <span class="dim" style="font-weight:600">(+15 😊 · −10 ⚡ · −10 🚿)</span>' : '✓ Played today. Come back tomorrow!';
+  $('slips').innerHTML = SLIPS.map(h => {
+    const n = today[h.k] || 0;
+    return '<button class="habit slip' + (n ? ' done' : '') + '" data-k="' + h.k + '"' + (n || !p.alive ? ' disabled' : '') + ' title="' + esc(h.tip) + '">' +
+      '<span class="dimn">' + (n ? '✓ logged' : 'slip') + '</span><span class="ico">' + h.ico + '</span>' + esc(h.label) + '<span class="fx">' + h.fx + '</span></button>';
+  }).join('');
+  $('slips').querySelectorAll('.habit').forEach(b => b.onclick = () => {
+    if (confirm('Log "' + SLIPS.find(x => x.k === b.dataset.k).label + '" for today? It will cost your sprite a little.')) doAction(b.dataset.k);
+  });
+  $('slipPanel').classList.toggle('hidden', !p.alive || p.stage === 'egg');
   $('quizNote').classList.toggle('hidden', !p.alive);
   $('quizRevive').classList.toggle('hidden', p.alive);
   $('quizBtn').disabled = p.alive && !left('quiz') && !left('study') && !quiz;
@@ -509,20 +530,18 @@ async function doAction(k){
   try {
     pet = await rpc('pet_action', { p_action: k });
     render(true);
-    const h = HABITS.find(x => x.k === k);
+    const h = HABITS.find(x => x.k === k) || SLIPS.find(x => x.k === k);
     if (pet.result === 'revived') toast('✨ ' + pet.name + ' is back! Take good care of it this time.');
     else if (wasStage !== pet.stage) toast(pet.stage === 'baby' ? '🐣 Your egg hatched!' : '🌟 ' + pet.name + ' grew into a ' + STAGE_NAME[pet.stage] + '!');
     else if (pet.result === 'care_day') toast('🌱 Care day! ' + pet.name + ' grew a little (day ' + pet.growth_days + ' of 30).');
     else if (h) toast(h.ico + ' ' + h.tip);
-    else if (k === 'treat') toast('🍩 Yum… but that sugar costs health and energy.');
-    else if (k === 'play') toast('⚽ ' + pet.name + ' had fun!');
+    else if (k === 'play') toast('⚽ ' + pet.name + ' had fun! Now it\'s tired and a little messy.');
     else if (k === 'quiz' || k === 'study') toast('💡 +1 Knowledge (' + pet.knowledge + ' to spend)');
     return true;
   } catch(e){ toast(friendly(e)); return false; }
   finally { busy = false; }
 }
 $('playBtn').onclick = () => doAction('play');
-$('treatBtn').onclick = () => doAction('treat');
 
 // ---------- quiz ----------
 function buildChapters(){

@@ -28,3 +28,6 @@ insert into public.pet_items select * from public.bk_pet_items_20261118;
 --   care_points = b.care_points, knowledge = b.knowledge, knowledge_total = b.knowledge_total,
 --   owned = b.owned, equipped = b.equipped, day_counts = b.day_counts, day_date = b.day_date
 -- from public.bk_student_pets_20261118 b where b.student_id = p.student_id;
+
+-- To undo only the Extras rework (keep the rest of v2):
+-- do $$ declare f record; begin for f in select def from public.bk_pet_functions_20261118b loop execute f.def; end loop; end $$;

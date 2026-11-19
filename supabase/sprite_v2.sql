@@ -395,3 +395,11 @@ as $function$
   from students s
   where s.trimester = p_trimester and (p_student_id is null or s.id = p_student_id);
 $function$;
+
+-- ---------- 2026-11-18 (later): Extras rework, applied live ----------
+-- Play and Treat once a day with bigger trade-offs; four honest "real-life slips" (no reward):
+--   slip_sugar  +5 mood +10 food −10 health −10 energy (counts toward Sugar-Crashed)
+--   slip_screen −10 energy −10 mood · slip_late −20 energy −5 health · slip_skip −15 food −5 energy
+-- Slips are not habits: they never use a pick and never make a care day.
+-- Applied by patching _pet_caps(), pet_action() and _pet_view() (sugar mood = any sugar today).
+-- Pre-change copies: bk_pet_functions_20261118b.
