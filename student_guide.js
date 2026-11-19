@@ -28,11 +28,11 @@
     return null;
   }
   var who = me();
-  var LINK = who ? { href: '/welcome.html', text: '📣 Today' } : { href: '/start.html', text: '🧭 Start Here' };
+  var LINK = who ? { href: '/welcome.html', text: 'Today' } : { href: '/start.html', text: 'Start Here' };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   var css = [
-    '.sg-nav{color:#00E5A0!important}html.dl .sg-nav{color:#00704D!important}',
+    '.sg-nav{color:#00E5A0!important}html.dl .sg-nav{color:#00704D!important}.sg-nav,.sg-cw{white-space:nowrap}',
     '#sg-help{position:fixed;right:14px;bottom:14px;z-index:9001;font-family:Geist,Nunito,system-ui,sans-serif}',
     '#sg-help.up{bottom:72px}',
     '#sg-btn{display:flex;align-items:center;gap:6px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(7,7,26,.88);color:#eef0ff;',
@@ -81,7 +81,7 @@
       c.removeAttribute('aria-current');
       c.className = (c.className || '') + ' sg-cw';
       if (/\/classwork(\.html)?$/.test(path)) c.setAttribute('aria-current', 'page');
-      c.textContent = '✏️ Classwork';
+      c.textContent = 'Classwork';
       a.parentNode.insertBefore(c, a.nextSibling);
     });
   }
