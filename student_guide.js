@@ -14,7 +14,8 @@
   var path = location.pathname, file = (path.split('/').pop() || '').replace(/\.html$/, '');
   var root = document.documentElement;
   if (/\/arcade\/play\//.test(path) || root.hasAttribute('data-app-name') || /^game\d\d_/.test(file)) return;
-  if (/^(teacher|teacher-admin|live|live_host|timer|print_quest|sub_guide|offline|dopp_spin|germ_snipes|team_hangman|partner|trail|coin_host|coin_live|cpr_trainer_build|tour)$/.test(file)) return;
+  if (/^(teacher|teacher-admin|live|live_host|timer|print_quest|sub_guide|offline|dopp_spin|germ_snipes|team_hangman|partner|trail|coin_host|coin_live|cpr_trainer_build)$/.test(file)) return;
+  var NOHELP = file === 'tour';   // the tour page gets the menu links but not the Help button
   var GAMEISH = /^(dopp_|sprite_|vocab_slice|vocab_engine|cup_pong|tic_tac_toe|blast_blocks|how_smart|coin_quest|immune_defense|germ_sweeper|field_day|habit_showdown|art_studio)/.test(file);
   var HOME = path === '/' || /^\/(index\.html)?$/.test(path);
 
@@ -69,6 +70,22 @@
     (document.head || document.documentElement).appendChild(st);
   }
 
+  // 1b. "✏️ Classwork" right after "Chapters" (2026-11-18: Classwork is required from T2)
+  function classworkLink() {
+    Array.prototype.forEach.call(document.querySelectorAll('header a'), function (a) {
+      if ((a.textContent || '').trim() !== 'Chapters') return;
+      var n = a.nextElementSibling;
+      if (n && n.classList && n.classList.contains('sg-cw')) return;
+      var c = a.cloneNode(false);
+      c.setAttribute('href', '/classwork.html');
+      c.removeAttribute('aria-current');
+      c.className = (c.className || '') + ' sg-cw';
+      if (/\/classwork(\.html)?$/.test(path)) c.setAttribute('aria-current', 'page');
+      c.textContent = '✏️ Classwork';
+      a.parentNode.insertBefore(c, a.nextSibling);
+    });
+  }
+
   // 1. top-menu link, right after "Home" (desktop bar and phone menu, Next.js and classic pages)
   function navLink() {
     Array.prototype.forEach.call(document.querySelectorAll('header a[href="/"], header a[href="/index.html"], header a[href="index.html"]'), function (a) {
@@ -95,7 +112,7 @@
     s.onload = function () { fn(); }; document.head.appendChild(s);
   }
   function helpButton() {
-    if (GAMEISH || document.getElementById('sg-help') || !document.body) return;
+    if (GAMEISH || NOHELP || document.getElementById('sg-help') || !document.body) return;
     var w = document.createElement('div'); w.id = 'sg-help'; w.setAttribute('data-keep-colors', '');
     if (document.getElementById('dopp-theme-btn')) w.className = 'up';
     w.innerHTML =
@@ -147,7 +164,7 @@
   }
 
   var queued = false;
-  function runAll() { queued = false; addCss(); navLink(); helpButton(); banner(); }
+  function runAll() { queued = false; addCss(); navLink(); classworkLink(); helpButton(); banner(); }
   function schedule() { if (!queued) { queued = true; setTimeout(runAll, 60); } }
   function start() {
     runAll();

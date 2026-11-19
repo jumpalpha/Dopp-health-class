@@ -472,6 +472,21 @@
   if (document.readyState === 'complete') setTimeout(start, 300);
   else window.addEventListener('load', function () { setTimeout(start, 300); });
 })();
+// Returning students (remembered device) land on Today on their first home-page visit each day (2026-11-18).
+(function () {
+  try {
+    var p = location.pathname, home = p === '/' || p === '/index.html';
+    if (!home && !/\/welcome(\.html)?$/.test(p)) return;
+    if (/[?&]home\b/.test(location.search)) return;                       // /?home skips it
+    if (window.top !== window.self) return;                                   // not inside the tour's previews
+    var day = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Denver' }).format(new Date());
+    if (localStorage.getItem('dopp_today_seen') === day) return;
+    localStorage.setItem('dopp_today_seen', day);
+    if (!home) return;                                                        // visiting Today counts as seen
+    var r = JSON.parse(localStorage.getItem('dopp_remember') || 'null');
+    if (r && r.sid && (r.perm || !r.exp || Date.now() < r.exp)) location.replace('/welcome.html');
+  } catch (e) {}
+})();
 // New-student help (2026-11-18): "Start Here"/"Today" menu link, ❓ Help button, home banner.
 // Delete these lines to turn it off everywhere.
 (function () {

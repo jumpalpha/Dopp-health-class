@@ -494,7 +494,7 @@ main { position:relative; z-index:10; }
     <div class="how">
       <div><b>1</b><p><strong>Enter your class code</strong><span>Mr. Dopp gives it to your period.</span></p></div>
       <div><b>2</b><p><strong>Tap your name, type your PIN</strong><span>New? Create your hero in 30 seconds.</span></p></div>
-      <div><b>3</b><p><strong>Check off tasks, earn XP</strong><span>25 XP per task, 5 XP for each day you log in.</span></p></div>
+      <div><b>3</b><p><strong>Do your Checklist, earn XP</strong><span>Your realms fill in as your Checklist does. 5 XP for each day you log in.</span></p></div>
     </div>
   </section>
 
@@ -574,8 +574,8 @@ main { position:relative; z-index:10; }
   <section class="section" aria-labelledby="realms-h">
     <div class="sec-head">
       <div><span class="eyebrow">The world map</span><h2 id="realms-h"><span class="only-in">Realm progress</span><span class="only-out">The 9 realms of your quest</span></h2></div>
-      <span class="sec-note only-in">Tap a realm for its XP tasks · your full to-do list is your <a href="checklist.html" style="color:inherit;text-decoration:underline">📋 Checklist</a></span>
-      <span class="sec-note only-out">Sign in to check off tasks and earn badges</span>
+      <span class="sec-note only-in">Realms fill in from your Checklist · your to-do list is your <a href="checklist.html" style="color:inherit;text-decoration:underline">📋 Checklist</a></span>
+      <span class="sec-note only-out">Sign in to see your progress and badges</span>
     </div>
     <div class="realm-grid" id="realm-grid"></div>
   </section>
@@ -730,19 +730,35 @@ function taskState(r, ti) {
       : its.filter(i => i.done).length + ' of ' + ids.length + ' vocab games done (70%+) · checks itself when you finish';
     return { auto: true, state: 'todo', detail };
   }
-  for (let j = 0; j < ti; j++) {
-    if (!autoIds(r.tasks[j])) continue;
-    if (!isDone(taskState(r, j))) return { auto: false, state: 'locked', detail: 'Unlocks after you finish the reading and vocab above it' };
-  }
-  if (doneKeys.has(`${r.id}_${ti}`)) return { auto: false, state: 'done', detail: 'You checked this off' };
-  return { auto: false, state: 'open', detail: 'Done in class · check it off yourself once you\'ve really done it' };
+  if (doneKeys.has(`${r.id}_${ti}`)) return { auto: true, state: 'done', detail: 'Earned' };
+  const rc = realmCl(r);
+  if (rc && rc.complete) return { auto: true, state: 'done', detail: 'Earned by finishing this realm on your Checklist' };
+  return { auto: true, state: 'todo', detail: 'Earned when you finish this realm on your Checklist' };
+}
+// Realm progress straight from the Trimester Checklist (the one to-do list). 2026-11-18:
+// the old student-ticked Quest tasks were retired; their XP/badge keys are now awarded from the Checklist.
+function realmCl(r) {
+  if (!clView) return null;
+  const want = new Set(r.chapters.map(Number)), chapters = [], extra = [];
+  clView.realms.forEach(R => {
+    const mine = R.chapters.filter(c => want.has(Number(c.n)));
+    chapters.push(...mine);
+    if (mine.length && mine.length === R.chapters.length) extra.push(...(R.items || []));   // unit-level items (unit test, projects)
+  });
+  (clView.bonus.chapters || []).forEach(c => { if (want.has(Number(c.n))) chapters.push(c); });
+  const count = its => its.filter(i => i.status !== 'excused' && !i.notRequired);
+  const rows = chapters.map(c => { const k = count(c.items); return { n: c.n, title: c.title, done: k.filter(i => i.done).length, total: k.length }; });
+  const all = count(chapters.flatMap(c => c.items).concat(extra));
+  const done = all.filter(i => i.done).length;
+  const next = all.find(i => !i.done) || null;
+  return { rows, done, total: all.length, pct: all.length ? Math.round(done * 100 / all.length) : 100, complete: chapters.length > 0 && done === all.length, next };   // all excused counts as complete
 }
 // Tracked tasks that are finished get saved to the Quest record (this is what awards their XP).
 async function syncAutoTasks() {
   const adds = [];
   REALMS.forEach(r => r.tasks.forEach((t, ti) => {
     const key = `${r.id}_${ti}`;
-    if (!doneKeys.has(key) && autoIds(t) && taskState(r, ti).state === 'done') adds.push(key);
+    if (!doneKeys.has(key) && taskState(r, ti).state === 'done') adds.push(key);
   }));
   if (!adds.length) return;
   const demo = window.DoppDemo && DoppDemo.on;
@@ -1249,10 +1265,11 @@ function renderRealms(st) {
   if (student && cur && !renderRealms.opened) { openRealms.add(cur); renderRealms.opened = true; }   // open the current realm once
   grid.innerHTML = '';
   REALMS.forEach((r, i) => {
-    const states = r.tasks.map((_, ti) => student ? taskState(r, ti) : { state: 'open', auto: false, detail: '' });
-    const done = states.filter(isDone).length;
-    const pct = Math.round(done / r.tasks.length * 100);
-    const completed = done === r.tasks.length;
+    const rc = student ? realmCl(r) : null;
+    const states = r.tasks.map((_, ti) => student ? taskState(r, ti) : { state: 'open', auto: true, detail: '' });
+    const done = rc ? rc.done : states.filter(isDone).length, total = rc ? rc.total : r.tasks.length;
+    const pct = rc ? rc.pct : Math.round(done / r.tasks.length * 100);
+    const completed = rc ? rc.complete : done === r.tasks.length;
     const badgeEarned = st.badges.includes(r.badge);
     const open = openRealms.has(r.id);
     const card = document.createElement('article');
@@ -1269,23 +1286,20 @@ function renderRealms(st) {
         </div>
         <div class="rc-roman">REALM ${ROMAN[i] || i + 1}</div>
         <div class="rc-name">${r.name}</div>
-        <div class="rc-meta">${r.days} · ${done}/${r.tasks.length} tasks <span class="rc-chev" aria-hidden="true">▾</span></div>
+        <div class="rc-meta">${r.days} · ${rc ? (total ? done + '/' + total + ' Checklist items' : 'Excused for the class') : r.chapters.length + ' chapters'} <span class="rc-chev" aria-hidden="true">▾</span></div>
         <div class="rc-bar"><div class="realm-progress"><div class="realm-progress-fill" style="width:${pct}%"></div></div><span class="rc-pct">${pct}%</span></div>
       </button>
       <div class="rc-chapters">${r.chapters.map(c=>`<a class="rc-ch${done>0?(completed?' done':' partial'):''}" href="/chapters/${c}" title="Open Chapter ${c}">Ch ${c}</a>`).join('')}</div>
-      <div class="ch-detail${open ? ' open' : ''}" id="detail-${r.id}" role="region" aria-label="${r.name} tasks"><div><ul>
-        ${r.tasks.map((task,ti)=>{
-          const key = `${r.id}_${ti}`;
-          const s = states[ti], ex = s.state === 'excused';
-          const checked = s.state === 'done';
-          const isBoss = task.toLowerCase().includes('boss');
-          const mark = checked ? '✓' : ex ? '–' : s.state === 'locked' ? '🔒' : '';
-          return `<li><button class="ch-task${isBoss?' task-boss':''}${s.state==='locked'?' locked':''}" type="button" data-task="${r.id}" data-ti="${ti}"${s.auto?' data-auto="1"':''} aria-pressed="${checked}"${student?'':' disabled'}${open?'':' tabindex="-1"'}>
-            <span class="task-check${checked?' checked':''}${ex?' excused':''}${s.auto?' auto':''}${checked && justChecked===key?' pop':''}" aria-hidden="true">${mark}</span>
-            <span class="task-label${checked?' checked-label':''}">${isBoss?'👑 ':''}${task}${student && s.detail ? `<small class="task-sub">${s.auto && !checked && !ex ? '⚙ ' : ''}${s.detail}</small>` : ''}</span>
-            <span class="task-xp">${ex ? 'Excused' : '+' + XP_PER_TASK + ' XP'}</span>
-          </button></li>`;
-        }).join('')}
+      <div class="ch-detail${open ? ' open' : ''}" id="detail-${r.id}" role="region" aria-label="${r.name} progress"><div><ul>
+        ${rc ? rc.rows.map(c => {
+          const full = c.total > 0 && c.done === c.total;
+          return `<li><a class="ch-task" href="checklist.html"${open?'':' tabindex="-1"'}>
+            <span class="task-check${full?' checked':''} auto" aria-hidden="true">${full ? '✓' : ''}</span>
+            <span class="task-label${full?' checked-label':''}">Chapter ${c.n}${c.title ? ' · ' + c.title : ''}<small class="task-sub">${c.total ? c.done + ' of ' + c.total + ' Checklist items done' : 'Excused for the class'}${c.n > 16 ? ' · bonus' : ''}</small></span>
+            <span class="task-xp">${full ? 'Done' : 'Open →'}</span>
+          </a></li>`; }).join('')
+        : `<li><a class="ch-task" href="${student ? 'checklist.html' : 'quest.html'}"${open?'':' tabindex="-1"'}><span class="task-label">${student ? 'Open your Checklist to see this realm\'s work' : 'Sign in to see your progress'}</span><span class="task-xp">→</span></a></li>`}
+        <li><small class="task-sub" style="display:block;padding:6px 4px">Finish every Checklist item in these chapters to earn the <b>${r.badge}</b> badge and its XP.</small></li>
       </ul></div></div>`;
     grid.appendChild(card);
   });
@@ -1325,6 +1339,27 @@ function taskLink(task, realm) {
 }
 function renderNextUp() {
   const box = document.getElementById('next-up');
+  if (clView) {
+    for (const r of REALMS) {
+      const rc = realmCl(r);
+      if (!rc || rc.complete || !rc.next) continue;
+      const it = rc.next;
+      box.classList.remove('done-all');
+      box.style.setProperty('--accent', r.color);
+      box.innerHTML = `
+        <div class="nu-ic" aria-hidden="true">${r.icon}</div>
+        <div class="nu-text">
+          <small>Next up · ${r.name}</small>
+          <strong>${escH(it.label || 'Next Checklist item')}</strong>
+          <span>${rc.total - rc.done} Checklist item${rc.total - rc.done === 1 ? '' : 's'} left to earn the <b>${r.badge}</b> badge</span>
+        </div>
+        <div class="nu-actions">
+          ${it.href ? `<a class="btn-primary" href="${escH(it.href)}">Go →</a>` : ''}
+          <a class="btn-ghost" href="checklist.html">📋 My Checklist</a>
+        </div>`;
+      return;
+    }
+  }
   for (const r of REALMS) {
     const ti = r.tasks.findIndex((_, i) => !isDone(taskState(r, i)));
     if (ti === -1) continue;
@@ -1341,7 +1376,7 @@ function renderNextUp() {
       </div>
       <div class="nu-actions">
         <a class="btn-primary" href="${link.href}">${link.label} →</a>
-        ${nst.auto ? '' : `<button class="btn-ghost" type="button" data-task="${r.id}" data-ti="${ti}">✓ Mark done</button>`}
+        <a class="btn-ghost" href="checklist.html">📋 My Checklist</a>
       </div>`;
     return;
   }

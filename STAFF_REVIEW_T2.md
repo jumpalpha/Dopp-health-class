@@ -15,13 +15,18 @@ statistician). Ask Orion one question at a time, multiple choice, A–D with a r
 - Footer "Local preview build" text replaced on all compiled pages.
 - Restore point: branch `backup-pre-T2-review-2026-11-18` (commit 3d71255).
 
+## Decided by Orion (2026-11-18) and built
+- Quest realm tasks retired as a to-do list: realms now show Checklist progress; the old task keys (XP + realm badges) are awarded automatically when a realm's Checklist items are all done. Earned XP kept.
+- Returning students land on Today on their first home-page visit each day (`/?home` skips it).
+- Classwork required from T2 (already automatic in checklist.js) and "✏️ Classwork" added to the top menu.
+
 ## Open issues for the team to weigh
-1. **Two to-do systems.** Quest page realm tasks ("Read Chapter 1 PDF", "Habit Tracker", boss battles, +25 XP each)
+1. ~~**Two to-do systems.**~~ (decided: see above) Quest page realm tasks ("Read Chapter 1 PDF", "Habit Tracker", boss battles, +25 XP each)
    don't match the Checklist (reader, 4 vocab games, Classwork, Mastery, Schoology boxes). New students will be confused.
    Options: retire Quest tasks, hide them behind "XP extras", or rewrite them to mirror the Checklist.
-2. **Today screen was orphaned.** The remembered-device redirect to `welcome.html` lived on the old home page; the Next.js
+2. ~~**Today screen was orphaned.**~~ (decided: see above) The remembered-device redirect to `welcome.html` lived on the old home page; the Next.js
    home dropped it. Now linked from the menu and home banner. Decide whether returning students should auto-land on Today.
-3. **Classwork in T2.** It's "optional, counts as done" in T1 (`cfg.cw_required === false`). Confirm it's required for T2,
+3. ~~**Classwork in T2.**~~ (decided: see above) It's "optional, counts as done" in T1 (`cfg.cw_required === false`). Confirm it's required for T2,
    and whether it gets its own top-menu link.
 4. **Naming.** "Hall" (menu) vs "Hall of Champions" (home/search) vs "Hall of Heroes" (page title); "Enter the Quest" goes to
    Chapters, not the Quest page; "Side Quests: nothing to turn in" but some are assigned with Schoology uploads.
