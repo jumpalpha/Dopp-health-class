@@ -1,4 +1,4 @@
-/* Weight Control Quest — Island Recipe Book (2026-11-11)
+/* Weight Control Quest — Island Recipe Book (2026-11-11, refreshed 2026-11-20)
  * The computer decides which dishes a group can cook from its 15 pallet foods.
  * Spices, seasonings, water, salt, yeast and baking powder are free on the island.
  *
@@ -23,7 +23,7 @@ const ING = {
   pasta:      ['Pasta / noodles', 'cup', 'vol', /\bpasta\b|\bnoodles?\b|\bspaghetti\b|\bmacaroni\b/, [220, 8, 43, 1.3, 2.5]],
   bread:      ['Bread', 'slice', 'count', /\bbread\b|\bbuns?\b|\btoast\b|\brolls?\b|\bbagels?\b|\bsour ?d\w*gh\b|\bpita\b|\bpeda\b/, [80, 3, 14, 1, 1.5]],
   tortilla:   ['Tortillas', 'tortilla', 'count', /\btort\w*l\w*s?\b|\btaco shells?\b/, [140, 4, 24, 3.5, 1.5]],
-  potato:     ['Potatoes', 'potato', 'count', /\bpo\w{0,3}t\w*to\w*|\bspuds?\b|\byams?\b/, [161, 4.3, 37, 0.2, 3.8]],
+  potato:     ['Potatoes', 'potato', 'count', /\bpo\w{0,3}t\w*to\w*|\bpota\w*|\bspuds?\b|\byams?\b/, [161, 4.3, 37, 0.2, 3.8]],
   chicken:    ['Chicken', 'oz', 'wt', /\bch?i\w*ken\b|\bchick(?!peas?\b)\w*/, [47, 8.8, 0, 1, 0]],
   turkey:     ['Turkey', 'oz', 'wt', /\bturkey\b/, [42, 8, 0, 1, 0]],
   beef:       ['Beef', 'oz', 'wt', /\bbeef\b|\bsteaks?\b|\bhamburgers?\b|\bburgers?\b|\bground meat\b|\belk\b|\bvenison\b|\bbrisket\b|\brib ?eye\b|\bsirloin\b|\btomahawk\b|\bt ?bone\b|\bchuck\b|\bwa(g|y)+u\b|\bangus\b|\bcow\b|\bribs\b|\bmeat\b|\broast\b/, [70, 7, 0, 4.5, 0]],
@@ -36,7 +36,7 @@ const ING = {
   pb:         ['Peanut butter', 'tbsp', 'vol', /\bpeanut butter\b|\balmond butter\b|\bnut butter\b/, [95, 3.5, 3.5, 8, 1]],
   peanuts:    ['Peanuts', 'oz', 'wt', /\bpeanuts?\b/, [166, 7.3, 6, 14, 2.4]],
   nuts:       ['Nuts', 'oz', 'wt', /\balmonds?\b|\bwalnuts?\b|\bcashews?\b|\bpecans?\b|\bpistachios?\b|\bnuts\b/, [164, 6, 6, 14, 3.5]],
-  tomato:     ['Tomatoes', 'tomato', 'count', /\btomato\w*|\bmarinara\b|\bsalsa\b/, [22, 1.1, 4.8, 0.2, 1.5]],
+  tomato:     ['Tomatoes', 'tomato', 'count', /\btomato\w*|\btom[ao]t\w*|\bmarinara\b|\bsalsa\b/, [22, 1.1, 4.8, 0.2, 1.5]],
   onion:      ['Onions', 'onion', 'count', /\bonions?\b/, [44, 1.2, 10, 0.1, 1.9]],
   lettuce:    ['Lettuce', 'cup', 'vol', /\blet+uce\b|\bromaine\b|\bsalad\b|\bgreens\b/, [5, 0.4, 1, 0.1, 0.5]],
   spinach:    ['Spinach', 'cup', 'vol', /\bspin\w*|\bkale\b/, [41, 5.3, 6.8, 0.5, 4.3]],
@@ -47,18 +47,18 @@ const ING = {
   squash:     ['Squash', 'cup', 'vol', /\bsquash\b|\bzucchini\b|\bpumpkin\b/, [82, 1.8, 21.5, 0.2, 6.6]],
   greenbeans: ['Green beans', 'cup', 'vol', /\bgreen beans?\b/, [44, 2.4, 10, 0.4, 4]],
   peas:       ['Peas', 'cup', 'vol', /\bpeas\b/, [134, 8.6, 25, 0.4, 8.8]],
-  pepper:     ['Bell peppers', 'pepper', 'count', /\bbell pep+ers?\b|\bgreen pep+ers?\b|\bred pep+ers?\b|(?<!dr )\bpep+ers\b|\bjalap\w*/, [30, 1, 7, 0.3, 2.5]],
+  pepper:     ['Bell peppers', 'pepper', 'count', /\bbell pep+ers?\b|\bgreen pep+ers?\b|\bred pep+ers?\b|(?<!dr )\bpep+ers\b|\bjalap\w*|\bjap\w*nos?\b/, [30, 1, 7, 0.3, 2.5]],
   cabbage:    ['Cabbage', 'cup', 'vol', /\bcabbage\b/, [22, 1.1, 5, 0.1, 2.2]],
   cucumber:   ['Cucumber', 'cucumber', 'count', /\bcuc\w*m\w*rs?\b|\bpickles?\b/, [45, 2, 11, 0.3, 1.5]],
   mushroom:   ['Mushrooms', 'cup', 'vol', /\bmushrooms?\b/, [15, 2.2, 2.3, 0.2, 0.7]],
   veg:        ['Mixed vegetables', 'cup', 'vol', /\bveg\w*bles?\b|\bmixed veg\w*|\basparagus\b|\bjicama\b|\bbeets?\b|\bcelery\b|\bolives?\b/, [60, 2.6, 12, 0.3, 4]],
   apple:      ['Apples', 'apple', 'count', /(?<!pine)\bapples?\b/, [95, 0.5, 25, 0.3, 4.4]],
   banana:     ['Bananas', 'banana', 'count', /\bban+an+as?\b/, [105, 1.3, 27, 0.4, 3.1]],
-  berries:    ['Berries', 'cup', 'vol', /berr|barri/, [85, 1.1, 21, 0.5, 3.6]],
+  berries:    ['Berries', 'cup', 'vol', /berr|barri|\brasp?er+(ies|ys?)\b/, [85, 1.1, 21, 0.5, 3.6]],
   orange:     ['Oranges', 'orange', 'count', /\boranges?\b|\bclementines?\b|\btangerines?\b|\bmandarins?\b|\bcuties\b/, [62, 1.2, 15, 0.2, 3.1]],
   grapes:     ['Grapes / raisins', 'cup', 'vol', /\bgrapes?\b|\braisins?\b|\bdried fruits?\b/, [104, 1.1, 27, 0.2, 1.4]],
   pineapple:  ['Pineapple', 'cup', 'vol', /\bpin\w*apple\b/, [82, 0.9, 22, 0.2, 2.3]],
-  melon:      ['Melon', 'cup', 'vol', /melon|\bwaterlemon\b|\bcantal\w*|\bhoney ?dew\b/, [46, 0.9, 11.5, 0.2, 0.6]],
+  melon:      ['Melon', 'cup', 'vol', /mell?on|\bwaterlemon\b|\bcantal\w*|\bhoney ?dew\b/, [46, 0.9, 11.5, 0.2, 0.6]],
   mango:      ['Mango', 'mango', 'count', /\bmang(o|os|oes)\b/, [200, 2.8, 50, 1.3, 5.4]],
   kiwi:       ['Kiwi', 'kiwi', 'count', /\bk(i|e)wis?\b/, [42, 0.8, 10, 0.4, 2.1]],
   peach:      ['Peaches / plums', 'peach', 'count', /\bpeach(es)?\b|\bplums?\b|\bnectarines?\b|\bapricots?\b/, [59, 1.4, 14, 0.4, 2.3]],
@@ -67,16 +67,20 @@ const ING = {
   coconut:    ['Coconut', 'cup', 'vol', /\bcoconuts?\b/, [283, 2.7, 12, 27, 7.2]],
   avocado:    ['Avocado', 'avocado', 'count', /\ba(v|c)\w*c\w*d\w*|\bguacamole\b/, [240, 3, 12, 22, 10]],
   chocolate:  ['Chocolate', 'oz', 'wt', /\bchoc\w*|\bcocoa\b|\bcacao\b|\bcoco\b/, [155, 2, 17, 9, 2]],
-  quinoa:     ['Quinoa', 'cup', 'vol', /\bquinoa\b/, [222, 8, 39, 3.6, 5]]
+  quinoa:     ['Quinoa', 'cup', 'vol', /\bquinoa\b/, [222, 8, 39, 3.6, 5]],
+  // added 2026-11-20 from this trimester's pallets
+  lemon:      ['Lemons / limes', 'lemon', 'count', /\blemons?\b|\blimes?\b/, [20, 0.5, 7, 0.1, 1.9]],
+  tofu:       ['Tofu', 'oz', 'wt', /\btofu\b/, [41, 4.9, 0.8, 2.4, 0.6]],
+  mixedfruit: ['Mixed fruit', 'cup', 'vol', /\bmixed fruits?\b|\bcanned fruits?\b|\bfruit cocktail\b|^ fruits? $/, [100, 1, 26, 0.3, 2.5]]
 };
 // Order matters: longer / more specific names are checked first.
 const MATCH_ORDER = ['pb', 'cottage', 'greenbeans', 'popcorn', 'melon', 'pineapple', 'chocolate', 'coconut', 'oil', 'egg', 'bread', 'tortilla',
   'cream', 'milk', 'butter', 'pepper', 'flour', 'sugar', 'honey', 'rice', 'oats', 'pasta', 'potato', 'chicken', 'turkey', 'fish', 'pork', 'beef',
   'cheese', 'yogurt', 'beans', 'peanuts', 'nuts', 'tomato', 'onion', 'spinach', 'broccoli', 'carrot', 'corn', 'squash', 'peas', 'cabbage',
   'cucumber', 'mushroom', 'apple', 'banana', 'berries', 'orange', 'grapes', 'mango', 'kiwi', 'peach', 'pear', 'cherries', 'avocado', 'quinoa',
-  'lettuce', 'veg'];
+  'lemon', 'tofu', 'mixedfruit', 'lettuce', 'veg'];
 // Whole dishes and brand-name snacks are eaten as plain foods, never used as ingredients.
-const DISH_WORDS = /\b(pizza|burrit\w*|burit\w*|sandwh?ich\w*|soup|bisque|stew|tacos|lasagna|lasnaga|enchilada\w*|quesadilla\w*|alfredo|mac (and|n) cheese|bowl|jerky|chips|cookies?|brownies?|ice cre\w*|sauce|sushi|nuggets|hot chi\w*|tiramis\w*|starbursts?|gushers|takis|monster|dr pepper|pieces|goldfish|protein powder|granola|gronla|pretzels?|rice ?cakes?|ranch|dressing|cereal|crackers?|fruit salad|seasonings?|spices?|salt|yeast|water|garlic|herbs|mustard|musterd|candy|cake|pie|fries|wings)\b/;
+const DISH_WORDS = /\b(pizza|burrit\w*|burit\w*|sandwh?ich\w*|soup|bisque|stew|tacos|lasagna|lasnaga|enchilada\w*|quesadilla\w*|alfredo|mac (and|n) cheese|bowl|jerky|gerky|chips|rinds|sorbet|fruit snacks?|cookies?|brownies?|ice cre\w*|sauce|sushi|nuggets|hot chi\w*|tiramis\w*|starbursts?|gushers|takis|monster|dr pepper|pieces|gold ?fish|protein powder|granola|gronla|pretzels?|rice ?cakes?|ranch|dressing|cereal|crackers?|fruit salad|seasonings?|spices?|salt|(?<!bell |red |green |yellow |orange |dr )pepper(?! jack)|yeast|water|garlic|herbs|mustard|musterd|candy|cake|pie|fries|wings)\b/;
 const BURGER = /\b(cheese ?burgers?|hamburgers?|burgers?)\b/;
 
 // Homemade swaps: bread, tortillas and pasta can be made from flour (yeast and salt are free).
@@ -386,7 +390,36 @@ const RECIPES = [
   ['whipped-cream-fruit', 'Whipped Cream & Fruit', 'S', [['cream', 3], ['berries', 0.5, 'peach', 1, 'banana', 1, 'cherries', 0.5, 'mango', 0.5], ['?sugar', 1]]],
   ['chocolate-mousse', 'Chocolate Mousse', 'S', [['chocolate', 1], ['cream', 4, 'milk', 1], ['?sugar', 1]]],
   ['hot-cocoa-cream', 'Hot Cocoa with Cream', 'S', [['milk', 1], ['chocolate', 1], ['cream', 1]]],
-  ['cottage-cheese-pancakes', 'Protein Pancakes', 'B', [['cottage', 0.5], ['egg', 2], ['oats', 0.5, 'flour', 0.25]]]
+  ['cottage-cheese-pancakes', 'Protein Pancakes', 'B', [['cottage', 0.5], ['egg', 2], ['oats', 0.5, 'flour', 0.25]]],
+
+  // ── added 2026-11-20 (end of trimester) from this trimester's pallets ──
+  // promoted student dishes
+  ['chicken-fruit-plate', 'Chicken & Fruit Plate', 'L', [['chicken', 4], ['berries', 0.5, 'grapes', 0.5, 'mango', 0.5, 'pineapple', 0.5, 'mixedfruit', 0.75], ['?grapes', 0.5]]],
+  ['chicken-mash-corn', 'Grilled Chicken, Mashed Potatoes & Corn', 'D', [['chicken', 4], ['potato', 1], ['corn', 0.5], ['?butter', 1], ['?milk', 0.25]]],
+  ['quinoa-power-bowl', 'Quinoa Power Bowl', 'L', [['quinoa', 1], ['egg', 1], ['spinach', 0.5, 'veg', 0.5], ['?tomato', 0.5], ['?avocado', 0.25], ['?nuts', 0.25]]],
+  ['steak-eggs-peppers', 'Steak, Eggs & Peppers', 'B', [['beef', 4], ['egg', 2], ['pepper', 0.5], FAT_H]],
+  ['lemonade', 'Fresh Lemonade', 'S', [['lemon', 1], ['sugar', 2, 'honey', 2]]],
+  // new foods: lemons/limes, tofu, mixed fruit
+  ['lemon-fish', 'Lemon Baked Fish', 'D', [['fish', 5], ['lemon', 0.5], FAT1]],
+  ['lemon-chicken', 'Lemon Chicken & Rice', 'D', [['chicken', 4], ['lemon', 0.5], ['?rice', 1], FAT_H]],
+  ['lime-rice', 'Lime Rice', 'D', [['rice', 1], ['lemon', 0.25], FAT_H]],
+  ['lime-chicken-tacos', 'Chicken Lime Tacos', 'L', [TORT2, ['chicken', 3], ['lemon', 0.5], ['?tomato', 0.5], ['?pepper', 0.25]]],
+  ['tofu-stirfry', 'Tofu Stir-Fry', 'D', [['tofu', 4], ['broccoli', 1, 'carrot', 1, 'veg', 1, 'pepper', 1, 'spinach', 1], OIL1, ['?rice', 1]]],
+  ['tofu-scramble', 'Tofu Scramble', 'B', [['tofu', 4], ['?spinach', 0.5], ['?pepper', 0.25], ['?onion', 0.25], OIL1]],
+  ['tofu-rice-bowl', 'Tofu Rice Bowl', 'L', [['tofu', 4], ['rice', 1], ['?avocado', 0.25], ['?carrot', 0.5], ['?cucumber', 0.5]]],
+  ['fruit-cup', 'Fruit Cup', 'S', [['mixedfruit', 1], ['?yogurt', 0.5, 'cottage', 0.5]]],
+  // popular pallet combos
+  ['chicken-broccoli-rice', 'Chicken, Broccoli & Rice', 'D', [['chicken', 4], ['broccoli', 1], ['rice', 1], FAT_H]],
+  ['salmon-rice-broccoli', 'Salmon, Rice & Broccoli', 'D', [['fish', 5], ['rice', 1], ['broccoli', 1, 'spinach', 1, 'greenbeans', 1], FAT_H]],
+  ['egg-rice-bowl', 'Egg & Rice Bowl', 'B', [['rice', 1], ['egg', 2], ['?spinach', 0.5], ['?avocado', 0.25], FAT_H]],
+  ['egg-muffins', 'Veggie Egg Muffins', 'B', [['egg', 2], ['spinach', 0.5, 'pepper', 0.5, 'broccoli', 0.5, 'veg', 0.5], ['?cheese', 0.5]]],
+  ['chicken-carrots-potatoes', 'Sheet-Pan Chicken, Carrots & Potatoes', 'D', [['chicken', 4], ['carrot', 1], ['potato', 1], OIL1]],
+  ['steak-fries', 'Steak & Oven Fries', 'D', [['beef', 5], ['potato', 1], OIL1]],
+  ['orange-smoothie', 'Orange Sunrise Smoothie', 'S', [['orange', 1], ['banana', 1], ['?yogurt', 0.5, 'milk', 0.5]]],
+  ['apple-carrot-slaw', 'Apple Carrot Slaw', 'S', [['carrot', 1], ['apple', 0.5], ['?yogurt', 0.25], ['?honey', 0.5]]],
+  ['watermelon-cucumber', 'Watermelon Cucumber Salad', 'S', [['melon', 1.5], ['cucumber', 0.5], ['?lemon', 0.25]]],
+  ['strawberry-spinach-salad', 'Strawberry Spinach Salad', 'L', [['spinach', 1.5], ['berries', 0.5], ['?nuts', 0.5], ['?chicken', 3], ['?oil', 1]]],
+  ['oat-banana-cookies', 'Banana Oat Cookies', 'S', [['oats', 0.5], ['banana', 1], ['?chocolate', 0.25]]]
 ];
 
 // ───────── helpers ─────────
@@ -462,9 +495,9 @@ const norm = n => String(n || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').rep
 const normKey = n => norm(n).replace(/(es|s)$/, '');
 const isPlain = n => { const x = ' ' + norm(n) + ' '; return DISH_WORDS.test(x) && !/\bchicken wings?\b/.test(x); };
 const CATS = { meat: 'Meat, fish or eggs', grain: 'Grain, bread or starch', fruit: 'Fruit', veg: 'Vegetable', dairy: 'Dairy', fat: 'Nuts, seeds or oil', sweet: 'Sweet or treat' };
-const FRUIT = ['berries', 0.5, 'banana', 1, 'apple', 1, 'orange', 1, 'grapes', 0.5, 'melon', 1, 'mango', 0.5, 'pineapple', 0.5, 'kiwi', 1, 'peach', 1, 'cherries', 0.5, 'pear', 1];
+const FRUIT = ['berries', 0.5, 'banana', 1, 'apple', 1, 'orange', 1, 'grapes', 0.5, 'melon', 1, 'mango', 0.5, 'pineapple', 0.5, 'kiwi', 1, 'peach', 1, 'cherries', 0.5, 'pear', 1, 'mixedfruit', 1];
 const VEG = ['broccoli', 1, 'carrot', 1, 'veg', 1, 'pepper', 1, 'spinach', 1, 'squash', 1, 'greenbeans', 1, 'corn', 1];
-const PROT = ['chicken', 3, 'beef', 3, 'pork', 3, 'fish', 3, 'egg', 2, 'beans', 0.5, 'turkey', 3];
+const PROT = ['chicken', 3, 'beef', 3, 'pork', 3, 'fish', 3, 'egg', 2, 'beans', 0.5, 'turkey', 3, 'tofu', 4];
 const SIDES = ['potato', 1, 'beans', 0.5, 'rice', 0.5, 'pasta', 0.5, 'chicken', 2];
 // Dish templates for a food the class taught the book. X = the new food, amounts for X are in the group's own servings.
 const TEMPLATES = {
