@@ -102,7 +102,10 @@ const full = { step0: { quiz: 'b' }, career: { job: 'Nurse', salary: 60000, days
   reflection: 'I was surprised by rent. Food cost more than I thought. My job can pay for it. I could get a roommate to save. Budgets matter for health.' };
 truthy('complete has nothing missing', F.missing(full).length === 0);
 const own = JSON.parse(JSON.stringify(full)); own.research.values.savings = { v: 300, src: 'own', note: '' };
-truthy('own source needs a note', F.missing(own).some(m => /Savings/.test(m)));
+truthy('MIT is the only source — no note needed', !F.missing(own).some(m => /Step 3/.test(m)));
+const noLoc = JSON.parse(JSON.stringify(full)); noLoc.research.location = '';
+const det = F.missingDetailed(noLoc).filter(x => x.step === 3);
+truthy('detailed problem points to the location box', det.length === 1 && det[0].step === 3 && det[0].field === 'r_location');
 
 // Suggested scores never auto-grade the reflection
 const sc = F.suggestScores(Object.assign({ done: { 4: true, 5: true } }, full), { submitted: true, hasImage: true });

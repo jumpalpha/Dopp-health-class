@@ -178,6 +178,14 @@ textarea.refl{min-height:260px;line-height:1.6}
 .rhints li.ok{color:var(--good)}.rhints li.ok .tip{display:none}
 .rhints .tip{font-size:14px;color:var(--dim);margin-top:2px}
 .rhints .ex{font-style:italic}
+/* big MIT link + "fix this" highlights */
+.mitlink{display:inline-block;margin:8px 0 4px;padding:12px 22px;font-size:2em;font-weight:900;line-height:1.2;border-radius:12px;background:var(--yel-bg);border:3px solid var(--yel-ink);color:var(--yel-ink);text-decoration:none}
+.mitlink:hover,.mitlink:focus{text-decoration:underline}
+.needfix{outline:3px solid var(--bad)!important;outline-offset:3px;border-radius:8px;background:var(--bad-bg);animation:fixpulse 1.2s ease-in-out 3}
+@keyframes fixpulse{50%{outline-color:transparent}}
+.fixlist{margin:8px 0 0;padding-left:18px}
+.fixbtn{background:none;border:0;padding:3px 0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.fixbtn b{color:var(--bad);text-decoration:underline}
 /* certificate */
 .cert{position:relative;margin:6px auto 0;max-width:820px;background:var(--card);border:3px double var(--gold-line);border-radius:18px;padding:28px clamp(16px,4vw,44px);text-align:center;box-shadow:inset 0 0 0 8px var(--parch-2)}
 .cert .seal{font-size:46px;line-height:1}
@@ -334,16 +342,16 @@ textarea.refl{min-height:260px;line-height:1.6}
     <div class="step-head"><span class="step-num">Step 3</span><h2 id="h3">Research Real Living Expenses</h2></div>
     <p class="lead">Now find out what life really costs. Your locked guesses are shown in <span style="color:var(--blue-ink);font-weight:900">blue</span>; put what you find in the <span style="color:var(--yel-ink);font-weight:900;background:var(--yel-bg);padding:0 4px;border-radius:4px">gold</span> boxes.</p>
     <ol>
-      <li>Open the <a href="https://livingwage.mit.edu/" target="_blank" rel="noopener"><b>MIT Living Wage Calculator</b></a> (opens a new tab).</li>
+      <li>Open the MIT Living Wage Calculator (opens a new tab):<br><a class="mitlink" href="https://livingwage.mit.edu/" target="_blank" rel="noopener">🔗 MIT Living Wage Calculator</a></li>
       <li>Search for the state, then the county or city closest to where you plan to live.</li>
       <li>Pick the column for your household (for example, <i>1 adult, 0 children</i>), then find the <b>Typical Expenses</b> table.</li>
       <li>MIT lists <b>yearly</b> amounts. Use the converter below to change them to monthly.</li>
     </ol>
-    <div class="warn">This page does <b>not</b> pull numbers from MIT for you. Every number must come from your own research.</div>
+    <div class="warn">The MIT Living Wage Calculator is the <b>only</b> source for this step. This page does <b>not</b> pull numbers from MIT for you — you look them up and type them in.</div>
 
     <h3>About your research</h3>
     <div class="grid">
-      <label class="f">Location researched<input id="r_location" maxlength="100"></label>
+      <label class="f">Location researched<input id="r_location" maxlength="100" autocomplete="off" placeholder="County or city you looked up"></label>
       <label class="f">Household type
         <select id="r_household">
           <option value="">Choose…</option>
@@ -352,7 +360,7 @@ textarea.refl{min-height:260px;line-height:1.6}
           <option>2 adults (1 working), 1 child</option><option>2 adults (both working), 1 child</option>
           <option>2 adults (both working), 2 children</option><option>Other</option>
         </select></label>
-      <label class="f">Source web address<input id="r_url" inputmode="url" maxlength="300"><small>Copy the address of the exact results page.</small></label>
+      <label class="f">Source web address<input id="r_url" inputmode="url" maxlength="300" readonly value="https://livingwage.mit.edu/"><small>Filled in for you — MIT is the only source.</small></label>
     </div>
 
     <details class="box" open>
@@ -367,7 +375,7 @@ textarea.refl{min-height:260px;line-height:1.6}
     </details>
 
     <h3>How the MIT list matches the worksheet</h3>
-    <p class="map-note">MIT doesn't use the same 12 categories. <span class="pill p-direct">MATCH</span> = MIT has the same line. <span class="pill p-partial">PARTLY</span> = MIT lumps it with other things. <span class="pill p-none">NOT IN MIT</span> = research it somewhere else (or set your own goal). If you use your own number, say where it came from.</p>
+    <p class="map-note">MIT doesn't use the same 12 categories. <span class="pill p-direct">MATCH</span> = MIT has the same line. <span class="pill p-partial">PARTLY</span> = MIT lumps it with other things. <span class="pill p-none">NOT IN MIT</span> = MIT has no line for it, so set your own monthly goal ($0 is OK).</p>
     <div id="resrows"></div>
     <div class="tbl-wrap" style="margin-top:10px"><table><tfoot>
       <tr><td>Researched monthly total</td><td class="n" id="o_rm">$0.00</td></tr>
@@ -467,11 +475,13 @@ textarea.refl{min-height:260px;line-height:1.6}
     <div class="step-head"><span class="step-num">🏆</span><h2 id="h8">Your Certificate</h2></div>
     <div class="note no-print">📸 <b>Turn it in:</b> take a <b>screenshot</b> of your whole certificate and upload it to <b>The Cost of Your Future assignment in Schoology</b>.<br><small>Chromebook: <b>Ctrl + Shift + Show windows</b> (the □|| key), then drag around the certificate. Windows: <b>Win + Shift + S</b>. Mac: <b>Cmd + Shift + 4</b>. Phone/iPad: power + volume up.</small></div>
     <div id="cert"></div>
-    <div class="nav-btns no-print"><button class="btn btn-ghost" data-go="7">← Back to my review</button><button class="btn btn-ghost" id="certprint" type="button">🖨 Print / Save as PDF</button></div>
+    <div class="nav-btns no-print"><button class="btn btn-ghost" data-go="7">← Back to my review</button><span style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-ghost" id="certprint" type="button">🖨 Print / Save as PDF</button><button class="btn btn-gold" id="certshot" type="button">📸 Save screenshot</button></span></div>
+    <div id="shotmsg" class="no-print" aria-live="polite"></div>
   </section>
 </main>
 
 <script src="vendor/supabase.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
 <script src="finance_calc.js"></script>
 <script>
 (function () {
@@ -480,6 +490,7 @@ const F = window.FinanceCalc;
 const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
 const TRI = (window.TERM && TERM.id) || '2026-T1';
+const MIT_URL = 'https://livingwage.mit.edu/';
 const STEPS = ['Interest', 'Career', 'Predict', 'Research', 'Compare', 'Afford', 'Reflect', 'Submit', 'Certificate'];
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -592,6 +603,24 @@ function go(n) {
   const h = document.querySelector('#s' + n + ' h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
   window.scrollTo({ top: document.querySelector('.path').offsetTop - 70, behavior: 'smooth' });
 }
+// Jump to the step with the problem, highlight every problem box on that step, focus the first one.
+function showProblem(p) {
+  if (!p) return;
+  if (p.step >= 3 && !locked()) p = { step: 2, field: 'lockbtn' };
+  go(p.step);
+  document.querySelectorAll('.needfix').forEach(el => el.classList.remove('needfix'));
+  const onStep = F.missingDetailed(D).filter(x => x.step === p.step);
+  onStep.forEach(x => { const el = $(x.field); if (el) fixTarget(el).classList.add('needfix'); });
+  const el = $(p.field); if (!el) return;
+  setTimeout(() => {
+    fixTarget(el).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const f = el.matches('input,select,textarea,button') ? el : el.querySelector('input,select,textarea,button');
+    if (f) f.focus({ preventScroll: true });
+  }, 350);
+}
+function fixTarget(el) { return el.closest('.f, td, .radio-row') || el; }
+document.addEventListener('input', e => { const t = e.target.closest('.needfix'); if (t) t.classList.remove('needfix'); });
+document.addEventListener('change', e => { const t = e.target.closest('.needfix'); if (t) t.classList.remove('needfix'); });
 function flashLock() {
   go(2);
   $('lockstate').innerHTML = '<div class="warn">Finish and <b>lock</b> your estimates first. Research comes after you guess.</div>';
@@ -710,7 +739,8 @@ function out2() {
 // ── STEP 3 ──
 function step3() {
   const r = D.research; r.values = r.values || {};
-  ['location', 'household', 'url'].forEach(k => {
+  r.url = MIT_URL;   // MIT is the only allowed source
+  ['location', 'household'].forEach(k => {
     const el = $('r_' + k); el.value = r[k] || '';
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { r[k] = el.value.trim(); queueSave(); });
   });
@@ -720,21 +750,12 @@ function step3() {
       <div class="cat">${esc(c.label)} ${pill}<div class="map-note">MIT line: <b>${esc(c.mitLine)}</b>. ${esc(c.note)}</div></div>
       <div><div class="map-note">My estimate</div><div class="predv" id="pv_${c.key}">$0</div></div>
       <label class="f"><span class="map-note">Researched / month</span><span class="money"><span>$</span><input id="rv_${c.key}" class="in-gold" inputmode="decimal" autocomplete="off"></span><span class="err" id="e_rv_${c.key}"></span></label>
-      <label class="f"><span class="map-note">Where this number came from</span>
-        <select id="rs_${c.key}"><option value="mit">MIT Living Wage Calculator</option><option value="own">My own research</option></select>
-        <input id="rn_${c.key}" maxlength="160" hidden></label>
     </div>`;
   }).join('');
   F.CATS.forEach(c => {
     const vals = r.values;
-    const row = () => (vals[c.key] = vals[c.key] || { v: '', src: c.mit === 'none' ? 'own' : 'mit', note: '' });
-    bindMoney($('rv_' + c.key), $('e_rv_' + c.key), () => (vals[c.key] || {}).v, v => { row().v = v; }, 1e6);
-    const sel = $('rs_' + c.key), note = $('rn_' + c.key);
-    sel.value = (vals[c.key] && vals[c.key].src) || (c.mit === 'none' ? 'own' : 'mit');
-    note.value = (vals[c.key] && vals[c.key].note) || '';
-    note.hidden = sel.value !== 'own';
-    sel.addEventListener('change', () => { row().src = sel.value; note.hidden = sel.value !== 'own'; queueSave(); });
-    note.addEventListener('input', () => { row().note = note.value; queueSave(); });
+    const row = () => (vals[c.key] = vals[c.key] || { v: '' });
+    bindMoney($('rv_' + c.key), $('e_rv_' + c.key), () => (vals[c.key] || {}).v, v => { row().v = v; row().src = 'mit'; }, 1e6);
   });
   $('cv_to').innerHTML = F.CATS.map(c => `<option value="${c.key}">${esc(c.label)}</option>`).join('');
   $('cv_in').addEventListener('input', () => { const c = F.checkMoney($('cv_in').value, 1e8); $('cv_out').textContent = c.ok ? usd(c.value / 12) : '—'; });
@@ -742,7 +763,7 @@ function step3() {
     const c = F.checkMoney($('cv_in').value, 1e8);
     if (!c.ok || c.blank) return;
     const k = $('cv_to').value, m = F.round2(c.value / 12);
-    r.values[k] = Object.assign({ src: 'mit', note: '' }, r.values[k], { v: m });
+    r.values[k] = Object.assign({}, r.values[k], { v: m, src: 'mit' });
     $('rv_' + k).value = m; recalc(); queueSave();
     $('rv_' + k).focus();
   });
@@ -751,8 +772,8 @@ function step3() {
 }
 function step3Complete() {
   const r = D.research || {};
-  return ['location', 'household', 'url'].every(k => !F.isBlank(r[k])) &&
-    F.KEYS.every(k => r.values[k] && !F.isBlank(r.values[k].v) && !(r.values[k].src === 'own' && F.isBlank(r.values[k].note)));
+  return ['location', 'household'].every(k => !F.isBlank(r[k])) &&
+    F.KEYS.every(k => r.values[k] && !F.isBlank(r.values[k].v));
 }
 function out3() {
   F.CATS.forEach(c => { const el = $('pv_' + c.key); if (el) el.textContent = F.isBlank(D.predicted[c.key]) ? '—' : usd(F.num(D.predicted[c.key])); });
@@ -984,7 +1005,7 @@ function out6() {
 function out7() {
   const c = D.career, r = D.research, cmp = F.compare(D.predicted, r.values);
   const a = F.affordability({ salary: c.salary, days: c.days, hours: c.hours, values: r.values, tax: D.tax });
-  const rows = cmp.rows.map(x => `<tr><td>${esc(x.label)}</td><td class="n">${usd(x.predicted)}</td><td class="n">${usd(x.researched)}</td><td class="n">${x.diff > 0 ? '+' : ''}${usd(x.diff)}</td><td>${esc(((r.values[x.key] || {}).src === 'own' ? 'Own: ' + ((r.values[x.key] || {}).note || '') : 'MIT'))}</td></tr>`).join('');
+  const rows = cmp.rows.map(x => `<tr><td>${esc(x.label)}</td><td class="n">${usd(x.predicted)}</td><td class="n">${usd(x.researched)}</td><td class="n">${x.diff > 0 ? '+' : ''}${usd(x.diff)}</td><td>MIT</td></tr>`).join('');
   let scoreHTML = '';
   if (META.scores) {
     const sc = META.scores;
@@ -1014,7 +1035,7 @@ function out7() {
     ${META.image ? `<img class="imgprev" alt="Evidence screenshot" src="${META.image}">` : ''}
     <h3>Reflection</h3><div class="reflect-out">${esc(D.reflection || '—')}</div>
     ${scoreHTML}`;
-  const miss = F.missing(D);
+  const miss = F.missingDetailed(D);
   const btn = $('submitbtn');
   $('certbtn').hidden = !submitted(); btn.hidden = submitted();
   if (submitted()) {
@@ -1023,8 +1044,9 @@ function out7() {
   } else if (MODE === 'none') {
     $('missing').innerHTML = '<div class="warn">Sign in on the Quest page to submit.</div>'; btn.disabled = true;
   } else if (miss.length) {
-    $('missing').innerHTML = `<div class="warn"><b>Before you can submit (${miss.length}):</b><ul>${miss.slice(0, 12).map(m => '<li>' + esc(m) + '</li>').join('')}${miss.length > 12 ? '<li>…and ' + (miss.length - 12) + ' more</li>' : ''}</ul></div>`;
-    btn.disabled = true; btn.textContent = 'Submit Assignment';
+    $('missing').innerHTML = `<div class="badbox"><b>Before you can submit, fix ${miss.length === 1 ? 'this' : 'these ' + miss.length}:</b> <small>(tap one to jump right to it)</small><ul class="fixlist">${miss.slice(0, 12).map((m, i) => `<li><button type="button" class="fixbtn" data-fix="${i}">${esc(m.msg)} <b>→ Fix it</b></button></li>`).join('')}${miss.length > 12 ? '<li>…and ' + (miss.length - 12) + ' more</li>' : ''}</ul></div>`;
+    $('missing').querySelectorAll('[data-fix]').forEach(b => b.addEventListener('click', () => showProblem(miss[Number(b.dataset.fix)])));
+    btn.disabled = false; btn.textContent = 'Submit Assignment';   // clicking it jumps to the first problem
   } else {
     $('missing').innerHTML = '<div class="okbox">Everything required is done. Read it over, then submit.</div>';
     btn.disabled = false; btn.textContent = 'Submit Assignment';
@@ -1032,7 +1054,9 @@ function out7() {
 }
 async function submit() {
   const btn = $('submitbtn');
-  if (F.missing(D).length || submitted()) return;
+  const probs = F.missingDetailed(D);
+  if (probs.length) { showProblem(probs[0]); return; }
+  if (submitted()) return;
   if (!confirm('Submit "The Cost of Your Future"?\n\nAfter you submit, you can view your work but not change it.')) return;
   btn.disabled = true; btn.textContent = 'Submitting…';
   D.done[7] = true;
@@ -1050,6 +1074,26 @@ async function submit() {
   afterSubmit();
 }
 function afterSubmit() { applyLocks(); render(); go(8); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+// ── CERTIFICATE SCREENSHOT ── makes a PNG of the certificate and downloads it for Schoology
+async function saveCertShot() {
+  const btn = $('certshot'), msg = $('shotmsg'), el = $('cert');
+  if (!el || !el.firstElementChild || typeof html2canvas !== 'function') { msg.innerHTML = '<div class="warn">Screenshot is not ready — use your device’s screenshot keys instead.</div>'; return; }
+  btn.disabled = true; btn.textContent = '📸 Making it…'; msg.innerHTML = '';
+  try {
+    const bg = getComputedStyle(document.body).backgroundColor || '#ffffff';
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: bg, useCORS: true, logging: false,
+      onclone: doc => doc.querySelectorAll('.cert').forEach(c => { c.style.boxShadow = 'none'; c.style.borderWidth = '6px'; }) });
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const name = 'cost-of-your-future-certificate' + (S && S.name ? '-' + String(S.name).replace(/[^a-z0-9]+/gi, '-').toLowerCase() : '') + '.png';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    msg.innerHTML = `<div class="okbox">✅ Saved <b>${esc(name)}</b> to your Downloads. Upload that picture to <b>The Cost of Your Future</b> in Schoology.</div>`;
+  } catch (err) {
+    msg.innerHTML = '<div class="warn">Could not make the screenshot. Use your device’s screenshot keys (shown above) instead.</div>';
+  }
+  btn.disabled = false; btn.textContent = '📸 Save screenshot';
+}
 
 // ── CERTIFICATE ──
 const PIE = ['#b0243a', '#d4a000', '#2463c9', '#0e7c86', '#8a5cd6', '#0f7a4f', '#e07b22'];
@@ -1162,6 +1206,7 @@ async function start() {
   $('done4').addEventListener('click', () => { D.done[4] = true; queueSave(); go(5); });
   $('certbtn').addEventListener('click', () => go(8));
   $('certprint').addEventListener('click', () => { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's8')); render8(); window.print(); });
+  $('certshot').addEventListener('click', saveCertShot);
   $('printbtn').addEventListener('click', () => { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's7')); out7(); window.print(); });
   render();
   const start = submitted() ? 8 : (Number.isInteger(D.lastStep) ? D.lastStep : 0);

@@ -282,32 +282,33 @@
   }
 
   // ── Submission check (the database repeats the important parts) ──
-  function missing(d) {
+  // Each problem: { msg, step, field } — field is the id of the input to highlight on the page.
+  function missingDetailed(d) {
     const m = [];
+    const add = (msg, step, field) => m.push({ msg, step, field });
     d = d || {};
     const c = d.career || {};
-    if (!d.step0 || isBlank(d.step0.quiz)) m.push('Step 0: answer the interest question');
-    if (isBlank(c.job)) m.push('Step 1: planned occupation');
-    if (!(num(c.salary) > 0)) m.push('Step 1: first-year salary');
-    if (!(num(c.days) > 0 && num(c.days) <= 7)) m.push('Step 1: days worked per week (1–7)');
-    if (!(num(c.hours) > 0 && num(c.hours) <= 24)) m.push('Step 1: hours worked per day (1–24)');
-    if (isBlank(c.place)) m.push('Step 1: where you plan to live');
-    if (c.salarySource === 'researched' && isBlank(c.salaryUrl)) m.push('Step 1: where you found your salary (or mark it a guess)');
-    KEYS.forEach(k => { if (!d.predicted || isBlank(d.predicted[k])) m.push('Step 2: your estimate for ' + CATS.find(x => x.key === k).label); });
-    if (!d.predLockedAt) m.push('Step 2: lock your estimates');
+    if (!d.step0 || isBlank(d.step0.quiz)) add('Step 0: answer the interest question', 0, 'quiz');
+    if (isBlank(c.job)) add('Step 1: planned occupation', 1, 'c_job');
+    if (!(num(c.salary) > 0)) add('Step 1: first-year salary', 1, 'c_salary');
+    if (!(num(c.days) > 0 && num(c.days) <= 7)) add('Step 1: days worked per week (1–7)', 1, 'c_days');
+    if (!(num(c.hours) > 0 && num(c.hours) <= 24)) add('Step 1: hours worked per day (1–24)', 1, 'c_hours');
+    if (isBlank(c.place)) add('Step 1: where you plan to live', 1, 'c_place');
+    if (c.salarySource === 'researched' && isBlank(c.salaryUrl)) add('Step 1: where you found your salary (or mark it a guess)', 1, 'c_salurl');
+    KEYS.forEach(k => { if (!d.predicted || isBlank(d.predicted[k])) add('Step 2: your estimate for ' + CATS.find(x => x.key === k).label, 2, 'p_' + k); });
+    if (!d.predLockedAt) add('Step 2: lock your estimates', 2, 'lockbtn');
     const r = d.research || {};
-    if (isBlank(r.location)) m.push('Step 3: location researched');
-    if (isBlank(r.household)) m.push('Step 3: household type');
-    if (isBlank(r.url) || !/^https?:\/\/\S+\.\S+/i.test(String(r.url).trim())) m.push('Step 3: source web address (starts with https://)');
+    if (isBlank(r.location)) add('Step 3: location researched', 3, 'r_location');
+    if (isBlank(r.household)) add('Step 3: household type', 3, 'r_household');
     KEYS.forEach(k => {
       const x = r.values && r.values[k];
-      if (!x || isBlank(x.v)) m.push('Step 3: researched cost for ' + CATS.find(c2 => c2.key === k).label);
-      else if (x.src === 'own' && isBlank(x.note)) m.push('Step 3: say where your ' + CATS.find(c2 => c2.key === k).label + ' number came from');
+      if (!x || isBlank(x.v)) add('Step 3: researched cost for ' + CATS.find(c2 => c2.key === k).label, 3, 'rv_' + k);
     });
-    if (sentences(d.reflection).meaningful < 5) m.push('Step 6: at least 5 complete sentences');
-    else if (!reflectionQuality(d).ok) m.push('Step 6: reflection needs more — answer every question and use your own numbers');
+    if (sentences(d.reflection).meaningful < 5) add('Step 6: at least 5 complete sentences', 6, 'refl');
+    else if (!reflectionQuality(d).ok) add('Step 6: reflection needs more — answer every question and use your own numbers', 6, 'refl');
     return m;
   }
+  function missing(d) { return missingDetailed(d).map(x => x.msg); }
 
   // ── Suggested rubric points (teacher reviews and can override every line) ──
   // Reflection is left for the teacher (null). Calculations are done by the site, so their
@@ -326,7 +327,7 @@
     const predN = KEYS.filter(k => filled(d.predicted, k)).length;
     const predictions = Math.round((predN / 12) * 13) + (d.predLockedAt ? 2 : 0);
     // Researched expenses & evidence (25)
-    const resN = KEYS.filter(k => filled(vals, k) && !(vals[k].src === 'own' && isBlank(vals[k].note))).length;
+    const resN = KEYS.filter(k => filled(vals, k)).length;
     let research = Math.round((resN / 12) * 15);
     ['location', 'household'].forEach(f => { if (!isBlank(r[f])) research += 1; });
     if (/^https?:\/\/\S+\.\S+/i.test(String(r.url || '').trim())) research += 4;
@@ -354,7 +355,7 @@
     num, isBlank, round2, checkMoney,
     simpleInterest, compoundInterest, workHours, hourlyFrom,
     totals, compare, federalIncomeTax, taxes, requiredGross, sheetMethodIncome,
-    affordability, meter, sentences, reflectionQuality, missing, suggestScores
+    affordability, meter, sentences, reflectionQuality, missing, missingDetailed, suggestScores
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = FinanceCalc;
   else root.FinanceCalc = FinanceCalc;
