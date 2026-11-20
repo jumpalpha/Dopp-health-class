@@ -209,6 +209,20 @@ textarea.refl{min-height:260px;line-height:1.6}
 .cert .ctips ol{margin:4px 0 0 18px;padding:0}
 .cert .csig{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px;font-size:13px;color:var(--dim)}
 .cert .csig div{flex:1;min-width:160px;border-top:1px solid var(--ink);padding-top:4px}
+/* Step 5 reality check */
+.btn-bad{background:var(--bad);color:#fff;border:0}
+.btn-locked{opacity:.55}
+.realbox{border-radius:12px;padding:14px 16px;margin:14px 0;font-size:16px;border:3px solid var(--bad);background:var(--bad-bg)}
+.realbox .big{font-size:22px;font-weight:900;color:var(--bad);line-height:1.2;margin-bottom:6px}
+.realbox.live .big{font-size:clamp(28px,6vw,44px);letter-spacing:1px}
+.realbox.odds{border-color:var(--yel-ink);background:var(--yel-bg)}.realbox.odds .big{color:var(--yel-ink)}
+.realbox.odds.ok{border-color:var(--good);background:var(--good-bg)}
+.realbox .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.meter .track .need{position:absolute;top:-4px;bottom:-4px;left:45%;width:0;border-left:3px dashed var(--ink);opacity:.7}
+.meter .needlbl{position:relative;height:16px;font-size:11px;font-weight:900;color:var(--dim)}
+.meter .needlbl span{position:absolute;left:45%;transform:translateX(-50%);white-space:nowrap}
+.cert .crefl{text-align:left;max-width:640px;margin:14px auto 0;padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--parch,#fffaf0);font-size:14px}
+.cert .crefl p{margin:4px 0 0;white-space:pre-wrap}
 .reflect-out{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
 
 @media (max-width:720px){
@@ -416,6 +430,19 @@ textarea.refl{min-height:260px;line-height:1.6}
     </div>
     <div id="taxexplain"></div>
     <div id="dash" aria-live="polite"></div>
+    <div id="reality" aria-live="polite"></div>
+    <div id="excwrap" class="realbox odds" hidden>
+      <div class="big">📊 Check the odds</div>
+      <p>You planned on <b id="exc_sal"></b> a year. Here’s how rare that is:</p>
+      <ul>
+        <li>In the <b>United States</b>, only about <b>6 out of every 100 workers</b> (about 1 in 17) earn $200,000 or more a year.</li>
+        <li>In the <b>whole world</b>, it’s about <b>1 out of every 100 workers — or fewer</b>. Most people on Earth earn less than $10,000 a year.</li>
+        <li>That means about <b>94 out of 100</b> American workers — and about <b>99 out of 100</b> workers worldwide — earn <b>less</b> than you are planning on.</li>
+      </ul>
+      <label class="f" for="exc" style="margin-top:6px"><span>How will <u>you</u> be the exception to these statistics? Be specific: the training, years of experience, work, sacrifices, and backup plan it would take.</span></label>
+      <textarea id="exc" class="refl" style="min-height:120px" maxlength="3000" placeholder="I will be one of the few who earn this much because…"></textarea>
+      <div class="counter"><span id="exccount">0 of 3 complete sentences · 0 of 40 words</span></div>
+    </div>
 
     <details class="box" id="whatif">
       <summary>🧪 Try a what-if (this never changes what you turn in)</summary>
@@ -579,13 +606,19 @@ function loadDemo() {
 function saveDemoMeta() { try { localStorage.setItem(BACKUP_KEY, JSON.stringify({ at: Date.now(), data: D, meta: META })); } catch (e) {} }
 
 // ── path / navigation ──
-function canEnter(n) { return n === 8 ? submitted() : n <= 3 ? (n < 3 || locked()) : locked(); }
+function canEnter(n) {
+  if (n === 8) return submitted();
+  if (n <= 3) return n < 3 || locked();
+  if (!locked()) return false;
+  if (n >= 6 && !submitted() && !F.reality(D).ok) return false;   // Step 5 reality check
+  return true;
+}
 function renderPath() {
   const ol = $('path');
   ol.innerHTML = STEPS.map((t, i) => {
     const cls = [D.done[i] ? 'done' : '', i === cur ? 'cur' : ''].join(' ');
     const dis = !canEnter(i);
-    const why = i === 8 ? 'Submit your assignment first' : 'Lock your Step 2 estimates first';
+    const why = i === 8 ? 'Submit your assignment first' : (i >= 6 && locked()) ? 'Pass the Step 5 reality check first' : 'Lock your Step 2 estimates first';
     return `<li class="${cls}"><button type="button" data-go="${i}" ${dis ? 'disabled title="' + why + '"' : ''} aria-current="${i === cur ? 'step' : 'false'}">
       <span class="gem">${D.done[i] ? '✓' : i === 8 ? '🏆' : i}</span><span class="lbl">${t}</span></button></li>`;
   }).join('');
@@ -595,7 +628,10 @@ function renderPath() {
 }
 function go(n) {
   n = Math.max(0, Math.min(8, Number(n)));
-  if (!canEnter(n)) { if (n !== 8) flashLock(); return; }
+  if (!canEnter(n)) {
+    if (n >= 6 && n < 8 && locked()) { go(5); setTimeout(() => { const r = $('reality').firstElementChild || (!$('excwrap').hidden && $('excwrap')); if (r) { r.scrollIntoView({ behavior: 'smooth', block: 'center' }); r.classList.add('needfix'); setTimeout(() => r.classList.remove('needfix'), 3600); } }, 350); return; }
+    if (n !== 8) flashLock(); return;
+  }
   cur = n; D.visited[n] = true;
   document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('on', i === n));
   renderPath(); renderStep(n);
@@ -870,6 +906,8 @@ function step5() {
   $('tm_s').addEventListener('click', () => setMode('simplified'));
   $('tm_r').addEventListener('click', () => setMode('realistic'));
   $('tm_s').setAttribute('aria-pressed', D.tax.mode !== 'realistic'); $('tm_r').setAttribute('aria-pressed', D.tax.mode === 'realistic');
+  $('exc').value = D.exception || '';
+  $('exc').addEventListener('input', () => { D.exception = $('exc').value; outReality(); renderPath(); queueSave(); });
   $('ack5').checked = !!D.done[5];
   $('ack5').addEventListener('change', () => { D.done[5] = $('ack5').checked; renderPath(); queueSave(); });
   ['salary', 'housing', 'transportation', 'food', 'entertainment', 'savings'].forEach(k => {
@@ -914,7 +952,8 @@ function dashHTML(a, title, sheet) {
     <div class="tile"><div class="k">Required hourly earnings</div><div class="v">${a.requiredHourly == null ? '—' : usd(a.requiredHourly) + '/hr'}</div><div class="s">${a.currentHourly == null ? 'enter days & hours in Step 1' : 'your career: ' + usd(a.currentHourly) + '/hr'}</div></div>
   </div>
   <div class="meter" aria-label="Affordability: ${m.label}">
-    <div class="track"><div class="pin" style="left:${m.pos}%"></div></div>
+    <div class="track"><div class="need" title="Minimum: 45%"></div><div class="pin" style="left:${m.pos}%"></div></div>
+    <div class="needlbl"><span>▲ 45% minimum</span></div>
     <div class="ticks"><span>Shortfall</span><span>Balanced</span><span>Surplus</span></div>
     <div class="verdict ${m.level}">${m.label}</div>
     <div class="map-note">${m.level === 'shortfall' ? 'Your take-home pay doesn’t cover this lifestyle yet. Try the what-if box: what would have to change?' : m.level === 'balanced' ? 'You can just cover it, with less than 5% to spare. One surprise bill could tip you over.' : 'You can afford this lifestyle with money to spare.'}</div>
@@ -939,7 +978,33 @@ function out5() {
 function outDash() {
   const a = F.affordability({ salary: D.career.salary, days: D.career.days, hours: D.career.hours, values: D.research.values, tax: D.tax });
   $('dash').innerHTML = dashHTML(a, '', D.tax.mode !== 'realistic' ? F.sheetMethodIncome(a.annualNeed) : null);
+  outReality();
   outWhatif();
+}
+// Reality check: blocks Step 6+ until the plan is believable
+function outReality() {
+  const rc = F.reality(D), el = $('reality');
+  let h = '';
+  if (rc.tooHigh) {
+    h = `<div class="realbox live" role="alert"><div class="big">🛑 LIVE IN REALITY!</div>
+      <p>You planned on earning <b>${usd(rc.salary, 0)} a year</b>. Only about <b>3 out of every 100</b> American workers earn over $300,000 — and far fewer worldwide. A plan built on that salary isn’t a plan, it’s a wish.</p>
+      <p><b>Go back to Step 1 and begin again</b> with a real career and a real starting salary of <b>$300,000 or less</b>. Use the BLS Occupational Outlook Handbook to find a true number.</p>
+      <div class="btns"><button class="btn btn-bad" type="button" data-go="1">← Back to Step 1 and begin again</button></div></div>`;
+  } else if (rc.tooShort) {
+    h = `<div class="realbox" role="alert"><div class="big">⚠️ Your plan doesn’t work yet</div>
+      <p>Your meter is at <b>${rc.meterPct}%</b>. You are <b>${usd(-rc.a.surplus, 0)} a year</b> (${usd(-rc.a.surplus / 12, 0)} a month) short. To move on, your plan must reach at least <b>45%</b> on the meter — just short of balanced.</p>
+      <p><b>Go back and make real changes:</b> a career that pays more or more hours (Step 1); a cheaper place to live, a roommate, or a different household (research it again in Step 3); or a smaller savings goal. Use the what-if box below to test ideas first.</p>
+      <div class="btns"><button class="btn btn-ghost" type="button" data-go="1">← Step 1: Career &amp; salary</button><button class="btn btn-ghost" type="button" data-go="3">← Step 3: Living costs</button></div></div>`;
+  }
+  el.innerHTML = h;
+  $('excwrap').hidden = !rc.needExc;
+  if (rc.needExc) {
+    $('exc_sal').textContent = usd(rc.salary, 0);
+    $('excwrap').classList.toggle('ok', rc.excOk);
+    $('exccount').innerHTML = rc.excOk ? '✅ Explanation complete' : `${rc.exc.meaningful} of ${F.REALITY.excSentences} complete sentences · ${rc.exc.words || 0} of ${F.REALITY.excWords} words`;
+  }
+  const nb = document.querySelector('#s5 [data-go="6"]');
+  if (nb) nb.classList.toggle('btn-locked', !rc.ok && !submitted());
 }
 function outWhatif() {
   if (!D.whatif) { $('wdash').innerHTML = ''; return; }
@@ -1034,6 +1099,7 @@ function out7() {
       <dt>Screenshot</dt><dd>${META.image ? 'attached' : 'none (optional)'}</dd></dl>
     ${META.image ? `<img class="imgprev" alt="Evidence screenshot" src="${META.image}">` : ''}
     <h3>Reflection</h3><div class="reflect-out">${esc(D.reflection || '—')}</div>
+    ${F.reality(D).needExc ? `<h3>How I’ll beat the $200,000 odds</h3><div class="reflect-out">${esc(D.exception || '—')}</div>` : ''}
     ${scoreHTML}`;
   const miss = F.missingDetailed(D);
   const btn = $('submitbtn');
@@ -1155,6 +1221,8 @@ function render8() {
     <div class="cgraph">${donut(sl, usd(a.salary, 0), 'salary / year')}
       <ul class="leg">${sl.map(x => `<li><i style="background:${x.c}"></i>${esc(x.n)} — <b>${Math.round(x.v / base * 100)}%</b> <span style="color:var(--dim)">(${usd(x.v, 0)})</span></li>`).join('')}</ul></div>
     ${a.surplus < 0 ? `<div style="font-size:14px;color:var(--bad);font-weight:800">My costs are ${usd(-a.surplus, 0)} more than my salary covers.</div>` : ''}
+    <div class="crefl"><b>📝 My reflection</b><p>${esc(D.reflection || '—')}</p></div>
+    ${F.reality(D).needExc && D.exception ? `<div class="crefl"><b>📊 How I’ll beat the $200,000 odds</b><p>${esc(D.exception)}</p></div>` : ''}
     <div class="ctips"><b>💡 To build an even stronger financial future:</b><ol>${certTips(a, cmp).map(x => `<li>${x}</li>`).join('')}</ol></div>
     <div class="csig"><div>Mr. Dopp · Financial Health</div><div>${date}</div></div>
   </div>`;
@@ -1210,7 +1278,8 @@ async function start() {
   $('printbtn').addEventListener('click', () => { document.querySelectorAll('.step').forEach(s => s.classList.toggle('printme', s.id === 's7')); out7(); window.print(); });
   render();
   const start = submitted() ? 8 : (Number.isInteger(D.lastStep) ? D.lastStep : 0);
-  cur = canEnter(start) ? start : 2;
+  let st = start; while (st > 0 && !canEnter(st)) st--;
+  cur = st;
   document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('on', i === cur));
   renderPath(); renderStep(cur);
 }

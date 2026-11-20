@@ -114,5 +114,19 @@ eq('predictions 15', sc.predictions, 15); eq('research 25', sc.research, 25); eq
 eq('career guess = 6', sc.career, 6); eq('completion 10', sc.completion, 10);
 eq('nothing entered scores 0', Object.values(F.suggestScores({}, {})).reduce((t, v) => t + (v || 0), 0), 0);
 
+
+// Step 5 reality check
+{
+  const res2 = {}; F.KEYS.forEach(k => res2[k] = { v: 300 });
+  const mk = (sal, ex) => ({ career: { salary: sal, days: 5, hours: 8 }, research: { values: res2 }, tax: { mode: 'simplified' }, exception: ex });
+  truthy('reality: normal salary passes', F.reality(mk(60000)).ok);
+  truthy('reality: big shortfall blocked', F.reality(mk(40000)).tooShort && !F.reality(mk(40000)).ok);
+  truthy('reality: over $300k = live in reality', F.reality(mk(350000)).tooHigh);
+  truthy('reality: over $200k needs an explanation', F.reality(mk(250000)).needExc && !F.reality(mk(250000)).ok);
+  const longEx = 'I will go to medical school for eight long years after college. I will work very long hours as a surgeon in a big hospital. I will save money and live cheaply while I am still training. I also have a backup plan as a nurse if the surgeon plan fails.';
+  truthy('reality: good explanation passes', F.reality(mk(250000, longEx)).ok);
+  truthy('reality: missing lists the problem', F.missingDetailed(mk(350000)).some(m => m.field === 'c_salary' && /LIVE IN REALITY/.test(m.msg)));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

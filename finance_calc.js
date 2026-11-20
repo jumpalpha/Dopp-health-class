@@ -282,6 +282,24 @@
   }
 
   // ── Submission check (the database repeats the important parts) ──
+  // ── Step 5 reality check ──
+  // Salary over $300,000 → back to Step 1 (LIVE IN REALITY). Salary over $200,000 → must explain how
+  // they'll beat the odds. Budget must sit at 45% or higher on the meter (no more than 5% short).
+  const REALITY = { maxSalary: 300000, oddsSalary: 200000, minMeter: 45, excSentences: 3, excWords: 40 };
+  function reality(d) {
+    d = d || {};
+    const c = d.career || {}, r = d.research || {}, vals = r.values || {};
+    const salary = num(c.salary);
+    const a = affordability({ salary: c.salary, days: c.days, hours: c.hours, values: vals, tax: d.tax });
+    const researched = KEYS.every(k => vals[k] && !isBlank(vals[k].v));
+    const tooHigh = salary > REALITY.maxSalary;
+    const needExc = !tooHigh && salary > REALITY.oddsSalary;
+    const ex = sentences(d.exception);
+    const excOk = !needExc || (ex.meaningful >= REALITY.excSentences && ex.words >= REALITY.excWords);
+    const tooShort = !tooHigh && researched && a.meter.pos < REALITY.minMeter;
+    return { a, salary, tooHigh, needExc, excOk, exc: ex, tooShort, meterPct: Math.round(a.meter.pos), ok: !tooHigh && excOk && !tooShort };
+  }
+
   // Each problem: { msg, step, field } — field is the id of the input to highlight on the page.
   function missingDetailed(d) {
     const m = [];
@@ -304,6 +322,10 @@
       const x = r.values && r.values[k];
       if (!x || isBlank(x.v)) add('Step 3: researched cost for ' + CATS.find(c2 => c2.key === k).label, 3, 'rv_' + k);
     });
+    const rc = reality(d);
+    if (rc.tooHigh) add('Step 1: LIVE IN REALITY — pick a salary of $300,000 a year or less', 1, 'c_salary');
+    if (rc.tooShort) add('Step 5: your budget is too far short — get the meter to at least ' + REALITY.minMeter + '%', 5, 'dash');
+    if (rc.needExc && !rc.excOk) add('Step 5: explain how you will be the exception to the $200,000 odds', 5, 'exc');
     if (sentences(d.reflection).meaningful < 5) add('Step 6: at least 5 complete sentences', 6, 'refl');
     else if (!reflectionQuality(d).ok) add('Step 6: reflection needs more — answer every question and use your own numbers', 6, 'refl');
     return m;
@@ -355,7 +377,7 @@
     num, isBlank, round2, checkMoney,
     simpleInterest, compoundInterest, workHours, hourlyFrom,
     totals, compare, federalIncomeTax, taxes, requiredGross, sheetMethodIncome,
-    affordability, meter, sentences, reflectionQuality, missing, missingDetailed, suggestScores
+    affordability, meter, sentences, reflectionQuality, missing, missingDetailed, reality, REALITY, suggestScores
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = FinanceCalc;
   else root.FinanceCalc = FinanceCalc;
