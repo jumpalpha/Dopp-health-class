@@ -214,6 +214,18 @@ td.n,th.n{text-align:right}
   .path ol{grid-template-columns:repeat(4,1fr);row-gap:10px}
   .path .lbl{font-size:11px}
 }
+/* height/weight lock + "manipulated" stamp */
+.hwwarn{background:var(--bad-bg);border:3px solid var(--bad);border-radius:12px;padding:14px 16px;margin:14px 0;font-size:16px}
+.hwwarn .big{font-size:20px;font-weight:900;color:var(--bad)}
+.hwwarn .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.btn-bad{background:var(--bad);color:#fff;border:0}
+.cert.manip{overflow:hidden}
+.cert .stamp{position:absolute;left:-15%;right:-15%;top:42%;transform:rotate(-24deg);z-index:5;pointer-events:none;
+  background:rgba(176,36,58,.88);color:#fff;border-top:6px solid #7a0f22;border-bottom:6px solid #7a0f22;padding:18px 20%;
+  font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(22px,4.2vw,40px);line-height:1.15;letter-spacing:1px;text-transform:uppercase;text-align:center;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.cert .stamp small{display:block;margin-top:8px;font-size:clamp(12px,1.8vw,17px);letter-spacing:0;text-transform:none;font-weight:800}
+.cert .xmark{position:absolute;inset:0;z-index:4;pointer-events:none;width:100%;height:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 @media print{
   .cert{box-shadow:none;break-inside:avoid}.cert .ctile{background:#fff}
   nav,.hero,.path,.nav-btns,.noprint{display:none!important}
@@ -332,6 +344,7 @@ td.n,th.n{text-align:right}
       </select></label>
       <label class="f">Body fat % <small>optional — leave blank if you don't know</small><input id="bf" type="number" min="3" max="60" step="0.1" inputmode="decimal"></label>
     </div>
+    <div id="hwlock" aria-live="polite"></div>
     <div id="energyout"></div>
     <div class="nav-btns"><button class="btn btn-ghost" type="button" data-back>← Back</button><button class="btn btn-gold" type="button" data-next>Take the island test →</button></div>
   </section>
@@ -592,6 +605,8 @@ function renderPath() {
 }
 function go(i) {
   if (!canEnter(i) || quizLive) return;
+  if (hwEdit && i !== 5) { hwRelock(); }
+  hwAsk = false;
   cur = i; D.lastStep = i;
   document.querySelectorAll('.step').forEach((s, k) => s.classList.toggle('on', k === i));
   renderPath(); renderStep(i); queueSave();
@@ -780,7 +795,51 @@ function render4() {
 // ───────── step 5 ─────────
 function render5() {
   ['age', 'sex', 'ft', 'inch', 'lb', 'act', 'bf'].forEach(k => { $(k).value = D.body[k] == null ? '' : D.body[k]; });
+  hwAutoLock(); renderHW();
   noteBalance(); out5();
+}
+// ───────── height & weight lock ─────────
+// Height and weight lock in permanently once all three are entered. Changing them later needs a
+// warning click, and any real change marks the quest: half points + a stamp across the certificate.
+let hwEdit = false, hwAsk = false;
+const hwVals = () => ({ ft: String(D.body.ft ?? ''), inch: String(D.body.inch ?? ''), lb: String(D.body.lb ?? '') });
+const hwFilled = v => v.ft !== '' && v.inch !== '' && +v.lb >= 60 && +v.lb <= 450;
+const hwText = v => v ? `${v.ft}′${v.inch}″, ${v.lb} lb` : '—';
+const hwSame = (a, b) => a && b && +a.ft === +b.ft && +a.inch === +b.inch && +a.lb === +b.lb;
+function hwAutoLock() {
+  const v = hwVals();
+  if (!D.body.hwLock && hwFilled(v)) { D.body.hwLock = Object.assign(v, { at: new Date().toISOString() }); D.body.hwOrig = D.body.hwOrig || D.body.hwLock; queueSave(); }
+  else if (D.body.hwLock && !hwEdit && !hwSame(v, D.body.hwLock)) {   // e.g. page reloaded in the middle of an edit
+    if (D.body.hwChanged && hwFilled(v)) { hwEdit = true; hwRelock(); }
+    else { const L = D.body.hwLock; D.body.ft = L.ft; D.body.inch = L.inch; D.body.lb = L.lb; ['ft', 'inch', 'lb'].forEach(k => { $(k).value = D.body[k]; }); queueSave(); }
+  }
+}
+function hwRelock() {
+  if (!hwEdit) return;
+  const v = hwVals();
+  if (!hwFilled(v)) { const L = D.body.hwLock; D.body.ft = L.ft; D.body.inch = L.inch; D.body.lb = L.lb; }   // incomplete edit → put the locked numbers back
+  else if (!hwSame(v, D.body.hwLock)) {
+    D.body.hwLog = (D.body.hwLog || []).concat([{ from: D.body.hwLock, to: v, at: new Date().toISOString() }]);
+    D.body.hwLock = Object.assign(v, { at: new Date().toISOString() });
+  }
+  hwEdit = false; queueSave();
+}
+// A change counts once the numbers differ from the first numbers locked in (even if changed back later).
+function hwNoteChange() { if (hwEdit && D.body.hwOrig && hwFilled(hwVals()) && !hwSame(hwVals(), D.body.hwOrig)) D.body.hwChanged = true; }
+function renderHW() {
+  const locked = !!D.body.hwLock && !hwEdit;
+  ['ft', 'inch', 'lb'].forEach(k => { $(k).disabled = locked; });
+  const flag = D.body.hwChanged ? `<div class="badbox">⚠️ <b>Your height or weight was changed after it was locked.</b> This quest is worth <b>half points</b>, and your certificate will be stamped. First numbers: <b>${hwText(D.body.hwOrig)}</b>.</div>` : '';
+  let h = '';
+  if (!D.body.hwLock) h = '<div class="note">🔒 Enter your <b>real</b> height and weight. Once all three are filled in they <b>lock in for good</b>.</div>';
+  else if (hwAsk) h = `<div class="hwwarn" role="alertdialog" aria-labelledby="hwq"><div class="big" id="hwq">⚠️ Are you sure?</div>
+      Your height and weight are locked. If you change them, you will get <b>only HALF of your points</b> for this quest, and your certificate will be stamped
+      <b>“Height and weight have been manipulated to pass this test.”</b> This can’t be undone.
+      <div class="btns"><button class="btn btn-ghost" type="button" id="hwcancel">Cancel — keep my numbers</button><button class="btn btn-bad" type="button" id="hwyes">I understand — let me change them</button></div></div>`;
+  else if (hwEdit) h = `<div class="hwwarn">✏️ <b>Editing height and weight.</b> Locked numbers: ${hwText(D.body.hwLock)}. Changing them = half points.
+      <div class="btns"><button class="btn btn-gold" type="button" id="hwdone">Lock my numbers again</button></div></div>`;
+  else h = `<div class="okbox">🔒 <b>Height and weight locked:</b> ${hwText(D.body.hwLock)}. <button class="btn btn-ghost" type="button" id="hwchange" style="margin-left:8px">Change them…</button></div>`;
+  $('hwlock').innerHTML = h + flag;
 }
 const LEVELS = [['Basal Metabolic Rate (BMR)', 1], ['Sedentary', 1.2], ['Light exercise', 1.375], ['Moderate exercise', 1.55], ['Heavy exercise', 1.725], ['Athlete', 1.9]];
 const SPLITS = [['Moderate carb', 30, 35, 35, 'protein 30 · fat 35 · carbs 35'], ['Lower carb', 40, 40, 20, 'protein 40 · fat 40 · carbs 20'], ['Higher carb', 30, 20, 50, 'protein 30 · fat 20 · carbs 50']];
@@ -977,6 +1036,7 @@ function render7() {
     <h3>What We Learned</h3>
     <p><b>Top 5 foods = ${r0(t.top5share)}% of calories.</b> Daily average: ${fmt(t.avg.cal)} calories · ${r0(t.avg.pro)}g protein · ${r0(t.avg.carb)}g carbs · ${r0(t.avg.fat)}g fat · ${r0(t.avg.fib)}g fiber.</p>
     ${c ? `<p><b>Energy:</b> BMI ${r1(c.bmi)} · BMR ${fmt(c.bmr)} + movement ${fmt(c.move)} = ${fmt(c.maint)} out vs. ${fmt(t.avg.cal)} in → ${gap >= 0 ? '+' : '−'}${fmt(Math.abs(gap))} cal/day ≈ ${gap >= 0 ? '+' : '−'}${Math.abs(r1(gap * 30 / 3500))} lb in 30 days.</p>` : ''}
+    ${D.body.hwChanged ? `<div class="badbox">⚠️ <b>Height/weight changed after locking — half points.</b> First: ${hwText(D.body.hwOrig)} → now: ${hwText(D.body.hwLock)}.</div>` : ''}
     <p><b>Know-Your-Food test:</b> best ${D.quiz.best} / ${QN} (${D.quiz.tries} ${D.quiz.tries === 1 ? 'try' : 'tries'}).</p>
     ${Object.keys(t.dishSrv).length ? `<h3>Our Island Dishes</h3>
     <div class="tbl-wrap"><table><thead><tr><th>Dish (1 plate)</th><th>Made from</th><th class="n">Cal</th><th class="n">Protein</th><th class="n">Carbs</th><th class="n">Fat</th><th class="n">Fiber</th><th class="n">Plates eaten</th></tr></thead><tbody>
@@ -1027,7 +1087,10 @@ function render8() {
   const mac = k => t.avg.cal ? r0(t.avg[k] * (k === 'fat' ? 9 : 4) / t.avg.cal * 100) : 0;
   const tries = D.bal.tries || 0, log = (D.bal.log || []);
   const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  el.innerHTML = `<div class="cert">
+  const manip = !!D.body.hwChanged;
+  el.innerHTML = `<div class="cert${manip ? ' manip' : ''}">
+    ${manip ? `<svg class="xmark" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="3" y1="3" x2="97" y2="97" stroke="#b0243a" stroke-width="2.2" stroke-opacity=".55" vector-effect="non-scaling-stroke" style="stroke-width:14px"/><line x1="97" y1="3" x2="3" y2="97" stroke="#b0243a" stroke-opacity=".55" vector-effect="non-scaling-stroke" style="stroke-width:14px"/></svg>
+    <div class="stamp" role="note">Height and weight have been manipulated to pass this test<small>Half points · first entered ${hwText(D.body.hwOrig)} → changed to ${hwText(D.body.hwLock)}</small></div>` : ''}
     <div class="seal">🏝️</div>
     <div class="ck">Weight Control Quest · WELL 255</div>
     <h3 class="ct">Certificate of Island Survival</h3>
@@ -1056,6 +1119,10 @@ function render8() {
 // ───────── events ─────────
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
+  if (t.id === 'hwchange') { hwAsk = true; renderHW(); return; }
+  if (t.id === 'hwcancel') { hwAsk = false; renderHW(); return; }
+  if (t.id === 'hwyes') { hwAsk = false; hwEdit = true; renderHW(); $('ft').focus(); return; }
+  if (t.id === 'hwdone') { hwRelock(); render5(); return; }
   if (t.dataset.go != null) go(+t.dataset.go);
   else if (t.hasAttribute('data-next')) go(cur + 1);
   else if (t.hasAttribute('data-back')) go(cur - 1);
@@ -1084,7 +1151,10 @@ document.addEventListener('input', e => {
   else if (el.dataset.food != null) { D.foods[+el.dataset.food].name = el.value; counts1(); refreshNext(); queueSave(); }
   else if (el.dataset.nut != null) { D.nut[+el.dataset.nut][el.dataset.k] = el.value; mark2(+el.dataset.nut); $('ncount').textContent = step2count() + ' / 15 checked'; refreshNext(); queueSave(); }
   else if (el.dataset.ms != null) { D.meals[day][+el.dataset.ms][+el.dataset.j].s = el.value; queueSave(); }
-  else if (['age', 'ft', 'inch', 'lb', 'bf'].includes(el.id)) { D.body[el.id] = el.value; out5(); queueSave(); }
+  else if (['age', 'ft', 'inch', 'lb', 'bf'].includes(el.id)) {
+    if (['ft', 'inch', 'lb'].includes(el.id) && D.body.hwLock && !hwEdit) { el.value = D.body[el.id]; return; }   // locked
+    D.body[el.id] = el.value; hwNoteChange(); out5(); queueSave(); if (D.body.hwChanged) renderHW();
+  }
   else if (el.id === 'ksearch') { kq = el.value; renderKitchen(); }
 });
 document.addEventListener('submit', e => { if (e.target.id === 'sugform') { e.preventDefault(); makeDish(); } });
@@ -1094,7 +1164,10 @@ document.addEventListener('change', e => {
   else if (el.dataset.mf != null) { D.meals[day][+el.dataset.mf][+el.dataset.j].f = el.value; render3(); refreshNext(); queueSave(); }
   else if (el.dataset.ms != null) { render3(); refreshNext(); }
   else if (el.id === 'sex' || el.id === 'act') { D.body[el.id] = el.value; noteBalance(); out5(); queueSave(); }
-  else if (['age', 'ft', 'inch', 'lb', 'bf'].includes(el.id)) { noteBalance(); out5(); }
+  else if (['age', 'ft', 'inch', 'lb', 'bf'].includes(el.id)) {
+    if (['ft', 'inch', 'lb'].includes(el.id) && !D.body.hwLock && !hwEdit) { hwAutoLock(); renderHW(); }
+    noteBalance(); out5();
+  }
 });
 
 function fillSample() {
