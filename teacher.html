@@ -937,10 +937,11 @@ input, select, textarea { color: var(--text); }
               <th>Submitted At</th>
               <th>Last Updated</th>
               <th>Test Tries</th>
+              <th title="Changed locked height/weight in the quest = half points">H/W Changed</th>
             </tr>
           </thead>
           <tbody id="wq-body">
-            <tr><td colspan="7" class="lb-empty">Click refresh to load Weight Control Quest progress.</td></tr>
+            <tr><td colspan="8" class="lb-empty">Click refresh to load Weight Control Quest progress.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1820,6 +1821,7 @@ const periodLabel = code => { const k = periodKey(code); return k ? 'Period ' + 
 let lbSort = 'vxp';
 let lbLoading    = false;
 let wqData       = null;
+let wqHwReady    = false;
 let wqLoading    = false;
 
 async function renderProgress() {
@@ -2007,7 +2009,7 @@ function setLbError(msg) {
 async function refreshWeightQuest() {
   wqData = null;
   document.getElementById('wq-body').innerHTML =
-    '<tr><td colspan="7" class="lb-empty">Loading Weight Control Quest progress...</td></tr>';
+    '<tr><td colspan="8" class="lb-empty">Loading Weight Control Quest progress...</td></tr>';
   await loadWeightQuestData();
 }
 
@@ -2017,7 +2019,7 @@ async function loadWeightQuestData() {
   setWqError('');
   const trimester = getWeightQuestTrimester();
   document.getElementById('wq-body').innerHTML =
-    '<tr><td colspan="7" class="lb-empty">Fetching Weight Control Quest progress...</td></tr>';
+    '<tr><td colspan="8" class="lb-empty">Fetching Weight Control Quest progress...</td></tr>';
 
   const { data, error } = await db.rpc('get_weight_control_quest_teacher_summary', {
     p_trimester: trimester,
@@ -2033,12 +2035,21 @@ async function loadWeightQuestData() {
   if (error) {
     setWqError('Supabase error: ' + error.message);
     document.getElementById('wq-body').innerHTML =
-      '<tr><td colspan="7" class="lb-empty">Could not load Weight Control Quest progress.</td></tr>';
+      '<tr><td colspan="8" class="lb-empty">Could not load Weight Control Quest progress.</td></tr>';
     wqLoading = false;
     return;
   }
 
   wqData = data || [];
+  // Height/weight-changed flags (separate lookup; quietly skipped if the database function isn't installed)
+  try {
+    const hw = await db.rpc('get_wcq_hw_flags', { p_trimester: trimester, p_teacher_pass: teacherPass() });
+    if (!hw.error && hw.data) {
+      const m = {}; hw.data.forEach(r => { m[(r.class_code || '') + '|' + (r.student_name || '')] = r; });
+      wqData.forEach(r => { r.hw = m[(r.class_code || '') + '|' + (r.student_name || '')] || null; });
+      wqHwReady = true;
+    }
+  } catch (e) {}
   wqLoading = false;
   renderWeightQuest();
 }
@@ -2048,7 +2059,7 @@ function renderWeightQuest() {
   if (!tbody || !wqData) return;
   updateWeightQuestStats(wqData);
   if (!wqData.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="lb-empty">No students found for this trimester.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="lb-empty">No students found for this trimester.</td></tr>';
     return;
   }
 
@@ -2064,6 +2075,9 @@ function renderWeightQuest() {
       <td style="font-size:12px;color:var(--dim)">${formatDateTime(row.submitted_at)}</td>
       <td style="font-size:12px;color:var(--dim)">${formatDateTime(row.updated_at)}</td>
       <td style="font-size:12px;color:var(--dim)">${row.try_count ?? '—'}</td>
+      <td style="font-size:12px">${!wqHwReady ? '<span style="color:var(--dim)" title="Database update not installed yet">n/a</span>'
+        : row.hw && row.hw.hw_changed ? `<span style="color:#e04a5f;font-weight:900" title="First: ${escapeHtml(row.hw.hw_first || '?')} → now: ${escapeHtml(row.hw.hw_now || '?')}">⚠️ YES · ½ pts</span><div style="color:var(--dim)">${escapeHtml(row.hw.hw_first || '?')} → ${escapeHtml(row.hw.hw_now || '?')}</div>`
+        : '<span style="color:var(--dim)">No</span>'}</td>
     </tr>`;
   }).join('');
 }
