@@ -2,7 +2,7 @@
 -- Exit Survey — end-of-trimester student feedback. Safe to re-run. Added 2026-11-19.
 --
 -- • Students take it from exit_survey.html (linked at the bottom of the home page,
---   page password "exit") while signed in (student id + PIN hash).
+--   class password, checked by exit_survey_pass_ok) while signed in (student id + PIN hash).
 -- • One response per student per trimester; submitting again replaces their earlier answers.
 -- • NAMED (teacher's choice 2026-11-19): exit_survey_teacher_list returns each student's name,
 --   class code and answers. Students are told on the survey that Mr. Dopp sees their name.

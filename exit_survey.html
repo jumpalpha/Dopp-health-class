@@ -75,7 +75,8 @@ html.dark .ch.on { background:rgba(0,229,160,.12); } html.dark .prog { backgroun
 <script>
 /*
  * Exit Survey — end-of-trimester feedback (added 2026-11-19).
- * Gate: page password "exit", then the student must be signed in (Quest login).
+ * Gate: a class password Mr. Dopp gives out (checked on the server by exit_survey_pass_ok),
+ * then the student must be signed in (Quest login).
  * 20 required A–D questions, each with an optional comment, plus a final open comment.
  * Saved through exit_survey_submit (supabase/exit_survey.sql): one response per student per
  * trimester (resubmitting replaces it). Mr. Dopp sees each student's name with their answers.
@@ -84,7 +85,7 @@ html.dark .ch.on { background:rgba(0,229,160,.12); } html.dark .prog { backgroun
   const SUPABASE_URL = 'https://gmeyamrlqfrabtslsweu.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_zClDCZZQEfC9DILpesPiHg_IcyRqW-c';
   const TRIMESTER = ((window.TERM && TERM.id) || '2026-T1');
-  const PASS = 'exit', PASS_KEY = 'exit_survey_ok';
+  const PASS_KEY = 'exit_survey_ok';
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const S = window.EXIT_SURVEY, QS = S.questions, L = ['A', 'B', 'C', 'D'];
   const $ = id => document.getElementById(id);
@@ -110,8 +111,15 @@ html.dark .ch.on { background:rgba(0,229,160,.12); } html.dark .prog { backgroun
       <div class="msg"><label for="pw"><b>Survey password</b></label><br>
         <input id="pw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="password">
         <br><button class="btn" id="pwgo" style="margin-top:12px">Open survey ▶</button><div class="err" id="pwerr"></div></div>`);
-    const go = () => {
-      if ($('pw').value.trim().toLowerCase() === PASS) { try { sessionStorage.setItem(PASS_KEY, '1'); } catch (e) {} load(); }
+    const go = async () => {
+      $('pwerr').textContent = '';
+      let ok = false;
+      try {
+        const r = await db.rpc('exit_survey_pass_ok', { p_pass: $('pw').value });
+        if (r.error) throw r.error;
+        ok = r.data === true;
+      } catch (e) { $('pwerr').textContent = 'Couldn’t check the password. Check your connection and try again.'; return; }
+      if (ok) { try { sessionStorage.setItem(PASS_KEY, '1'); } catch (e) {} load(); }
       else { $('pwerr').textContent = 'That’s not the password. Ask Mr. Dopp.'; $('pw').select(); }
     };
     $('pwgo').onclick = go;
